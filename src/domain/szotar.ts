@@ -512,6 +512,109 @@ export const SZOTAR: Szotar = {
   },
   "valasz.elkuldve": { hu: "Elküldve.", en: "Sent." },
 
+  // --- Betekintő nézet
+  "nav.betekinto": { hu: "Betekintő", en: "Reference" },
+  "betekinto.oldal.cim": { hu: "Betekintő a fizetési előzményemre", en: "A reference on my payment history" },
+  "betekinto.oldal.bevezeto": {
+    hu: "Ha új lakást keresel, a leendő bérbeadó rendszerint nem tud semmit rólad. Ezzel a linkkel megmutathatod neki, hogyan fizettél eddig. Az adat nem a te bemondásod: a mostani bérbeadód bankszámlakivonatából jön, amit ez az alkalmazás párosított az előírásokkal.",
+    en: "When you look for a new flat, the prospective landlord knows nothing about you. This link lets you show how you have paid so far. It is not your own word: the data comes from your current landlord's bank statement, matched against the scheduled items by this app.",
+  },
+  "betekinto.oldal.mit_nem": {
+    hu: "A link nem árulja el a bérbeadód nevét, a pontos címet, a lakótársaid nevét és semmilyen személyes adatot. Bármikor visszavonhatod, és magától is lejár.",
+    en: "The link does not reveal your landlord's name, the exact address, your flatmates' names or any personal data. You can revoke it at any time, and it expires on its own.",
+  },
+  "betekinto.urlap.cim": { hu: "Új betekintő", en: "New reference" },
+  "betekinto.urlap.jogviszony": { hu: "Melyik bérleményről?", en: "Which tenancy?" },
+  "betekinto.urlap.cel": { hu: "Mire kéred?", en: "What is it for?" },
+  "betekinto.urlap.cel_sugo": {
+    hu: "Ez a mondat a megnyitott oldal tetején lesz, hogy a másik fél lássa, minek készült.",
+    en: "This sentence appears at the top of the page so the reader can see what it was made for.",
+  },
+  "betekinto.urlap.cel_pelda": { hu: "például: lakásbérléshez", en: "for example: for a flat rental" },
+  "betekinto.urlap.elettartam": { hu: "Meddig éljen?", en: "How long should it live?" },
+  "betekinto.urlap.nap": { hu: "{napok} nap", en: "{napok} days" },
+  "betekinto.urlap.osszeg": { hu: "A bérleti díj összege is látszódjon", en: "Show the rent amount as well" },
+  "betekinto.urlap.osszeg_sugo": {
+    hu: "Alapból nem látszik. A fizetési fegyelemhez nem kell tudni, mennyit fizetsz.",
+    en: "Off by default. How much you pay is not needed to judge how you pay.",
+  },
+  "betekinto.urlap.gomb": { hu: "Betekintő készítése", en: "Create reference" },
+  "betekinto.lista.cim": { hu: "Kiadott linkjeim", en: "Links I have issued" },
+  "betekinto.lista.ures": { hu: "Még nem adtál ki betekintőt.", en: "You have not issued a reference yet." },
+  "betekinto.lista.lejar": { hu: "Lejár: {nap}", en: "Expires: {nap}" },
+  "betekinto.lista.megnyitas": { hu: "Megnyitva {darab} alkalommal", en: "Opened {darab} times" },
+  "betekinto.lista.megnyitas_soha": { hu: "Még nem nyitották meg", en: "Not opened yet" },
+  "betekinto.lista.utoljara": { hu: "Utoljára: {nap}", en: "Last time: {nap}" },
+  "betekinto.lista.visszavon": { hu: "Visszavonom", en: "Revoke" },
+  "betekinto.allapot.elo": { hu: "Él", en: "Live" },
+  "betekinto.allapot.lejart": { hu: "Lejárt", en: "Expired" },
+  "betekinto.allapot.visszavonva": { hu: "Visszavonva", en: "Revoked" },
+  "betekinto.nyilvanos.cim": { hu: "Fizetési előzmény", en: "Payment history" },
+  "betekinto.nyilvanos.berlo": { hu: "{nev} bérlő fizetési előzménye", en: "Payment history of {nev}" },
+  "betekinto.nyilvanos.telepules": { hu: "A bérlemény települése: {telepules}", en: "The flat is in {telepules}" },
+  "betekinto.nyilvanos.kezdete": { hu: "A jogviszony kezdete: {nap}", en: "Tenancy started: {nap}" },
+  "betekinto.nyilvanos.el": { hu: "A jogviszony jelenleg is él.", en: "The tenancy is still running." },
+  "betekinto.nyilvanos.lezart": { hu: "A jogviszony már lezárult.", en: "The tenancy has ended." },
+  "betekinto.nyilvanos.dij": { hu: "Havi bérleti díj: {dij}", en: "Monthly rent: {dij}" },
+  "betekinto.nyilvanos.honnan": {
+    hu: "Ezek a számok a bérbeadó által feltöltött bankszámlakivonatból származnak, a kivonat sorait az alkalmazás párosította az előírt tételekkel. Nem a bérlő bejelentése.",
+    en: "These numbers come from the bank statement uploaded by the landlord; the app matched its lines against the scheduled items. They are not self-reported by the tenant.",
+  },
+  "betekinto.nyilvanos.nincs_pontszam": {
+    hu: "Pontszámot szándékosan nem adunk. A súlyozás, amit mi találnánk ki, mérésnek látszana; ítélni az olvasó dolga.",
+    en: "We deliberately give no score. A weighting we invented would look like a measurement; judging is the reader's job.",
+  },
+  "betekinto.nyilvanos.kiadva": { hu: "A bérlő adta ki {nap} napján, lejár {lejar} napján.", en: "Issued by the tenant on {nap}, expires on {lejar}." },
+  "betekinto.nyilvanos.nincs": { hu: "Ez a link lejárt vagy visszavonták.", en: "This link has expired or was revoked." },
+  "betekinto.nyilvanos.nincs_bevezeto": {
+    hu: "A betekintő linkek szándékosan rövid életűek. Kérd meg a bérlőt, hogy adjon ki újat.",
+    en: "Reference links are deliberately short-lived. Ask the tenant to issue a new one.",
+  },
+  "betekinto.mondat.nincs_adat": {
+    hu: "Erre a bérleményre még nem járt le egyetlen fizetési határidő sem, tehát nincs mit mutatni.",
+    en: "No payment has fallen due for this tenancy yet, so there is nothing to show.",
+  },
+  "betekinto.mondat.honapok": {
+    hu: "Eddig {honapok} hónapra volt esedékes bérleti díj.",
+    en: "Rent has fallen due for {honapok} months so far.",
+  },
+  "betekinto.mondat.hataridore": {
+    hu: "Ebből {hataridore} hónapban a határidőig megérkezett a pénz.",
+    en: "Of these, the money arrived by the due date in {hataridore} months.",
+  },
+  "betekinto.mondat.kesve": {
+    hu: "{kesve} hónapban késve érkezett, átlagosan {atlag} nappal; a leghosszabb késés {leghosszabb} nap volt.",
+    en: "In {kesve} months it arrived late, by {atlag} days on average; the longest delay was {leghosszabb} days.",
+  },
+  "betekinto.mondat.hianyzo": {
+    hu: "{hianyzo} hónapra nem érkezett beazonosítható befizetés.",
+    en: "In {hianyzo} months no identifiable payment arrived.",
+  },
+  "betekinto.mondat.eltero": {
+    hu: "{eltero} hónapban a beérkezett összeg eltért az előírttól.",
+    en: "In {eltero} months the amount received differed from the scheduled one.",
+  },
+  "betekinto.mondat.sorozat": {
+    hu: "A legutóbbi {sorozat} hónapban mindig határidőre érkezett.",
+    en: "In the last {sorozat} months it always arrived on time.",
+  },
+  "valasz.betekinto_kesz": {
+    hu: "Kész. A linket alább másolhatod ki.",
+    en: "Done. You can copy the link below.",
+  },
+  "valasz.betekinto_visszavonva": {
+    hu: "Visszavonva; a link mostantól nem nyílik meg.",
+    en: "Revoked; the link will no longer open.",
+  },
+  "valasz.betekinto_nincs_jogviszony": {
+    hu: "Ehhez a bérleményhez nem tartozol, ezért nem adhatsz ki róla betekintőt.",
+    en: "You are not a tenant of this flat, so you cannot issue a reference about it.",
+  },
+  "valasz.betekinto_cel_kell": {
+    hu: "Írd be, mire kéred; enélkül a másik fél nem tudja, mit néz.",
+    en: "Say what it is for; without that the reader does not know what they are looking at.",
+  },
+
   // --- Jogi tájékoztatók
   "jogi.adatkezeles": { hu: "Adatkezelési tájékoztató", en: "Privacy notice" },
   "jogi.feltetelek": { hu: "Felhasználási feltételek", en: "Terms of use" },

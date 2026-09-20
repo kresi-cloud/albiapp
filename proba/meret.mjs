@@ -7,7 +7,7 @@
  * táblázatot, és a gomb kicsúszik a képernyőről.
  */
 
-import { ALAP, SZELESSEG, all, belep, magyarra } from "./kozos.mjs";
+import { ALAP, SZELESSEG, all, belep, magyarra, tullogas } from "./kozos.mjs";
 
 const BERBEADOI = [
   "/",
@@ -22,22 +22,17 @@ const BERBEADOI = [
   "/beallitasok",
 ];
 
-const BERLOI = ["/berlo", "/berlo/hibak", "/berlo/dokumentumok"];
+const BERLOI = ["/berlo", "/berlo/hibak", "/berlo/dokumentumok", "/berlo/betekinto"];
 
+// A betekintő nyilvános oldala szándékosan hiányzik: a megnyitása számít, és
+// azt a saját próbája méri. Az oldal méretét ott ellenőrizzük.
 const NYILVANOS = ["/belepes", "/jogi/adatkezeles", "/jogi/feltetelek"];
-
-async function kilog(oldal) {
-  return oldal.evaluate(() => {
-    const gyoker = document.documentElement;
-    return gyoker.scrollWidth - gyoker.clientWidth;
-  });
-}
 
 async function vizsgal(oldal, utvonalak) {
   for (const utvonal of utvonalak) {
     await oldal.goto(`${ALAP}${utvonal}`);
     await oldal.waitForLoadState("networkidle");
-    const tobblet = await kilog(oldal);
+    const tobblet = await tullogas(oldal);
     all(tobblet <= 1, `${utvonal} elfér ${SZELESSEG} képponton (túllógás: ${tobblet}px)`);
   }
 }

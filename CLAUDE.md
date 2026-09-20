@@ -148,6 +148,22 @@ véglegesített szerződést és jegyzőkönyvet, kiadott elszámolást, neki ki
 igazolást. Tervezetet nem, mert az még változhat. Az igazolás névre szól, ezért a
 lakótárs igazolását a bérlő nem látja.
 
+## A betekintő alapelve
+
+A bérlőszűrés jogilag korlátos, és jó okkal. A betekintő ugyanannyit old meg a
+másik irányból: nem a bérbeadó kutat a bérlő után, hanem a bérlő ad ki magáról
+egy igazolható előzményt, akkor és annak, akinek akarja.
+
+Három dolog teszi használhatóvá. Az adat nem a bérlő bemondása, hanem abból jön,
+amit a mostani bérbeadó bankszámlakivonata igazol. Pontszámot nem adunk: a
+súlyozás, amit mi találnánk ki, mérésnek látszana, pedig nem az. És szűk: se
+bérbeadói név, se pontos cím (csak település), se személyes adat, se más bérlő —
+ha egy adat nem a fizetési fegyelemről szól, nincs ott helye.
+
+A link rövid életű, a bérlő bármikor visszavonja, és a megnyitásból csak az
+időpontot tároljuk. IP-t és böngészőazonosítót nem: a bérlőnek az számít,
+hányszor nézték meg.
+
 ## Jogi tájékoztatók
 
 Az adatkezelési tájékoztató és a felhasználási feltételek szövege

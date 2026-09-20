@@ -66,6 +66,10 @@ const ADATKEZELES: Record<Nyelv, JogiOldal> = {
             "mit írt be.",
           "A bérlő csak a saját jogviszonyához tartozó adatot látja, és a névre szóló " +
             "igazolásából is csak a sajátját.",
+          "A betekintő linket a bérlő adja ki a saját fizetési előzményéről, és bármikor " +
+            "visszavonhatja. A link nem tartalmazza a bérbeadó nevét, a pontos címet, a " +
+            "lakótársak nevét és semmilyen személyes adatot, és magától is lejár. A " +
+            "megnyitásáról csak az időpontot tároljuk.",
         ],
       },
       {
@@ -138,6 +142,10 @@ const ADATKEZELES: Record<Nyelv, JogiOldal> = {
             "about what anyone typed.",
           "A tenant only sees data belonging to their own tenancy, and only their own personal " +
             "certificates.",
+          "The reference link is issued by the tenant about their own payment history, and can " +
+            "be revoked at any time. It contains no landlord name, no exact address, no " +
+            "flatmate names and no personal data, and it expires on its own. Of an opening we " +
+            "store only the time.",
         ],
       },
       {
