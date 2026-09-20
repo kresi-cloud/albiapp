@@ -11,27 +11,25 @@
  * tervezetet nem mutatunk neki, mert a tervezet még változhat.
  */
 
+import { uzenet, type Uzenet } from "./nyelv";
 import { forint, datum } from "./penz";
 import { simaSzokoz } from "./szerzodes";
 
 export type DokumentumFajta = "szerzodes" | "jegyzokonyv" | "igazolas" | "elszamolas";
 
-export const FAJTA_CIMKE: Record<DokumentumFajta, string> = {
-  szerzodes: "Bérleti szerződés",
-  jegyzokonyv: "Jegyzőkönyv",
-  igazolas: "Bérbeadói igazolás",
-  elszamolas: "Rezsielszámolás",
-};
+export function fajtaCimke(fajta: DokumentumFajta): Uzenet {
+  return uzenet(`dokumentum.fajta.${fajta}`);
+}
 
 export type Dokumentum = {
   kulcs: string;
   fajta: DokumentumFajta;
   cim: string;
-  reszlet: string;
+  reszlet: Uzenet;
   datum: Date;
   /** Kiadott okirat-e. Ami nem az, az tervezet, és a bérlő elől rejtve marad. */
   kiadott: boolean;
-  allapotCimke: string;
+  allapotCimke: Uzenet;
   jogviszonyId: string;
   jogviszonyCimke: string;
   /** A szerkesztő oldal; csak a bérbeadónak van ilyen. */
@@ -81,13 +79,6 @@ export type TarJogviszony = {
   elszamolasok: TarElszamolas[];
 };
 
-const ELSZAMOLAS_ALLAPOT: Record<string, string> = {
-  tervezet: "tervezet",
-  kiadva: "kiadva, a bérlő elbírálására vár",
-  elfogadva: "a bérlő elfogadta",
-  vitatott: "a bérlő vitatja",
-};
-
 /** Egy jogviszony minden papírja, időrendben, a legfrissebbel elöl. */
 export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] {
   const sorok: Dokumentum[] = [];
@@ -100,12 +91,10 @@ export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] 
       kulcs: `szerzodes:${szerzodes.id}`,
       fajta: "szerzodes",
       cim: szerzodes.megnevezes,
-      reszlet: vegleges
-        ? "Aláírásra kész szöveg, a véglegesítéskori állapotban."
-        : "Tervezet: a modulok és a paraméterek még változtathatók.",
+      reszlet: uzenet(vegleges ? "dokumentum.szerzodes.kesz" : "dokumentum.szerzodes.tervezet"),
       datum: szerzodes.veglegesitve ?? szerzodes.letrehozva,
       kiadott: vegleges,
-      allapotCimke: vegleges ? "véglegesítve" : "tervezet",
+      allapotCimke: uzenet(vegleges ? "dokumentum.veglegesitve" : "dokumentum.tervezet"),
       megnyitas: `/szerzodesek/${szerzodes.id}`,
       letoltes: `/szerzodesek/${szerzodes.id}/letoltes`,
     });
@@ -118,10 +107,10 @@ export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] 
       kulcs: `jegyzokonyv:${jegyzokonyv.id}`,
       fajta: "jegyzokonyv",
       cim: jegyzokonyv.fajtaNeve,
-      reszlet: `Felvéve ${datum(jegyzokonyv.idopont)}.`,
+      reszlet: uzenet("dokumentum.jegyzokonyv.felveve", { nap: datum(jegyzokonyv.idopont) }),
       datum: jegyzokonyv.veglegesitve ?? jegyzokonyv.idopont,
       kiadott: vegleges,
-      allapotCimke: vegleges ? "véglegesítve" : "tervezet",
+      allapotCimke: uzenet(vegleges ? "dokumentum.veglegesitve" : "dokumentum.tervezet"),
       megnyitas: `/jegyzokonyvek/${jegyzokonyv.id}`,
       letoltes: `/jegyzokonyvek/${jegyzokonyv.id}/letoltes`,
     });
@@ -133,10 +122,10 @@ export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] 
       kulcs: `igazolas:${igazolas.id}`,
       fajta: "igazolas",
       cim: `${igazolas.berloNev} · ${igazolas.idoszakCimke}`,
-      reszlet: `Igazolt befizetés: ${forint(igazolas.osszegFt)}.`,
+      reszlet: uzenet("dokumentum.igazolas.osszeg", { osszeg: igazolas.osszegFt }),
       datum: igazolas.kiallitva,
       kiadott: true,
-      allapotCimke: "kiállítva",
+      allapotCimke: uzenet("dokumentum.kiallitva"),
       letoltes: `/igazolasok/${igazolas.id}/letoltes`,
     });
   }
@@ -148,10 +137,10 @@ export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] 
       kulcs: `elszamolas:${elszamolas.id}`,
       fajta: "elszamolas",
       cim: `${datum(elszamolas.idoszakKezdete)} – ${datum(elszamolas.idoszakVege)}`,
-      reszlet: `Végösszeg: ${forint(elszamolas.osszegFt)}.`,
+      reszlet: uzenet("dokumentum.elszamolas.vegosszeg", { osszeg: elszamolas.osszegFt }),
       datum: elszamolas.kiadva ?? elszamolas.idoszakVege,
       kiadott,
-      allapotCimke: ELSZAMOLAS_ALLAPOT[elszamolas.allapot] ?? elszamolas.allapot,
+      allapotCimke: uzenet(`dokumentum.elszamolas.allapot.${elszamolas.allapot}`),
       letoltes: kiadott ? `/elszamolasok/${elszamolas.id}/letoltes` : undefined,
     });
   }

@@ -21,9 +21,9 @@ describe("surgosseg", () => {
 describe("teendoketRendez", () => {
   it("a lejárt kerül előre, azon belül a régebbi", () => {
     const teendok: TeendoSurgosseggel[] = [
-      { kulcs: "c", cimzett: "berlo", tipus: "x", cim: "közeli", esedekesseg: new Date(Date.UTC(2026, 8, 24)), surgosseg: "kozeli" },
-      { kulcs: "a", cimzett: "berlo", tipus: "x", cim: "régen lejárt", esedekesseg: new Date(Date.UTC(2026, 8, 5)), surgosseg: "lejart" },
-      { kulcs: "b", cimzett: "berlo", tipus: "x", cim: "most lejárt", esedekesseg: new Date(Date.UTC(2026, 8, 19)), surgosseg: "lejart" },
+      { kulcs: "c", cimzett: "berlo", tipus: "x", cim: { kulcs: "teendo.kozelgo" }, esedekesseg: new Date(Date.UTC(2026, 8, 24)), surgosseg: "kozeli" },
+      { kulcs: "a", cimzett: "berlo", tipus: "x", cim: { kulcs: "teendo.kozelgo" }, esedekesseg: new Date(Date.UTC(2026, 8, 5)), surgosseg: "lejart" },
+      { kulcs: "b", cimzett: "berlo", tipus: "x", cim: { kulcs: "teendo.kozelgo" }, esedekesseg: new Date(Date.UTC(2026, 8, 19)), surgosseg: "lejart" },
     ];
     expect(teendoketRendez(teendok).map((teendo) => teendo.kulcs)).toEqual(["a", "b", "c"]);
   });

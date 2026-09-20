@@ -1,15 +1,16 @@
-import { datum } from "@/domain/penz";
+import { datumNyelven, type Nyelv } from "@/domain/nyelv";
+import { szovegekNyelvvel } from "@/domain/szotar";
 import {
-  ALLAPOT_NEVE,
+  allapotNeve,
   keses,
   koltsegJavaslat,
   lepesek,
   nyitott,
-  OK_NEVE,
-  SURGOSSEG_NEVE,
-  TERULET_NEVE,
+  okNeve,
+  surgossegNeve,
+  teruletNeve,
   valaszHatarido,
-  VISELO_NEVE,
+  viseloNeve,
 } from "@/domain/hibabejelentes";
 import type { HibaNezet } from "@/lib/hibabejelentes";
 import { AllapotLepesek, UzenetUrlap, ViseloUrlap } from "@/app/hibak/Urlapok";
@@ -29,13 +30,16 @@ export function Hibakartya({
   hiba,
   szerep,
   ma,
+  nyelv = "hu",
   berlemenyCimke,
 }: {
   hiba: HibaNezet;
   szerep: "berbeado" | "berlo";
   ma: Date;
+  nyelv?: Nyelv;
   berlemenyCimke?: string;
 }) {
+  const { sz, u } = szovegekNyelvvel(nyelv);
   const javaslat = koltsegJavaslat(hiba.terulet, hiba.ok);
   const varakozas = keses(hiba.surgosseg, hiba.bejelentve, ma);
   const hatarido = valaszHatarido(hiba.surgosseg, hiba.bejelentve);
@@ -51,19 +55,20 @@ export function Hibakartya({
         <span
           className={`rounded-full px-2 py-0.5 text-xs font-medium ${SURGOSSEG_STILUS[hiba.surgosseg]}`}
         >
-          {SURGOSSEG_NEVE[hiba.surgosseg]}
+          {u(surgossegNeve(hiba.surgosseg))}
         </span>
       </div>
 
       <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
         {berlemenyCimke ? `${berlemenyCimke} · ` : ""}
-        {ALLAPOT_NEVE[hiba.allapot]} · bejelentve {datum(hiba.bejelentve)}
+        {u(allapotNeve(hiba.allapot))} ·{" "}
+        {sz("hiba.kartya.bejelentve", { nap: datumNyelven(hiba.bejelentve, nyelv) })}
         {nyitott(hiba.allapot) ? (
           <>
             {" · "}
             <span className={varakozas.lejart ? "text-rose-700 dark:text-rose-400" : ""}>
-              vállalt válasz: {datum(hatarido)}
-              {varakozas.lejart ? " (lejárt)" : ""}
+              {sz("hiba.kartya.hatarido", { nap: datumNyelven(hatarido, nyelv) })}
+              {varakozas.lejart ? sz("hiba.kartya.lejart") : ""}
             </span>
           </>
         ) : null}
@@ -72,16 +77,17 @@ export function Hibakartya({
       <p className="mt-2 text-sm">{hiba.leiras}</p>
 
       <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
-        {TERULET_NEVE[hiba.terulet]} · {OK_NEVE[hiba.ok]} · bejelentette: {hiba.bejelentoNev}
+        {u(teruletNeve(hiba.terulet))} · {u(okNeve(hiba.ok))} ·{" "}
+        {sz("hiba.kartya.bejelento", { nev: hiba.bejelentoNev })}
       </p>
 
       {hiba.viseloFel ? (
         <p className="mt-2 rounded border border-stone-200 bg-stone-50 p-2 text-sm dark:border-stone-800 dark:bg-stone-950">
-          Költségviselő: {VISELO_NEVE[hiba.viseloFel]}
+          {sz("hiba.kartya.viselo", { fel: viseloNeve(hiba.viseloFel) })}
         </p>
       ) : szerep === "berlo" ? (
         <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
-          A költségviselőről a bérbeadó még nem döntött. {javaslat.indoklas}
+          {sz("hiba.kartya.nincs_viselo", { indoklas: javaslat.indoklas })}
         </p>
       ) : null}
 
@@ -90,10 +96,10 @@ export function Hibakartya({
           {hiba.uzenetek.map((uzenet) => (
             <li key={uzenet.id} className="text-sm">
               <span className="font-medium">
-                {uzenet.sajat ? "Te" : uzenet.szerzoNev}
+                {uzenet.sajat ? sz("hiba.kartya.te") : uzenet.szerzoNev}
               </span>
               <span className="ml-2 text-xs text-stone-500 dark:text-stone-400">
-                {datum(uzenet.letrehozva)}
+                {datumNyelven(uzenet.letrehozva, nyelv)}
               </span>
               <p className="text-stone-700 dark:text-stone-300">{uzenet.szoveg}</p>
             </li>
@@ -101,13 +107,18 @@ export function Hibakartya({
         </ul>
       ) : null}
 
-      <AllapotLepesek hibaId={hiba.id} lepesek={lehet} />
+      <AllapotLepesek hibaId={hiba.id} lepesek={lehet} nyelv={nyelv} />
 
       {szerep === "berbeado" ? (
-        <ViseloUrlap hibaId={hiba.id} jelenlegi={hiba.viseloFel} javaslat={javaslat} />
+        <ViseloUrlap
+          hibaId={hiba.id}
+          jelenlegi={hiba.viseloFel}
+          javaslat={javaslat}
+          nyelv={nyelv}
+        />
       ) : null}
 
-      {nyitott(hiba.allapot) ? <UzenetUrlap hibaId={hiba.id} /> : null}
+      {nyitott(hiba.allapot) ? <UzenetUrlap hibaId={hiba.id} nyelv={nyelv} /> : null}
     </li>
   );
 }

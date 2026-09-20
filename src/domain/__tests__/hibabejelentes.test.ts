@@ -35,7 +35,7 @@ describe("költségviselő javaslata", () => {
   it("a bérlő okozta kár a bérlőé, akkor is, ha épületszerkezeti", () => {
     const javaslat = koltsegJavaslat("epulet", "karokozas");
     expect(javaslat.fel).toBe("berlo");
-    expect(javaslat.indoklas).toMatch(/bérlő/);
+    expect(javaslat.indoklas.kulcs).toBe("hiba.javaslat.karokozas");
   });
 
   it("a központi berendezés a bérbeadóé", () => {
@@ -49,13 +49,13 @@ describe("költségviselő javaslata", () => {
   it("a lakáson belüli elhasználódás megosztott", () => {
     const javaslat = koltsegJavaslat("haztartasi_gep", "elhasznalodas");
     expect(javaslat.fel).toBe("megosztott");
-    expect(javaslat.indoklas).toMatch(/13\. § \(1\)/);
+    expect(javaslat.indoklas.kulcs).toBe("hiba.javaslat.megosztott");
   });
 
   it("ismeretlen oknál a lakáson belül nem tippel", () => {
     const javaslat = koltsegJavaslat("burkolat", "ismeretlen");
     expect(javaslat.fel).toBeNull();
-    expect(javaslat.indoklas).toMatch(/nem tippelek/);
+    expect(javaslat.indoklas.kulcs).toBe("hiba.javaslat.ismeretlen");
   });
 });
 
@@ -105,7 +105,8 @@ describe("teendők a hibákból", () => {
     const teendok = hibakbolTeendok([alap]);
     expect(teendok).toHaveLength(1);
     expect(teendok[0].cimzett).toBe("berbeado");
-    expect(teendok[0].cim).toMatch(/Új hibabejelentés/);
+    expect(teendok[0].cim.kulcs).toBe("teendo.hiba.uj");
+    expect(teendok[0].cim.adatok?.targy).toBe(alap.targy);
     expect(teendok[0].esedekesseg).toEqual(nap("2026-09-18"));
   });
 
@@ -118,7 +119,7 @@ describe("teendők a hibákból", () => {
     const teendok = hibakbolTeendok([{ ...alap, allapot: "elharitva" }]);
     expect(teendok).toHaveLength(1);
     expect(teendok[0].cimzett).toBe("berlo");
-    expect(teendok[0].cim).toMatch(/Erősítsd meg/);
+    expect(teendok[0].cim.kulcs).toBe("teendo.hiba.megerosites");
   });
 
   it("a lezárt és az elutasított hibából nem lesz teendő", () => {

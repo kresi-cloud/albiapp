@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { nyitottHibak } from "@/lib/hibabejelentes";
 import { hibakbolTeendok } from "@/domain/hibabejelentes";
+import { uzenet } from "@/domain/nyelv";
 import { nevsor } from "@/domain/szerzodes";
 import {
   ALAPERTELMEZETT_BEALLITASOK,
@@ -195,8 +196,9 @@ async function tarolt(
     kulcs: sor.kulcs,
     cimzett,
     tipus: sor.tipus,
-    cim: sor.cim,
-    leiras: sor.leiras ?? undefined,
+    // Tárolt teendőnél a szöveget valaki beírta: azt nem fordítjuk, csak átadjuk.
+    cim: uzenet("nyers", { szoveg: sor.cim }),
+    leiras: sor.leiras ? uzenet("nyers", { szoveg: sor.leiras }) : undefined,
     esedekesseg: sor.esedekesseg,
     hivatkozas: sor.hivatkozas ?? undefined,
     tarolt: true,

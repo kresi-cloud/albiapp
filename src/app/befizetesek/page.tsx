@@ -3,6 +3,7 @@ import { Allapotjelzo } from "@/components/Allapotjelzo";
 import { datum, forint } from "@/domain/penz";
 import { egyeztetesBeallitasok, jogviszonyNezetek } from "@/lib/lekerdezesek";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 import { KivonatFeltoltes } from "./KivonatFeltoltes";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function Befizetesek() {
   const berbeado = await kotelezoSzerep("berbeado");
 
+  const { u } = await szovegek();
   const nezetek = await jogviszonyNezetek(berbeado.id);
   const beallitasok = await egyeztetesBeallitasok(berbeado.id);
 
@@ -66,7 +68,7 @@ export default async function Befizetesek() {
                   </div>
 
                   <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-                    {sor.magyarazat}
+                    {u(sor.magyarazat)}
                   </p>
 
                   <dl className="mt-3 grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">

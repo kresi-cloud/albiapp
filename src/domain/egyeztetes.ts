@@ -10,6 +10,7 @@
  * hiányzik.
  */
 
+import { uzenet, type Uzenet } from "./nyelv";
 import { napKulonbseg } from "./penz";
 
 export type EloirtTetel = {
@@ -51,7 +52,8 @@ export type Egyeztetes = {
   elteresOka: ElteresOka | null;
   elteresFt: number;
   keses: number;
-  magyarazat: string;
+  /** Fordítható magyarázat: kulcs és behelyettesítendő adatok. */
+  magyarazat: Uzenet;
 };
 
 export type EgyeztetesBeallitasok = {
@@ -202,11 +204,11 @@ export function egyeztet(
         keses,
         magyarazat: egyezik
           ? keses > 0
-            ? `Megérkezett, ${keses} nappal az esedékesség után.`
-            : "Megérkezett, határidőre."
+            ? uzenet("egyeztetes.keson", { nap: keses })
+            : uzenet("egyeztetes.hataridore")
           : elteres < 0
-            ? `${Math.abs(elteres)} forinttal kevesebb érkezett, mint az előírás.`
-            : `${elteres} forinttal több érkezett, mint az előírás.`,
+            ? uzenet("egyeztetes.kevesebb", { osszeg: Math.abs(elteres) })
+            : uzenet("egyeztetes.tobb", { osszeg: elteres }),
       });
       continue;
     }
@@ -220,8 +222,7 @@ export function egyeztet(
         elteresOka: "nincs_kivonattetel",
         elteresFt: -eloiras.osszegFt,
         keses: Math.max(0, igazolasJelolt.tavolsag),
-        magyarazat:
-          "A bérlő igazolta a befizetést, de a kivonaton nem találtam hozzá tételt.",
+        magyarazat: uzenet("egyeztetes.nincs_kivonattetel"),
       });
       continue;
     }
@@ -235,7 +236,7 @@ export function egyeztet(
         elteresOka: null,
         elteresFt: -eloiras.osszegFt,
         keses: napKulonbseg(eloiras.esedekesseg, ma),
-        magyarazat: "Az esedékesség letelt, és nem érkezett hozzá befizetés.",
+        magyarazat: uzenet("egyeztetes.hianyzik"),
       });
     }
   }
@@ -252,7 +253,7 @@ export function egyeztet(
       elteresOka: "nincs_eloiras",
       elteresFt: kivonattetel.osszegFt,
       keses: 0,
-      magyarazat: "Beérkezett utalás, amihez nem tartozik előírt tétel.",
+      magyarazat: uzenet("egyeztetes.nincs_eloiras"),
     });
   }
 

@@ -9,6 +9,7 @@
  * ugyanaz az elv, mint a be nem sorolható befizetésnél.
  */
 
+import { uzenet, type Uzenet } from "./nyelv";
 import { napEleje, napKulonbseg } from "./penz";
 import type { Teendo } from "./teendok";
 
@@ -36,44 +37,60 @@ export type HibaAllapot =
 
 export type ViseloFel = "berbeado" | "berlo" | "megosztott";
 
-export const TERULET_NEVE: Record<Terulet, string> = {
-  epulet: "Épületszerkezet (fal, tető, csatorna, erkély)",
-  kozponti_berendezes: "Központi berendezés (fűtés, víz-, gáz-, villanyhálózat)",
-  kozos_terulet: "Közös helyiség (lépcsőház, kapu, felvonó)",
-  burkolat: "Burkolat (padló, csempe, festés)",
-  nyilaszaro: "Nyílászáró (ajtó, ablak, zár, redőny)",
-  berendezes: "Lakásberendezés (bútor, szaniter, csaptelep)",
-  haztartasi_gep: "Háztartási gép (hűtő, mosógép, sütő, kazán)",
-  egyeb: "Egyéb",
-};
+export const TERULETEK: Terulet[] = [
+  "epulet",
+  "kozponti_berendezes",
+  "kozos_terulet",
+  "burkolat",
+  "nyilaszaro",
+  "berendezes",
+  "haztartasi_gep",
+  "egyeb",
+];
 
-export const OK_NEVE: Record<Ok, string> = {
-  elhasznalodas: "Magától romlott el, vagy elhasználódott",
-  karokozas: "Mi okoztuk",
-  ismeretlen: "Nem tudom, mitől",
-};
+export const OKOK: Ok[] = ["elhasznalodas", "karokozas", "ismeretlen"];
 
-export const SURGOSSEG_NEVE: Record<HibaSurgosseg, string> = {
-  veszhelyzet: "Veszélyhelyzet",
-  surgos: "Sürgős",
-  normal: "Ráér",
-};
+export const SURGOSSEGEK: HibaSurgosseg[] = ["veszhelyzet", "surgos", "normal"];
 
-export const SURGOSSEG_LEIRAS: Record<HibaSurgosseg, string> = {
-  veszhelyzet:
-    "Csőtörés, gázszag, égett szag, áramütés veszélye, télen leállt fűtés: azonnal intézkedni kell.",
-  surgos: "Használhatatlan a lakás egy része: nincs melegvíz, nem zár az ajtó, nem működik a hűtő.",
-  normal: "Zavaró, de kibírja: csepegő csap, beragadt redőny, repedt csempe.",
-};
+/**
+ * A feliratok a szótárban vannak, mert a bérlő angolul is olvashatja őket. A
+ * domain csak a kulcsot mondja meg; a szöveg egy helyen él.
+ */
+export function teruletNeve(terulet: Terulet): Uzenet {
+  return uzenet(`hiba.terulet.${terulet}`);
+}
 
-export const ALLAPOT_NEVE: Record<HibaAllapot, string> = {
-  bejelentve: "Bejelentve",
-  atvette: "A bérbeadó átvette",
-  folyamatban: "Javítás folyamatban",
-  elharitva: "Elhárítva, a bérlő megerősítésére vár",
-  lezarva: "Lezárva",
-  elutasitva: "Elutasítva",
-};
+export function okNeve(ok: Ok): Uzenet {
+  return uzenet(`hiba.ok.${ok}`);
+}
+
+export function surgossegNeve(surgosseg: HibaSurgosseg): Uzenet {
+  return uzenet(`hiba.surgosseg.${surgosseg}`);
+}
+
+export function surgossegLeirasa(surgosseg: HibaSurgosseg): Uzenet {
+  return uzenet(`hiba.surgosseg_leiras.${surgosseg}`);
+}
+
+export function allapotNeve(allapot: HibaAllapot): Uzenet {
+  return uzenet(`hiba.allapot.${allapot}`);
+}
+
+export function viseloNeve(fel: ViseloFel): Uzenet {
+  return uzenet(`hiba.viselo.${fel}`);
+}
+
+export function lepesCimke(allapot: HibaAllapot): Uzenet {
+  return uzenet(`hiba.lepes.${allapot}`);
+}
+
+/** Veszélyhelyzetnél a bejelentés önmagában kevés: ezt kell addig is tenni. */
+export const VESZELYHELYZETI_TEENDOK: Uzenet[] = [
+  uzenet("hiba.veszely.gaz"),
+  uzenet("hiba.veszely.viz"),
+  uzenet("hiba.veszely.aram"),
+  uzenet("hiba.veszely.telefon"),
+];
 
 /** A nyitott állapotok: ezekre még vár valaki. */
 export const NYITOTT: HibaAllapot[] = ["bejelentve", "atvette", "folyamatban", "elharitva"];
@@ -98,17 +115,9 @@ export function valaszHatarido(surgosseg: HibaSurgosseg, bejelentve: Date): Date
   return new Date(nap.getTime() + VALASZ_NAP[surgosseg] * 24 * 60 * 60 * 1000);
 }
 
-/** Veszélyhelyzetnél a bejelentés önmagában kevés: ezt kell addig is tenni. */
-export const VESZELYHELYZETI_TEENDOK = [
-  "Gázszag esetén ne kapcsolj villanyt, nyiss ablakot, zárd el a gázcsapot, és hívd a 112-t.",
-  "Csőtörésnél zárd el a lakás vízfőcsapját, és ha a víz villanyszerelvényhez ér, kapcsold le a kismegszakítót.",
-  "Égett szagnál vagy szikrázásnál kapcsold le a kismegszakítót, és ne használd az érintett konnektort.",
-  "Telefonon is szólj a bérbeadónak: a bejelentés magától nem csörög.",
-];
-
 export type Javaslat = {
   fel: ViseloFel | null;
-  indoklas: string;
+  indoklas: Uzenet;
 };
 
 /**
@@ -121,46 +130,19 @@ export type Javaslat = {
  */
 export function koltsegJavaslat(terulet: Terulet, ok: Ok): Javaslat {
   if (ok === "karokozas") {
-    return {
-      fel: "berlo",
-      indoklas:
-        "A bérlő vagy az általa beengedett személy okozta kár helyreállítása a szerződés " +
-        "karbantartási pontja szerint a bérlőt terheli.",
-    };
+    return { fel: "berlo", indoklas: uzenet("hiba.javaslat.karokozas") };
   }
 
   if (terulet === "epulet" || terulet === "kozponti_berendezes" || terulet === "kozos_terulet") {
-    return {
-      fel: "berbeado",
-      indoklas:
-        "Épületszerkezeti, központi berendezési vagy közös helyiséget érintő hiba. A lakástörvény " +
-        "13. § (2) bekezdése és a szerződés szerint ez a bérbeadó dolga, függetlenül attól, hogy " +
-        "mitől romlott el.",
-    };
+    return { fel: "berbeado", indoklas: uzenet("hiba.javaslat.berbeadoi") };
   }
 
   if (ok === "ismeretlen") {
-    return {
-      fel: null,
-      indoklas:
-        "Amíg nem derül ki, mitől romlott el, nem tippelek. Nézzétek meg együtt, és utána mondd ki, " +
-        "kit terhel a költség.",
-    };
+    return { fel: null, indoklas: uzenet("hiba.javaslat.ismeretlen") };
   }
 
-  return {
-    fel: "megosztott",
-    indoklas:
-      "Elhasználódás a lakáson belül: a rendes használattal járó kisebb karbantartás a bérlőé, a " +
-      "pótlás és a csere a bérbeadóé (lakástörvény 13. § (1), és a szerződés karbantartási pontja).",
-  };
+  return { fel: "megosztott", indoklas: uzenet("hiba.javaslat.megosztott") };
 }
-
-export const VISELO_NEVE: Record<ViseloFel, string> = {
-  berbeado: "A bérbeadót terheli",
-  berlo: "A bérlőt terheli",
-  megosztott: "Megosztva: karbantartás a bérlőé, csere a bérbeadóé",
-};
 
 /**
  * Ki milyen állapotba viheti a bejelentést. A bérlő nem mondhatja elhárítottnak,
@@ -197,15 +179,6 @@ export function lepesLehetseges(
   return lepesek(allapot, szerep).includes(cel);
 }
 
-export const LEPES_CIMKE: Record<HibaAllapot, string> = {
-  bejelentve: "Visszaállítom bejelentettre",
-  atvette: "Átvettem",
-  folyamatban: "Javítás elindult",
-  elharitva: "Elhárítottam",
-  lezarva: "Rendben van, lezárom",
-  elutasitva: "Elutasítom",
-};
-
 export type HibaTeendohoz = {
   id: string;
   jogviszonyId: string;
@@ -229,8 +202,8 @@ export function hibakbolTeendok(hibak: HibaTeendohoz[]): Teendo[] {
         kulcs: `hiba:${hiba.id}:berlo`,
         cimzett: "berlo",
         tipus: "hiba_megerosites",
-        cim: "Erősítsd meg, hogy a hiba rendben van",
-        leiras: `${hiba.targy}. A bérbeadó elhárítottnak jelölte.`,
+        cim: uzenet("teendo.hiba.megerosites"),
+        leiras: uzenet("teendo.hiba.elharitva", { targy: hiba.targy }),
         esedekesseg: valaszHatarido("normal", hiba.bejelentve),
         hivatkozas: `/berlo/hibak#${hiba.id}`,
       });
@@ -245,9 +218,12 @@ export function hibakbolTeendok(hibak: HibaTeendohoz[]): Teendo[] {
       tipus: "hiba_nyitott",
       cim:
         hiba.allapot === "bejelentve"
-          ? `Új hibabejelentés: ${hiba.targy}`
-          : `Nyitott hiba: ${hiba.targy}`,
-      leiras: `${SURGOSSEG_NEVE[hiba.surgosseg]} · ${ALLAPOT_NEVE[hiba.allapot]}`,
+          ? uzenet("teendo.hiba.uj", { targy: hiba.targy })
+          : uzenet("teendo.hiba.nyitott", { targy: hiba.targy }),
+      leiras: uzenet("teendo.hiba.allapotsor", {
+        surgosseg: surgossegNeve(hiba.surgosseg),
+        allapot: allapotNeve(hiba.allapot),
+      }),
       esedekesseg: valaszHatarido(hiba.surgosseg, hiba.bejelentve),
       hivatkozas: `/hibak#${hiba.id}`,
     });
