@@ -31,6 +31,8 @@ model Felhasznalo {
   oraallasai        Oraallas[]
   beallitasok       Beallitasok?
   berbeadoiAdatok   BerbeadoiAdatok?
+  hibabejelentesei  Hibabejelentes[]  @relation("Hibabejelentesei")
+  hibaUzenetei      HibaUzenet[]      @relation("HibaUzenetei")
 }
 
 /// Bérbeadónkénti egyeztetési beállítások. Az összegtolerancia szándékosan nincs
@@ -147,6 +149,7 @@ model Jogviszony {
   teendok          Teendo[]
   szerzodesek      Szerzodes[]
   jegyzokonyvek    Jegyzokonyv[]
+  hibabejelentesek Hibabejelentes[]
 
   @@index([ingatlanId])
 }
@@ -170,6 +173,8 @@ model JogviszonyBerlo {
   anyjaNeve      String?
   lakcim         String?
   igazolvanySzam String?
+  // Sürgős hibánál a bérbeadó ezen éri el; a szerződés kapcsolattartási pontja is ezt írja.
+  telefon        String?
   sorrend        Int       @default(0)
   letrehozva     DateTime  @default(now())
 
@@ -193,6 +198,8 @@ model BerbeadoiAdatok {
   lakcim         String?
   igazolvanySzam String?
   adoazonosito   String?
+  // Veszélyhelyzetben a bérlő ezt látja a hibabejelentés mellett.
+  telefon        String?
   bankszamla     String?
   bank           String?
   frissitve      DateTime  @updatedAt
@@ -489,4 +496,51 @@ model Igazolas {
   jogviszonyBerlo JogviszonyBerlo @relation(fields: [jogviszonyBerloId], references: [id], onDelete: Cascade)
 
   @@index([jogviszonyBerloId, idoszak])
+}
+
+/// Hibabejelentés: a bérlő jelzi, mi romlott el, a bérbeadó pedig végigviszi.
+///
+/// A bejelentés és az elhárítás két külön esemény, és egyik sem írja felül a
+/// másikat: a bérbeadó jelöli elhárítottnak, a bérlő erősíti meg, hogy tényleg
+/// rendben van. Ugyanaz a kétoldali elv, mint a befizetésnél.
+///
+/// A költségviselőre az alkalmazás javaslatot tesz a szerződés karbantartási
+/// pontja alapján, de nem dönt helyette: a `viseloFel` csak akkor kerül bele,
+/// ha a bérbeadó kimondta.
+model Hibabejelentes {
+  id           String    @id @default(cuid())
+  jogviszonyId String
+  bejelentoId  String
+  targy        String
+  leiras       String
+  terulet      String // "epulet" | "kozponti_berendezes" | "kozos_terulet" | "burkolat" | "nyilaszaro" | "berendezes" | "haztartasi_gep" | "egyeb"
+  ok           String    @default("ismeretlen") // "elhasznalodas" | "karokozas" | "ismeretlen"
+  surgosseg    String // "veszhelyzet" | "surgos" | "normal"
+  allapot      String    @default("bejelentve") // "bejelentve" | "atvette" | "folyamatban" | "elharitva" | "lezarva" | "elutasitva"
+  viseloFel    String? // "berbeado" | "berlo" | "megosztott" — csak ha a bérbeadó kimondta
+  bejelentve   DateTime  @default(now())
+  atvetve      DateTime?
+  elharitva    DateTime?
+  lezarva      DateTime?
+
+  jogviszony Jogviszony   @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  bejelento  Felhasznalo  @relation("Hibabejelentesei", fields: [bejelentoId], references: [id])
+  uzenetek   HibaUzenet[]
+
+  @@index([jogviszonyId, allapot])
+}
+
+/// A hibabejelentés beszélgetése. Külön sorokban, mert a két fél egymás
+/// üzeneteit nem írhatja át, és utólag is látszik, ki mit ígért és mikor.
+model HibaUzenet {
+  id               String   @id @default(cuid())
+  hibabejelentesId String
+  szerzoId         String
+  szoveg           String
+  letrehozva       DateTime @default(now())
+
+  hibabejelentes Hibabejelentes @relation(fields: [hibabejelentesId], references: [id], onDelete: Cascade)
+  szerzo         Felhasznalo    @relation("HibaUzenetei", fields: [szerzoId], references: [id])
+
+  @@index([hibabejelentesId, letrehozva])
 }

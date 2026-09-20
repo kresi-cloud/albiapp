@@ -829,11 +829,20 @@ export const MODULOK: ModulDef[] = [
     ],
     szoveg: (k) => {
       const sorok: string[] = [];
-      const berbeadoSor = [k.berbeado.lakcim, k.berbeado.email].filter(Boolean).join("; e-mail: ");
-      if (berbeadoSor) sorok.push(`A Bérbeadó kapcsolattartási címe: ${berbeadoSor}`);
+      const elerhetoseg = (fel: { lakcim?: string | null; email?: string | null; telefon?: string | null }) =>
+        [
+          fel.lakcim,
+          fel.email ? `e-mail: ${fel.email}` : null,
+          fel.telefon ? `telefon: ${fel.telefon}` : null,
+        ]
+          .filter(Boolean)
+          .join("; ");
+
+      const berbeadoSor = elerhetoseg(k.berbeado);
+      if (berbeadoSor) sorok.push(`A Bérbeadó kapcsolattartási adatai: ${berbeadoSor}`);
       for (const berlo of k.berlok) {
-        const sor = [berlo.lakcim, berlo.email].filter(Boolean).join("; e-mail: ");
-        if (sor) sorok.push(`${berlo.nev} bérlő kapcsolattartási címe: ${sor}`);
+        const sor = elerhetoseg(berlo);
+        if (sor) sorok.push(`${berlo.nev} bérlő kapcsolattartási adatai: ${sor}`);
       }
 
       sorok.push(

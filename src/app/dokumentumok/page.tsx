@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { Dokumentumlista } from "@/components/Dokumentumlista";
 import { datum, forint } from "@/domain/penz";
 import { idoszakCimke } from "@/domain/igazolas";
 import { FAJTA_NEVE } from "@/domain/jegyzokonyv";
 import { nevsor } from "@/domain/szerzodes";
 import { prisma } from "@/lib/db";
+import { berbeadoTara } from "@/lib/dokumentumtar";
 import { igazolhatoIdoszakok } from "@/lib/igazolas";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { UjIgazolas, UjJegyzokonyv, UjSzerzodes } from "./Urlapok";
@@ -30,6 +32,8 @@ export default async function Dokumentumok() {
     orderBy: { letrehozva: "asc" },
   });
 
+  const tar = await berbeadoTara(berbeado.id);
+
   const idoszakokJogviszonyonkent = new Map(
     await Promise.all(
       jogviszonyok.map(
@@ -48,6 +52,14 @@ export default async function Dokumentumok() {
           az adatból készül, amit már felvettél, ezért nem kell újra begépelni, és
           nem térhet el attól, amit a befizetéseknél látsz.
         </p>
+      </section>
+
+      <section>
+        <h2 className="mb-3 text-lg font-semibold">Kiadott és készülő papírok</h2>
+        <Dokumentumlista
+          dokumentumok={tar}
+          uresUzenet="Még nincs dokumentum. Lentebb tudsz szerződést, jegyzőkönyvet vagy igazolást készíteni."
+        />
       </section>
 
       {jogviszonyok.map((jogviszony) => {

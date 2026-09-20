@@ -156,3 +156,22 @@ igazol.
 
 Több bérlőnél a bérbeadó megadhatja, mekkora rész igazolt az adott bérlőhöz, és
 az igazolás kiírja az egyetemleges felelősséget is.
+
+## Hibabejelentés
+
+A bérlő a `/berlo/hibak` oldalon jelenti be, mi romlott el: mi a baj, mi romlott
+el, mitől, és mennyire sürgős. A sürgősségből válaszhatáridő lesz, és a bérbeadó
+teendői közé kerül. Veszélyhelyzetnél a felület kiírja az azonnali teendőket
+(főcsap, kismegszakító, 112) és a bérbeadó telefonszámát, mert a bejelentés
+magától nem csörög.
+
+A bérbeadó a `/hibak` oldalon veszi át, indítja el és jelöli elhárítottnak. A
+lezárást a bérlő erősíti meg; ha mégsem jó, visszanyithatja. A költségviselőre az
+alkalmazás javaslatot tesz a szerződés karbantartási pontja alapján, indoklással.
+
+## Dokumentumtár
+
+A `/dokumentumok` oldal tetején és a bérlő `/berlo/dokumentumok` oldalán egy
+listában áll minden papír: szerződés, átadás-átvételi jegyzőkönyv, rezsielszámolás
+és bérbeadói igazolás, időrendben, letöltéssel. A bérlő csak a kiadott okiratokat
+látja, és csak a neki szóló igazolást.

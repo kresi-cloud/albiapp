@@ -73,6 +73,7 @@ export async function berbeadoiAdatokatMent(
     lakcim: szoveg(urlap.get("lakcim")) || null,
     igazolvanySzam: szoveg(urlap.get("igazolvanySzam")) || null,
     adoazonosito: szoveg(urlap.get("adoazonosito")) || null,
+    telefon: szoveg(urlap.get("telefon")) || null,
     bankszamla: szoveg(urlap.get("bankszamla")) || null,
     bank: szoveg(urlap.get("bank")) || null,
   };

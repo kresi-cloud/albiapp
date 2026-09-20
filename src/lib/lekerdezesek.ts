@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db";
+import { nyitottHibak } from "@/lib/hibabejelentes";
+import { hibakbolTeendok } from "@/domain/hibabejelentes";
 import { nevsor } from "@/domain/szerzodes";
 import {
   ALAPERTELMEZETT_BEALLITASOK,
@@ -230,11 +232,13 @@ export async function teendok(
   ma: Date = new Date(),
 ): Promise<TeendoSurgosseggel[]> {
   const nezetek = await jogviszonyNezetek(tulajdonosId, ma);
+  const jogviszonyIdk = nezetek.map((nezet) => nezet.id);
 
   return teendoketRendez(
     [
       ...nezetekbolTeendok(nezetek),
-      ...(await kozelgok(nezetek, nezetek.map((nezet) => nezet.id), ma)),
+      ...(await kozelgok(nezetek, jogviszonyIdk, ma)),
+      ...hibakbolTeendok(await nyitottHibak(jogviszonyIdk)),
       ...(cimzett === "berbeado" ? await tarolt(tulajdonosId, "berbeado") : []),
     ]
       .filter((teendo) => teendo.cimzett === cimzett)
@@ -247,11 +251,13 @@ export async function berloTeendoi(
   ma: Date = new Date(),
 ): Promise<TeendoSurgosseggel[]> {
   const nezetek = await berloNezetei(berloId, ma);
+  const jogviszonyIdk = nezetek.map((nezet) => nezet.id);
 
   return teendoketRendez(
     [
       ...nezetekbolTeendok(nezetek),
-      ...(await kozelgok(nezetek, nezetek.map((nezet) => nezet.id), ma)),
+      ...(await kozelgok(nezetek, jogviszonyIdk, ma)),
+      ...hibakbolTeendok(await nyitottHibak(jogviszonyIdk)),
       ...(await tarolt(berloId, "berlo")),
     ]
       .filter((teendo) => teendo.cimzett === "berlo")

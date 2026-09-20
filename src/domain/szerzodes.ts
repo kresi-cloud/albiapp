@@ -41,6 +41,7 @@ export type Fel = {
   igazolvanySzam?: string | null;
   adoazonosito?: string | null;
   email?: string | null;
+  telefon?: string | null;
 };
 
 export type Berbeado = Fel & { bankszamla?: string | null; bank?: string | null };
@@ -170,10 +171,12 @@ export function betuvel(osszeg: number): string {
  * képernyőn jól néz ki, de a szerződés szövegét sokan kimásolják, keresnek benne
  * vagy Wordbe illesztik, és ott a láthatatlan karakter csak zavar.
  */
+export function simaSzokoz(szoveg: string): string {
+  return szoveg.replace(/[\u00a0\u202f]/g, " ");
+}
+
 export function tagolt(szam: number): string {
-  return new Intl.NumberFormat("hu-HU", { maximumFractionDigits: 0 })
-    .format(szam)
-    .replace(/[\u00a0\u202f]/g, " ");
+  return simaSzokoz(new Intl.NumberFormat("hu-HU", { maximumFractionDigits: 0 }).format(szam));
 }
 
 /** Forint szerződéses alakban: "150 000 Ft, azaz százötvenezer forint". */

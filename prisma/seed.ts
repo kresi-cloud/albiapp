@@ -99,6 +99,7 @@ async function main() {
       lakcim: "1085 Budapest, Minta utca 3.",
       igazolvanySzam: "000000AA",
       adoazonosito: "0000000000",
+      telefon: "+36 1 000 0000",
       bankszamla: "00000000-00000000-00000000",
       bank: "Példa Bank",
     },
@@ -118,6 +119,7 @@ async function main() {
             anyjaNeve: "Példa Katalin",
             lakcim: "4026 Debrecen, Minta tér 8.",
             igazolvanySzam: "111111BB",
+            telefon: "+36 30 000 0001",
             sorrend: 0,
           },
         ],
@@ -344,6 +346,60 @@ async function main() {
           { kulcs: "berlemeny_butorozott", ertek: "igen" },
         ],
       },
+    },
+  });
+
+  // Hibabejelentések: egy nyitott, sürgős, és egy lezárt, hogy mindkét állapot
+  // látszódjon a felületen. Mind kitalált eset.
+  const csaptelep = await prisma.hibabejelentes.create({
+    data: {
+      jogviszonyId: annaJogviszony.id,
+      bejelentoId: berloAnna.id,
+      targy: "Nem melegszik a fürdőszobai radiátor",
+      leiras:
+        "Két napja hideg marad, a többi szobában rendben van a fűtés. Légtelenítettem, nem segített.",
+      terulet: "kozponti_berendezes",
+      ok: "elhasznalodas",
+      surgosseg: "surgos",
+      allapot: "atvette",
+      atvetve: new Date(Date.UTC(2026, 8, 17)),
+      bejelentve: new Date(Date.UTC(2026, 8, 16)),
+      viseloFel: "berbeado",
+    },
+  });
+
+  await prisma.hibaUzenet.createMany({
+    data: [
+      {
+        hibabejelentesId: csaptelep.id,
+        szerzoId: berbeado.id,
+        szoveg: "Szerdán 16 órakor tud jönni a szerelő, megfelel?",
+        letrehozva: new Date(Date.UTC(2026, 8, 17)),
+      },
+      {
+        hibabejelentesId: csaptelep.id,
+        szerzoId: berloAnna.id,
+        szoveg: "Igen, itthon leszek.",
+        letrehozva: new Date(Date.UTC(2026, 8, 17)),
+      },
+    ],
+  });
+
+  await prisma.hibabejelentes.create({
+    data: {
+      jogviszonyId: annaJogviszony.id,
+      bejelentoId: berloAnna.id,
+      targy: "Beragadt a hálószobai redőny",
+      leiras: "A szalag elszakadt, a redőny félig leengedve maradt.",
+      terulet: "nyilaszaro",
+      ok: "elhasznalodas",
+      surgosseg: "normal",
+      allapot: "lezarva",
+      bejelentve: new Date(Date.UTC(2026, 7, 3)),
+      atvetve: new Date(Date.UTC(2026, 7, 3)),
+      elharitva: new Date(Date.UTC(2026, 7, 6)),
+      lezarva: new Date(Date.UTC(2026, 7, 7)),
+      viseloFel: "megosztott",
     },
   });
 
