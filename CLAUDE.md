@@ -57,6 +57,19 @@ kerekítetlen összeg kerekítése: a bérlő össze fogja adni a sorokat.
 Az éves kedvezményes keret az elszámolt napokra arányosítva jár. Minden tételhez
 tartozik emberi nyelvű részletezés; számot magyarázat nélkül nem küldünk ki.
 
+## Az adóösszesítő alapelve
+
+Összesítő, nem bevallás; a felület is ezt mondja. A bevétel pénzforgalmi: a
+párosított kivonattételekből számol, nem az előírásokból.
+
+A fogyasztás szerint mért, továbbhárított közüzemi díj nem bevétel; az átalány
+igen. Vegyes elszámolásnál a befizetés a tételek arányában oszlik meg, és a
+kerekítés maradéka a nem mért részre kerül, hogy a két rész összege pontosan a
+befizetés legyen. Minden bevételi sor mellé indoklás kerül.
+
+Amit nem tudunk besorolni (előírás nélkül beérkezett pénz), azt nem tippeljük
+meg: külön listán megy a bérbeadóhoz.
+
 ## Mit jelent, hogy kész
 
 - `npx eslint .`, `npm run typecheck`, `npm test` és `npm run build` zöld.

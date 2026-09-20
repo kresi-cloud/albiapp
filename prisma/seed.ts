@@ -18,6 +18,7 @@ const PROBA_JELSZO = "probajelszo2026";
 async function main() {
   const jelszoHash = await jelszotHashel(PROBA_JELSZO);
 
+  await prisma.koltseg.deleteMany();
   await prisma.elszamolasTetel.deleteMany();
   await prisma.elszamolas.deleteMany();
   await prisma.dijszabas.deleteMany();
@@ -60,6 +61,8 @@ async function main() {
       cim: "1092 Budapest, Ráday utca 12. 2/3.",
       alapteruletM2: 38,
       kozosKoltsegFt: 14000,
+      beszerzesiArFt: 58_000_000,
+      beszerzesDatuma: new Date(Date.UTC(2021, 4, 12)),
       meroorak: {
         create: [
           { tipus: "villany", mertekegyseg: "kWh", gyariSzam: "E-884213", almero: false },
@@ -192,6 +195,61 @@ async function main() {
       { tulajdonosId: berbeado.id, jogviszonyId: annaJogviszony.id, konyvelesDatuma: new Date(Date.UTC(2026, 8, 4)), osszegFt: 175000, kozlemeny: "Szeptemberi bérleti díj", partnerNev: "Kovács Anna", forrasFajl: "kivonat-2026-09.csv", sorUjjlenyomat: "pelda-02" },
       { tulajdonosId: berbeado.id, jogviszonyId: annaJogviszony.id, konyvelesDatuma: new Date(Date.UTC(2026, 8, 6)), osszegFt: 14000, kozlemeny: "Közös költség", partnerNev: "Kovács Anna", forrasFajl: "kivonat-2026-09.csv", sorUjjlenyomat: "pelda-03" },
       { tulajdonosId: berbeado.id, jogviszonyId: tamasJogviszony.id, konyvelesDatuma: new Date(Date.UTC(2026, 7, 9)), osszegFt: 240000, kozlemeny: "Augusztus", partnerNev: "Szabó Tamás", forrasFajl: "kivonat-2026-08.csv", sorUjjlenyomat: "pelda-04" },
+    ],
+  });
+
+  // Egy kiadott és befizetett rezsielszámolás, hogy az adóösszesítőn látszódjon
+  // a lényeg: a mért fogyasztás nem bevétel, a közös költség viszont igen.
+  const rezsiEloiras = await prisma.eloirtTetel.create({
+    data: {
+      jogviszonyId: annaJogviszony.id,
+      tipus: "rezsi",
+      idoszak: "2026-09",
+      esedekesseg: new Date(Date.UTC(2026, 8, 15)),
+      osszegFt: 71513,
+    },
+  });
+
+  const rezsiElszamolas = await prisma.elszamolas.create({
+    data: {
+      jogviszonyId: annaJogviszony.id,
+      idoszakKezdete: new Date(Date.UTC(2026, 6, 1)),
+      idoszakVege: new Date(Date.UTC(2026, 8, 1)),
+      allapot: "elfogadva",
+      osszegFt: 71513,
+      eloirtTetelId: rezsiEloiras.id,
+      kiadva: new Date(Date.UTC(2026, 8, 5)),
+      lezarva: new Date(Date.UTC(2026, 8, 6)),
+      tetelek: {
+        create: [
+          { fajta: "meroora", megnevezes: "Villany", mennyiseg: 685, mertekegyseg: "kWh", reszletezes: "12 480 → 13 165 kWh, 62 nap. Ebből 428,56 kWh kedvezményes áron (36,9 Ft/kWh), a keret fölötti 256,44 kWh piaci áron (70,1 Ft/kWh). Alapdíj 62 napra: 1835 Ft.", osszegFt: 35625, sorrend: 0 },
+          { fajta: "meroora", megnevezes: "Víz (almérő)", mennyiseg: 9.2, mertekegyseg: "m3", reszletezes: "214,2 → 223,4 m3, 62 nap. Mind a kedvezményes sávban (799 Ft/m3).", osszegFt: 7351, sorrend: 1 },
+          { fajta: "kozos_koltseg", megnevezes: "Közös költség", reszletezes: "14 000 Ft / hó, 62 napra arányosítva.", osszegFt: 28537, sorrend: 2 },
+        ],
+      },
+    },
+  });
+
+  await prisma.kivonattetel.create({
+    data: {
+      tulajdonosId: berbeado.id,
+      jogviszonyId: annaJogviszony.id,
+      konyvelesDatuma: new Date(Date.UTC(2026, 8, 14)),
+      osszegFt: 71513,
+      kozlemeny: "Rezsielszámolás 2026 nyár",
+      partnerNev: "Kovács Anna",
+      forrasFajl: "kivonat-2026-09.csv",
+      sorUjjlenyomat: "pelda-05",
+    },
+  });
+
+  void rezsiElszamolas;
+
+  await prisma.koltseg.createMany({
+    data: [
+      { ingatlanId: ferencvaros.id, datum: new Date(Date.UTC(2026, 2, 18)), fajta: "felujitas", megnevezes: "Kazán karbantartás, számla 2026/114", osszegFt: 48000 },
+      { ingatlanId: ferencvaros.id, datum: new Date(Date.UTC(2026, 0, 9)), fajta: "biztositas", megnevezes: "Lakásbiztosítás éves díja", osszegFt: 62000 },
+      { ingatlanId: ujbuda.id, datum: new Date(Date.UTC(2026, 5, 2)), fajta: "felujitas", megnevezes: "Fürdőszoba csaptelep csere", osszegFt: 85000 },
     ],
   });
 
