@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { forint } from "@/domain/penz";
 import {
   hianyzoTetelek,
   jegyzokonyvSzovege,
@@ -283,7 +284,7 @@ export async function igazolastKiallit(_elozo: Eredmeny, urlap: FormData): Promi
       : befizetes.osszegFt;
   if (osszegFt > befizetes.osszegFt) {
     return hiba(
-      `Erre a hónapra ${befizetes.osszegFt.toLocaleString("hu-HU")} Ft érkezett; ennél többet nem igazolok.`,
+      `Erre a hónapra ${forint(befizetes.osszegFt)} érkezett; ennél többet nem igazolok.`,
     );
   }
 

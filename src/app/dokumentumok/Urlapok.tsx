@@ -2,18 +2,13 @@
 
 import { useActionState } from "react";
 import { Uzenetsav } from "@/components/Uzenetsav";
+import { forint } from "@/domain/penz";
 import { szerzodestKeszit, type Eredmeny as SzerzodesEredmeny } from "@/app/szerzodesek/actions";
 import { igazolastKiallit, jegyzokonyvetKeszit, type Eredmeny } from "./actions";
+import { MEZO, GOMB, HALVANY_GOMB } from "@/components/urlap";
 
 const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
 const SZERZODES_KEZDETI: SzerzodesEredmeny = { allapot: "ures", uzenet: "", hibak: [] };
-
-const MEZO =
-  "rounded border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-950";
-const GOMB =
-  "justify-self-start rounded bg-stone-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-stone-100 dark:text-stone-900";
-const HALVANY_GOMB =
-  "justify-self-start rounded border border-stone-300 px-3 py-2 text-sm font-medium disabled:opacity-60 dark:border-stone-700";
 
 export function UjSzerzodes({ jogviszonyId }: { jogviszonyId: string }) {
   const [allapot, kuldes, folyamatban] = useActionState(szerzodestKeszit, SZERZODES_KEZDETI);
@@ -83,7 +78,7 @@ export function UjIgazolas({
           <select name="idoszak" className={MEZO} defaultValue={idoszakok[0].idoszak}>
             {idoszakok.map((sor) => (
               <option key={sor.idoszak} value={sor.idoszak}>
-                {sor.cimke} · {sor.osszegFt.toLocaleString("hu-HU")} Ft érkezett
+                {sor.cimke} · {forint(sor.osszegFt)} érkezett
               </option>
             ))}
           </select>

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { kivonatotFeltolt, type FeltoltesEredmeny } from "./actions";
+import { GOMB, MEZO } from "@/components/urlap";
 
 const KEZDETI: FeltoltesEredmeny = {
   allapot: "ures",
@@ -36,7 +37,7 @@ export function KivonatFeltoltes({
         <select
           id="jogviszonyId"
           name="jogviszonyId"
-          className="rounded border border-stone-300 bg-white px-3 py-2 dark:border-stone-700 dark:bg-stone-950"
+          className={MEZO}
           required
         >
           {jogviszonyok.map((jogviszony) => (
@@ -54,7 +55,7 @@ export function KivonatFeltoltes({
           name="kivonat"
           type="file"
           accept=".csv,text/csv,text/plain"
-          className="rounded border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-950"
+          className={MEZO}
           required
         />
       </label>
@@ -62,7 +63,7 @@ export function KivonatFeltoltes({
       <button
         type="submit"
         disabled={folyamatban}
-        className="justify-self-start rounded bg-stone-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-stone-100 dark:text-stone-900"
+        className={GOMB}
       >
         {folyamatban ? "Beolvasás…" : "Feltöltés"}
       </button>

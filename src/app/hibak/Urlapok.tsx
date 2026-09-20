@@ -21,15 +21,9 @@ import {
   type ViseloFel,
 } from "@/domain/hibabejelentes";
 import { hibatBejelent, hibatLep, uzenetetKuld, viselotMent, type Eredmeny } from "./actions";
+import { MEZO, GOMB, APRO_GOMB as HALVANY_GOMB } from "@/components/urlap";
 
 const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
-
-const MEZO =
-  "rounded border border-stone-300 bg-white px-3 py-2 dark:border-stone-700 dark:bg-stone-950";
-const GOMB =
-  "justify-self-start rounded bg-stone-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-stone-100 dark:text-stone-900";
-const HALVANY_GOMB =
-  "rounded border border-stone-300 px-3 py-1.5 text-sm font-medium disabled:opacity-60 dark:border-stone-700";
 
 const VISELOK: ViseloFel[] = ["berbeado", "berlo", "megosztott"];
 

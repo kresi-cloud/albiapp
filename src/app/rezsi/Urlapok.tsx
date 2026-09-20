@@ -9,13 +9,9 @@ import {
   oraallastRogzit,
   type Eredmeny,
 } from "./actions";
+import { MEZO, GOMB } from "@/components/urlap";
 
 const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
-
-const MEZO =
-  "rounded border border-stone-300 bg-white px-3 py-2 text-sm dark:border-stone-700 dark:bg-stone-950";
-const GOMB =
-  "justify-self-start rounded bg-stone-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-stone-100 dark:text-stone-900";
 
 export function OraallasUrlap({
   merooraId,

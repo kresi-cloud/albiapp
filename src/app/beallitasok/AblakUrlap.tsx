@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { beallitasokatMent, type MentesEredmeny } from "./actions";
+import { GOMB, MEZO } from "@/components/urlap";
 
 const KEZDETI: MentesEredmeny = { allapot: "ures", uzenet: "", hibak: [] };
 
@@ -40,7 +41,7 @@ export function AblakUrlap({
             min={0}
             max={maxNap}
             defaultValue={korabbiAblakNap}
-            className="rounded border border-stone-300 bg-white px-3 py-2 tabular-nums dark:border-stone-700 dark:bg-stone-950"
+            className={`${MEZO} tabular-nums`}
             required
           />
         </label>
@@ -55,7 +56,7 @@ export function AblakUrlap({
             min={0}
             max={maxNap}
             defaultValue={kesobbiAblakNap}
-            className="rounded border border-stone-300 bg-white px-3 py-2 tabular-nums dark:border-stone-700 dark:bg-stone-950"
+            className={`${MEZO} tabular-nums`}
             required
           />
         </label>
@@ -64,7 +65,7 @@ export function AblakUrlap({
       <button
         type="submit"
         disabled={folyamatban}
-        className="justify-self-start rounded bg-stone-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-stone-100 dark:text-stone-900"
+        className={GOMB}
       >
         {folyamatban ? "Mentés…" : "Mentés"}
       </button>

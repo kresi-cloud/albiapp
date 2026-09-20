@@ -12,7 +12,7 @@
  */
 
 import { uzenet, type Uzenet } from "./nyelv";
-import { forint, datum } from "./penz";
+import { forint, datum, szam } from "./penz";
 import { simaSzokoz } from "./szerzodes";
 
 export type DokumentumFajta = "szerzodes" | "jegyzokonyv" | "igazolas" | "elszamolas";
@@ -193,11 +193,9 @@ export type ElszamolasIrat = {
 
 function mennyisegSzoveg(tetel: IratTetel): string {
   if (tetel.mennyiseg === null) return "";
-  const szam = simaSzokoz(
-    new Intl.NumberFormat("hu-HU", { maximumFractionDigits: 2 }).format(tetel.mennyiseg),
-  );
+  const mennyiseg = szam(tetel.mennyiseg);
   const egyseg = tetel.mertekegyseg ? ` ${tetel.mertekegyseg}` : "";
-  return ` (${szam}${egyseg})`;
+  return ` (${mennyiseg}${egyseg})`;
 }
 
 /**

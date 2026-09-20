@@ -41,10 +41,25 @@ export function uzenet(kulcs: string, adatok?: Adatok): Uzenet {
 
 export type Szotar = Record<string, Record<Nyelv, string>>;
 
-function szamot(ertek: number, nyelv: Nyelv): string {
-  return new Intl.NumberFormat(helyszin(nyelv), { maximumFractionDigits: 2 })
+/**
+ * Szám a nyelv szokása szerint, ezres tagolással.
+ *
+ * Az Intl nem törő szóközt tesz be, ami a képernyőn jól néz ki, de a
+ * szerződéseket és az elszámolásokat sokan kimásolják, keresnek bennük vagy
+ * Wordbe illesztik, és ott a láthatatlan karakter csak zavar. Ezért közönséges
+ * szóközre cseréljük.
+ *
+ * Ez az alkalmazás egyetlen helye, ahol szám formázódik: az `Intl` hívásokat a
+ * `formatum` kapu ide szorítja, hogy a magyar alak ne csússzon el oldalanként.
+ */
+export function szamNyelven(ertek: number, nyelv: Nyelv, tizedes = 2): string {
+  return new Intl.NumberFormat(helyszin(nyelv), { maximumFractionDigits: tizedes })
     .format(ertek)
     .replace(/[\u00a0\u202f]/g, " ");
+}
+
+function szamot(ertek: number, nyelv: Nyelv): string {
+  return szamNyelven(ertek, nyelv);
 }
 
 function uzenetE(ertek: unknown): ertek is Uzenet {

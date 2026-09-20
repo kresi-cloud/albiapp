@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import type { Nyelv } from "@/domain/nyelv";
 import { szovegekNyelvvel } from "@/domain/szotar";
 import { belep, type BelepesEredmeny } from "./actions";
+import { GOMB, MEZO } from "@/components/urlap";
 
 const KEZDETI: BelepesEredmeny = { allapot: "ures", uzenet: "", email: "" };
 
@@ -25,7 +26,7 @@ export function BelepesUrlap({ nyelv = "hu" }: { nyelv?: Nyelv }) {
           autoComplete="username"
           key={allapot.email}
           defaultValue={allapot.email}
-          className="rounded border border-stone-300 bg-white px-3 py-2 dark:border-stone-700 dark:bg-stone-950"
+          className={MEZO}
           required
         />
       </label>
@@ -37,7 +38,7 @@ export function BelepesUrlap({ nyelv = "hu" }: { nyelv?: Nyelv }) {
           name="jelszo"
           type="password"
           autoComplete="current-password"
-          className="rounded border border-stone-300 bg-white px-3 py-2 dark:border-stone-700 dark:bg-stone-950"
+          className={MEZO}
           required
         />
       </label>
@@ -45,7 +46,7 @@ export function BelepesUrlap({ nyelv = "hu" }: { nyelv?: Nyelv }) {
       <button
         type="submit"
         disabled={folyamatban}
-        className="justify-self-start rounded bg-stone-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-stone-100 dark:text-stone-900"
+        className={GOMB}
       >
         {folyamatban ? sz("belepes.folyamatban") : sz("belepes.gomb")}
       </button>
