@@ -19,7 +19,7 @@ export default async function BerloiNezet() {
     berloNezetei(berlo.id, ma),
     berloTeendoi(berlo.id, ma),
     prisma.jogviszony.findMany({
-      where: { berloId: berlo.id },
+      where: { berlok: { some: { berloId: berlo.id } } },
       include: {
         ingatlan: {
           include: {

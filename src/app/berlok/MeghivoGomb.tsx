@@ -6,11 +6,11 @@ import { meghivotKeszit, type MeghivoEredmeny } from "./actions";
 const KEZDETI: MeghivoEredmeny = { allapot: "ures", uzenet: "", link: "" };
 
 export function MeghivoGomb({
-  jogviszonyId,
+  jogviszonyBerloId,
   email,
   cimke,
 }: {
-  jogviszonyId: string;
+  jogviszonyBerloId: string;
   email: string;
   cimke: string;
 }) {
@@ -18,7 +18,7 @@ export function MeghivoGomb({
 
   return (
     <form action={kuldes} className="mt-3 grid gap-2">
-      <input type="hidden" name="jogviszonyId" value={jogviszonyId} />
+      <input type="hidden" name="jogviszonyBerloId" value={jogviszonyBerloId} />
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">A bérlő e-mail-címe</span>

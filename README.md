@@ -111,3 +111,25 @@ EU-s régióban. Amíg nincs éles adat, a váltás egyetlen migráció újrafut
 
 Pénzösszegek egész forintban (`Int`). A forintnak nincs gyakorlati váltópénze,
 így nincs lebegőpontos kerekítési hiba sem.
+
+## Bérleti szerződés
+
+A `Szerződések` lapon minden jogviszonyhoz készíthető szerződéstervezet. A
+szerződés modulokból áll: a kötelező pontok mindig benne vannak, a többit a
+bérbeadó kapcsolja be, és minden modul mellett ott az egymondatos magyarázat,
+hogy miért érdemes.
+
+A bérlemény, a bérleti díj, az óvadék, a fizetési nap és a bérlők adatai abból
+jönnek, amit a bérbeadó már felvett, ezért nem kell kétszer megadni. A rezsi
+elszámolásának módja is átjön: mérőórás jogviszonynál a szerződés a
+továbbhárításról és a havi leolvasásról szól, átalánynál az átalány összegéről.
+
+Egy jogviszonyhoz több bérlő is tartozhat. Ilyenkor a szöveg többes számra vált,
+bekerül az egyetemleges felelősség pontja, és a felmondás közlését mindegyik
+bérlővel külön-külön írja elő. A bérleti díj továbbra is egyetlen előírt tétel.
+
+A tervezet szövege minden mentés után újraépül. Véglegesítéskor befagy: onnantól
+egy későbbi modulfrissítés sem írja át. A szerződés sima szövegként letölthető.
+
+A modulok ügyvédi ellenjegyzése még nincs meg; a felület ezt minden szerződésnél
+kiírja.

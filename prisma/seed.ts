@@ -60,6 +60,8 @@ async function main() {
       megnevezes: "Ferencvárosi garzon",
       cim: "1092 Budapest, Ráday utca 12. 2/3.",
       alapteruletM2: 38,
+      helyrajziSzam: "38215/0/A/7",
+      energetikaiAzonosito: "HET-00992417",
       kozosKoltsegFt: 14000,
       beszerzesiArFt: 58_000_000,
       beszerzesDatuma: new Date(Date.UTC(2021, 4, 12)),
@@ -78,6 +80,8 @@ async function main() {
       megnevezes: "Újbudai kétszobás",
       cim: "1117 Budapest, Bogdánfy utca 4. 5/2.",
       alapteruletM2: 54,
+      helyrajziSzam: "4188/2/A/12",
+      energetikaiAzonosito: "HET-01044893",
       kozosKoltsegFt: 21000,
       meroorak: {
         create: [{ tipus: "villany", mertekegyseg: "kWh", gyariSzam: "E-552901", almero: false }],
@@ -85,12 +89,39 @@ async function main() {
     },
   });
 
+  // A szerződéshez és az igazolásokhoz kellő adatok. Mind kitalált.
+  await prisma.berbeadoiAdatok.create({
+    data: {
+      berbeadoId: berbeado.id,
+      szuletesiHely: "Szeged",
+      szuletesiIdo: new Date(Date.UTC(1979, 2, 4)),
+      anyjaNeve: "Példa Erzsébet",
+      lakcim: "1085 Budapest, Minta utca 3.",
+      igazolvanySzam: "000000AA",
+      adoazonosito: "0000000000",
+      bankszamla: "00000000-00000000-00000000",
+      bank: "Példa Bank",
+    },
+  });
+
   const annaJogviszony = await prisma.jogviszony.create({
     data: {
       ingatlanId: ferencvaros.id,
-      berloId: berloAnna.id,
-      berloNev: berloAnna.nev,
-      berloEmail: berloAnna.email,
+      berlok: {
+        create: [
+          {
+            berloId: berloAnna.id,
+            nev: berloAnna.nev,
+            email: berloAnna.email,
+            szuletesiHely: "Debrecen",
+            szuletesiIdo: new Date(Date.UTC(1998, 5, 14)),
+            anyjaNeve: "Példa Katalin",
+            lakcim: "4026 Debrecen, Minta tér 8.",
+            igazolvanySzam: "111111BB",
+            sorrend: 0,
+          },
+        ],
+      },
       kezdete: new Date(Date.UTC(2025, 8, 1)),
       berletiDijFt: 180000,
       kozosKoltsegFt: 14000,
@@ -100,11 +131,35 @@ async function main() {
     },
   });
 
+  // Két bérlő egy jogviszonyon: ezen látszik az egyetemleges felelősség és az,
+  // hogy a 240 000 Ft továbbra is egyetlen előírás, akárhányan utalják.
   const tamasJogviszony = await prisma.jogviszony.create({
     data: {
       ingatlanId: ujbuda.id,
-      berloNev: "Szabó Tamás",
-      berloEmail: "tamas@pelda.hu",
+      berlok: {
+        create: [
+          {
+            nev: "Szabó Tamás",
+            email: "tamas@pelda.hu",
+            szuletesiHely: "Győr",
+            szuletesiIdo: new Date(Date.UTC(2005, 9, 25)),
+            anyjaNeve: "Példa Judit",
+            lakcim: "9024 Győr, Minta köz 2.",
+            igazolvanySzam: "222222CC",
+            sorrend: 0,
+          },
+          {
+            nev: "Varga Dóra",
+            email: "dora@pelda.hu",
+            szuletesiHely: "Kaposvár",
+            szuletesiIdo: new Date(Date.UTC(2005, 3, 5)),
+            anyjaNeve: "Példa Zsuzsanna",
+            lakcim: "7400 Kaposvár, Minta sor 11.",
+            igazolvanySzam: "333333DD",
+            sorrend: 1,
+          },
+        ],
+      },
       kezdete: new Date(Date.UTC(2026, 1, 1)),
       berletiDijFt: 240000,
       kozosKoltsegFt: 21000,
@@ -253,12 +308,42 @@ async function main() {
     ],
   });
 
+  const tamas = await prisma.jogviszonyBerlo.findFirstOrThrow({
+    where: { jogviszonyId: tamasJogviszony.id, nev: "Szabó Tamás" },
+  });
+
   const meghivo = await prisma.meghivo.create({
     data: {
-      jogviszonyId: tamasJogviszony.id,
+      jogviszonyBerloId: tamas.id,
       token: meghivoToken(),
       email: "tamas@pelda.hu",
       lejar: meghivoLejarata(new Date()),
+    },
+  });
+
+  // Szerződéstervezet a kétbérlős jogviszonyra, a jellemző modulkészlettel.
+  await prisma.szerzodes.create({
+    data: {
+      jogviszonyId: tamasJogviszony.id,
+      megnevezes: "Bérleti szerződés – Újbudai kétszobás",
+      kelteHelye: "Budapest",
+      kelte: new Date(Date.UTC(2026, 0, 28)),
+      modulok: {
+        create: [
+          "ovadek",
+          "egyetemleges_felelosseg",
+          "allattartas_dohanyzas",
+          "uzleti_hasznalat",
+          "indexalas",
+        ].map((kulcs, sorrend) => ({ kulcs, sorrend })),
+      },
+      parameterek: {
+        create: [
+          { kulcs: "dij_kozlemeny", ertek: "Bogdánfy 5/2 - tárgyév/tárgyhónap" },
+          { kulcs: "kulcs_garnitura", ertek: "2" },
+          { kulcs: "berlemeny_butorozott", ertek: "igen" },
+        ],
+      },
     },
   });
 

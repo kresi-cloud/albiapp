@@ -45,7 +45,7 @@ export async function oraallastRogzit(_elozo: Eredmeny, urlap: FormData): Promis
       ingatlan:
         felhasznalo.szerep === "berbeado"
           ? { tulajdonosId: felhasznalo.id }
-          : { jogviszonyok: { some: { berloId: felhasznalo.id } } },
+          : { jogviszonyok: { some: { berlok: { some: { berloId: felhasznalo.id } } } } },
     },
     include: { oraallasok: { orderBy: { datum: "desc" }, take: 1 } },
   });
@@ -201,7 +201,11 @@ export async function elszamolastElbiral(_elozo: Eredmeny, urlap: FormData): Pro
   }
 
   const elszamolas = await prisma.elszamolas.findFirst({
-    where: { id: elszamolasId, allapot: "kiadva", jogviszony: { berloId: berlo.id } },
+    where: {
+      id: elszamolasId,
+      allapot: "kiadva",
+      jogviszony: { berlok: { some: { berloId: berlo.id } } },
+    },
   });
   if (!elszamolas) return hiba("Ez az elszámolás nem a tiéd, vagy már lezárult.");
 

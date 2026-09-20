@@ -25,11 +25,12 @@ model Felhasznalo {
   letrehozva DateTime @default(now())
 
   ingatlanok        Ingatlan[]
-  berloJogviszonyai Jogviszony[]   @relation("BerloJogviszonyai")
+  berloJogviszonyai JogviszonyBerlo[] @relation("BerloJogviszonyai")
   kivonattetelei    Kivonattetel[]
   teendoi           Teendo[]
   oraallasai        Oraallas[]
   beallitasok       Beallitasok?
+  berbeadoiAdatok   BerbeadoiAdatok?
 }
 
 /// Bérbeadónkénti egyeztetési beállítások. Az összegtolerancia szándékosan nincs
@@ -45,16 +46,20 @@ model Beallitasok {
 }
 
 model Ingatlan {
-  id              String    @id @default(cuid())
-  tulajdonosId    String
-  megnevezes      String
-  cim             String
-  alapteruletM2   Int?
-  kozosKoltsegFt  Int?
+  id                   String    @id @default(cuid())
+  tulajdonosId         String
+  megnevezes           String
+  cim                  String
+  alapteruletM2        Int?
+  // A szerződéshez kell: a bérlemény azonosítása a tulajdoni lap szerint.
+  helyrajziSzam        String?
+  // Jogszabály szerint a bérbeadónak át kell adnia; a szerződés hivatkozik rá.
+  energetikaiAzonosito String?
+  kozosKoltsegFt       Int?
   // Az értékcsökkenés alapja. Enélkül a tételes adóelszámolás hiányos.
-  beszerzesiArFt  Int?
-  beszerzesDatuma DateTime?
-  letrehozva      DateTime  @default(now())
+  beszerzesiArFt       Int?
+  beszerzesDatuma      DateTime?
+  letrehozva           DateTime  @default(now())
 
   tulajdonos   Felhasznalo  @relation(fields: [tulajdonosId], references: [id], onDelete: Cascade)
   meroorak     Meroora[]
@@ -120,9 +125,6 @@ model Dijszabas {
 model Jogviszony {
   id              String    @id @default(cuid())
   ingatlanId      String
-  berloId         String?
-  berloNev        String
-  berloEmail      String?
   kezdete         DateTime
   vege            DateTime?
   berletiDijFt    Int
@@ -134,33 +136,81 @@ model Jogviszony {
   statusz         String    @default("elo") // "elo" | "lezart"
   letrehozva      DateTime  @default(now())
 
-  ingatlan         Ingatlan         @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
-  berlo            Felhasznalo?     @relation("BerloJogviszonyai", fields: [berloId], references: [id])
+  ingatlan         Ingatlan          @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
+  berlok           JogviszonyBerlo[]
   eloirtTetelek    EloirtTetel[]
   berloiIgazolasok BerloiIgazolas[]
-  meghivok         Meghivo[]
   kivonattetelek   Kivonattetel[]
   egyeztetesek     Egyeztetes[]
   elszamolasok     Elszamolas[]
   teendok          Teendo[]
+  szerzodesek      Szerzodes[]
 
   @@index([ingatlanId])
+}
+
+/// Egy jogviszonyhoz több bérlő is tartozhat: diáktársak, élettársak, házaspár.
+/// A Ptk. szerint a fizetési kötelezettségért egyetemlegesen felelnek, bármelyikük
+/// teljesítése a teljesítés mértékéig a többit is mentesíti. Ezért a
+/// befizetés-egyeztetés továbbra is a jogviszony szintjén dolgozik: egy 150 000 Ft-os
+/// bérleti díj egy előírás, akárhányan is utalják.
+///
+/// A személyes adatok (születési adatok, anyja neve, igazolványszám) csak a
+/// szerződés és az igazolások kiállításához kellenek. Naplóba egyik sem kerül.
+model JogviszonyBerlo {
+  id             String    @id @default(cuid())
+  jogviszonyId   String
+  berloId        String? // ha már van fiókja
+  nev            String
+  email          String?
+  szuletesiHely  String?
+  szuletesiIdo   DateTime?
+  anyjaNeve      String?
+  lakcim         String?
+  igazolvanySzam String?
+  sorrend        Int       @default(0)
+  letrehozva     DateTime  @default(now())
+
+  jogviszony Jogviszony   @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  berlo      Felhasznalo? @relation("BerloJogviszonyai", fields: [berloId], references: [id])
+  meghivok   Meghivo[]
+
+  @@index([jogviszonyId, sorrend])
+  @@index([berloId])
+}
+
+/// A bérbeadó szerződéshez kellő adatai. Külön táblában, mert a belépéshez
+/// egyikük sem kell, így a bejelentkezési út nem is olvassa őket.
+model BerbeadoiAdatok {
+  id             String    @id @default(cuid())
+  berbeadoId     String    @unique
+  szuletesiHely  String?
+  szuletesiIdo   DateTime?
+  anyjaNeve      String?
+  lakcim         String?
+  igazolvanySzam String?
+  adoazonosito   String?
+  bankszamla     String?
+  bank           String?
+  frissitve      DateTime  @updatedAt
+
+  berbeado Felhasznalo @relation(fields: [berbeadoId], references: [id], onDelete: Cascade)
 }
 
 /// A bérlő meghívása a saját oldalára. A bérbeadó hozza létre, a bérlő ebből
 /// regisztrál. Egy meghívó egyszer használható, és lejár.
 model Meghivo {
-  id           String    @id @default(cuid())
-  jogviszonyId String
-  token        String    @unique
-  email        String
-  lejar        DateTime
-  felhasznalva DateTime?
-  letrehozva   DateTime  @default(now())
+  id                String    @id @default(cuid())
+  jogviszonyBerloId String
+  token             String    @unique
+  email             String
+  lejar             DateTime
+  felhasznalva      DateTime?
+  letrehozva        DateTime  @default(now())
 
-  jogviszony Jogviszony @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  jogviszonyBerlo JogviszonyBerlo @relation(fields: [jogviszonyBerloId], references: [id], onDelete: Cascade)
 
-  @@index([jogviszonyId])
+  @@index([jogviszonyBerloId])
 }
 
 /// Amit fizetni kellett volna: a rendszer írja elő, és soha nem a befizetés írja felül.
@@ -315,4 +365,56 @@ model Teendo {
   jogviszony Jogviszony? @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
 
   @@index([cimzettId, statusz, esedekesseg])
+}
+
+/// Egy jogviszony bérleti szerződése. A szöveg nem itt tárolódik, hanem a
+/// modulkatalógusból (`src/domain/szerzodes-modulok.ts`) áll össze a választott
+/// modulokból és a megadott paraméterekből. Így egy szövegjavítás minden
+/// tervezetre azonnal érvényesül.
+///
+/// Véglegesítéskor viszont a teljes szöveget befagyasztjuk: amit a felek
+/// aláírtak, azt egy későbbi modulfrissítés nem írhatja át.
+model Szerzodes {
+  id             String    @id @default(cuid())
+  jogviszonyId   String
+  megnevezes     String
+  allapot        String    @default("tervezet") // "tervezet" | "veglegesitve"
+  kelteHelye     String    @default("")
+  kelte          DateTime?
+  veglegesSzoveg String?
+  veglegesitve   DateTime?
+  letrehozva     DateTime  @default(now())
+  frissitve      DateTime  @updatedAt
+
+  jogviszony  Jogviszony           @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  modulok     SzerzodesModul[]
+  parameterek SzerzodesParameter[]
+
+  @@index([jogviszonyId])
+}
+
+/// Egy szerződésbe bekapcsolt modul. Csak a bekapcsoltak kerülnek sorba; a
+/// katalógusban lévő többi modul választható marad.
+model SzerzodesModul {
+  id          String @id @default(cuid())
+  szerzodesId String
+  kulcs       String
+  sorrend     Int    @default(0)
+
+  szerzodes Szerzodes @relation(fields: [szerzodesId], references: [id], onDelete: Cascade)
+
+  @@unique([szerzodesId, kulcs])
+}
+
+/// Egy modul kitöltött paramétere. Szövegként tároljuk, mert a modul maga tudja,
+/// hogy számot, dátumot vagy összeget vár; az értelmezés a domainben egy helyen van.
+model SzerzodesParameter {
+  id          String @id @default(cuid())
+  szerzodesId String
+  kulcs       String
+  ertek       String
+
+  szerzodes Szerzodes @relation(fields: [szerzodesId], references: [id], onDelete: Cascade)
+
+  @@unique([szerzodesId, kulcs])
 }

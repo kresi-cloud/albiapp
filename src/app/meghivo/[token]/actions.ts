@@ -24,7 +24,7 @@ export async function meghivotElfogad(
 
   const meghivo = await prisma.meghivo.findUnique({
     where: { token },
-    include: { jogviszony: true },
+    include: { jogviszonyBerlo: true },
   });
 
   if (!meghivo || meghivoAllapota(meghivo, new Date()) !== "ervenyes") {
@@ -49,8 +49,8 @@ export async function meghivotElfogad(
     // Meglévő fiók jelszavát a meghívó nem írhatja felül: a link a bérbeadónál
     // is megvan, így azzal bárki átvehetné a bérlő fiókját.
     await prisma.$transaction([
-      prisma.jogviszony.update({
-        where: { id: meghivo.jogviszonyId },
+      prisma.jogviszonyBerlo.update({
+        where: { id: meghivo.jogviszonyBerloId },
         data: { berloId: letezo.id },
       }),
       prisma.meghivo.update({
@@ -73,9 +73,9 @@ export async function meghivotElfogad(
   });
 
   await prisma.$transaction([
-    prisma.jogviszony.update({
-      where: { id: meghivo.jogviszonyId },
-      data: { berloId: berlo.id, berloNev: nev },
+    prisma.jogviszonyBerlo.update({
+      where: { id: meghivo.jogviszonyBerloId },
+      data: { berloId: berlo.id, nev },
     }),
     prisma.meghivo.update({
       where: { id: meghivo.id },

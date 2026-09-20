@@ -1,14 +1,19 @@
 import { ABLAK_MAX_NAP } from "@/domain/egyeztetes";
+import { prisma } from "@/lib/db";
 import { egyeztetesBeallitasok } from "@/lib/lekerdezesek";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { AblakUrlap } from "./AblakUrlap";
+import { BerbeadoiAdatok } from "./BerbeadoiAdatok";
 
 export const dynamic = "force-dynamic";
 
 export default async function Beallitasok() {
   const berbeado = await kotelezoSzerep("berbeado");
 
-  const beallitasok = await egyeztetesBeallitasok(berbeado.id);
+  const [beallitasok, sajatAdatok] = await Promise.all([
+    egyeztetesBeallitasok(berbeado.id),
+    prisma.berbeadoiAdatok.findUnique({ where: { berbeadoId: berbeado.id } }),
+  ]);
 
   return (
     <div className="grid gap-8">
@@ -24,6 +29,19 @@ export default async function Beallitasok() {
         korabbiAblakNap={beallitasok.korabbiAblakNap}
         kesobbiAblakNap={beallitasok.kesobbiAblakNap}
         maxNap={ABLAK_MAX_NAP}
+      />
+
+      <BerbeadoiAdatok
+        adatok={{
+          szuletesiHely: sajatAdatok?.szuletesiHely ?? "",
+          szuletesiIdo: sajatAdatok?.szuletesiIdo?.toISOString().slice(0, 10) ?? "",
+          anyjaNeve: sajatAdatok?.anyjaNeve ?? "",
+          lakcim: sajatAdatok?.lakcim ?? "",
+          igazolvanySzam: sajatAdatok?.igazolvanySzam ?? "",
+          adoazonosito: sajatAdatok?.adoazonosito ?? "",
+          bankszamla: sajatAdatok?.bankszamla ?? "",
+          bank: sajatAdatok?.bank ?? "",
+        }}
       />
 
       <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm dark:border-stone-800 dark:bg-stone-900">

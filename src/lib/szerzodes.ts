@@ -1,0 +1,90 @@
+import { prisma } from "@/lib/db";
+import { type Bemenet } from "@/domain/szerzodes-keszites";
+
+/**
+ * A szerződés bemenete az adatbázisból. Minden, amit a modulok használnak, innen
+ * jön: a bérbeadó és a bérlők adatai, az ingatlan és a jogviszony. Így a
+ * szerződésben nem lehet más bérleti díj, mint a befizetés-egyeztetésben.
+ */
+export async function szerzodesBemenet(
+  szerzodesId: string,
+  tulajdonosId: string,
+): Promise<{ bemenet: Bemenet; megnevezes: string; allapot: string; veglegesSzoveg: string | null } | null> {
+  const szerzodes = await prisma.szerzodes.findFirst({
+    where: { id: szerzodesId, jogviszony: { ingatlan: { tulajdonosId } } },
+    include: {
+      modulok: { orderBy: { sorrend: "asc" } },
+      parameterek: true,
+      jogviszony: {
+        include: {
+          ingatlan: true,
+          berlok: { orderBy: { sorrend: "asc" } },
+        },
+      },
+    },
+  });
+  if (!szerzodes) return null;
+
+  const berbeado = await prisma.felhasznalo.findUnique({
+    where: { id: tulajdonosId },
+    include: { berbeadoiAdatok: true },
+  });
+  if (!berbeado) return null;
+
+  const adatok = berbeado.berbeadoiAdatok;
+  const jogviszony = szerzodes.jogviszony;
+
+  const parameterek: Record<string, string> = {};
+  for (const sor of szerzodes.parameterek) parameterek[sor.kulcs] = sor.ertek;
+
+  return {
+    megnevezes: szerzodes.megnevezes,
+    allapot: szerzodes.allapot,
+    veglegesSzoveg: szerzodes.veglegesSzoveg,
+    bemenet: {
+      berbeado: {
+        nev: berbeado.nev,
+        email: berbeado.email,
+        szuletesiHely: adatok?.szuletesiHely ?? null,
+        szuletesiIdo: adatok?.szuletesiIdo ?? null,
+        anyjaNeve: adatok?.anyjaNeve ?? null,
+        lakcim: adatok?.lakcim ?? null,
+        igazolvanySzam: adatok?.igazolvanySzam ?? null,
+        adoazonosito: adatok?.adoazonosito ?? null,
+        bankszamla: adatok?.bankszamla ?? null,
+        bank: adatok?.bank ?? null,
+      },
+      berlok: jogviszony.berlok.map((berlo) => ({
+        nev: berlo.nev,
+        email: berlo.email,
+        szuletesiHely: berlo.szuletesiHely,
+        szuletesiIdo: berlo.szuletesiIdo,
+        anyjaNeve: berlo.anyjaNeve,
+        lakcim: berlo.lakcim,
+        igazolvanySzam: berlo.igazolvanySzam,
+      })),
+      ingatlan: {
+        megnevezes: jogviszony.ingatlan.megnevezes,
+        cim: jogviszony.ingatlan.cim,
+        alapteruletM2: jogviszony.ingatlan.alapteruletM2,
+        helyrajziSzam: jogviszony.ingatlan.helyrajziSzam,
+        energetikaiAzonosito: jogviszony.ingatlan.energetikaiAzonosito,
+        kozosKoltsegFt: jogviszony.ingatlan.kozosKoltsegFt,
+      },
+      jogviszony: {
+        kezdete: jogviszony.kezdete,
+        vege: jogviszony.vege,
+        berletiDijFt: jogviszony.berletiDijFt,
+        kozosKoltsegFt: jogviszony.kozosKoltsegFt,
+        kaucioFt: jogviszony.kaucioFt,
+        fizetesiNap: jogviszony.fizetesiNap,
+        rezsiElszamolas: jogviszony.rezsiElszamolas,
+        rezsiAtalanyFt: jogviszony.rezsiAtalanyFt,
+      },
+      valasztottModulok: szerzodes.modulok.map((modul) => modul.kulcs),
+      parameterek,
+      kelteHelye: szerzodes.kelteHelye,
+      kelte: szerzodes.kelte,
+    },
+  };
+}
