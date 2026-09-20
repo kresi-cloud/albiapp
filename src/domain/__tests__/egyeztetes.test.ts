@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { egyeztet, type BerloiJeloles, type EloirtTetel, type Kivonattetel } from "../egyeztetes";
+import {
+  ABLAK_MAX_NAP,
+  ablakotEllenoriz,
+  ALAPERTELMEZETT_BEALLITASOK,
+  egyeztet,
+  type BerloiIgazolas,
+  type EloirtTetel,
+  type Kivonattetel,
+} from "../egyeztetes";
 
 const MA = new Date(Date.UTC(2026, 8, 20)); // 2026. szeptember 20.
 
@@ -23,9 +31,9 @@ function kivonat(reszlet: Partial<Kivonattetel> = {}): Kivonattetel {
   };
 }
 
-function jeloles(reszlet: Partial<BerloiJeloles> = {}): BerloiJeloles {
+function igazolas(reszlet: Partial<BerloiIgazolas> = {}): BerloiIgazolas {
   return {
-    id: "jeloles-1",
+    id: "igazolas-1",
     utalasDatuma: new Date(Date.UTC(2026, 8, 4)),
     osszegFt: 180000,
     ...reszlet,
@@ -34,11 +42,11 @@ function jeloles(reszlet: Partial<BerloiJeloles> = {}): BerloiJeloles {
 
 describe("egyeztet", () => {
   it("határidőre érkezett pontos összeget egyezésnek lát", () => {
-    const [eredmeny] = egyeztet([eloiras()], [jeloles()], [kivonat()], MA);
+    const [eredmeny] = egyeztet([eloiras()], [igazolas()], [kivonat()], MA);
     expect(eredmeny.allapot).toBe("egyezik");
     expect(eredmeny.keses).toBe(0);
     expect(eredmeny.kivonattetelId).toBe("kivonat-1");
-    expect(eredmeny.berloiJelolesId).toBe("jeloles-1");
+    expect(eredmeny.berloiIgazolasId).toBe("igazolas-1");
   });
 
   it("a késve érkezett befizetés egyezik, de a késést megjegyzi", () => {
@@ -60,11 +68,11 @@ describe("egyeztet", () => {
     expect(eredmeny.elteresFt).toBe(-5000);
   });
 
-  it("ha a bérlő jelölt, de a kivonaton nincs, az is eltérés", () => {
-    const [eredmeny] = egyeztet([eloiras()], [jeloles()], [], MA);
+  it("ha a bérlő igazolta a befizetést, de a kivonaton nincs, az is eltérés", () => {
+    const [eredmeny] = egyeztet([eloiras()], [igazolas()], [], MA);
     expect(eredmeny.allapot).toBe("elter");
     expect(eredmeny.elteresOka).toBe("nincs_kivonattetel");
-    expect(eredmeny.berloiJelolesId).toBe("jeloles-1");
+    expect(eredmeny.berloiIgazolasId).toBe("igazolas-1");
   });
 
   it("lejárt esedékességre, befizetés nélkül, hiányzik", () => {
@@ -136,5 +144,71 @@ describe("egyeztet", () => {
     );
     const eloirashozTartozo = eredmeny.find((sor) => sor.eloirtTetelId === "eloiras-1");
     expect(eloirashozTartozo?.allapot).toBe("hianyzik");
+  });
+});
+
+describe("állítható párosítási ablak", () => {
+  // Az alapértelmezett ablak 10/25 nap; a bérbeadó ezt átállíthatja.
+  const kesei = kivonat({ konyvelesDatuma: new Date(Date.UTC(2026, 9, 2)) }); // 27 nappal az esedékesség után
+
+  it("az alapértelmezett ablakon kívüli befizetést nem köti az előíráshoz", () => {
+    const eredmeny = egyeztet([eloiras()], [], [kesei], MA);
+    const eloirashozTartozo = eredmeny.find((sor) => sor.eloirtTetelId === "eloiras-1");
+    expect(eloirashozTartozo?.allapot).toBe("hianyzik");
+  });
+
+  it("szélesebb ablakkal ugyanaz a befizetés már párosul", () => {
+    const eredmeny = egyeztet([eloiras()], [], [kesei], MA, {
+      ...ALAPERTELMEZETT_BEALLITASOK,
+      kesobbiAblakNap: 30,
+    });
+    const eloirashozTartozo = eredmeny.find((sor) => sor.eloirtTetelId === "eloiras-1");
+    expect(eloirashozTartozo?.allapot).toBe("egyezik");
+    expect(eloirashozTartozo?.keses).toBe(27);
+  });
+
+  it("szűkebb ablak az előre fizetett bérleti díjat is kiszedi a párosításból", () => {
+    const korai = kivonat({ konyvelesDatuma: new Date(Date.UTC(2026, 7, 29)) }); // 7 nappal korábban
+    const alap = egyeztet([eloiras()], [], [korai], MA);
+    expect(alap.find((sor) => sor.eloirtTetelId === "eloiras-1")?.allapot).toBe("egyezik");
+
+    const szuk = egyeztet([eloiras()], [], [korai], MA, {
+      ...ALAPERTELMEZETT_BEALLITASOK,
+      korabbiAblakNap: 3,
+    });
+    expect(szuk.find((sor) => sor.eloirtTetelId === "eloiras-1")?.allapot).toBe("hianyzik");
+  });
+});
+
+describe("ablakotEllenoriz", () => {
+  it("elfogadja az egész napszámot", () => {
+    const { ablak, hibak } = ablakotEllenoriz({ korabbiAblakNap: "7", kesobbiAblakNap: "30" });
+    expect(hibak).toEqual([]);
+    expect(ablak).toEqual({ korabbiAblakNap: 7, kesobbiAblakNap: 30 });
+  });
+
+  it("a nullát is elfogadja: csak a pontos napra párosítunk", () => {
+    const { ablak } = ablakotEllenoriz({ korabbiAblakNap: "0", kesobbiAblakNap: "0" });
+    expect(ablak).toEqual({ korabbiAblakNap: 0, kesobbiAblakNap: 0 });
+  });
+
+  it("az üres, a nem szám és a negatív értéket elutasítja", () => {
+    expect(ablakotEllenoriz({ korabbiAblakNap: "", kesobbiAblakNap: "25" }).ablak).toBeNull();
+    expect(ablakotEllenoriz({ korabbiAblakNap: "tíz", kesobbiAblakNap: "25" }).ablak).toBeNull();
+    expect(ablakotEllenoriz({ korabbiAblakNap: "-3", kesobbiAblakNap: "25" }).ablak).toBeNull();
+  });
+
+  it("a felső határon túli napszámot elutasítja, és megmondja a határt", () => {
+    const { ablak, hibak } = ablakotEllenoriz({
+      korabbiAblakNap: "10",
+      kesobbiAblakNap: String(ABLAK_MAX_NAP + 1),
+    });
+    expect(ablak).toBeNull();
+    expect(hibak.join(" ")).toContain(String(ABLAK_MAX_NAP));
+  });
+
+  it("mindkét mező hibáját egyszerre jelenti", () => {
+    const { hibak } = ablakotEllenoriz({ korabbiAblakNap: "x", kesobbiAblakNap: "y" });
+    expect(hibak).toHaveLength(2);
   });
 });

@@ -16,7 +16,7 @@ async function main() {
   await prisma.teendo.deleteMany();
   await prisma.egyeztetes.deleteMany();
   await prisma.kivonattetel.deleteMany();
-  await prisma.berloiJeloles.deleteMany();
+  await prisma.berloiIgazolas.deleteMany();
   await prisma.eloirtTetel.deleteMany();
   await prisma.jogviszony.deleteMany();
   await prisma.oraallas.deleteMany();
@@ -122,7 +122,7 @@ async function main() {
     ],
   });
 
-  await prisma.berloiJeloles.createMany({
+  await prisma.berloiIgazolas.createMany({
     data: [
       { jogviszonyId: annaJogviszony.id, utalasDatuma: new Date(Date.UTC(2026, 7, 4)), osszegFt: 180000, kozlemeny: "Augusztusi bérleti díj" },
       { jogviszonyId: annaJogviszony.id, utalasDatuma: new Date(Date.UTC(2026, 8, 4)), osszegFt: 180000, kozlemeny: "Szeptemberi bérleti díj" },

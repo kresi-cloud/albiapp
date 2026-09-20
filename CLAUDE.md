@@ -24,11 +24,20 @@ egyértelműen jobbat.
 
 ## Az egyeztetés alapelve
 
-Az elvárt befizetés (`EloirtTetel`), a bérlő jelölése (`BerloiJeloles`) és a
-bankszámlakivonat sora (`Kivonattetel`) három külön adat, és egyik sem írja felül
-a másikat. Az `Egyeztetes` csak az összevetés eredménye. Aki ezt egyetlen
-"befizetve" jelölésre egyszerűsítené, azzal pont az eltéréskezelés veszne el,
-ami a termék lényege.
+Az előírt tétel (`EloirtTetel`), a bérlő által igazolt befizetés
+(`BerloiIgazolas`) és a bankszámlakivonat sora (`Kivonattetel`) három külön adat,
+és egyik sem írja felül a másikat. Az `Egyeztetes` csak az összevetés eredménye.
+Aki ezt egyetlen "befizetve" jelölésre egyszerűsítené, azzal pont az
+eltéréskezelés veszne el, ami a termék lényege.
+
+A felületen ez a három szó szerepel, és a kódban is ezek az azonosítók:
+"előírt tétel", "bérlő által igazolt befizetés", és az állapotoknál
+"egyezik / eltér / hiányzik".
+
+A párosítási időablak (hány nappal az esedékesség előtt és után kötünk egy
+befizetést az előíráshoz) bérbeadónként állítható, a `Beallitasok` táblában.
+Az összegtolerancia ezzel szemben szándékosan fix nulla: bármekkora eltérésnél
+egyeztetés indul.
 
 ## Mit jelent, hogy kész
 

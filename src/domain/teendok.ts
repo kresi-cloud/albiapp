@@ -99,7 +99,7 @@ export function egyeztetesbolTeendok(
         egyeztetes.elteresOka === "nincs_eloiras"
           ? "Beérkezett utalás, amihez nincs előírás"
           : egyeztetes.elteresOka === "nincs_kivonattetel"
-            ? "A bérlő utalást jelölt, de a kivonaton nincs meg"
+            ? "A bérlő igazolta a befizetést, de a kivonaton nincs meg"
             : "Eltérés a befizetésben";
       teendok.push({
         kulcs: `elter:${azonosito}:berbeado`,

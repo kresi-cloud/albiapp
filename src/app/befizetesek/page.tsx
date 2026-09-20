@@ -1,6 +1,11 @@
+import Link from "next/link";
 import { Allapotjelzo } from "@/components/Allapotjelzo";
 import { datum, forint } from "@/domain/penz";
-import { aktualisBerbeado, jogviszonyNezetek } from "@/lib/lekerdezesek";
+import {
+  aktualisBerbeado,
+  egyeztetesBeallitasok,
+  jogviszonyNezetek,
+} from "@/lib/lekerdezesek";
 import { KivonatFeltoltes } from "./KivonatFeltoltes";
 
 export const dynamic = "force-dynamic";
@@ -10,6 +15,7 @@ export default async function Befizetesek() {
   if (!berbeado) return <p>Még nincs bérbeadó az adatbázisban.</p>;
 
   const nezetek = await jogviszonyNezetek(berbeado.id);
+  const beallitasok = await egyeztetesBeallitasok(berbeado.id);
 
   return (
     <div className="grid gap-8">
@@ -18,6 +24,13 @@ export default async function Befizetesek() {
         <p className="mt-1 text-stone-600 dark:text-stone-400">
           Három adat találkozik: mit kellett volna fizetni, mit mond a bérlő, és
           mit mutat a kivonatod.
+        </p>
+        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+          Párosítási ablak: az esedékesség előtt {beallitasok.korabbiAblakNap},
+          utána {beallitasok.kesobbiAblakNap} nap.{" "}
+          <Link href="/beallitasok" className="underline underline-offset-2">
+            Átállítom
+          </Link>
         </p>
       </section>
 
@@ -66,10 +79,10 @@ export default async function Befizetesek() {
                       ertek={sor.eloirtTetelId ? `${forint(sor.osszegFt)} · ${datum(sor.esedekesseg)}` : "—"}
                     />
                     <Reszlet
-                      cimke="A bérlő jelölése"
+                      cimke="Bérlő által igazolt befizetés"
                       ertek={
-                        sor.jelolesOsszegFt !== null && sor.jelolesDatuma
-                          ? `${forint(sor.jelolesOsszegFt)} · ${datum(sor.jelolesDatuma)}`
+                        sor.igazolasOsszegFt !== null && sor.igazolasDatuma
+                          ? `${forint(sor.igazolasOsszegFt)} · ${datum(sor.igazolasDatuma)}`
                           : "—"
                       }
                     />

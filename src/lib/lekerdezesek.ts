@@ -1,5 +1,10 @@
 import { prisma } from "@/lib/db";
-import { egyeztet, type Egyeztetes } from "@/domain/egyeztetes";
+import {
+  ALAPERTELMEZETT_BEALLITASOK,
+  egyeztet,
+  type Egyeztetes,
+  type EgyeztetesBeallitasok,
+} from "@/domain/egyeztetes";
 import {
   egyeztetesbolTeendok,
   kozelgoBefizetesTeendok,
@@ -20,8 +25,8 @@ export type JogviszonyNezet = {
     esedekesseg: Date;
     kivonatOsszegFt: number | null;
     kivonatDatuma: Date | null;
-    jelolesOsszegFt: number | null;
-    jelolesDatuma: Date | null;
+    igazolasOsszegFt: number | null;
+    igazolasDatuma: Date | null;
   })[];
 };
 
@@ -33,16 +38,36 @@ export async function aktualisBerbeado() {
   });
 }
 
+/**
+ * A párosítási időablak bérbeadónként állítható. Akinek még nincs mentett
+ * beállítása, az az alapértelmezéssel dolgozik; a sor az első mentéskor jön létre.
+ */
+export async function egyeztetesBeallitasok(
+  tulajdonosId: string,
+): Promise<EgyeztetesBeallitasok> {
+  const mentett = await prisma.beallitasok.findUnique({
+    where: { berbeadoId: tulajdonosId },
+  });
+  if (!mentett) return ALAPERTELMEZETT_BEALLITASOK;
+  return {
+    korabbiAblakNap: mentett.korabbiAblakNap,
+    kesobbiAblakNap: mentett.kesobbiAblakNap,
+    toleranciaFt: ALAPERTELMEZETT_BEALLITASOK.toleranciaFt,
+  };
+}
+
 export async function jogviszonyNezetek(
   tulajdonosId: string,
   ma: Date = new Date(),
 ): Promise<JogviszonyNezet[]> {
+  const beallitasok = await egyeztetesBeallitasok(tulajdonosId);
+
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { ingatlan: { tulajdonosId } },
     include: {
       ingatlan: true,
       eloirtTetelek: { orderBy: { esedekesseg: "asc" } },
-      berloiJelolesek: { orderBy: { utalasDatuma: "asc" } },
+      berloiIgazolasok: { orderBy: { utalasDatuma: "asc" } },
       kivonattetelek: { orderBy: { konyvelesDatuma: "asc" } },
     },
     orderBy: { letrehozva: "asc" },
@@ -51,14 +76,15 @@ export async function jogviszonyNezetek(
   return jogviszonyok.map((jogviszony) => {
     const eredmeny = egyeztet(
       jogviszony.eloirtTetelek,
-      jogviszony.berloiJelolesek,
+      jogviszony.berloiIgazolasok,
       jogviszony.kivonattetelek,
       ma,
+      beallitasok,
     );
 
     const eloirasok = new Map(jogviszony.eloirtTetelek.map((tetel) => [tetel.id, tetel]));
     const kivonatok = new Map(jogviszony.kivonattetelek.map((tetel) => [tetel.id, tetel]));
-    const jelolesek = new Map(jogviszony.berloiJelolesek.map((tetel) => [tetel.id, tetel]));
+    const igazolasok = new Map(jogviszony.berloiIgazolasok.map((tetel) => [tetel.id, tetel]));
 
     return {
       id: jogviszony.id,
@@ -69,7 +95,7 @@ export async function jogviszonyNezetek(
       egyeztetesek: eredmeny.map((sor) => {
         const eloiras = sor.eloirtTetelId ? eloirasok.get(sor.eloirtTetelId) : undefined;
         const kivonat = sor.kivonattetelId ? kivonatok.get(sor.kivonattetelId) : undefined;
-        const jeloles = sor.berloiJelolesId ? jelolesek.get(sor.berloiJelolesId) : undefined;
+        const igazolas = sor.berloiIgazolasId ? igazolasok.get(sor.berloiIgazolasId) : undefined;
         return {
           ...sor,
           idoszak: eloiras?.idoszak ?? null,
@@ -77,8 +103,8 @@ export async function jogviszonyNezetek(
           esedekesseg: eloiras?.esedekesseg ?? kivonat?.konyvelesDatuma ?? ma,
           kivonatOsszegFt: kivonat?.osszegFt ?? null,
           kivonatDatuma: kivonat?.konyvelesDatuma ?? null,
-          jelolesOsszegFt: jeloles?.osszegFt ?? null,
-          jelolesDatuma: jeloles?.utalasDatuma ?? null,
+          igazolasOsszegFt: igazolas?.osszegFt ?? null,
+          igazolasDatuma: igazolas?.utalasDatuma ?? null,
         };
       }),
     };

@@ -12,6 +12,7 @@ const MENU = [
   { cim: "Ingatlanok", utvonal: "/ingatlanok" },
   { cim: "Befizetések", utvonal: "/befizetesek" },
   { cim: "Bérlői nézet", utvonal: "/berlo" },
+  { cim: "Beállítások", utvonal: "/beallitasok" },
 ];
 
 export default function RootLayout({

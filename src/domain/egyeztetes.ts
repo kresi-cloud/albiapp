@@ -3,7 +3,7 @@
  *
  * Három adat találkozik, és egyik sem írja felül a másikat:
  *  - az előírt tétel: mit kellett volna fizetni és mikorra,
- *  - a bérlői jelölés: mit mond a bérlő, mikor mennyit utalt,
+ *  - a bérlő által igazolt befizetés: mit mond a bérlő, mikor mennyit utalt,
  *  - a kivonattétel: mit mutat a bérbeadó bankszámlakivonata.
  *
  * Az eredmény mindkét fél számára ugyanaz a három állapot: egyezik, eltér,
@@ -20,7 +20,7 @@ export type EloirtTetel = {
   osszegFt: number;
 };
 
-export type BerloiJeloles = {
+export type BerloiIgazolas = {
   id: string;
   utalasDatuma: Date;
   osszegFt: number;
@@ -40,12 +40,12 @@ export type Allapot = "egyezik" | "elter" | "hianyzik";
 export type ElteresOka =
   | "osszeg"
   | "nincs_kivonattetel"
-  | "nincs_berloi_jeloles"
+  | "nincs_berloi_igazolas"
   | "nincs_eloiras";
 
 export type Egyeztetes = {
   eloirtTetelId: string | null;
-  berloiJelolesId: string | null;
+  berloiIgazolasId: string | null;
   kivonattetelId: string | null;
   allapot: Allapot;
   elteresOka: ElteresOka | null;
@@ -59,7 +59,11 @@ export type EgyeztetesBeallitasok = {
   korabbiAblakNap: number;
   /** Ennyi nappal utána még ehhez az előíráshoz kötjük. */
   kesobbiAblakNap: number;
-  /** Ennyi forint eltérést még egyezésnek tekintünk (banki kerekítés miatt). */
+  /**
+   * Ennyi forint eltérést tekintünk még egyezésnek. Termékdöntés: ez fix nulla,
+   * bármekkora eltérésnél egyeztetés indul. Azért paraméter mégis, hogy a
+   * tesztek ki tudják próbálni a másik viselkedést is.
+   */
   toleranciaFt: number;
 };
 
@@ -68,6 +72,46 @@ export const ALAPERTELMEZETT_BEALLITASOK: EgyeztetesBeallitasok = {
   kesobbiAblakNap: 25,
   toleranciaFt: 0,
 };
+
+/** Ennél hosszabb ablaknak nincs értelme: átcsúszna a szomszédos hónapokra. */
+export const ABLAK_MAX_NAP = 90;
+
+/**
+ * Az űrlapról szabad szöveg érkezik. Itt lesz belőle beállítás, vagy itt derül
+ * ki, hogy miért nem. A hibaüzenetek mennek ki a felhasználónak.
+ */
+export function ablakotEllenoriz(nyers: {
+  korabbiAblakNap: unknown;
+  kesobbiAblakNap: unknown;
+}): { ablak: { korabbiAblakNap: number; kesobbiAblakNap: number } | null; hibak: string[] } {
+  const hibak: string[] = [];
+
+  const napot = (ertek: unknown, megnevezes: string): number | null => {
+    const szoveg = String(ertek ?? "").trim().replace(/\s/g, "");
+    if (szoveg === "") {
+      hibak.push(`${megnevezes}: adj meg egy napszámot.`);
+      return null;
+    }
+    if (!/^\d+$/.test(szoveg)) {
+      hibak.push(`${megnevezes}: csak egész napszám adható meg.`);
+      return null;
+    }
+    const szam = Number(szoveg);
+    if (szam > ABLAK_MAX_NAP) {
+      hibak.push(`${megnevezes}: legfeljebb ${ABLAK_MAX_NAP} nap adható meg.`);
+      return null;
+    }
+    return szam;
+  };
+
+  const korabbiAblakNap = napot(nyers.korabbiAblakNap, "Esedékesség előtt");
+  const kesobbiAblakNap = napot(nyers.kesobbiAblakNap, "Esedékesség után");
+
+  if (korabbiAblakNap === null || kesobbiAblakNap === null) {
+    return { ablak: null, hibak };
+  }
+  return { ablak: { korabbiAblakNap, kesobbiAblakNap }, hibak };
+}
 
 type Jelolt<T> = { tetel: T; tavolsag: number; osszegElteres: number };
 
@@ -89,14 +133,14 @@ function legjobbJelolt<T extends { osszegFt: number }>(
 
 export function egyeztet(
   eloirtTetelek: EloirtTetel[],
-  berloiJelolesek: BerloiJeloles[],
+  berloiIgazolasok: BerloiIgazolas[],
   kivonattetelek: Kivonattetel[],
   ma: Date,
   beallitasok: EgyeztetesBeallitasok = ALAPERTELMEZETT_BEALLITASOK,
 ): Egyeztetes[] {
   const eredmeny: Egyeztetes[] = [];
   const felhasznaltKivonat = new Set<string>();
-  const felhasznaltJeloles = new Set<string>();
+  const felhasznaltIgazolas = new Set<string>();
 
   const sorrendben = [...eloirtTetelek].sort(
     (a, b) => a.esedekesseg.getTime() - b.esedekesseg.getTime(),
@@ -130,17 +174,17 @@ export function egyeztet(
         (tetel) => tetel.id,
       ),
     );
-    const jelolesJelolt = legjobbJelolt(
+    const igazolasJelolt = legjobbJelolt(
       ablakban(
-        berloiJelolesek,
+        berloiIgazolasok,
         (tetel) => tetel.utalasDatuma,
-        felhasznaltJeloles,
+        felhasznaltIgazolas,
         (tetel) => tetel.id,
       ),
     );
 
     if (kivonatJelolt) felhasznaltKivonat.add(kivonatJelolt.tetel.id);
-    if (jelolesJelolt) felhasznaltJeloles.add(jelolesJelolt.tetel.id);
+    if (igazolasJelolt) felhasznaltIgazolas.add(igazolasJelolt.tetel.id);
 
     const lejart = napKulonbseg(eloiras.esedekesseg, ma) > 0;
 
@@ -150,7 +194,7 @@ export function egyeztet(
       const egyezik = Math.abs(elteres) <= beallitasok.toleranciaFt;
       eredmeny.push({
         eloirtTetelId: eloiras.id,
-        berloiJelolesId: jelolesJelolt?.tetel.id ?? null,
+        berloiIgazolasId: igazolasJelolt?.tetel.id ?? null,
         kivonattetelId: kivonatJelolt.tetel.id,
         allapot: egyezik ? "egyezik" : "elter",
         elteresOka: egyezik ? null : "osszeg",
@@ -167,17 +211,17 @@ export function egyeztet(
       continue;
     }
 
-    if (jelolesJelolt) {
+    if (igazolasJelolt) {
       eredmeny.push({
         eloirtTetelId: eloiras.id,
-        berloiJelolesId: jelolesJelolt.tetel.id,
+        berloiIgazolasId: igazolasJelolt.tetel.id,
         kivonattetelId: null,
         allapot: "elter",
         elteresOka: "nincs_kivonattetel",
         elteresFt: -eloiras.osszegFt,
-        keses: Math.max(0, jelolesJelolt.tavolsag),
+        keses: Math.max(0, igazolasJelolt.tavolsag),
         magyarazat:
-          "A bérlő jelölte az utalást, de a kivonaton nem találtam hozzá tételt.",
+          "A bérlő igazolta a befizetést, de a kivonaton nem találtam hozzá tételt.",
       });
       continue;
     }
@@ -185,7 +229,7 @@ export function egyeztet(
     if (lejart) {
       eredmeny.push({
         eloirtTetelId: eloiras.id,
-        berloiJelolesId: null,
+        berloiIgazolasId: null,
         kivonattetelId: null,
         allapot: "hianyzik",
         elteresOka: null,
@@ -202,7 +246,7 @@ export function egyeztet(
     if (felhasznaltKivonat.has(kivonattetel.id)) continue;
     eredmeny.push({
       eloirtTetelId: null,
-      berloiJelolesId: null,
+      berloiIgazolasId: null,
       kivonattetelId: kivonattetel.id,
       allapot: "elter",
       elteresOka: "nincs_eloiras",

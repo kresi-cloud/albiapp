@@ -10,6 +10,16 @@ CREATE TABLE "Felhasznalo" (
 );
 
 -- CreateTable
+CREATE TABLE "Beallitasok" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "berbeadoId" TEXT NOT NULL,
+    "korabbiAblakNap" INTEGER NOT NULL DEFAULT 10,
+    "kesobbiAblakNap" INTEGER NOT NULL DEFAULT 25,
+    "frissitve" DATETIME NOT NULL,
+    CONSTRAINT "Beallitasok_berbeadoId_fkey" FOREIGN KEY ("berbeadoId") REFERENCES "Felhasznalo" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
 CREATE TABLE "Ingatlan" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "tulajdonosId" TEXT NOT NULL,
@@ -79,7 +89,7 @@ CREATE TABLE "EloirtTetel" (
 );
 
 -- CreateTable
-CREATE TABLE "BerloiJeloles" (
+CREATE TABLE "BerloiIgazolas" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "jogviszonyId" TEXT NOT NULL,
     "utalasDatuma" DATETIME NOT NULL,
@@ -87,7 +97,7 @@ CREATE TABLE "BerloiJeloles" (
     "kozlemeny" TEXT,
     "igazolasUtvonal" TEXT,
     "rogzitve" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "BerloiJeloles_jogviszonyId_fkey" FOREIGN KEY ("jogviszonyId") REFERENCES "Jogviszony" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "BerloiIgazolas_jogviszonyId_fkey" FOREIGN KEY ("jogviszonyId") REFERENCES "Jogviszony" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -111,7 +121,7 @@ CREATE TABLE "Egyeztetes" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "jogviszonyId" TEXT NOT NULL,
     "eloirtTetelId" TEXT,
-    "berloiJelolesId" TEXT,
+    "berloiIgazolasId" TEXT,
     "kivonattetelId" TEXT,
     "allapot" TEXT NOT NULL,
     "elteresOka" TEXT,
@@ -120,7 +130,7 @@ CREATE TABLE "Egyeztetes" (
     "frissitve" DATETIME NOT NULL,
     CONSTRAINT "Egyeztetes_jogviszonyId_fkey" FOREIGN KEY ("jogviszonyId") REFERENCES "Jogviszony" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "Egyeztetes_eloirtTetelId_fkey" FOREIGN KEY ("eloirtTetelId") REFERENCES "EloirtTetel" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "Egyeztetes_berloiJelolesId_fkey" FOREIGN KEY ("berloiJelolesId") REFERENCES "BerloiJeloles" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "Egyeztetes_berloiIgazolasId_fkey" FOREIGN KEY ("berloiIgazolasId") REFERENCES "BerloiIgazolas" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "Egyeztetes_kivonattetelId_fkey" FOREIGN KEY ("kivonattetelId") REFERENCES "Kivonattetel" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
@@ -145,6 +155,9 @@ CREATE TABLE "Teendo" (
 CREATE UNIQUE INDEX "Felhasznalo_email_key" ON "Felhasznalo"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Beallitasok_berbeadoId_key" ON "Beallitasok"("berbeadoId");
+
+-- CreateIndex
 CREATE INDEX "Ingatlan_tulajdonosId_idx" ON "Ingatlan"("tulajdonosId");
 
 -- CreateIndex
@@ -163,7 +176,7 @@ CREATE INDEX "EloirtTetel_esedekesseg_idx" ON "EloirtTetel"("esedekesseg");
 CREATE UNIQUE INDEX "EloirtTetel_jogviszonyId_tipus_idoszak_key" ON "EloirtTetel"("jogviszonyId", "tipus", "idoszak");
 
 -- CreateIndex
-CREATE INDEX "BerloiJeloles_jogviszonyId_utalasDatuma_idx" ON "BerloiJeloles"("jogviszonyId", "utalasDatuma");
+CREATE INDEX "BerloiIgazolas_jogviszonyId_utalasDatuma_idx" ON "BerloiIgazolas"("jogviszonyId", "utalasDatuma");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Kivonattetel_sorUjjlenyomat_key" ON "Kivonattetel"("sorUjjlenyomat");
@@ -175,7 +188,7 @@ CREATE INDEX "Kivonattetel_tulajdonosId_konyvelesDatuma_idx" ON "Kivonattetel"("
 CREATE UNIQUE INDEX "Egyeztetes_eloirtTetelId_key" ON "Egyeztetes"("eloirtTetelId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Egyeztetes_berloiJelolesId_key" ON "Egyeztetes"("berloiJelolesId");
+CREATE UNIQUE INDEX "Egyeztetes_berloiIgazolasId_key" ON "Egyeztetes"("berloiIgazolasId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Egyeztetes_kivonattetelId_key" ON "Egyeztetes"("kivonattetelId");

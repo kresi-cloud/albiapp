@@ -29,6 +29,19 @@ model Felhasznalo {
   kivonattetelei    Kivonattetel[]
   teendoi           Teendo[]
   oraallasai        Oraallas[]
+  beallitasok       Beallitasok?
+}
+
+/// Bérbeadónkénti egyeztetési beállítások. Az összegtolerancia szándékosan nincs
+/// itt: az a termékdöntés szerint fix nulla, minden eltérésnél egyeztetés indul.
+model Beallitasok {
+  id              String   @id @default(cuid())
+  berbeadoId      String   @unique
+  korabbiAblakNap Int      @default(10) // ennyi nappal az esedékesség előtt már elfogadjuk
+  kesobbiAblakNap Int      @default(25) // ennyi nappal utána még ehhez az előíráshoz kötjük
+  frissitve       DateTime @updatedAt
+
+  berbeado Felhasznalo @relation(fields: [berbeadoId], references: [id], onDelete: Cascade)
 }
 
 model Ingatlan {
@@ -96,7 +109,7 @@ model Jogviszony {
   ingatlan        Ingatlan        @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
   berlo           Felhasznalo?    @relation("BerloJogviszonyai", fields: [berloId], references: [id])
   eloirtTetelek   EloirtTetel[]
-  berloiJelolesek BerloiJeloles[]
+  berloiIgazolasok BerloiIgazolas[]
   kivonattetelek  Kivonattetel[]
   egyeztetesek    Egyeztetes[]
   teendok         Teendo[]
@@ -122,7 +135,7 @@ model EloirtTetel {
 }
 
 /// Amit a bérlő mond: mikor mennyit utalt. Bizonyíték is lehet mellette.
-model BerloiJeloles {
+model BerloiIgazolas {
   id            String   @id @default(cuid())
   jogviszonyId  String
   utalasDatuma  DateTime
@@ -162,17 +175,17 @@ model Egyeztetes {
   id              String   @id @default(cuid())
   jogviszonyId    String
   eloirtTetelId   String?  @unique
-  berloiJelolesId String?  @unique
+  berloiIgazolasId String?  @unique
   kivonattetelId  String?  @unique
   allapot         String // "egyezik" | "elter" | "hianyzik"
-  elteresOka      String? // "osszeg" | "datum" | "nincs_berloi_jeloles" | "nincs_kivonattetel" | "nincs_eloiras"
+  elteresOka      String? // "osszeg" | "datum" | "nincs_berloi_igazolas" | "nincs_kivonattetel" | "nincs_eloiras"
   elteresFt       Int      @default(0)
   keses           Int      @default(0) // naptári nap, negatív, ha korábban érkezett
   frissitve       DateTime @updatedAt
 
   jogviszony    Jogviszony     @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
   eloirtTetel   EloirtTetel?   @relation(fields: [eloirtTetelId], references: [id])
-  berloiJeloles BerloiJeloles? @relation(fields: [berloiJelolesId], references: [id])
+  berloiIgazolas BerloiIgazolas? @relation(fields: [berloiIgazolasId], references: [id])
   kivonattetel  Kivonattetel?  @relation(fields: [kivonattetelId], references: [id])
 
   @@index([jogviszonyId, allapot])
