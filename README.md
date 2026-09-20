@@ -15,9 +15,12 @@ körönként frissülnek.
 - a háromoldalú egyeztetés: mit írtunk elő, mit igazolt a bérlő, mit mutat a kivonat,
 - állítható párosítási időablak bérbeadónként,
 - teendők a kezdőlapon, lejárt, mai és közeli bontásban,
-- jelszavas belépés mindkét félnek, és bérlői meghívó linkkel.
+- jelszavas belépés mindkét félnek, és bérlői meghívó linkkel,
+- óraállások mindkét oldalról, tételes rezsielszámolás a magyar sávos árazással,
+- a kiadott elszámolás előírt tételként megy tovább a befizetésekhez, a bérlő
+  pedig elfogadhatja vagy vitathatja.
 
-Ami még nincs kész: elfelejtett jelszó, rezsielszámolás, adóösszesítő.
+Ami még nincs kész: elfelejtett jelszó, adóösszesítő, szerződéskészítő.
 
 ## Indítás
 
@@ -58,6 +61,19 @@ egyszer használható, és új meghívó készítése azonnal érvényteleníti 
 
 Belépés nélkül minden oldal a belépésre irányít, és a bérbeadói oldalakat a
 bérlő nem éri el (és fordítva).
+
+## Rezsielszámolás
+
+A magyar lakossági rezsi két sávban működik: egy éves mennyiségig kedvezményes
+ár, fölötte piaci ár. Az elszámolás ezt követi, és az éves keretet az elszámolt
+napokra arányosítja. Az egységárak fillérben, egészben vannak tárolva
+(`kedvezmenyesArFiller`), mert a rezsiárak nem kerek forintok; forintra csak a
+tétel végén kerekítünk. Az elszámolás összege a kerekített tételek összege, hogy
+a bérlő össze tudja adni a sorokat, és ugyanazt kapja.
+
+Minden tétel mellé emberi nyelvű részletezés készül: melyik óraállástól meddig,
+hány nap, mennyi ment kedvezményes és mennyi piaci áron. Ez a különbség a
+"kapsz egy számot" és az "ellenőrizni tudod" között.
 
 ## Felépítés
 

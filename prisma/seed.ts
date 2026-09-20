@@ -18,6 +18,9 @@ const PROBA_JELSZO = "probajelszo2026";
 async function main() {
   const jelszoHash = await jelszotHashel(PROBA_JELSZO);
 
+  await prisma.elszamolasTetel.deleteMany();
+  await prisma.elszamolas.deleteMany();
+  await prisma.dijszabas.deleteMany();
   await prisma.meghivo.deleteMany();
   await prisma.teendo.deleteMany();
   await prisma.egyeztetes.deleteMany();
@@ -107,6 +110,61 @@ async function main() {
       rezsiElszamolas: "atalany",
     },
   });
+
+  // Nagyjából a magyar lakossági árak: a kedvezményes sáv és fölötte a piaci ár.
+  // Egységár fillérben, hogy ne kelljen lebegőponttal szorozni.
+  const villanyorak = await prisma.meroora.findMany({ where: { tipus: "villany" } });
+  const vizorak = await prisma.meroora.findMany({ where: { tipus: "viz" } });
+
+  for (const meroora of villanyorak) {
+    await prisma.dijszabas.create({
+      data: {
+        merooraId: meroora.id,
+        ervenyesTol: new Date(Date.UTC(2026, 0, 1)),
+        kedvezmenyesArFiller: 3690, // 36,90 Ft/kWh
+        piaciArFiller: 7010, // 70,10 Ft/kWh a keret fölött
+        evesKeret: 2523, // kWh/év, az átlagfogyasztásig
+        alapdijFt: 900,
+      },
+    });
+  }
+
+  for (const meroora of vizorak) {
+    await prisma.dijszabas.create({
+      data: {
+        merooraId: meroora.id,
+        ervenyesTol: new Date(Date.UTC(2026, 0, 1)),
+        kedvezmenyesArFiller: 79900, // 799 Ft/m3, víz és csatorna együtt
+        piaciArFiller: 79900,
+        evesKeret: null, // a víznél nincs sáv
+        alapdijFt: 0,
+      },
+    });
+  }
+
+  // Óraállások: a nyáron sok a villany, hogy a keret fölötti sáv is látszódjon.
+  const ferencvarosiVillany = villanyorak.find((meroora) => meroora.ingatlanId === ferencvaros.id);
+  const ferencvarosiViz = vizorak.find((meroora) => meroora.ingatlanId === ferencvaros.id);
+
+  if (ferencvarosiVillany) {
+    await prisma.oraallas.createMany({
+      data: [
+        { merooraId: ferencvarosiVillany.id, datum: new Date(Date.UTC(2026, 6, 1)), ertek: 12480, rogzitoId: berloAnna.id },
+        { merooraId: ferencvarosiVillany.id, datum: new Date(Date.UTC(2026, 7, 1)), ertek: 12790, rogzitoId: berloAnna.id },
+        { merooraId: ferencvarosiVillany.id, datum: new Date(Date.UTC(2026, 8, 1)), ertek: 13165, rogzitoId: berloAnna.id },
+      ],
+    });
+  }
+
+  if (ferencvarosiViz) {
+    await prisma.oraallas.createMany({
+      data: [
+        { merooraId: ferencvarosiViz.id, datum: new Date(Date.UTC(2026, 6, 1)), ertek: 214.2, rogzitoId: berloAnna.id },
+        { merooraId: ferencvarosiViz.id, datum: new Date(Date.UTC(2026, 7, 1)), ertek: 218.9, rogzitoId: berloAnna.id },
+        { merooraId: ferencvarosiViz.id, datum: new Date(Date.UTC(2026, 8, 1)), ertek: 223.4, rogzitoId: berloAnna.id },
+      ],
+    });
+  }
 
   await prisma.eloirtTetel.createMany({
     data: [

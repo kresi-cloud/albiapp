@@ -45,13 +45,13 @@ model Beallitasok {
 }
 
 model Ingatlan {
-  id              String   @id @default(cuid())
-  tulajdonosId    String
-  megnevezes      String
-  cim             String
-  alapteruletM2   Int?
-  kozosKoltsegFt  Int?
-  letrehozva      DateTime @default(now())
+  id             String   @id @default(cuid())
+  tulajdonosId   String
+  megnevezes     String
+  cim            String
+  alapteruletM2  Int?
+  kozosKoltsegFt Int?
+  letrehozva     DateTime @default(now())
 
   tulajdonos   Felhasznalo  @relation(fields: [tulajdonosId], references: [id], onDelete: Cascade)
   meroorak     Meroora[]
@@ -69,20 +69,22 @@ model Meroora {
   almero       Boolean  @default(false)
   letrehozva   DateTime @default(now())
 
-  ingatlan   Ingatlan   @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
-  oraallasok Oraallas[]
+  ingatlan    Ingatlan          @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
+  oraallasok  Oraallas[]
+  dijszabasok Dijszabas[]
+  tetelek     ElszamolasTetel[]
 
   @@index([ingatlanId])
 }
 
 model Oraallas {
-  id         String   @id @default(cuid())
-  merooraId  String
-  datum      DateTime
-  ertek      Float
+  id          String   @id @default(cuid())
+  merooraId   String
+  datum       DateTime
+  ertek       Float
   fotoUtvonal String?
-  rogzitoId  String
-  letrehozva DateTime @default(now())
+  rogzitoId   String
+  letrehozva  DateTime @default(now())
 
   meroora Meroora     @relation(fields: [merooraId], references: [id], onDelete: Cascade)
   rogzito Felhasznalo @relation(fields: [rogzitoId], references: [id])
@@ -90,30 +92,53 @@ model Oraallas {
   @@index([merooraId, datum])
 }
 
-model Jogviszony {
-  id               String    @id @default(cuid())
-  ingatlanId       String
-  berloId          String?
-  berloNev         String
-  berloEmail       String?
-  kezdete          DateTime
-  vege             DateTime?
-  berletiDijFt     Int
-  kozosKoltsegFt   Int       @default(0)
-  kaucioFt         Int       @default(0)
-  fizetesiNap      Int       @default(5) // a hónap hányadikára esedékes
-  rezsiElszamolas  String    @default("almero") // "almero" | "atalany" | "kozos_koltsegben"
-  statusz          String    @default("elo") // "elo" | "lezart"
-  letrehozva       DateTime  @default(now())
+/// Egy mérőóra díjszabása, érvényességi kezdőnappal, hogy az áremelés ne írja
+/// felül a korábbi elszámolásokat.
+///
+/// Az egységár fillérben, egészben: a rezsiárak nem kerek forintok (36,9 Ft/kWh),
+/// és a lebegőpontos szorzás pont a pénznél téved. Forintra csak a tétel végén
+/// kerekítünk.
+model Dijszabas {
+  id                   String   @id @default(cuid())
+  merooraId            String
+  ervenyesTol          DateTime
+  kedvezmenyesArFiller Int
+  piaciArFiller        Int
+  evesKeret            Float? // egység/év; null: nincs sáv, minden egység a kedvezményes áron
+  alapdijFt            Int      @default(0) // havi alapdíj
+  letrehozva           DateTime @default(now())
 
-  ingatlan        Ingatlan        @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
-  berlo           Felhasznalo?    @relation("BerloJogviszonyai", fields: [berloId], references: [id])
+  meroora Meroora @relation(fields: [merooraId], references: [id], onDelete: Cascade)
+
+  @@index([merooraId, ervenyesTol])
+}
+
+model Jogviszony {
+  id              String    @id @default(cuid())
+  ingatlanId      String
+  berloId         String?
+  berloNev        String
+  berloEmail      String?
+  kezdete         DateTime
+  vege            DateTime?
+  berletiDijFt    Int
+  kozosKoltsegFt  Int       @default(0)
+  kaucioFt        Int       @default(0)
+  fizetesiNap     Int       @default(5) // a hónap hányadikára esedékes
+  rezsiElszamolas String    @default("almero") // "almero" | "atalany" | "kozos_koltsegben"
+  rezsiAtalanyFt  Int       @default(0) // havi átalány, ha a rezsi átalányban megy
+  statusz         String    @default("elo") // "elo" | "lezart"
+  letrehozva      DateTime  @default(now())
+
+  ingatlan         Ingatlan         @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
+  berlo            Felhasznalo?     @relation("BerloJogviszonyai", fields: [berloId], references: [id])
   eloirtTetelek    EloirtTetel[]
   berloiIgazolasok BerloiIgazolas[]
   meghivok         Meghivo[]
-  kivonattetelek  Kivonattetel[]
-  egyeztetesek    Egyeztetes[]
-  teendok         Teendo[]
+  kivonattetelek   Kivonattetel[]
+  egyeztetesek     Egyeztetes[]
+  elszamolasok     Elszamolas[]
+  teendok          Teendo[]
 
   @@index([ingatlanId])
 }
@@ -146,6 +171,7 @@ model EloirtTetel {
 
   jogviszony Jogviszony  @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
   egyeztetes Egyeztetes?
+  elszamolas Elszamolas?
 
   @@unique([jogviszonyId, tipus, idoszak])
   @@index([esedekesseg])
@@ -153,13 +179,13 @@ model EloirtTetel {
 
 /// Amit a bérlő mond: mikor mennyit utalt. Bizonyíték is lehet mellette.
 model BerloiIgazolas {
-  id            String   @id @default(cuid())
-  jogviszonyId  String
-  utalasDatuma  DateTime
-  osszegFt      Int
-  kozlemeny     String?
+  id              String   @id @default(cuid())
+  jogviszonyId    String
+  utalasDatuma    DateTime
+  osszegFt        Int
+  kozlemeny       String?
   igazolasUtvonal String?
-  rogzitve      DateTime @default(now())
+  rogzitve        DateTime @default(now())
 
   jogviszony Jogviszony  @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
   egyeztetes Egyeztetes?
@@ -169,16 +195,16 @@ model BerloiIgazolas {
 
 /// Amit a bankszámlakivonat mutat: egy sor a feltöltött kivonatból.
 model Kivonattetel {
-  id               String   @id @default(cuid())
-  tulajdonosId     String
-  jogviszonyId     String?
-  konyvelesDatuma  DateTime
-  osszegFt         Int
-  kozlemeny        String?
-  partnerNev       String?
-  forrasFajl       String
-  sorUjjlenyomat   String   @unique // ugyanaz a kivonatsor kétszer ne kerüljön be
-  letrehozva       DateTime @default(now())
+  id              String   @id @default(cuid())
+  tulajdonosId    String
+  jogviszonyId    String?
+  konyvelesDatuma DateTime
+  osszegFt        Int
+  kozlemeny       String?
+  partnerNev      String?
+  forrasFajl      String
+  sorUjjlenyomat  String   @unique // ugyanaz a kivonatsor kétszer ne kerüljön be
+  letrehozva      DateTime @default(now())
 
   tulajdonos Felhasznalo @relation(fields: [tulajdonosId], references: [id], onDelete: Cascade)
   jogviszony Jogviszony? @relation(fields: [jogviszonyId], references: [id])
@@ -189,23 +215,65 @@ model Kivonattetel {
 
 /// A három adat összevetésének eredménye. Ez az, amit mindkét fél lát.
 model Egyeztetes {
-  id              String   @id @default(cuid())
-  jogviszonyId    String
-  eloirtTetelId   String?  @unique
+  id               String   @id @default(cuid())
+  jogviszonyId     String
+  eloirtTetelId    String?  @unique
   berloiIgazolasId String?  @unique
-  kivonattetelId  String?  @unique
-  allapot         String // "egyezik" | "elter" | "hianyzik"
-  elteresOka      String? // "osszeg" | "datum" | "nincs_berloi_igazolas" | "nincs_kivonattetel" | "nincs_eloiras"
-  elteresFt       Int      @default(0)
-  keses           Int      @default(0) // naptári nap, negatív, ha korábban érkezett
-  frissitve       DateTime @updatedAt
+  kivonattetelId   String?  @unique
+  allapot          String // "egyezik" | "elter" | "hianyzik"
+  elteresOka       String? // "osszeg" | "datum" | "nincs_berloi_igazolas" | "nincs_kivonattetel" | "nincs_eloiras"
+  elteresFt        Int      @default(0)
+  keses            Int      @default(0) // naptári nap, negatív, ha korábban érkezett
+  frissitve        DateTime @updatedAt
 
-  jogviszony    Jogviszony     @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
-  eloirtTetel   EloirtTetel?   @relation(fields: [eloirtTetelId], references: [id])
+  jogviszony     Jogviszony      @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  eloirtTetel    EloirtTetel?    @relation(fields: [eloirtTetelId], references: [id])
   berloiIgazolas BerloiIgazolas? @relation(fields: [berloiIgazolasId], references: [id])
-  kivonattetel  Kivonattetel?  @relation(fields: [kivonattetelId], references: [id])
+  kivonattetel   Kivonattetel?   @relation(fields: [kivonattetelId], references: [id])
 
   @@index([jogviszonyId, allapot])
+}
+
+/// Egy időszak rezsielszámolása. Tételesen áll össze, hogy a bérlő
+/// ellenőrizni tudja, ne csak elhinni.
+model Elszamolas {
+  id             String    @id @default(cuid())
+  jogviszonyId   String
+  idoszakKezdete DateTime
+  idoszakVege    DateTime
+  allapot        String    @default("tervezet") // "tervezet" | "kiadva" | "elfogadva" | "vitatott"
+  osszegFt       Int
+  eloirtTetelId  String?   @unique
+  berloiUzenet   String? // amit a bérlő írt, ha vitatja
+  kiadva         DateTime?
+  lezarva        DateTime?
+  letrehozva     DateTime  @default(now())
+
+  jogviszony  Jogviszony        @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  eloirtTetel EloirtTetel?      @relation(fields: [eloirtTetelId], references: [id])
+  tetelek     ElszamolasTetel[]
+
+  @@index([jogviszonyId, idoszakVege])
+}
+
+/// Az elszámolás egy sora. A részletezés emberi nyelven mondja el, miből jött
+/// ki az összeg, mert a bérlő ezt fogja elolvasni.
+model ElszamolasTetel {
+  id           String  @id @default(cuid())
+  elszamolasId String
+  merooraId    String?
+  fajta        String // "meroora" | "alapdij" | "atalany" | "kozos_koltseg"
+  megnevezes   String
+  mennyiseg    Float?
+  mertekegyseg String?
+  reszletezes  String
+  osszegFt     Int
+  sorrend      Int     @default(0)
+
+  elszamolas Elszamolas @relation(fields: [elszamolasId], references: [id], onDelete: Cascade)
+  meroora    Meroora?   @relation(fields: [merooraId], references: [id])
+
+  @@index([elszamolasId])
 }
 
 /// Minden modul ide termel. Ebből épül a kezdőlap kiemelt sávja és a naptár.
