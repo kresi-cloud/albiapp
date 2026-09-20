@@ -108,13 +108,30 @@ model Jogviszony {
 
   ingatlan        Ingatlan        @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
   berlo           Felhasznalo?    @relation("BerloJogviszonyai", fields: [berloId], references: [id])
-  eloirtTetelek   EloirtTetel[]
+  eloirtTetelek    EloirtTetel[]
   berloiIgazolasok BerloiIgazolas[]
+  meghivok         Meghivo[]
   kivonattetelek  Kivonattetel[]
   egyeztetesek    Egyeztetes[]
   teendok         Teendo[]
 
   @@index([ingatlanId])
+}
+
+/// A bérlő meghívása a saját oldalára. A bérbeadó hozza létre, a bérlő ebből
+/// regisztrál. Egy meghívó egyszer használható, és lejár.
+model Meghivo {
+  id           String    @id @default(cuid())
+  jogviszonyId String
+  token        String    @unique
+  email        String
+  lejar        DateTime
+  felhasznalva DateTime?
+  letrehozva   DateTime  @default(now())
+
+  jogviszony Jogviszony @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+
+  @@index([jogviszonyId])
 }
 
 /// Amit fizetni kellett volna: a rendszer írja elő, és soha nem a befizetés írja felül.

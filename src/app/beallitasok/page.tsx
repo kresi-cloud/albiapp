@@ -1,12 +1,12 @@
 import { ABLAK_MAX_NAP } from "@/domain/egyeztetes";
-import { aktualisBerbeado, egyeztetesBeallitasok } from "@/lib/lekerdezesek";
+import { egyeztetesBeallitasok } from "@/lib/lekerdezesek";
+import { kotelezoSzerep } from "@/lib/munkamenet";
 import { AblakUrlap } from "./AblakUrlap";
 
 export const dynamic = "force-dynamic";
 
 export default async function Beallitasok() {
-  const berbeado = await aktualisBerbeado();
-  if (!berbeado) return <p>Még nincs bérbeadó az adatbázisban.</p>;
+  const berbeado = await kotelezoSzerep("berbeado");
 
   const beallitasok = await egyeztetesBeallitasok(berbeado.id);
 

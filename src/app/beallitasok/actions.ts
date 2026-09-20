@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ablakotEllenoriz } from "@/domain/egyeztetes";
 import { prisma } from "@/lib/db";
-import { aktualisBerbeado } from "@/lib/lekerdezesek";
+import { kotelezoSzerep } from "@/lib/munkamenet";
 
 export type MentesEredmeny = {
   allapot: "ures" | "kesz" | "hiba";
@@ -15,10 +15,7 @@ export async function beallitasokatMent(
   _elozo: MentesEredmeny,
   urlap: FormData,
 ): Promise<MentesEredmeny> {
-  const berbeado = await aktualisBerbeado();
-  if (!berbeado) {
-    return { allapot: "hiba", uzenet: "Nincs bejelentkezett bérbeadó.", hibak: [] };
-  }
+  const berbeado = await kotelezoSzerep("berbeado");
 
   const { ablak, hibak } = ablakotEllenoriz({
     korabbiAblakNap: urlap.get("korabbiAblakNap"),

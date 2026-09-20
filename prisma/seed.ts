@@ -5,14 +5,20 @@
  */
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../src/generated/prisma/client";
+import { jelszotHashel } from "../src/lib/jelszo";
+import { meghivoLejarata } from "../src/domain/belepes";
+import { meghivoToken } from "../src/lib/meghivo";
 
 const url = (process.env.DATABASE_URL ?? "file:./dev.db").replace(/^file:/, "");
 const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url }) });
 
-// A jelszavas belépés a következő körben készül el; addig a mező jelzésértékű.
-const JELSZO_HELYE = "meg-nincs-jelszo";
+// Próbajelszó a példafiókokhoz. Éles adatbázisba ez a seed nem fut.
+const PROBA_JELSZO = "probajelszo2026";
 
 async function main() {
+  const jelszoHash = await jelszotHashel(PROBA_JELSZO);
+
+  await prisma.meghivo.deleteMany();
   await prisma.teendo.deleteMany();
   await prisma.egyeztetes.deleteMany();
   await prisma.kivonattetel.deleteMany();
@@ -28,7 +34,7 @@ async function main() {
     data: {
       email: "berbeado@pelda.hu",
       nev: "Nagy Péter",
-      jelszoHash: JELSZO_HELYE,
+      jelszoHash,
       szerep: "berbeado",
     },
   });
@@ -37,19 +43,12 @@ async function main() {
     data: {
       email: "anna@pelda.hu",
       nev: "Kovács Anna",
-      jelszoHash: JELSZO_HELYE,
+      jelszoHash,
       szerep: "berlo",
     },
   });
 
-  const berloTamas = await prisma.felhasznalo.create({
-    data: {
-      email: "tamas@pelda.hu",
-      nev: "Szabó Tamás",
-      jelszoHash: JELSZO_HELYE,
-      szerep: "berlo",
-    },
-  });
+  // Tamásnak szándékosan nincs még fiókja: rajta próbálható ki a meghívó.
 
   const ferencvaros = await prisma.ingatlan.create({
     data: {
@@ -98,9 +97,8 @@ async function main() {
   const tamasJogviszony = await prisma.jogviszony.create({
     data: {
       ingatlanId: ujbuda.id,
-      berloId: berloTamas.id,
-      berloNev: berloTamas.nev,
-      berloEmail: berloTamas.email,
+      berloNev: "Szabó Tamás",
+      berloEmail: "tamas@pelda.hu",
       kezdete: new Date(Date.UTC(2026, 1, 1)),
       berletiDijFt: 240000,
       kozosKoltsegFt: 21000,
@@ -139,7 +137,19 @@ async function main() {
     ],
   });
 
+  const meghivo = await prisma.meghivo.create({
+    data: {
+      jogviszonyId: tamasJogviszony.id,
+      token: meghivoToken(),
+      email: "tamas@pelda.hu",
+      lejar: meghivoLejarata(new Date()),
+    },
+  });
+
   console.log("Példaadat betöltve.");
+  console.log(`Bérbeadó: ${berbeado.email} / ${PROBA_JELSZO}`);
+  console.log(`Bérlő: ${berloAnna.email} / ${PROBA_JELSZO}`);
+  console.log(`Szabó Tamás meghívója: /meghivo/${meghivo.token}`);
 }
 
 main()

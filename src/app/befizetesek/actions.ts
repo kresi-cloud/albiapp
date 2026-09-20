@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { kivonatotOlvas } from "@/domain/kivonat";
 import { prisma } from "@/lib/db";
-import { aktualisBerbeado } from "@/lib/lekerdezesek";
+import { kotelezoSzerep } from "@/lib/munkamenet";
 
 export type FeltoltesEredmeny = {
   allapot: "ures" | "kesz" | "hiba";
@@ -17,10 +17,7 @@ export async function kivonatotFeltolt(
   _elozo: FeltoltesEredmeny,
   urlap: FormData,
 ): Promise<FeltoltesEredmeny> {
-  const berbeado = await aktualisBerbeado();
-  if (!berbeado) {
-    return { allapot: "hiba", uzenet: "Nincs bejelentkezett bérbeadó.", beolvasott: 0, kihagyott: 0, hibak: [] };
-  }
+  const berbeado = await kotelezoSzerep("berbeado");
 
   const jogviszonyId = String(urlap.get("jogviszonyId") ?? "");
   const fajl = urlap.get("kivonat");
