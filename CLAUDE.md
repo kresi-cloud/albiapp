@@ -95,6 +95,24 @@ A személyes adatok (születési adatok, anyja neve, igazolványszám, adóazono
 kizárólag a dokumentumok kiállításához kellenek. A bérbeadóé külön táblában van
 (`BerbeadoiAdatok`), hogy a belépési út ne is olvassa. Naplóba egyik sem kerül.
 
+## A jegyzőkönyv és az igazolás alapelve
+
+Az átadás-átvételi jegyzőkönyv nem különálló papír: véglegesítéskor a rögzített
+óraállások bekerülnek a mérőórák történetébe, így a birtokbaadás állása lesz az
+első rezsielszámolás kiindulópontja. A felelőssel és határidővel vállalt hibákból
+teendő lesz, mert a birtokbaadáskor tett ígéret egyébként elvész.
+
+Az óraállás mezője szabad szöveg, mert a helyszínen mértékegységgel együtt
+írják be. A számot kiolvassuk belőle; ha nem megy, nem tippelünk, hanem szólunk.
+
+A bérbeadói igazolás összegét és a teljesítés napját a párosított befizetésből
+vesszük, nem kézi beírásból. Amelyik hónapra nincs beazonosított befizetés,
+arra nem ajánlunk igazolást, és a beérkezettnél többet sem igazolunk.
+
+A teendők többsége származtatott: a rendszer állapotából jön, és magától eltűnik,
+ha az oka megszűnik. A vállalt javítás viszont tárolt teendő (`Teendo`), mert azt
+valaki vállalta, és le is kell tudni zárni.
+
 ## Mit jelent, hogy kész
 
 - `npx eslint .`, `npm run typecheck`, `npm test` és `npm run build` zöld.

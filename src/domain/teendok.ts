@@ -19,6 +19,12 @@ export type Teendo = {
   leiras?: string;
   esedekesseg: Date;
   hivatkozas?: string;
+  /**
+   * Igaz, ha a teendő saját sora van az adatbázisban, tehát valaki vállalta,
+   * nem a rendszer állapotából származik. Csak az ilyen zárható le kézzel: a
+   * származtatott teendő magától eltűnik, ha az oka megszűnik.
+   */
+  tarolt?: boolean;
 };
 
 export type TeendoSurgosseggel = Teendo & { surgosseg: Surgosseg };

@@ -133,3 +133,26 @@ egy későbbi modulfrissítés sem írja át. A szerződés sima szövegként le
 
 A modulok ügyvédi ellenjegyzése még nincs meg; a felület ezt minden szerződésnél
 kiírja.
+
+## Átadás-átvételi jegyzőkönyv
+
+A `Dokumentumok` lapon minden jogviszonyhoz felvehető birtokbaadási és
+visszaadási jegyzőkönyv. A mérőórák és a szokásos kulcsfajták előre bekerülnek a
+listába, hogy a helyszínen ne kelljen üres lapra írni, és ne maradjon ki a
+mérőóra. Hiba mellé felelős és határidő is rögzíthető.
+
+Véglegesítéskor három dolog történik: a szöveg befagy, a rögzített óraállások
+bekerülnek a mérőórák történetébe, a vállalt javításokból pedig teendő lesz az
+áttekintőn. Az óraállást így nem kell kétszer beírni, és az első rezsielszámolás
+a birtokbaadás állásából indul.
+
+## Bérbeadói igazolás
+
+Albérlettámogatáshoz, ösztöndíjhoz és munkáltatói térítéshez a bérlő havonta kér
+igazolást a befizetésről. Az alkalmazás ezt a párosított befizetésből állítja ki:
+az összeget és a teljesítés napját nem kell kézzel beírni. Amelyik hónapra nincs
+beazonosított befizetés, arra nem ajánl igazolást, és a beérkezettnél többet nem
+igazol.
+
+Több bérlőnél a bérbeadó megadhatja, mekkora rész igazolt az adott bérlőhöz, és
+az igazolás kiírja az egyetemleges felelősséget is.

@@ -14,6 +14,7 @@ import {
   kozelgoBefizetesTeendok,
   surgosseg,
   teendoketRendez,
+  type Teendo,
   type TeendoSurgosseggel,
 } from "@/domain/teendok";
 
@@ -174,6 +175,32 @@ function rendezettEloirasok(nezetek: JogviszonyNezet[]): Set<string> {
   );
 }
 
+/**
+ * A tárolt teendők: amiket nem a rendszer állapotából vezetünk le, hanem valaki
+ * vállalt. Ilyen a jegyzőkönyvben rögzített javítás. Ezeket le is lehet zárni,
+ * ezért van saját soruk az adatbázisban.
+ */
+async function tarolt(
+  cimzettId: string,
+  cimzett: "berbeado" | "berlo",
+): Promise<Teendo[]> {
+  const sorok = await prisma.teendo.findMany({
+    where: { cimzettId, statusz: "nyitott" },
+    orderBy: { esedekesseg: "asc" },
+  });
+
+  return sorok.map((sor) => ({
+    kulcs: sor.kulcs,
+    cimzett,
+    tipus: sor.tipus,
+    cim: sor.cim,
+    leiras: sor.leiras ?? undefined,
+    esedekesseg: sor.esedekesseg,
+    hivatkozas: sor.hivatkozas ?? undefined,
+    tarolt: true,
+  }));
+}
+
 async function kozelgok(
   nezetek: JogviszonyNezet[],
   jogviszonyIdk: string[],
@@ -208,6 +235,7 @@ export async function teendok(
     [
       ...nezetekbolTeendok(nezetek),
       ...(await kozelgok(nezetek, nezetek.map((nezet) => nezet.id), ma)),
+      ...(cimzett === "berbeado" ? await tarolt(tulajdonosId, "berbeado") : []),
     ]
       .filter((teendo) => teendo.cimzett === cimzett)
       .map((teendo) => ({ ...teendo, surgosseg: surgosseg(teendo.esedekesseg, ma) })),
@@ -224,6 +252,7 @@ export async function berloTeendoi(
     [
       ...nezetekbolTeendok(nezetek),
       ...(await kozelgok(nezetek, nezetek.map((nezet) => nezet.id), ma)),
+      ...(await tarolt(berloId, "berlo")),
     ]
       .filter((teendo) => teendo.cimzett === "berlo")
       .map((teendo) => ({ ...teendo, surgosseg: surgosseg(teendo.esedekesseg, ma) })),
