@@ -117,10 +117,11 @@ export async function futtat(oldal) {
   }
 
   await oldal.goto(`${ALAP}/ado`);
-  all(
-    (await oldal.getByRole("heading", { name: /Tax summary/ }).count()) > 0,
-    "/ado fejléce angolul jön",
-  );
+  const adoFejlec = (await oldal.getByRole("heading", { name: /Tax summary/ }).first().textContent()) ?? "";
+  all(adoFejlec.length > 0, "/ado fejléce angolul jön");
+  // Az évszám nem mennyiség: ha számként megy a szövegezőbe, angolul „2,026”
+  // lesz belőle. A magyar alakon ez nem látszik, ezért itt kell megfogni.
+  all(/Tax summary · \d{4}$/.test(adoFejlec.trim()), `az évszám nincs ezresre tagolva: ${adoFejlec}`);
 
   // Az űrlapok és a szerveroldali üzenetek is a szótáron mennek.
   await oldal.goto(`${ALAP}/beallitasok`);
