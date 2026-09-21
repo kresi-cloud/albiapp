@@ -30,7 +30,14 @@ const BERBEADOI = [
   "/beallitasok",
 ];
 
-const BERLOI = ["/berlo", "/berlo/hibak", "/berlo/dokumentumok", "/berlo/betekinto", "/berlo/adatok"];
+const BERLOI = [
+  "/berlo",
+  "/berlo/hibak",
+  "/berlo/jegyzokonyvek",
+  "/berlo/dokumentumok",
+  "/berlo/betekinto",
+  "/berlo/adatok",
+];
 
 // A betekintő nyilvános oldala szándékosan hiányzik: a megnyitása számít, és
 // azt a saját próbája méri. Az oldal méretét ott ellenőrizzük.
@@ -108,12 +115,16 @@ async function meresOnprobaja(oldal) {
   all(visszaall === elotte, "a próba nem hagy nyomot a lapon");
 }
 
-/** A szerződéstervezet a leghosszabb lap, de az azonosítója nem rögzített. */
-async function szerzodesUtja(oldal) {
+/**
+ * A dinamikus lapok útja nem rögzített, de mérni kell őket: a
+ * szerződéstervezet a leghosszabb lapunk, a jegyzőkönyv pedig fényképalbumot
+ * hordoz, ami adattal együtt nő.
+ */
+async function dokumentumUtja(oldal, elotag) {
   await oldal.goto(`${ALAP}/dokumentumok`);
   await oldal.waitForLoadState("networkidle");
   const hivatkozas = oldal
-    .locator('a[href^="/szerzodesek/"]:not([href$="/letoltes"])')
+    .locator(`a[href^="${elotag}"]:not([href$="/letoltes"])`)
     .first();
   return (await hivatkozas.count()) === 0 ? null : hivatkozas.getAttribute("href");
 }
@@ -124,9 +135,13 @@ export async function futtat(oldal) {
   await belep(oldal, "berbeado@pelda.hu");
   await magyarra(oldal);
   await vizsgal(oldal, BERBEADOI);
-  const szerzodes = await szerzodesUtja(oldal);
+  const szerzodes = await dokumentumUtja(oldal, "/szerzodesek/");
   all(szerzodes !== null, "van szerződéslap, amin a hossz mérhető");
   if (szerzodes) await vizsgal(oldal, [szerzodes]);
+
+  const jegyzokonyv = await dokumentumUtja(oldal, "/jegyzokonyvek/");
+  all(jegyzokonyv !== null, "van jegyzőkönyvlap, amin a hossz mérhető");
+  if (jegyzokonyv) await vizsgal(oldal, [jegyzokonyv]);
   await belep(oldal, "anna@pelda.hu");
   await magyarra(oldal);
   await vizsgal(oldal, BERLOI);
