@@ -108,6 +108,8 @@ async function main() {
   await prisma.teendo.deleteMany();
   await prisma.berbeadoiIgazolas.deleteMany();
   await prisma.berloiIgazolas.deleteMany();
+  await prisma.elofizetesJovahagyas.deleteMany();
+  await prisma.elofizetes.deleteMany();
   await prisma.eloirtTetel.deleteMany();
   await prisma.jogviszony.deleteMany();
   await prisma.oraallas.deleteMany();
@@ -279,10 +281,13 @@ async function main() {
       data: {
         merooraId: meroora.id,
         ervenyesTol: nap(-8),
-        kedvezmenyesArFiller: 79900, // 799 Ft/m3, víz és csatorna együtt
-        piaciArFiller: 79900,
+        kedvezmenyesArFiller: 37300, // 373 Ft/m3 ivóvíz
+        piaciArFiller: 37300,
         evesKeret: null, // a víznél nincs sáv
         alapdijFt: 0,
+        // Ugyanarra a köbméterre a szennyvízelvezetés. Külön sor lesz belőle az
+        // elszámolásban, ahogy a vízszámlán is külön áll.
+        csatornaArFiller: 42600, // 426 Ft/m3
       },
     });
   }
@@ -323,6 +328,7 @@ async function main() {
         data: {
           jogviszonyId,
           tipus: eloiras.tipus,
+          forrasId: eloiras.forrasId,
           idoszak: eloiras.idoszak,
           esedekesseg: eloiras.esedekesseg,
           osszegFt: eloiras.osszegFt,
@@ -405,7 +411,54 @@ async function main() {
     berleti_dij: "Bérleti díj",
     kozos_koltseg: "Közös költség",
     rezsi_atalany: "Rezsiátalány",
+    elofizetes: "Internet-előfizetés",
   };
+
+  // Előfizetések. Mind a három eset szerepel, mert a különbségük termékdöntés:
+  // jóváhagyott bérbeadói előfizetésből havi előírás lesz, a jóváhagyásra
+  // váróból még nem, a bérlő sajátjából pedig soha.
+  const annaInternet = await prisma.elofizetes.create({
+    data: {
+      jogviszonyId: annaJogviszony.id,
+      fajta: "internet",
+      megnevezes: "Telekom 500/100 internet",
+      szolgaltato: "Magyar Telekom",
+      elofizeto: "berbeado",
+      haviDijFt: 6490,
+      kezdete: nap(-3),
+    },
+  });
+  await prisma.elofizetesJovahagyas.create({
+    data: { elofizetesId: annaInternet.id, berloId: berloAnna.id, allapot: "jovahagyva" },
+  });
+
+  // Ez most került fel: Anna még nem nyilatkozott róla, tehát nem írunk elő
+  // belőle semmit, és a lap ezt meg is mondja mindkét oldalon.
+  await prisma.elofizetes.create({
+    data: {
+      jogviszonyId: annaJogviszony.id,
+      fajta: "tv",
+      megnevezes: "Kábeltévé alapcsomag",
+      szolgaltato: "Magyar Telekom",
+      elofizeto: "berbeado",
+      haviDijFt: 3990,
+      kezdete: nap(0),
+    },
+  });
+
+  // Tamás a saját nevén szerződött: a bérbeadó csak hozzájárult, pénz nem megy
+  // át az alkalmazáson, a szerződésbe viszont bekerül.
+  await prisma.elofizetes.create({
+    data: {
+      jogviszonyId: tamasJogviszony.id,
+      fajta: "internet",
+      megnevezes: "Vodafone otthoni net",
+      szolgaltato: "Vodafone",
+      elofizeto: "berlo",
+      haviDijFt: 7990,
+      kezdete: nap(-2),
+    },
+  });
 
   const annaTetelek = await eloirasokatKiir(annaJogviszony.id, {
     kezdete: annaJogviszony.kezdete,
@@ -415,6 +468,22 @@ async function main() {
     rezsiElszamolas: annaJogviszony.rezsiElszamolas,
     rezsiAtalanyFt: annaJogviszony.rezsiAtalanyFt,
     fizetesiNap: annaJogviszony.fizetesiNap,
+    // Az előfizetések is a jogviszonyból következnek, ugyanúgy, mint a
+    // bérleti díj: kézzel beírt előírás megint el tudna csúszni.
+    elofizetesek: [
+      {
+        id: annaInternet.id,
+        fajta: "internet",
+        megnevezes: annaInternet.megnevezes,
+        szolgaltato: annaInternet.szolgaltato,
+        elofizeto: "berbeado",
+        haviDijFt: annaInternet.haviDijFt,
+        kezdete: annaInternet.kezdete,
+        vege: annaInternet.vege,
+        nyilatkozatok: [{ berloId: berloAnna.id, allapot: "jovahagyva", indoklas: null }],
+      },
+    ],
+    fiokosBerlok: [berloAnna.id],
   });
 
   const tamasTetelek = await eloirasokatKiir(tamasJogviszony.id, {

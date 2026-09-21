@@ -15,6 +15,7 @@
  */
 
 import { eloirasok } from "@/domain/eloirasok";
+import { jogviszonyAdatta as adatta } from "@/lib/eloirasok";
 import { prisma } from "@/lib/db";
 
 export type LezarasEredmeny = {
@@ -24,26 +25,6 @@ export type LezarasEredmeny = {
 
 function honapKulcs(nap: Date): string {
   return `${nap.getUTCFullYear()}-${String(nap.getUTCMonth() + 1).padStart(2, "0")}`;
-}
-
-function adatta(jogviszony: {
-  kezdete: Date;
-  vege: Date | null;
-  berletiDijFt: number;
-  kozosKoltsegFt: number;
-  rezsiElszamolas: string;
-  rezsiAtalanyFt: number;
-  fizetesiNap: number;
-}) {
-  return {
-    kezdete: jogviszony.kezdete,
-    vege: jogviszony.vege,
-    berletiDijFt: jogviszony.berletiDijFt,
-    kozosKoltsegFt: jogviszony.kozosKoltsegFt,
-    rezsiElszamolas: jogviszony.rezsiElszamolas,
-    rezsiAtalanyFt: jogviszony.rezsiAtalanyFt,
-    fizetesiNap: jogviszony.fizetesiNap,
-  };
 }
 
 export async function jogviszonytLezar(
@@ -73,7 +54,13 @@ export async function jogviszonytLezar(
   });
 
   // A záró hónap arányosítása: a domain mondja meg, mennyi jár.
-  const frissitett = await prisma.jogviszony.findUniqueOrThrow({ where: { id: jogviszonyId } });
+  const frissitett = await prisma.jogviszony.findUniqueOrThrow({
+    where: { id: jogviszonyId },
+    include: {
+      elofizetesek: { include: { jovahagyasok: true } },
+      berlok: { select: { berloId: true } },
+    },
+  });
   const kellene = eloirasok(adatta(frissitett), vege).filter(
     (eloiras) => eloiras.idoszak === zaroHonap,
   );
@@ -81,7 +68,10 @@ export async function jogviszonytLezar(
   let aranyositott = 0;
   for (const eloiras of kellene) {
     const meglevo = jogviszony.eloirtTetelek.find(
-      (tetel) => tetel.tipus === eloiras.tipus && tetel.idoszak === zaroHonap,
+      (tetel) =>
+        tetel.tipus === eloiras.tipus &&
+        tetel.idoszak === zaroHonap &&
+        tetel.forrasId === eloiras.forrasId,
     );
     if (!meglevo || meglevo.osszegFt === eloiras.osszegFt) continue;
 
@@ -92,7 +82,9 @@ export async function jogviszonytLezar(
         ? frissitett.berletiDijFt
         : eloiras.tipus === "kozos_koltseg"
           ? frissitett.kozosKoltsegFt
-          : frissitett.rezsiAtalanyFt;
+          : eloiras.tipus === "elofizetes"
+            ? (frissitett.elofizetesek.find((sor) => sor.id === eloiras.forrasId)?.haviDijFt ?? 0)
+            : frissitett.rezsiAtalanyFt;
     if (meglevo.osszegFt !== teljesHavi) continue;
 
     await prisma.eloirtTetel.update({
@@ -132,19 +124,23 @@ export async function jogviszonytUjranyit(
 
   const jogviszony = await prisma.jogviszony.findUniqueOrThrow({
     where: { id: jogviszonyId },
-    include: { eloirtTetelek: true },
+    include: {
+      eloirtTetelek: true,
+      elofizetesek: { include: { jovahagyasok: true } },
+      berlok: { select: { berloId: true } },
+    },
   });
 
   const kellene = new Map(
     eloirasok(adatta(jogviszony), new Date()).map((eloiras) => [
-      `${eloiras.tipus}|${eloiras.idoszak}`,
+      `${eloiras.tipus}|${eloiras.idoszak}|${eloiras.forrasId}`,
       eloiras,
     ]),
   );
 
   for (const tetel of jogviszony.eloirtTetelek) {
     if (tetel.reszletezes === null) continue;
-    const eloiras = kellene.get(`${tetel.tipus}|${tetel.idoszak}`);
+    const eloiras = kellene.get(`${tetel.tipus}|${tetel.idoszak}|${tetel.forrasId}`);
     if (!eloiras || eloiras.osszegFt === tetel.osszegFt) continue;
     await prisma.eloirtTetel.update({
       where: { id: tetel.id },

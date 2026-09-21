@@ -79,6 +79,7 @@ const BERBEADO_TOBBI = [
   { kulcs: "nav.dokumentumok", utvonal: "/dokumentumok" },
   { kulcs: "nav.ingatlanok", utvonal: "/ingatlanok" },
   { kulcs: "nav.berlok", utvonal: "/berlok" },
+  { kulcs: "nav.elofizetesek", utvonal: "/elofizetesek" },
   { kulcs: "nav.hibak", utvonal: "/hibak" },
   { kulcs: "nav.ado", utvonal: "/ado" },
   { kulcs: "nav.beallitasok", utvonal: "/beallitasok" },
@@ -92,6 +93,7 @@ const BERLO_FULEK = [
 ];
 
 const BERLO_TOBBI = [
+  { kulcs: "nav.elofizetesek", utvonal: "/elofizetesek" },
   { kulcs: "nav.dokumentumaim", utvonal: "/berlo/dokumentumok" },
   { kulcs: "nav.jegyzokonyveim", utvonal: "/berlo/jegyzokonyvek" },
   { kulcs: "nav.adataim", utvonal: "/berlo/adatok" },

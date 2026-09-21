@@ -125,6 +125,17 @@ kerekítetlen összeg kerekítése: a bérlő össze fogja adni a sorokat.
 Az éves kedvezményes keret az elszámolt napokra arányosítva jár. Minden tételhez
 tartozik emberi nyelvű részletezés; számot magyarázat nélkül nem küldünk ki.
 
+A vízóra mért köbmétere után két díj jár: az ivóvízé és a szennyvízelvezetésé.
+A csatornadíj ezért a vízóra díjszabásának része (`csatornaArFiller`), nem külön
+mérőóra: külön óraállás nincs hozzá, és nem is lenne mit leolvasni rajta. Sávja
+nincs, mert a víz- és csatornadíj nem a rezsicsökkentés kétsávos rendszerében
+megy. A nulla ár nem hiányzó adat, hanem érvényes eset: a locsolási mellékmérőn
+átfolyt víz nem megy csatornába, és emésztőgödrös ingatlanon sincs mit elvezetni.
+
+Az elszámolásban külön sor, nem a vízdíjba olvasztva, mert a vízszámla is így
+írja, és a bérlő a kettőt össze fogja vetni. A fajtája ettől ugyanúgy mért
+fogyasztás, tehát az adóösszesítő továbbhárítva nem számolja bevételnek.
+
 ## Az adóösszesítő alapelve
 
 Összesítő, nem bevallás; a felület is ezt mondja. A bevétel pénzforgalmi: a
@@ -137,6 +148,64 @@ befizetés legyen. Minden bevételi sor mellé indoklás kerül.
 
 Amit nem tudunk besorolni (előírás nélkül beérkezett pénz), azt nem tippeljük
 meg: külön listán megy a bérbeadóhoz.
+
+## Az előfizetések alapelve
+
+A vezetékes tévé, telefon és internet opcionális: sok albérlethez nincs, és
+amelyikhez van, ott sem egyforma. A lényegi adat nem a szolgáltató, hanem hogy
+**ki az előfizető** (`Elofizetes.elofizeto`), mert a kettő pénzügyileg nem
+ugyanaz. Ha a bérbeadó az előfizető, a számla az ő nevére jön, és a bérlő neki
+téríti meg: ebből havi előírás lesz. Ha a bérlő az előfizető, ő szerződik és ő
+fizet a szolgáltatónak — pénz nem megy át az alkalmazáson, de a szerződésbe
+attól még bekerül, mert a létesítés és a megszüntetés a bérleményt érinti.
+
+A jóváhagyás nem formaság. A bérlőnek olyan havi kiadása keletkezik, amiről a
+szerződéskötéskor nem volt szó, ezért ugyanaz a kétoldali elv áll rá, mint a
+befizetésre és a fényképre: a bérbeadó beállítja, a bérlő a saját adatával mond
+rá igent vagy nemet, és **amíg nem mondta, nem írunk elő belőle semmit**.
+Jóváhagyni mindenkinek kell, akinek van fiókja; egy kifogás viszont egymagában
+is dönt, mert a lakótárs nem szavazhatja le azt, aki nem kéri a szolgáltatást.
+Fiók nélküli bérlőt nem lehet megkérdezni, és a felület ezt ki is mondja.
+Kifogás indoklás nélkül nincs, és a kifogás nem törli az előfizetést.
+
+Az előírás előfizetésenként külön sor, nem összevonva: két előfizetés más napon
+indulhat és más napon szűnhet meg, tehát az arányosításuk sem ugyanaz. Ezért kapott
+az `EloirtTetel` `forrasId` mezőt, és ezért lett az egyediségi kulcs
+`jogviszonyId + tipus + idoszak + forrasId`. A mező üres szöveg, nem null: a
+null az egyediségi kulcsban külön értéknek számítana, és ugyanarra a hónapra
+kétszer is beengedné a bérleti díjat.
+
+Az előfizetést törölni nem lehet, csak megszüntetni egy nappal, ugyanúgy, ahogy
+a jogviszonyt: a lefutott hónapok előírásai mögött ez az előfizetés áll, és a
+bérlő már ki is fizette őket.
+
+Az előfizetés a szerződésbe is bekerül (`elofizetesek` modul), abból, amit az
+alkalmazás már tud: így nem állhat más a szerződésben, mint az előfizetések
+lapján. Csak a jóváhagyott és még élő előfizetés kerül bele — amiről a bérlő
+nem nyilatkozott, az nem szerződéses kötelezettség.
+
+## A záradék alapelve
+
+Amit a felek aláírtak, azt nem írjuk át: a `veglegesSzoveg` be is fagyasztja.
+Ha a hatályos szerződés utóbb kiegészül — jellemzően előfizetéssel —, a
+kiegészítés **külön okirat**, záradék.
+
+A záradék ugyanabban a táblában él, mint a szerződés (`Szerzodes.fajta`,
+`alapSzerzodesId`), mert minden más ugyanaz: modulokból épül, ugyanúgy
+véglegesül és fagy be, ugyanúgy kerül a dokumentumtárba, és a bérlő ugyanúgy
+csak véglegesítés után látja. Külön táblában ugyanez a viselkedés még egyszer
+meg lenne írva, és a második példány előbb-utóbb elmaradna az elsőtől.
+
+Két dolog viszont más. A záradéknak nincs kötelező modulja: nem egy második
+teljes szerződés, tehát amit a felek már aláírtak, azt nem írja le újra — két
+szöveg utóbb eltérhetne egymástól. És van két elhagyhatatlan, nem modulos
+része: megnevezi az alapszerződést, és kimondja, hogy annak többi rendelkezése
+változatlanul hatályban marad. Enélkül vitatható lenne, mi maradt érvényben.
+Ez a két rész a tervezetben is látszik, nem csak a véglegesítés után.
+
+A kódban a `zaradekSorok` név korábban az aláírási részt jelentette (kelt,
+aláírók, tanúk); az `alairasSorok` lett belőle, mert két különböző dolgot nem
+hívhat ugyanaz a szó.
 
 ## A bérleti szerződés alapelve
 

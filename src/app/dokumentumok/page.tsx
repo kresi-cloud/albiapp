@@ -188,7 +188,6 @@ export default async function Dokumentumok() {
                     cimkek={{
                       nincs: sz("dokumentumok.igazolas_nincs", { nev: berlo.nev }),
                       idoszak: sz("dokumentumok.igazolas_idoszak"),
-                      idoszakSor: sz("dokumentumok.igazolas_idoszak_sor"),
                       osszeg: sz("dokumentumok.igazolas_osszeg"),
                       osszegPelda: sz("dokumentumok.igazolas_osszeg_pelda"),
                       osszegSugo: sz("dokumentumok.igazolas_osszeg_sugo"),

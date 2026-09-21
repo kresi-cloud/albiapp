@@ -16,9 +16,10 @@
  *    különben a tavalyi egyeztetés eredménye ma másképp nézne ki.
  */
 
+import { allapota, terhelheto, type ElofizetesAdat } from "./elofizetes";
 import { uzenet, type Uzenet } from "./nyelv";
 
-export type EloirasTipus = "berleti_dij" | "kozos_koltseg" | "rezsi_atalany";
+export type EloirasTipus = "berleti_dij" | "kozos_koltseg" | "rezsi_atalany" | "elofizetes";
 
 export type JogviszonyAdat = {
   kezdete: Date;
@@ -30,10 +31,24 @@ export type JogviszonyAdat = {
   rezsiAtalanyFt: number;
   /** A hónap hányadikára esedékes. */
   fizetesiNap: number;
+  /**
+   * A bérleményhez tartozó előfizetések, jóváhagyásukkal együtt. Hogy melyikből
+   * lesz előírás, azt az `elofizetes` modul mondja meg, nem a hívó: a
+   * „jóváhagyás nélkül nincs terhelés" szabály így egy helyen van, teszttel.
+   */
+  elofizetesek?: ElofizetesAdat[];
+  /** Azok a bérlők, akiknek van fiókjuk, tehát nyilatkozni tudnak. */
+  fiokosBerlok?: readonly string[];
 };
 
 export type Eloiras = {
   tipus: EloirasTipus;
+  /**
+   * Melyik sorból jön, ha egy típusból több is lehet egy hónapban. A bérleti
+   * díjnál üres: abból hónaponként egy van. Előfizetésnél az előfizetés
+   * azonosítója, mert kettőt külön kell tudni előírni és külön egyeztetni.
+   */
+  forrasId: string;
   /** "2026-09" */
   idoszak: string;
   esedekesseg: Date;
@@ -143,6 +158,7 @@ export function eloirasok(jogviszony: JogviszonyAdat, ma: Date): Eloiras[] {
 
         kesz.push({
           tipus,
+          forrasId: "",
           idoszak: idoszakKulcs(ev, honap),
           esedekesseg: mikor,
           osszegFt,
@@ -157,6 +173,10 @@ export function eloirasok(jogviszony: JogviszonyAdat, ma: Date): Eloiras[] {
             : null,
         });
       }
+
+      for (const eloiras of elofizetesEloirasok(jogviszony, ev, honap, reszlet, mikor)) {
+        kesz.push(eloiras);
+      }
     }
 
     honap += 1;
@@ -164,6 +184,70 @@ export function eloirasok(jogviszony: JogviszonyAdat, ma: Date): Eloiras[] {
       honap = 0;
       ev += 1;
     }
+  }
+
+  return kesz;
+}
+
+/**
+ * Egy hónap előfizetési előírásai, előfizetésenként külön.
+ *
+ * Külön sor, nem összevonva: két előfizetés más napon indulhat és más napon
+ * szűnhet meg, tehát az arányosításuk sem ugyanaz. Egy összevont sor mellé nem
+ * lehetne olyan részletezést írni, ami mind a kettőre igaz — a bérlő pedig
+ * pont azt kérdezné meg, hogy melyikből mennyi.
+ */
+function elofizetesEloirasok(
+  jogviszony: JogviszonyAdat,
+  ev: number,
+  honap: number,
+  jogviszonyResz: { napok: number; honapNapjai: number; elsoNap: number; utolsoNap: number },
+  esedekesseg: Date,
+): Eloiras[] {
+  const elofizetesek = jogviszony.elofizetesek ?? [];
+  if (elofizetesek.length === 0) return [];
+  const fiokosBerlok = jogviszony.fiokosBerlok ?? [];
+
+  const kesz: Eloiras[] = [];
+
+  for (const elofizetes of elofizetesek) {
+    if (!terhelheto(elofizetes, allapota(elofizetes, fiokosBerlok))) continue;
+
+    // Az előfizetés napjai a hónapban, de csak addig, ameddig a jogviszony is
+    // tart: egy kiköltözés után futó előfizetés már nem a bérlő gondja.
+    const kezdete = napEleje(elofizetes.kezdete);
+    const vege = elofizetes.vege ? napEleje(elofizetes.vege) : null;
+    const honapElso = new Date(Date.UTC(ev, honap, jogviszonyResz.elsoNap));
+    const honapUtolso = new Date(Date.UTC(ev, honap, jogviszonyResz.utolsoNap));
+
+    const elso = kezdete > honapElso ? kezdete : honapElso;
+    const utolso = vege && vege < honapUtolso ? vege : honapUtolso;
+    if (utolso < elso) continue;
+
+    const napok = utolso.getUTCDate() - elso.getUTCDate() + 1;
+    const osszegFt = aranyos(elofizetes.haviDijFt, napok, jogviszonyResz.honapNapjai);
+    if (osszegFt <= 0) continue;
+
+    const toredek = napok < jogviszonyResz.honapNapjai;
+    kesz.push({
+      tipus: "elofizetes",
+      forrasId: elofizetes.id,
+      idoszak: idoszakKulcs(ev, honap),
+      esedekesseg,
+      osszegFt,
+      // A megnevezés mindig ott van, töredékhónapnál is: enélkül a bérlő két
+      // előfizetés közül nem tudná, melyikről szól a sor.
+      reszletezes: toredek
+        ? uzenet("eloiras.elofizetes_toredek", {
+            nev: elofizetes.megnevezes,
+            elso: elso.getUTCDate(),
+            utolso: utolso.getUTCDate(),
+            napok,
+            honapNapjai: jogviszonyResz.honapNapjai,
+            teljes: elofizetes.haviDijFt,
+          })
+        : uzenet("eloiras.elofizetes", { nev: elofizetes.megnevezes }),
+    });
   }
 
   return kesz;

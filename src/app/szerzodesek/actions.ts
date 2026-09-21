@@ -10,7 +10,7 @@ import {
   ajanlottModulok,
   hianyzoAdatok,
   modultKeres,
-  szerzodesSzovege,
+  okiratSzovege,
 } from "@/domain/szerzodes-keszites";
 
 export type Eredmeny = {
@@ -47,7 +47,11 @@ export async function szerzodestKeszit(_elozo: Eredmeny, urlap: FormData): Promi
 
   const jogviszony = await prisma.jogviszony.findFirst({
     where: { id: jogviszonyId, ingatlan: { tulajdonosId: berbeado.id } },
-    include: { ingatlan: true, berlok: { orderBy: { sorrend: "asc" } } },
+    include: {
+      ingatlan: true,
+      berlok: { orderBy: { sorrend: "asc" } },
+      elofizetesek: { include: { jovahagyasok: true } },
+    },
   });
   if (!jogviszony) return hiba(sz("szerzodes.hiba.jogviszony_nem_tied"));
   if (jogviszony.berlok.length === 0) {
@@ -84,6 +88,15 @@ export async function szerzodestKeszit(_elozo: Eredmeny, urlap: FormData): Promi
       rezsiElszamolas: jogviszony.rezsiElszamolas,
       rezsiAtalanyFt: jogviszony.rezsiAtalanyFt,
     },
+    // Ha van előfizetés, az előfizetési pontot is ajánljuk: enélkül a
+    // bérbeadónak kellene rájönnie, hogy van ilyen modul.
+    elofizetesek: jogviszony.elofizetesek.map((sor) => ({
+      megnevezes: sor.megnevezes,
+      fajta: sor.fajta,
+      szolgaltato: sor.szolgaltato,
+      elofizeto: sor.elofizeto,
+      haviDijFt: sor.haviDijFt,
+    })),
   });
 
   // A kötelező modulok mindig bekerülnek a szövegbe, ezért csak a választhatókat
@@ -104,7 +117,11 @@ export async function szerzodestKeszit(_elozo: Eredmeny, urlap: FormData): Promi
   redirect(`/szerzodesek/${szerzodes.id}`);
 }
 
-/** Modul be- vagy kikapcsolása. Kötelező modult nem lehet kikapcsolni. */
+/**
+ * Modul be- vagy kikapcsolása. Szerződésben a kötelező modult nem lehet
+ * kikapcsolni; záradékban viszont nincs kötelező modul, mert a záradék nem egy
+ * második teljes szerződés — ott minden pont szabadon választható.
+ */
 export async function modultValt(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
   const { sz } = await szovegek();
@@ -113,13 +130,15 @@ export async function modultValt(_elozo: Eredmeny, urlap: FormData): Promise<Ere
 
   const modul = modultKeres(kulcs);
   if (!modul) return hiba(sz("szerzodes.hiba.nincs_modul"));
-  if (modul.kotelezo) return hiba(sz("szerzodes.hiba.kotelezo_modul"));
 
   const szerzodes = await prisma.szerzodes.findFirst({
     where: { id: szerzodesId, jogviszony: { ingatlan: { tulajdonosId: berbeado.id } } },
     include: { modulok: true },
   });
   if (!szerzodes) return hiba(sz("szerzodes.hiba.nem_tied"));
+  if (modul.kotelezo && szerzodes.fajta !== "zaradek") {
+    return hiba(sz("szerzodes.hiba.kotelezo_modul"));
+  }
   if (szerzodes.allapot !== "tervezet") {
     return hiba(sz("szerzodes.hiba.vegleges_nem_valtozik"));
   }
@@ -215,7 +234,7 @@ export async function szerzodestVeglegesit(_elozo: Eredmeny, urlap: FormData): P
     where: { id: szerzodesId },
     data: {
       allapot: "veglegesitve",
-      veglegesSzoveg: szerzodesSzovege(betoltott.bemenet),
+      veglegesSzoveg: okiratSzovege(betoltott.bemenet),
       veglegesitve: new Date(),
     },
   });
@@ -248,4 +267,51 @@ export async function veglegesitestVisszavon(_elozo: Eredmeny, urlap: FormData):
   revalidatePath(`/szerzodesek/${szerzodesId}`);
   revalidatePath("/szerzodesek");
   return { allapot: "kesz", uzenet: sz("szerzodes.kesz.visszaallt"), hibak: [] };
+}
+
+/**
+ * Záradék egy hatályos szerződéshez.
+ *
+ * Amit a felek aláírtak, azt nem írjuk át: a `veglegesSzoveg` be is fagyasztja.
+ * Ha a szerződés utóbb kiegészül — például előfizetéssel —, az külön okirat,
+ * ami megnevezi az alapszerződést, és kimondja, hogy a többi rendelkezés
+ * változatlanul hatályban marad.
+ *
+ * A záradék ugyanabban a táblában él, mint a szerződés, mert minden más
+ * ugyanaz: modulokból épül, ugyanúgy véglegesül, ugyanúgy kerül a
+ * dokumentumtárba, és a bérlő ugyanúgy csak véglegesítés után látja.
+ */
+export async function zaradekotKeszit(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+  const alapId = szoveg(urlap.get("szerzodesId"));
+
+  const alap = await prisma.szerzodes.findFirst({
+    where: {
+      id: alapId,
+      fajta: "szerzodes",
+      allapot: "veglegesitve",
+      jogviszony: { ingatlan: { tulajdonosId: berbeado.id } },
+    },
+    include: { jogviszony: { include: { ingatlan: true } } },
+  });
+  // Tervezethez nem kell záradék: azt még szerkeszteni lehet.
+  if (!alap) return hiba(sz("szerzodes.hiba.zaradek_csak_veglegeshez"));
+
+  const zaradek = await prisma.szerzodes.create({
+    data: {
+      jogviszonyId: alap.jogviszonyId,
+      fajta: "zaradek",
+      alapSzerzodesId: alap.id,
+      megnevezes: sz("szerzodes.zaradek_megnevezes", {
+        ingatlan: alap.jogviszony.ingatlan.megnevezes,
+      }),
+      // Az előfizetési pont eleve be van kapcsolva: a záradék jellemzően épp
+      // ezért készül, és üres záradékkal senki nem kezd semmit.
+      modulok: { create: [{ kulcs: "elofizetesek", sorrend: 0 }] },
+    },
+  });
+
+  revalidatePath("/szerzodesek");
+  redirect(`/szerzodesek/${zaradek.id}`);
 }

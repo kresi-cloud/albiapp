@@ -15,6 +15,7 @@ import {
   type ModulDef,
   felSzoveg,
   hosszuDatum,
+  nevsor,
   osszegSzoveg,
 } from "./szerzodes";
 
@@ -476,6 +477,75 @@ export const MODULOK: ModulDef[] = [
             `írásbeli hozzájárulásával létesíthető; annak valamennyi díját és megszüntetésének költségét ${k.B} ${k.v("viseli", "viselik")}.`,
         );
       }
+
+      return sorok;
+    },
+  },
+  {
+    kulcs: "elofizetesek",
+    cim: "Előfizetések",
+    kotelezo: false,
+    ellenjegyzes: "nincs",
+    miert:
+      "Ha a bérleményhez vezetékes tévé, telefon vagy internet tartozik, a szerződés " +
+      "mondja meg, kinek a nevén van, ki fizeti, és mi lesz vele a bérlet végén. Enélkül " +
+      "a kiköltözéskor derül ki, hogy a bérbeadó nevén futó előfizetés hónapok óta a " +
+      "bérlő használatában volt, felmondatlanul.",
+    parameterek: [
+      {
+        kulcs: "elofizetes_berlo_vegen",
+        cimke: "A bérlő saját előfizetését a bérlet végére meg kell szüntetnie?",
+        tipus: "valaszt",
+        alapertelmezes: "igen",
+        valaszthatok: IGEN_NEM,
+      },
+    ],
+    // Csak akkor ajánljuk, ha van mit beleírni: üres modul sorszámot kapna a
+    // szerződésben, tartalom nélkül.
+    ajanlott: (k) => k.elofizetesek.length > 0,
+    szoveg: (k) => {
+      if (k.elofizetesek.length === 0) return [];
+
+      const sorok: string[] = [];
+      const berbeadoiak = k.elofizetesek.filter((sor) => sor.elofizeto === "berbeado");
+      const berloiek = k.elofizetesek.filter((sor) => sor.elofizeto === "berlo");
+
+      const nev = (sor: (typeof k.elofizetesek)[number]) =>
+        sor.szolgaltato ? `${sor.megnevezes} (${sor.szolgaltato})` : sor.megnevezes;
+
+      if (berbeadoiak.length > 0) {
+        sorok.push(
+          "A Bérleményhez a Bérbeadó nevén álló alábbi elektronikus hírközlési előfizetés tartozik: " +
+            `${nevsor(berbeadoiak.map(nev))}.`,
+          `${k.BN} ${k.v("köteles", "kötelesek")} a Bérbeadónak megtéríteni ezek díját, amelynek mértéke a ` +
+            "szerződéskötéskor " +
+            `${nevsor(berbeadoiak.map((sor) => `${nev(sor)}: ${osszegSzoveg(sor.haviDijFt)} havonta`))}. ` +
+            "A szolgáltatói díj változásáról a Bérbeadó írásban tájékoztat; a megváltozott díj a " +
+            "tájékoztatást követő hónaptól terheli a Bérlőt.",
+          "Az előfizetői szerződést a Bérbeadó kötötte, azt ő mondhatja fel, és a szolgáltatóval " +
+            `szemben ő felel. ${k.BN} a szolgáltatás minőségére alapított igényt a Bérbeadóval szemben ` +
+            `nem ${k.v("érvényesíthet", "érvényesíthetnek")}, a Bérbeadó viszont köteles az igényt a szolgáltatónál bejelenteni.`,
+        );
+      }
+
+      if (berloiek.length > 0) {
+        sorok.push(
+          `A Bérbeadó hozzájárul ahhoz, hogy ${k.B} a saját nevén az alábbi elektronikus hírközlési ` +
+            `előfizetést ${k.v("tartsa", "tartsák")} fenn a Bérleményben: ${nevsor(berloiek.map(nev))}. ` +
+            `Ezek díját ${k.B} közvetlenül a szolgáltatónak ${k.v("fizeti", "fizetik")}; a Bérbeadót e körben ` +
+            "fizetési kötelezettség nem terheli.",
+          k.p("elofizetes_berlo_vegen") === "igen"
+            ? `${k.BN} ${k.v("köteles", "kötelesek")} a saját nevén álló előfizetést legkésőbb a Bérlemény ` +
+                "visszaadásának napjáig megszüntetni vagy más címre átvinni, és ennek megtörténtét igazolni. " +
+                "Ennek elmulasztása esetén az ebből eredő díjak és költségek a Bérlőt terhelik."
+            : "Az előfizetés sorsáról a Bérlemény visszaadásakor a Felek külön állapodnak meg.",
+        );
+      }
+
+      sorok.push(
+        "Új elektronikus hírközlési szolgáltatás létesítéséhez, illetve a meglévő bővítéséhez, ha az a " +
+          "Bérlemény vagy a közös tulajdon állagát érinti, a Bérbeadó előzetes írásbeli hozzájárulása szükséges.",
+      );
 
       return sorok;
     },

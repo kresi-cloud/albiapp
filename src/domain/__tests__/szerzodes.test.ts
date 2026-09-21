@@ -6,6 +6,7 @@ import {
   nevsor,
   osszegSzoveg,
   type Berbeado,
+  type ElofizetesAdat,
   type Fel,
   type IngatlanAdat,
   type JogviszonyAdat,
@@ -15,7 +16,9 @@ import {
   hianyzoAdatok,
   szakaszok,
   szerzodesSzovege,
-  zaradekSorok,
+  alairasSorok,
+  zaradekSzovege,
+  ZARADEK_ZARO,
   type Bemenet,
 } from "../szerzodes-keszites";
 
@@ -302,16 +305,170 @@ describe("szerzodesSzovege", () => {
   });
 });
 
-describe("zaradekSorok", () => {
+describe("alairasSorok", () => {
   it("a szerkesztőben is megmutatja a keltet és az aláírókat", () => {
-    const sorok = zaradekSorok(bemenet({ berlok: [BERLO_EGY, BERLO_KETTO] }));
+    const sorok = alairasSorok(bemenet({ berlok: [BERLO_EGY, BERLO_KETTO] }));
     expect(sorok[0]).toBe("Kelt: Pécs, 2026. augusztus 29.");
     expect(sorok).toContain("Bérlők:");
     expect(sorok).toContain("Tóth Anna és Szabó Panna");
   });
 
   it("kelt nélkül kipontozott helyet hagy, nem mai dátumot tippel", () => {
-    const sorok = zaradekSorok(bemenet({ kelteHelye: "", kelte: null }));
+    const sorok = alairasSorok(bemenet({ kelteHelye: "", kelte: null }));
     expect(sorok[0]).toBe("Kelt: ………………………………");
+  });
+});
+
+describe("előfizetési pont", () => {
+  const INTERNET: ElofizetesAdat = {
+    megnevezes: "Telekom 500/100",
+    fajta: "internet",
+    szolgaltato: "Magyar Telekom",
+    elofizeto: "berbeado",
+    haviDijFt: 6490,
+  };
+  const BERLOI_TV: ElofizetesAdat = {
+    megnevezes: "Kábeltévé",
+    fajta: "tv",
+    szolgaltato: null,
+    elofizeto: "berlo",
+    haviDijFt: 3990,
+  };
+
+  function elofizetessel(elofizetesek: ElofizetesAdat[]) {
+    return bemenet({ valasztottModulok: ["elofizetesek"], elofizetesek });
+  }
+
+  it("előfizetés nélkül nincs ilyen pont: üres pontnak sorszám sem járna", () => {
+    const kesz = szakaszok(bemenet({ valasztottModulok: ["elofizetesek"] }));
+    expect(kesz.some((szakasz) => szakasz.kulcs === "elofizetesek")).toBe(false);
+  });
+
+  it("nem ajánljuk, ha nincs mit beleírni", () => {
+    expect(ajanlottModulok(bemenet())).not.toContain("elofizetesek");
+  });
+
+  it("ajánljuk, ha van előfizetés", () => {
+    expect(
+      ajanlottModulok(bemenet({ elofizetesek: [INTERNET] })),
+    ).toContain("elofizetesek");
+  });
+
+  it("a bérbeadói előfizetésnél a megtérítés és a havi díj is szerepel", () => {
+    const szakasz = szakaszok(elofizetessel([INTERNET])).find(
+      (sor) => sor.kulcs === "elofizetesek",
+    );
+    const szoveg = szakasz?.bekezdesek.join(" ") ?? "";
+    expect(szoveg).toContain("Telekom 500/100");
+    expect(szoveg).toContain("Magyar Telekom");
+    expect(szoveg).toContain("megtéríteni");
+    // Az összeg a jogviszony adataiból jön, nem külön beírásból.
+    expect(szoveg).toContain(osszegSzoveg(6490));
+  });
+
+  it("a bérlő saját előfizetésénél hozzájárulás van, nem megtérítés", () => {
+    const szoveg =
+      szakaszok(elofizetessel([BERLOI_TV]))
+        .find((sor) => sor.kulcs === "elofizetesek")
+        ?.bekezdesek.join(" ") ?? "";
+    expect(szoveg).toContain("hozzájárul");
+    expect(szoveg).toContain("közvetlenül a szolgáltatónak");
+    expect(szoveg).not.toContain("megtéríteni");
+  });
+
+  it("a bérlőnek a bérlet végére meg kell szüntetnie a sajátját, ha így állítottuk be", () => {
+    const igen =
+      szakaszok(elofizetessel([BERLOI_TV]))
+        .find((sor) => sor.kulcs === "elofizetesek")
+        ?.bekezdesek.join(" ") ?? "";
+    expect(igen).toContain("visszaadásának napjáig megszüntetni");
+
+    const nem =
+      szakaszok(
+        bemenet({
+          valasztottModulok: ["elofizetesek"],
+          elofizetesek: [BERLOI_TV],
+          parameterek: { elofizetes_berlo_vegen: "nem" },
+        }),
+      )
+        .find((sor) => sor.kulcs === "elofizetesek")
+        ?.bekezdesek.join(" ") ?? "";
+    expect(nem).not.toContain("visszaadásának napjáig megszüntetni");
+    expect(nem).toContain("külön állapodnak meg");
+  });
+
+  it("mindkét fajta előfizetés egyszerre is elfér a pontban", () => {
+    const szoveg =
+      szakaszok(elofizetessel([INTERNET, BERLOI_TV]))
+        .find((sor) => sor.kulcs === "elofizetesek")
+        ?.bekezdesek.join(" ") ?? "";
+    expect(szoveg).toContain("Telekom 500/100");
+    expect(szoveg).toContain("Kábeltévé");
+  });
+});
+
+describe("zaradekSzovege", () => {
+  const ALAP = {
+    megnevezes: "Bérleti szerződés – Belvárosi garzon",
+    kelte: new Date(Date.UTC(2026, 7, 29)),
+    veglegesitve: new Date(Date.UTC(2026, 7, 30)),
+  };
+
+  function zaradek(modositas: Partial<Bemenet> = {}) {
+    return zaradekSzovege(
+      bemenet({
+        fajta: "zaradek",
+        alap: ALAP,
+        valasztottModulok: ["elofizetesek"],
+        elofizetesek: [
+          {
+            megnevezes: "Telekom 500/100",
+            fajta: "internet",
+            szolgaltato: "Magyar Telekom",
+            elofizeto: "berbeado",
+            haviDijFt: 6490,
+          },
+        ],
+        ...modositas,
+      }),
+    );
+  }
+
+  it("megnevezi az alapszerződést a keltével együtt", () => {
+    const szoveg = zaradek();
+    expect(szoveg).toContain("ZÁRADÉK A LAKÁSBÉRLETI SZERZŐDÉSHEZ");
+    expect(szoveg).toContain("Bérleti szerződés – Belvárosi garzon");
+    expect(szoveg).toContain(hosszuDatum(ALAP.kelte));
+  });
+
+  it("kimondja, hogy a többi pont hatályban marad", () => {
+    expect(zaradek()).toContain(ZARADEK_ZARO);
+  });
+
+  it("a kötelező pontokat nem írja le újra", () => {
+    // A záradék nem egy második teljes szerződés: amit a felek aláírtak,
+    // azt nem ismételjük meg, mert a két szöveg utóbb eltérhetne egymástól.
+    const szoveg = zaradek();
+    expect(szoveg).not.toContain("Szerződő felek");
+    expect(szoveg).not.toContain("A bérlemény használata");
+    expect(szoveg).toContain("Előfizetések");
+  });
+
+  it("a szerződés szövege ettől változatlan marad", () => {
+    const szerzodes = szerzodesSzovege(bemenet());
+    expect(szerzodes).toContain("LAKÁSBÉRLETI SZERZŐDÉS");
+    expect(szerzodes).not.toContain("ZÁRADÉK");
+  });
+
+  it("alapszerződés nélkül is értelmes marad", () => {
+    // Elvileg nem fordulhat elő, de a szöveg ne „undefined”-ot írjon ki.
+    const szoveg = zaradek({ alap: null });
+    expect(szoveg).toContain("lakásbérleti szerződéshez");
+    expect(szoveg).not.toContain("undefined");
+  });
+
+  it("az aláírási rész a záradékon is ott van", () => {
+    expect(zaradek()).toContain("Kelt: Pécs");
+    expect(zaradek()).toContain(BERBEADO.nev);
   });
 });

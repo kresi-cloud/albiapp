@@ -68,11 +68,26 @@ export type JogviszonyAdat = {
   rezsiAtalanyFt: number;
 };
 
+/** Egy előfizetés úgy, ahogy a szerződésbe kerül. */
+export type ElofizetesAdat = {
+  megnevezes: string;
+  fajta: string;
+  szolgaltato: string | null;
+  elofizeto: string;
+  haviDijFt: number;
+};
+
 export type Kontextus = {
   berbeado: Berbeado;
   berlok: Fel[];
   ingatlan: IngatlanAdat;
   jogviszony: JogviszonyAdat;
+  /**
+   * A bérleményhez tartozó, jóváhagyott előfizetések. A szerződés abból épül,
+   * amit az alkalmazás már tud: így nem állhat más a szerződésben, mint az
+   * előfizetések lapján.
+   */
+  elofizetesek: ElofizetesAdat[];
   /** Paraméterérték szövegként; ha nincs megadva, a modul alapértelmezése. */
   p: (kulcs: string) => string;
   /** Paraméterérték számként; nem szám esetén 0. */
