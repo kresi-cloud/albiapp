@@ -477,10 +477,20 @@ model Teendo {
 ///
 /// Véglegesítéskor viszont a teljes szöveget befagyasztjuk: amit a felek
 /// aláírtak, azt egy későbbi modulfrissítés nem írhatja át.
+/// A szerződés és a záradéka ugyanaz a tábla.
+///
+/// A záradék egy hatályos szerződést kiegészítő külön okirat: ugyanabból a
+/// modulkatalógusból épül, ugyanúgy véglegesül és fagy be, ugyanúgy kerül a
+/// dokumentumtárba, és a bérlő ugyanúgy csak véglegesítés után látja. Külön
+/// táblában ugyanez a viselkedés még egyszer meg lenne írva, és a második
+/// példány előbb-utóbb elmaradna az elsőtől.
 model Szerzodes {
   id             String    @id @default(cuid())
   jogviszonyId   String
   megnevezes     String
+  fajta          String    @default("szerzodes") // "szerzodes" | "zaradek"
+  /// Melyik véglegesített szerződést egészíti ki. Csak záradéknál van kitöltve.
+  alapSzerzodesId String?
   allapot        String    @default("tervezet") // "tervezet" | "veglegesitve"
   kelteHelye     String    @default("")
   kelte          DateTime?
@@ -492,8 +502,11 @@ model Szerzodes {
   jogviszony  Jogviszony           @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
   modulok     SzerzodesModul[]
   parameterek SzerzodesParameter[]
+  alap        Szerzodes?           @relation("Zaradekai", fields: [alapSzerzodesId], references: [id], onDelete: Cascade)
+  zaradekai   Szerzodes[]          @relation("Zaradekai")
 
   @@index([jogviszonyId])
+  @@index([alapSzerzodesId])
 }
 
 /// Egy szerződésbe bekapcsolt modul. Csak a bekapcsoltak kerülnek sorba; a

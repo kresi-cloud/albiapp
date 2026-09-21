@@ -70,7 +70,6 @@ export function UjIgazolas({
   cimkek: {
     nincs: string;
     idoszak: string;
-    idoszakSor: string;
     osszeg: string;
     osszegPelda: string;
     osszegSugo: string;
@@ -110,9 +109,13 @@ export function UjIgazolas({
           >
             {idoszakok.map((sor) => (
               <option key={sor.idoszak} value={sor.idoszak}>
-                {cimkek.idoszakSor
-                  .replace("{honap}", sor.cimke)
-                  .replace("{osszeg}", sor.osszeg)}
+                {/*
+                  Az összeg már a szövegező kezéből jön, pénznemmel együtt
+                  („6 490 Ft", „HUF 6,490"), ezért itt nem teszünk hozzá
+                  semmit: korábban a szótárkulcs is kitette a „Ft"-ot, és a
+                  választóban kétszer állt.
+                */}
+                {`${sor.cimke} — ${sor.osszeg}`}
               </option>
             ))}
           </Valaszto>

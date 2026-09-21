@@ -179,6 +179,34 @@ Az előfizetést törölni nem lehet, csak megszüntetni egy nappal, ugyanúgy, 
 a jogviszonyt: a lefutott hónapok előírásai mögött ez az előfizetés áll, és a
 bérlő már ki is fizette őket.
 
+Az előfizetés a szerződésbe is bekerül (`elofizetesek` modul), abból, amit az
+alkalmazás már tud: így nem állhat más a szerződésben, mint az előfizetések
+lapján. Csak a jóváhagyott és még élő előfizetés kerül bele — amiről a bérlő
+nem nyilatkozott, az nem szerződéses kötelezettség.
+
+## A záradék alapelve
+
+Amit a felek aláírtak, azt nem írjuk át: a `veglegesSzoveg` be is fagyasztja.
+Ha a hatályos szerződés utóbb kiegészül — jellemzően előfizetéssel —, a
+kiegészítés **külön okirat**, záradék.
+
+A záradék ugyanabban a táblában él, mint a szerződés (`Szerzodes.fajta`,
+`alapSzerzodesId`), mert minden más ugyanaz: modulokból épül, ugyanúgy
+véglegesül és fagy be, ugyanúgy kerül a dokumentumtárba, és a bérlő ugyanúgy
+csak véglegesítés után látja. Külön táblában ugyanez a viselkedés még egyszer
+meg lenne írva, és a második példány előbb-utóbb elmaradna az elsőtől.
+
+Két dolog viszont más. A záradéknak nincs kötelező modulja: nem egy második
+teljes szerződés, tehát amit a felek már aláírtak, azt nem írja le újra — két
+szöveg utóbb eltérhetne egymástól. És van két elhagyhatatlan, nem modulos
+része: megnevezi az alapszerződést, és kimondja, hogy annak többi rendelkezése
+változatlanul hatályban marad. Enélkül vitatható lenne, mi maradt érvényben.
+Ez a két rész a tervezetben is látszik, nem csak a véglegesítés után.
+
+A kódban a `zaradekSorok` név korábban az aláírási részt jelentette (kelt,
+aláírók, tanúk); az `alairasSorok` lett belőle, mert két különböző dolgot nem
+hívhat ugyanaz a szó.
+
 ## A bérleti szerződés alapelve
 
 Egy jogviszonyhoz több bérlő tartozhat (`JogviszonyBerlo`). A fizetési

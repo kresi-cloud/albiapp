@@ -1,4 +1,4 @@
-import { szerzodesSzovege } from "@/domain/szerzodes-keszites";
+import { okiratSzovege } from "@/domain/szerzodes-keszites";
 import { berloiIratSzovege } from "@/lib/dokumentumtar";
 import { belepettFelhasznalo } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
@@ -42,7 +42,7 @@ export async function GET(
   const betoltott = await szerzodesBemenet(id, felhasznalo.id);
   if (!betoltott) return new Response(sz("letoltes.nincs_szerzodes"), { status: 404 });
 
-  const szoveg = betoltott.veglegesSzoveg ?? szerzodesSzovege(betoltott.bemenet);
+  const szoveg = betoltott.veglegesSzoveg ?? okiratSzovege(betoltott.bemenet);
   const fajlnev =
     betoltott.allapot === "veglegesitve" ? "berleti-szerzodes" : "berleti-szerzodes-tervezet";
 

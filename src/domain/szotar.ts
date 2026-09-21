@@ -1811,7 +1811,6 @@ export const SZOTAR: Szotar = {
     en: "There is no month yet for which a certificate could be issued to {nev}: that needs a receipt confirmed by the landlord.",
   },
   "dokumentumok.igazolas_idoszak": { hu: "Időszak", en: "Period" },
-  "dokumentumok.igazolas_idoszak_sor": { hu: "{honap} — {osszeg} Ft", en: "{honap} — HUF {osszeg}" },
   "dokumentumok.igazolas_osszeg": { hu: "Igazolt összeg (Ft)", en: "Amount certified (HUF)" },
   "dokumentumok.igazolas_osszeg_pelda": { hu: "az időszak összege", en: "the period's amount" },
   "dokumentumok.igazolas_osszeg_sugo": {
@@ -1946,6 +1945,28 @@ export const SZOTAR: Szotar = {
   },
   "szerzodes.veglegesites": { hu: "Véglegesítés", en: "Finalise" },
   "szerzodes.visszaallitom": { hu: "Visszaállítom…", en: "Reverting…" },
+  "szerzodes.zaradek_megnevezes": {
+    hu: "Záradék · {ingatlan}",
+    en: "Amendment · {ingatlan}",
+  },
+  "szerzodes.zaradek_alapja": {
+    hu: "Ez a záradék a következő szerződést egészíti ki: {nev}. A szerződés többi pontja változatlanul hatályban marad.",
+    en: "This amendment supplements the contract “{nev}”. The rest of the contract stays in force unchanged.",
+  },
+  "szerzodes.zaradek_sugo": {
+    hu: "Ez egy záradék: a hatályos szerződést egészíti ki, annak többi pontja változatlanul hatályban marad.",
+    en: "This is an amendment: it supplements the contract in force, whose other clauses stay unchanged.",
+  },
+  "szerzodes.zaradek_miert": {
+    hu: "Ha a hatályos szerződés utóbb kiegészül, azt nem írjuk át: az aláírt szöveg marad, a kiegészítés pedig külön okiratba, záradékba kerül.",
+    en: "If the contract in force is supplemented later, we do not rewrite it: the signed text stays, and the addition goes into a separate amendment.",
+  },
+  "szerzodes.zaradek_gomb": { hu: "Záradék készítése", en: "Create an amendment" },
+  "szerzodes.zaradekot_keszitek": { hu: "Készítem…", en: "Creating…" },
+  "szerzodes.hiba.zaradek_csak_veglegeshez": {
+    hu: "Záradékot csak véglegesített szerződéshez lehet készíteni; a tervezet még szerkeszthető.",
+    en: "An amendment can only supplement a finalised contract; a draft can still be edited.",
+  },
   "szerzodes.vissza_tervezetre": { hu: "Vissza tervezetre", en: "Back to draft" },
 
   // --- Szerződés műveletek üzenetei
