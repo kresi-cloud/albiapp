@@ -283,6 +283,37 @@ Az előírásokat a seed ugyanazzal az `eloirasok` függvénnyel állítja elő,
 alkalmazás. Kézzel beírt előírás megint el tudna csúszni attól, amit a rendszer
 magától generál.
 
+## A hosszú listák alapelve
+
+Egy magánbérbeadónak egy-két év alatt száz fölötti befizetési tétele gyűlik
+össze. Ha mind egyforma súllyal áll a lapon, telefonon percekig kell görgetni
+ahhoz az egyhez, amivel tényleg dolga van: a befizetések lapja egy év
+példaadattól tizenhat telefonképernyő magas lett, a szerződéstervezet
+huszonegy. Ez lassan romlik el, és nem egy hibás sortól, hanem attól, hogy
+gyűlik az adat — semmi nem szól, mert minden tétel szépen jelenik meg.
+
+Ezért a lap azt mutatja elöl, amivel az olvasónak dolga van, a többi
+összecsukva áll. Hogy kire vár egy tétel, azt a `varRank` mondja ki
+(`src/domain/egyeztetes.ts`), nem a felület: a vitás tétel mindkét félre vár,
+egyébként az, aki még nem nyilatkozott — az „erre nem érkezett pénz" is
+nyilatkozat. Ugyanez a bontás a hibabejelentéseknél (nyitott/lezárt) és a
+szerződés moduljainál (amiről dönteni kell / minden szerződésben benne van).
+
+Az összecsukás megjelenítés, nem elrejtés, és három dolgot kiköt:
+
+- a nyitósor kiírja, hány tétel van mögötte, tehát nem tűnik el semmi;
+- amihez bizonylatot töltöttek fel, az akkor is teljes kártyát kap, ha a vita
+  közben rendeződött — egy másik fél fájlját nem tüntetjük el csendben;
+- a javítás útja megmarad: a rendezett tétel rövid sora is visszavonható.
+
+Rövid listát nem csukunk össze: három sor mögé kattintani rosszabb, mint
+elolvasni őket.
+
+A laphossz ezért kapu: a `proba/meret.mjs` minden lapon megméri, és nyolc
+telefonképernyőnél hosszabb lap megbukik. Ha egy lap átlépi, csoportosítani
+vagy összecsukni kell, nem a korlátot emelni. A mérés önpróbával kezd, mert
+ebben a projektben már két olyan próbaállítás volt, ami mindig igazat adott.
+
 ## Mit jelent, hogy kész
 
 - `npx eslint .`, `npm run typecheck`, `npm test` és `npm run build` zöld.

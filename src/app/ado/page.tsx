@@ -4,6 +4,7 @@ import { datum, forint } from "@/domain/penz";
 import { adoEv, adoEvek, koltsegFajtaNeve, KOLTSEG_FAJTA_LISTA } from "@/lib/ado";
 import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 import { BeszerzesUrlap, KoltsegUrlap } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ export default async function Ado({
   searchParams: Promise<{ ev?: string }>;
 }) {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const { ev: evParam } = await searchParams;
 
   const evek = await adoEvek(berbeado.id);
@@ -104,7 +106,7 @@ export default async function Ado({
             Ebben az évben még nem érkezett párosított befizetés.
           </p>
         ) : (
-          <ul className="grid gap-2">
+          <Lista darab={osszesites.bevetelSorok.length} cimke={sz("lista.korabbiak", { darab: osszesites.bevetelSorok.length })}>
             {osszesites.bevetelSorok.map((sor, sorszam) => (
               <li
                 key={`${sor.datum.toISOString()}-${sorszam}`}
@@ -127,7 +129,7 @@ export default async function Ado({
                 <p className="mt-1 text-stone-600 dark:text-stone-400">{sor.indoklas}</p>
               </li>
             ))}
-          </ul>
+          </Lista>
         )}
       </section>
 
@@ -158,7 +160,7 @@ export default async function Ado({
             Ebben az évben még nincs rögzített költség.
           </p>
         ) : (
-          <ul className="grid gap-2">
+          <Lista darab={osszesites.koltsegSorok.length} cimke={sz("lista.korabbiak", { darab: osszesites.koltsegSorok.length })}>
             {osszesites.koltsegSorok.map((sor, sorszam) => (
               <li
                 key={`${sor.megnevezes}-${sorszam}`}
@@ -176,7 +178,7 @@ export default async function Ado({
                 </p>
               </li>
             ))}
-          </ul>
+          </Lista>
         )}
       </section>
 
@@ -295,5 +297,34 @@ function Mod({
       </dl>
       <p className="mt-2 text-xs text-stone-600 dark:text-stone-400">{magyarazat}</p>
     </div>
+  );
+}
+
+/**
+ * Hosszú tételsor. Az összesítő a lényeg, a sorok a mögötte lévő bizonyíték:
+ * minden számhoz tartozik indoklás, és azokat nem vesszük el, csak összecsukjuk.
+ *
+ * Rövid listát nem csukunk össze: három sor mögé kattintani rosszabb, mint
+ * elolvasni őket.
+ */
+const HOSSZU_LISTA = 8;
+
+function Lista({
+  darab,
+  cimke,
+  children,
+}: {
+  darab: number;
+  cimke: string;
+  children: React.ReactNode;
+}) {
+  const lista = <ul className="grid gap-2">{children}</ul>;
+  if (darab <= HOSSZU_LISTA) return lista;
+
+  return (
+    <details className="rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
+      <summary className="cursor-pointer p-3 text-sm font-medium">{cimke}</summary>
+      <div className="p-3 pt-0">{lista}</div>
+    </details>
   );
 }

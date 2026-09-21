@@ -1,4 +1,5 @@
 import { Allapotjelzo } from "@/components/Allapotjelzo";
+import { csoportositva } from "@/domain/egyeztetes";
 import { ElszamolasTetelek } from "@/components/ElszamolasTetelek";
 import { Teendolista } from "@/components/Teendolista";
 import { datumNyelven, forintNyelven } from "@/domain/nyelv";
@@ -176,105 +177,144 @@ export default async function BerloiNezet() {
         )),
       )}
 
-      {nezetek.map((nezet) => (
-        <section key={nezet.id}>
-          <h2 className="mb-3 text-lg font-semibold">
-            {sz("berlo.befizetesek", { berlemeny: nezet.ingatlanMegnevezes })}
-          </h2>
-          <ul className="grid gap-2">
-            {nezet.egyeztetesek
-              .filter((sor) => sor.eloirtTetelId !== null)
-              .map((sor) => (
-                <li
-                  key={sor.eloirtTetelId ?? ""}
-                  className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
-                >
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <span className="font-medium">
-                      {sor.idoszak} · {forintNyelven(sor.osszegFt, nyelv)}
-                    </span>
-                    <Allapotjelzo allapot={sor.allapot} nyelv={nyelv} />
-                  </div>
-                  <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-                    {sz("berlo.esedekesseg", {
-                      nap: datumNyelven(sor.esedekesseg, nyelv),
-                    })}{" "}
-                    {u(sor.magyarazat)}
-                  </p>
-                  {sor.reszletezes ? (
-                    <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-                      {u(sor.reszletezes)}
-                    </p>
-                  ) : null}
+      {nezetek.map((nezet) => {
+        // Ugyanaz a gond, mint a bérbeadói oldalon: egy tanév után annyi a
+        // tétel, hogy telefonon percekig kell görgetni ahhoz az egyhez, amivel
+        // dolga van. Amit már mindkét fél letudott, az összecsukva áll.
+        const tetelek = nezet.egyeztetesek.filter((sor) => sor.eloirtTetelId !== null);
+        const { soronVan, rendezett } = csoportositva(tetelek, "berlo");
+        const bizonylatos = rendezett.filter(
+          (sor) => sor.eloirtTetelId && bizonylatSorai(sor.eloirtTetelId).length > 0,
+        );
+        const csendes = rendezett.filter((sor) => !bizonylatos.includes(sor));
 
-                  <dl className="mt-3 grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
-                    <div>
-                      <dt className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
-                        {sz("berlo.utalas.sajat")}
-                      </dt>
-                      <dd className="tabular-nums">
-                        {sor.igazolasOsszegFt !== null && sor.igazolasDatuma
-                          ? `${forintNyelven(sor.igazolasOsszegFt, nyelv)} · ${datumNyelven(sor.igazolasDatuma, nyelv)}`
-                          : "—"}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
-                        {sz("berlo.utalas.berbeado")}
-                      </dt>
-                      <dd className="tabular-nums">
-                        {sor.berbeadoiOsszegFt !== null && sor.berbeadoiDatuma
-                          ? `${forintNyelven(sor.berbeadoiOsszegFt, nyelv)} · ${datumNyelven(sor.berbeadoiDatuma, nyelv)}`
-                          : sor.elteresOka === "nem_erkezett_meg"
-                            ? sz("berlo.utalas.nem_erkezett")
-                            : "—"}
-                      </dd>
-                    </div>
-                  </dl>
+        return (
+          <section key={nezet.id}>
+            <h2 className="mb-3 text-lg font-semibold">
+              {sz("berlo.befizetesek", { berlemeny: nezet.ingatlanMegnevezes })}
+            </h2>
 
-                  {sor.bizonylatKell ? (
-                    <p className="mt-3 rounded border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200">
-                      {sz("berlo.utalas.bizonylat")}
-                    </p>
-                  ) : null}
+            {soronVan.length === 0 && tetelek.length > 0 ? (
+              <p className="mb-3 rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200">
+                {sz("lista.nincs_teendo")}
+              </p>
+            ) : null}
 
-                  {sor.eloirtTetelId &&
-                  (sor.bizonylatKell || bizonylatSorai(sor.eloirtTetelId).length > 0) ? (
-                    <Bizonylatok
-                      eloirtTetelId={sor.eloirtTetelId}
-                      sajatOldal="kuldo"
-                      meglevok={bizonylatSorai(sor.eloirtTetelId)}
-                      kerheto={sor.bizonylatKell}
-                      cimkek={BIZONYLAT_CIMKEK}
-                    />
-                  ) : null}
+            {soronVan.length > 0 ? (
+              <ul className="grid gap-2">{soronVan.map(Tetel)}</ul>
+            ) : null}
 
-                  {sor.berloiIgazolasId ? (
-                    <UtalastVisszavon
-                      igazolasId={sor.berloiIgazolasId}
-                      cimke={sz("berlo.utalas.visszavon")}
-                    />
-                  ) : (
-                    <Utalas
-                      jogviszonyId={nezet.id}
-                      osszegFt={sor.osszegFt}
-                      esedekesseg={sor.esedekesseg.toISOString().slice(0, 10)}
-                      cimkek={{
-                        nyito: sz("berlo.utalas.nyito"),
-                        datum: sz("berlo.utalas.datum"),
-                        osszeg: sz("berlo.utalas.osszeg"),
-                        kozlemeny: sz("berlo.utalas.kozlemeny"),
-                        gomb: sz("berlo.utalas.gomb"),
-                        sugo: sz("berlo.utalas.sugo"),
-                        visszavon: sz("berlo.utalas.visszavon"),
-                      }}
-                    />
-                  )}
-                </li>
-              ))}
-          </ul>
-        </section>
-      ))}
+            {bizonylatos.length > 0 ? (
+              <details className="mt-3 rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
+                <summary className="cursor-pointer p-3 text-sm font-medium">
+                  {sz("lista.rendezett_bizonylattal", { darab: bizonylatos.length })}
+                </summary>
+                <ul className="grid gap-2 p-3 pt-0">{bizonylatos.map(Tetel)}</ul>
+              </details>
+            ) : null}
+
+            {csendes.length > 0 ? (
+              <details className="mt-3 rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
+                <summary className="cursor-pointer p-3 text-sm font-medium">
+                  {sz("lista.rendezett", { darab: csendes.length })}
+                </summary>
+                <ul className="grid gap-2 p-3 pt-0">{csendes.map(Tetel)}</ul>
+              </details>
+            ) : null}
+          </section>
+        );
+
+        function Tetel(sor: (typeof tetelek)[number]) {
+          return (
+                    <li
+                      key={sor.eloirtTetelId ?? ""}
+                      className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+                    >
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
+                        <span className="font-medium">
+                          {sor.idoszak} · {forintNyelven(sor.osszegFt, nyelv)}
+                        </span>
+                        <Allapotjelzo allapot={sor.allapot} nyelv={nyelv} />
+                      </div>
+                      <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+                        {sz("berlo.esedekesseg", {
+                          nap: datumNyelven(sor.esedekesseg, nyelv),
+                        })}{" "}
+                        {u(sor.magyarazat)}
+                      </p>
+                      {sor.reszletezes ? (
+                        <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+                          {u(sor.reszletezes)}
+                        </p>
+                      ) : null}
+
+                      <dl className="mt-3 grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+                        <div>
+                          <dt className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
+                            {sz("berlo.utalas.sajat")}
+                          </dt>
+                          <dd className="tabular-nums">
+                            {sor.igazolasOsszegFt !== null && sor.igazolasDatuma
+                              ? `${forintNyelven(sor.igazolasOsszegFt, nyelv)} · ${datumNyelven(sor.igazolasDatuma, nyelv)}`
+                              : "—"}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
+                            {sz("berlo.utalas.berbeado")}
+                          </dt>
+                          <dd className="tabular-nums">
+                            {sor.berbeadoiOsszegFt !== null && sor.berbeadoiDatuma
+                              ? `${forintNyelven(sor.berbeadoiOsszegFt, nyelv)} · ${datumNyelven(sor.berbeadoiDatuma, nyelv)}`
+                              : sor.elteresOka === "nem_erkezett_meg"
+                                ? sz("berlo.utalas.nem_erkezett")
+                                : "—"}
+                          </dd>
+                        </div>
+                      </dl>
+
+                      {sor.bizonylatKell ? (
+                        <p className="mt-3 rounded border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200">
+                          {sz("berlo.utalas.bizonylat")}
+                        </p>
+                      ) : null}
+
+                      {sor.eloirtTetelId &&
+                      (sor.bizonylatKell || bizonylatSorai(sor.eloirtTetelId).length > 0) ? (
+                        <Bizonylatok
+                          eloirtTetelId={sor.eloirtTetelId}
+                          sajatOldal="kuldo"
+                          meglevok={bizonylatSorai(sor.eloirtTetelId)}
+                          kerheto={sor.bizonylatKell}
+                          cimkek={BIZONYLAT_CIMKEK}
+                        />
+                      ) : null}
+
+                      {sor.berloiIgazolasId ? (
+                        <UtalastVisszavon
+                          igazolasId={sor.berloiIgazolasId}
+                          cimke={sz("berlo.utalas.visszavon")}
+                        />
+                      ) : (
+                        <Utalas
+                          jogviszonyId={nezet.id}
+                          osszegFt={sor.osszegFt}
+                          esedekesseg={sor.esedekesseg.toISOString().slice(0, 10)}
+                          cimkek={{
+                            nyito: sz("berlo.utalas.nyito"),
+                            datum: sz("berlo.utalas.datum"),
+                            osszeg: sz("berlo.utalas.osszeg"),
+                            kozlemeny: sz("berlo.utalas.kozlemeny"),
+                            gomb: sz("berlo.utalas.gomb"),
+                            sugo: sz("berlo.utalas.sugo"),
+                            visszavon: sz("berlo.utalas.visszavon"),
+                          }}
+                        />
+                      )}
+                    </li>
+          );
+        }
+      })}
     </div>
   );
 }
