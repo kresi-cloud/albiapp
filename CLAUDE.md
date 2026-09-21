@@ -235,6 +235,39 @@ A teendők többsége származtatott: a rendszer állapotából jön, és magát
 ha az oka megszűnik. A vállalt javítás viszont tárolt teendő (`Teendo`), mert azt
 valaki vállalta, és le is kell tudni zárni.
 
+## A beszélgetés alapelve
+
+A bérlet hétköznapi ügye — mikor jön a kéményseprő, elviheti-e a szekrényt,
+csúszik-e az utalás — eddig SMS-ben és e-mailben ment, vagyis ott, ahol később
+senki nem találja meg. A hibabejelentésnek és az elszámolásnak megvan a saját
+üzenetváltása; ami egyikbe sem fér bele, az ide tartozik.
+
+**A beszélgetés az első üzenettel jön létre**, nem előbb. Üres szálat nem
+nyitunk: egy lista, amiben három üres beszélgetés áll „még nincs üzenet”
+felirattal, csak zajt csinál. Ezért nincs külön „indítás” gomb sem: a címzett és
+az első mondat egyszerre megy el.
+
+**A beszélgetés a jogviszonyhoz tartozik**, nem két felhasználóhoz. Ugyanannak a
+két embernek lehet két bérleménye, és a két ügy nem folyhat egy szálba. A
+jogosultság is innen jön: aki a jogviszonyban benne van, az írhat, és ezt a
+kiszolgáló ellenőrzi, nem az űrlap. Ezért nincs bérleményválasztó sem az új
+beszélgetés űrlapján, hanem bérleményenként külön űrlap: a választó és a
+címzettlista el tudott csúszni egymástól, és a böngészős próba pont ezt fogta
+meg.
+
+Kétirányú és csoportos között nincs tárolt különbség: a résztvevők számából
+következik. Aki még nem lépett be a saját fiókjába, nem szerepel a címzettek
+közt — neki nincs hová írni —, és a felület ezt ki is mondja, különben úgy tűnne,
+eltűnt a listából.
+
+Az archiválás sem tárolt: a jogviszony lezárásából és a mai napból jön
+(`ARCHIVALAS_NAP`, 90 nap). Így egy elkattintott lezárás visszavonása magától
+visszanyitja a szálat, ütemező nélkül — ugyanaz az elv, mint az előírásoknál. Az
+archivált beszélgetés olvasható marad, csak írni nem lehet bele, és ezt a
+kiszolgáló tiltja, nem a gomb elrejtése. A kilencven nap oka gyakorlati: az
+óvadék elszámolása, az utolsó rezsiszámla és a hátrahagyott holmi mind a
+kiköltözés utáni hetekben derül ki.
+
 ## A hibabejelentés alapelve
 
 A bejelentés és az elhárítás két külön esemény, és egyik sem írja felül a másikat:

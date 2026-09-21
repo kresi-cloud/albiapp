@@ -42,6 +42,8 @@ model Felhasznalo {
   betekintoi          Betekinto[]         @relation("Betekintoi")
   feltoltottKepei     JegyzokonyvKep[]    @relation("KepFeltoltoje")
   megerositettKepei   JegyzokonyvKep[]    @relation("KepMegerositoje")
+  beszelgetesei       BeszelgetesResztvevo[]
+  kuldottUzenetei     BeszelgetesUzenet[]  @relation("UzenetSzerzoje")
 }
 
 /// Bérbeadónkénti egyeztetési beállítások. Az összegtolerancia szándékosan nincs
@@ -162,6 +164,7 @@ model Jogviszony {
   jegyzokonyvek       Jegyzokonyv[]
   hibabejelentesek    Hibabejelentes[]
   betekintok          Betekinto[]
+  beszelgetesek       Beszelgetes[]
 
   @@index([ingatlanId])
 }
@@ -660,4 +663,58 @@ model BetekintoMegnyitas {
   betekinto Betekinto @relation(fields: [betekintoId], references: [id], onDelete: Cascade)
 
   @@index([betekintoId, mikor])
+}
+
+/**
+ * Egy beszélgetés szála a bérbeadó és a bérlők között.
+ *
+ * A jogviszonyhoz tartozik, nem két felhasználóhoz: ugyanaz a két ember két
+ * bérleményről beszélhet, és a két ügy nem folyhat egy szálba. A jogosultság is
+ * innen jön — aki a jogviszonyban benne van, az írhat, más nem.
+ *
+ * Kétirányú és csoportos között nincs tárolt különbség: az a résztvevők
+ * számából következik. Tárolva el tudna csúszni attól, ami tényleg igaz.
+ *
+ * Az archiválás sincs tárolva: a jogviszony lezárásából és a mai napból jön
+ * (`domain/beszelgetes.ts`). Így a lezárás visszavonása magától visszanyitja a
+ * szálat, ütemező nélkül.
+ */
+model Beszelgetes {
+  id           String   @id @default(cuid())
+  jogviszonyId String
+  letrehozva   DateTime @default(now())
+  /** Az utolsó üzenet ideje, hogy a lista rendezéséhez ne kelljen végigolvasni a szálat. */
+  utolsoUzenet DateTime @default(now())
+
+  jogviszony Jogviszony             @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  resztvevok BeszelgetesResztvevo[]
+  uzenetek   BeszelgetesUzenet[]
+
+  @@index([jogviszonyId, utolsoUzenet])
+}
+
+model BeszelgetesResztvevo {
+  id            String   @id @default(cuid())
+  beszelgetesId String
+  felhasznaloId String
+  letrehozva    DateTime @default(now())
+
+  beszelgetes Beszelgetes @relation(fields: [beszelgetesId], references: [id], onDelete: Cascade)
+  felhasznalo Felhasznalo @relation(fields: [felhasznaloId], references: [id], onDelete: Cascade)
+
+  @@unique([beszelgetesId, felhasznaloId])
+  @@index([felhasznaloId])
+}
+
+model BeszelgetesUzenet {
+  id            String   @id @default(cuid())
+  beszelgetesId String
+  szerzoId      String
+  szoveg        String
+  kuldve        DateTime @default(now())
+
+  beszelgetes Beszelgetes @relation(fields: [beszelgetesId], references: [id], onDelete: Cascade)
+  szerzo      Felhasznalo @relation("UzenetSzerzoje", fields: [szerzoId], references: [id])
+
+  @@index([beszelgetesId, kuldve])
 }

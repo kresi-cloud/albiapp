@@ -19,6 +19,7 @@ const BERBEADO_MENU = [
   { kulcs: "nav.befizetesek", utvonal: "/befizetesek" },
   { kulcs: "nav.rezsi", utvonal: "/rezsi" },
   { kulcs: "nav.hibak", utvonal: "/hibak" },
+  { kulcs: "nav.beszelgetesek", utvonal: "/beszelgetesek" },
   { kulcs: "nav.dokumentumok", utvonal: "/dokumentumok" },
   { kulcs: "nav.ado", utvonal: "/ado" },
   { kulcs: "nav.beallitasok", utvonal: "/beallitasok" },
@@ -27,6 +28,7 @@ const BERBEADO_MENU = [
 const BERLO_MENU = [
   { kulcs: "nav.berlemenyem", utvonal: "/berlo" },
   { kulcs: "nav.hibabejelentes", utvonal: "/berlo/hibak" },
+  { kulcs: "nav.beszelgetesek", utvonal: "/beszelgetesek" },
   { kulcs: "nav.jegyzokonyveim", utvonal: "/berlo/jegyzokonyvek" },
   { kulcs: "nav.dokumentumaim", utvonal: "/berlo/dokumentumok" },
   { kulcs: "nav.betekinto", utvonal: "/berlo/betekinto" },
