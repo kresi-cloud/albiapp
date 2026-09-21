@@ -9,6 +9,9 @@ import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv } from "@/lib/nyelv";
 import { merooraNeve } from "@/lib/rezsi";
 import { ElbiralasUrlap, OraallasUrlap } from "@/app/rezsi/Urlapok";
+import { meretSzoveg } from "@/domain/bizonylat";
+import { bizonylatokTetelekhez } from "@/lib/bizonylat";
+import { Bizonylatok } from "@/app/bizonylatok/Urlapok";
 import { Utalas, UtalastVisszavon } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +45,41 @@ export default async function BerloiNezet() {
   ]);
 
   const mai = ma.toISOString().slice(0, 10);
+
+  // Minden előírás bizonylatait betöltjük, nem csak a vitásakét: ha a
+  // bérbeadó kikapcsolja a bizonylatkérést, vagy a vita rendeződik, a már
+  // feltöltött fájl akkor se tűnjön el csendben.
+  const bizonylatok = await bizonylatokTetelekhez(
+    nezetek
+      .flatMap((nezet) => nezet.egyeztetesek)
+      .filter((sor) => sor.eloirtTetelId)
+      .map((sor) => sor.eloirtTetelId as string),
+    berlo.id,
+  );
+
+  const bizonylatSorai = (eloirtTetelId: string) =>
+    (bizonylatok.get(eloirtTetelId) ?? []).map((sor) => ({
+      id: sor.id,
+      oldal: sor.oldal,
+      cimke: sz(`bizonylat.${sor.oldal}`),
+      meret: u(meretSzoveg(sor.meretBajt)),
+      feltoltve: datumNyelven(sor.feltoltve, nyelv),
+      sajat: sor.sajat,
+    }));
+
+  const BIZONYLAT_CIMKEK = {
+    cim: sz("bizonylat.cim"),
+    feltolt: sz("bizonylat.feltolt"),
+    gomb: sz("bizonylat.gomb"),
+    sugo: sz("bizonylat.sugo", { max: 5 }),
+    torles: sz("bizonylat.torles"),
+    letoltes: sz("bizonylat.letoltes"),
+    nincs: sz("bizonylat.nincs"),
+    varunkRad: sz("bizonylat.varunk_rad"),
+    kikapcsolva: sz("bizonylat.kikapcsolva"),
+    sajatOldal: sz("bizonylat.kuldo"),
+    masikOldal: sz("bizonylat.fogado"),
+  };
   const meroorasJogviszonyok = jogviszonyok.filter(
     (jogviszony) => jogviszony.rezsiElszamolas === "almero",
   );
@@ -198,6 +236,17 @@ export default async function BerloiNezet() {
                     <p className="mt-3 rounded border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200">
                       {sz("berlo.utalas.bizonylat")}
                     </p>
+                  ) : null}
+
+                  {sor.eloirtTetelId &&
+                  (sor.bizonylatKell || bizonylatSorai(sor.eloirtTetelId).length > 0) ? (
+                    <Bizonylatok
+                      eloirtTetelId={sor.eloirtTetelId}
+                      sajatOldal="kuldo"
+                      meglevok={bizonylatSorai(sor.eloirtTetelId)}
+                      kerheto={sor.bizonylatKell}
+                      cimkek={BIZONYLAT_CIMKEK}
+                    />
                   ) : null}
 
                   {sor.berloiIgazolasId ? (

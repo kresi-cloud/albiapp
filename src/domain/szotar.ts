@@ -124,6 +124,51 @@ export const SZOTAR: Szotar = {
     en: "A transfer arrived that does not belong to any scheduled item.",
   },
 
+  // --- Bizonylat (csak vitás befizetéshez)
+  "bizonylat.cim": { hu: "Bizonylat ehhez az utaláshoz", en: "Receipt for this transfer" },
+  "bizonylat.kuldo": { hu: "Küldő oldali bizonylat", en: "Sending-side receipt" },
+  "bizonylat.fogado": { hu: "Fogadó oldali bizonylat", en: "Receiving-side receipt" },
+  "bizonylat.feltolt": { hu: "Bizonylat feltöltése", en: "Upload a receipt" },
+  "bizonylat.gomb": { hu: "Feltöltöm", en: "Upload" },
+  "bizonylat.torles": { hu: "Törlöm", en: "Delete" },
+  "bizonylat.letoltes": { hu: "Megnézem", en: "Open" },
+  "bizonylat.nincs": { hu: "Még nincs feltöltve.", en: "Not uploaded yet." },
+  "bizonylat.varunk_rad": {
+    hu: "Ezt tőled várjuk.",
+    en: "This one is yours to upload.",
+  },
+  "bizonylat.sugo": {
+    hu:
+      "Csak ennek az egy utalásnak a bizonylata kell, PDF-ben vagy képernyőképen, legfeljebb " +
+      "{max} MB. Teljes bankszámlakivonatot nem kérünk, és nem is fogadunk el.",
+    en:
+      "Only the receipt of this one transfer, as a PDF or a screenshot, at most {max} MB. We do " +
+      "not ask for, and do not accept, a full bank statement.",
+  },
+  "bizonylat.kikapcsolva": {
+    hu: "A bérbeadó kikapcsolta a bizonylatkérést, ezért újat nem kérünk. Ami már fent van, megmarad.",
+    en: "The landlord turned receipt requests off, so we ask for no new ones. What is already uploaded stays.",
+  },
+  "bizonylat.feltoltve": { hu: "Feltöltve: {nap}", en: "Uploaded: {nap}" },
+  "bizonylat.kesz": { hu: "Feltöltöttem a bizonylatot.", en: "The receipt is uploaded." },
+  "bizonylat.torolve": { hu: "Töröltem a bizonylatot.", en: "The receipt is deleted." },
+  "bizonylat.hiba.ures": { hu: "Válassz ki egy fájlt.", en: "Choose a file." },
+  "bizonylat.hiba.nagy": {
+    hu: "A fájl túl nagy: legfeljebb {max} MB lehet.",
+    en: "The file is too large: at most {max} MB.",
+  },
+  "bizonylat.hiba.tipus": {
+    hu: "PDF-et vagy képet tudok fogadni (JPG, PNG, WEBP).",
+    en: "I can accept a PDF or an image (JPG, PNG, WEBP).",
+  },
+  "bizonylat.hiba.nincs_vita": {
+    hu: "Ehhez a tételhez nem kérünk bizonylatot: a két fél adata egyezik.",
+    en: "No receipt is needed for this item: the two sides match.",
+  },
+  "bizonylat.meret.bajt": { hu: "{meret} bájt", en: "{meret} bytes" },
+  "bizonylat.meret.kb": { hu: "{meret} kB", en: "{meret} kB" },
+  "bizonylat.meret.mb": { hu: "{meret} MB", en: "{meret} MB" },
+
   // --- Teendők
   "teendo.lejart": { hu: "Lejárt", en: "Overdue" },
   "teendo.ma": { hu: "Ma", en: "Today" },

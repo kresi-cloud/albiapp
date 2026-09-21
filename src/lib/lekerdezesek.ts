@@ -80,6 +80,7 @@ export async function egyeztetesBeallitasok(
     korabbiAblakNap: mentett.korabbiAblakNap,
     kesobbiAblakNap: mentett.kesobbiAblakNap,
     toleranciaFt: ALAPERTELMEZETT_BEALLITASOK.toleranciaFt,
+    bizonylatKeres: mentett.bizonylatKeres,
   };
 }
 

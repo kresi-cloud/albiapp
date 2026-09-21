@@ -156,6 +156,31 @@ describe("egyeztet — a két oldal nem egyezik", () => {
     expect(eredmeny.elteresOka).toBe("ket_oldal_elter");
   });
 
+  it("ha a bérbeadó kikapcsolta a bizonylatkérést, a tétel vitás marad, de papírt nem kérünk", () => {
+    const [eredmeny] = egyeztet(
+      [eloiras()],
+      [berloi({ osszegFt: 180000 })],
+      [berbeadoi({ osszegFt: 175000 })],
+      MA,
+      { ...ALAPERTELMEZETT_BEALLITASOK, bizonylatKeres: false },
+    );
+
+    expect(eredmeny.allapot).toBe("vitas");
+    expect(eredmeny.bizonylatKell).toBe(false);
+  });
+
+  it("a meg nem érkezett utalásnál is a beállítás dönt a bizonylatról", () => {
+    const [kerunk] = egyeztet([eloiras()], [berloi()], [tagadas()], MA);
+    const [nemKerunk] = egyeztet([eloiras()], [berloi()], [tagadas()], MA, {
+      ...ALAPERTELMEZETT_BEALLITASOK,
+      bizonylatKeres: false,
+    });
+
+    expect(kerunk.bizonylatKell).toBe(true);
+    expect(nemKerunk.bizonylatKell).toBe(false);
+    expect(nemKerunk.allapot).toBe("vitas");
+  });
+
   it("ha a bérlő szerint elment, a bérbeadó szerint nem jött meg, az vitás", () => {
     const [eredmeny] = egyeztet([eloiras()], [berloi()], [tagadas()], MA);
 
@@ -296,6 +321,10 @@ describe("egyeztet — párosítás", () => {
     const kkSor = eredmeny.find((sor) => sor.eloirtTetelId === "kk");
     expect(dijSor?.allapot).toBe("hianyzik");
     expect(kkSor?.berbeadoiIgazolasId).toBe("kk-utalas");
+  });
+
+  it("bizonylatot alapból kérünk: ez volt az eredeti döntés, a bérbeadó veheti le", () => {
+    expect(ALAPERTELMEZETT_BEALLITASOK.bizonylatKeres).toBe(true);
   });
 
   it("a tolerancia alapból nulla: egy forint eltérés is eltérés", () => {

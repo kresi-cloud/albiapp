@@ -47,6 +47,14 @@ export async function belepettFelhasznalo() {
   return prisma.felhasznalo.findUnique({ where: { id: jegy.felhasznaloId } });
 }
 
+/**
+ * A szerep az adatbázisban szöveg, a kódban viszont két érték van. Ez a
+ * szűkítés egy helyen történik, hogy ne minden hívó találgasson.
+ */
+export function szerepe(felhasznalo: { szerep: string }): "berbeado" | "berlo" {
+  return felhasznalo.szerep === "berlo" ? "berlo" : "berbeado";
+}
+
 /** Oldalankénti őr: aki nincs belépve vagy nem ezt a szerepet viseli, a belépésre megy. */
 export async function kotelezoSzerep(szerep: "berbeado" | "berlo") {
   const felhasznalo = await belepettFelhasznalo();

@@ -26,10 +26,14 @@ export async function beallitasokatMent(
     return { allapot: "hiba", uzenet: "A beállítás nem mentve.", hibak };
   }
 
+  // A jelöletlen kapcsoló nem küld értéket: a hiánya a "nem" válasz.
+  const bizonylatKeres = urlap.get("bizonylatKeres") !== null;
+  const mentendo = { ...ablak, bizonylatKeres };
+
   await prisma.beallitasok.upsert({
     where: { berbeadoId: berbeado.id },
-    update: ablak,
-    create: { berbeadoId: berbeado.id, ...ablak },
+    update: mentendo,
+    create: { berbeadoId: berbeado.id, ...mentendo },
   });
 
   // Az ablak minden párosítást újraszámol, tehát a teendők és az áttekintő is változhat.
@@ -40,7 +44,12 @@ export async function beallitasokatMent(
 
   return {
     allapot: "kesz",
-    uzenet: `Mentve. Mostantól az esedékesség előtt ${ablak.korabbiAblakNap} és utána ${ablak.kesobbiAblakNap} nappal érkezett befizetést kötöm ugyanahhoz az előíráshoz.`,
+    uzenet:
+      `Mentve. Mostantól az esedékesség előtt ${ablak.korabbiAblakNap} és utána ` +
+      `${ablak.kesobbiAblakNap} nappal érkezett befizetést kötöm ugyanahhoz az előíráshoz. ` +
+      (bizonylatKeres
+        ? "Vitás tételnél bizonylatot kérek mindkét féltől."
+        : "Vitás tételnél nem kérek bizonylatot."),
     hibak: [],
   };
 }

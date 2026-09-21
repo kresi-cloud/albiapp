@@ -118,7 +118,13 @@ egyik félnek sincs köze. Az alkalmazás ezt ki is írja mindkét oldalon.
 
 Ha a két oldal nem egyezik, onnantól van értelme a bizonylatnak — és akkor is
 csak annak az egy utalásnak: a bérlőtől a küldő, a bérbeadótól a fogadó
-oldaliról.
+oldaliról. A bizonylat PDF vagy képernyőkép lehet, legfeljebb 5 MB, és mindkét
+fél látja a másikét: a vitát épp az dönti el, hogy megnézik egymásét.
+
+Hogy egyáltalán kérjünk-e bizonylatot, azt a bérbeadó dönti el a `Beállítások`
+lapon. Alapból be van kapcsolva. Kikapcsolva a tétel vitás marad, csak nem
+kérünk hozzá papírt; amit már feltöltöttek, az megmarad, és mindenki törölheti a
+sajátját.
 
 Öt állapot van, és a különbségük szándékos:
 

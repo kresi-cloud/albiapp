@@ -4,6 +4,9 @@ import { datum, forint } from "@/domain/penz";
 import { egyeztetesBeallitasok, jogviszonyNezetek } from "@/lib/lekerdezesek";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
+import { meretSzoveg } from "@/domain/bizonylat";
+import { bizonylatokTetelekhez } from "@/lib/bizonylat";
+import { Bizonylatok } from "@/app/bizonylatok/Urlapok";
 import { Beerkezes, BeerkezestVisszavon, NemErkezett } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -11,9 +14,45 @@ export const dynamic = "force-dynamic";
 export default async function Befizetesek() {
   const berbeado = await kotelezoSzerep("berbeado");
 
-  const { u } = await szovegek();
+  const { sz, u } = await szovegek();
   const nezetek = await jogviszonyNezetek(berbeado.id);
   const beallitasok = await egyeztetesBeallitasok(berbeado.id);
+
+  // Minden előírás bizonylatait betöltjük, nem csak a vitásakét: ha a
+  // bizonylatkérés ki van kapcsolva, vagy a vita rendeződött, a már feltöltött
+  // fájl akkor se tűnjön el csendben.
+  const bizonylatok = await bizonylatokTetelekhez(
+    nezetek.flatMap((nezet) =>
+      nezet.egyeztetesek
+        .filter((sor) => sor.eloirtTetelId)
+        .map((sor) => sor.eloirtTetelId as string),
+    ),
+    berbeado.id,
+  );
+
+  const bizonylatSorai = (eloirtTetelId: string) =>
+    (bizonylatok.get(eloirtTetelId) ?? []).map((sor) => ({
+      id: sor.id,
+      oldal: sor.oldal,
+      cimke: sz(`bizonylat.${sor.oldal}`),
+      meret: u(meretSzoveg(sor.meretBajt)),
+      feltoltve: datum(sor.feltoltve),
+      sajat: sor.sajat,
+    }));
+
+  const BIZONYLAT_CIMKEK = {
+    cim: sz("bizonylat.cim"),
+    feltolt: sz("bizonylat.feltolt"),
+    gomb: sz("bizonylat.gomb"),
+    sugo: sz("bizonylat.sugo", { max: 5 }),
+    torles: sz("bizonylat.torles"),
+    letoltes: sz("bizonylat.letoltes"),
+    nincs: sz("bizonylat.nincs"),
+    varunkRad: sz("bizonylat.varunk_rad"),
+    kikapcsolva: sz("bizonylat.kikapcsolva"),
+    sajatOldal: sz("bizonylat.fogado"),
+    masikOldal: sz("bizonylat.kuldo"),
+  };
 
   return (
     <div className="grid gap-8">
@@ -108,6 +147,17 @@ export default async function Befizetesek() {
                       bizonylatának: tőled a fogadó oldali, a bérlőtől a küldő
                       oldali. Teljes bankszámlakivonat nem kell.
                     </p>
+                  ) : null}
+
+                  {sor.eloirtTetelId &&
+                  (sor.bizonylatKell || bizonylatSorai(sor.eloirtTetelId).length > 0) ? (
+                    <Bizonylatok
+                      eloirtTetelId={sor.eloirtTetelId}
+                      sajatOldal="fogado"
+                      meglevok={bizonylatSorai(sor.eloirtTetelId)}
+                      kerheto={sor.bizonylatKell}
+                      cimkek={BIZONYLAT_CIMKEK}
+                    />
                   ) : null}
 
                   {sor.berbeadoiOsszegFt === null ? (

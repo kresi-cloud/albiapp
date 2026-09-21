@@ -28,6 +28,7 @@ export default async function Beallitasok() {
       <AblakUrlap
         korabbiAblakNap={beallitasok.korabbiAblakNap}
         kesobbiAblakNap={beallitasok.kesobbiAblakNap}
+        bizonylatKeres={beallitasok.bizonylatKeres}
         maxNap={ABLAK_MAX_NAP}
       />
 
