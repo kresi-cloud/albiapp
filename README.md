@@ -12,6 +12,7 @@ körönként frissülnek.
 
 - ingatlan, bérleti jogviszony és előírt tételek adatmodellje,
 - bankszámlakivonat beolvasása CSV-ből, felismert fejléccel és ismétlődésszűréssel,
+- havi előírások a jogviszonyból, töredékhónapra arányosítva, magyarázattal,
 - a háromoldalú egyeztetés: mit írtunk elő, mit igazolt a bérlő, mit mutat a kivonat,
 - állítható párosítási időablak bérbeadónként,
 - teendők a kezdőlapon, lejárt, mai és közeli bontásban,
@@ -104,6 +105,24 @@ src/app/               képernyők (Next.js App Router)
 A `src/domain` szándékosan nem ismeri sem a Next.js-t, sem a Prismát: a
 pénzügyi számítás és az egyeztetés tiszta függvényekben él, így gyorsan
 tesztelhető.
+
+## Havi előírások
+
+Az előírt tételeket nem kézzel kell felvinni: a jogviszonyból következnek. A
+bérleti díj, a közös költség és a rezsiátalány minden hónapra egy-egy előírás, a
+jogviszony kezdetétől a mai hónapig — jövőbeli hónapra nem írunk elő.
+
+A be- és kiköltözés hónapja napra arányosítva jár, és ilyenkor a tétel mellett
+ott a magyarázat is: hány napról van szó, és mennyi lenne a teljes havi összeg.
+
+A hiányzó előírások akkor pótlódnak, amikor valaki ránéz a befizetésekre. Meglévő
+előírást ez soha nem ír át: amire egyszer már egyeztettünk, azt egy későbbi
+díjemelés nem változtathatja meg.
+
+A `Bérlők` lapon zárható le a jogviszony. A lezárás megadott nappal történik: a
+kiköltözés utáni hónapok előírásait törli, a záró hónapét arányosítja, a múlthoz
+nem nyúl. Ha tévedésből zártad le, a `Mégis él` gomb a záró hónap összegét is
+visszaállítja.
 
 ## Adatbázis
 
@@ -223,7 +242,7 @@ tiltott alakot.
 
 A böngészős próbák a `proba` mappában vannak, és egy 360 képpont széles ablakban
 futnak végig: telefonméret, hibabejelentés, kétnyelvűség, letöltési
-jogosultságok. Futtatás: indítsd a kiszolgálót (`npm run build && npm run
+jogosultságok, betekintő, havi előírások és a jogviszony lezárása. Futtatás: indítsd a kiszolgálót (`npm run build && npm run
 start`), majd `npm run proba`. A `proba/meret.mjs` minden oldalon azt nézi,
 kilóg-e valami vízszintesen — ez a hiba nagy kijelzőn soha nem látszik, telefonon
 viszont azonnal.

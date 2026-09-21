@@ -70,6 +70,11 @@ export default async function Befizetesek() {
                   <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
                     {u(sor.magyarazat)}
                   </p>
+                  {sor.reszletezes ? (
+                    <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+                      {u(sor.reszletezes)}
+                    </p>
+                  ) : null}
 
                   <dl className="mt-3 grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
                     <Reszlet

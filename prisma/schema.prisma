@@ -233,6 +233,9 @@ model EloirtTetel {
   idoszak      String // "2026-09"
   esedekesseg  DateTime
   osszegFt     Int
+  // Miért ennyi, ha nem a teljes havi összeg (töredékhónap). Szótárkulcs és
+  // adatok JSON-ként: a magyarázat a nyelvvel együtt változik.
+  reszletezes  String?
   letrehozva   DateTime @default(now())
 
   jogviszony Jogviszony  @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)

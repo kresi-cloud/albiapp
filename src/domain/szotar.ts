@@ -512,6 +512,37 @@ export const SZOTAR: Szotar = {
   },
   "valasz.elkuldve": { hu: "Elküldve.", en: "Sent." },
 
+  // --- Havi előírások
+  "eloiras.toredek": {
+    hu: "Töredékhónap: {elso}–{utolso}. ({napok} nap a hónap {honapNapjai} napjából). A teljes havi összeg {teljes} Ft.",
+    en: "Partial month: {elso}–{utolso} ({napok} of the month's {honapNapjai} days). The full monthly amount is {teljes} HUF.",
+  },
+  "valasz.lezaras_datum_kell": {
+    hu: "Add meg, melyik nappal zárul a jogviszony.",
+    en: "Give the day the tenancy ends.",
+  },
+  "valasz.nincs_jogosultsag": {
+    hu: "Ehhez a bérleményhez nincs jogosultságod.",
+    en: "You do not have access to this tenancy.",
+  },
+  "valasz.lezarva": {
+    hu: "Lezárva. {torolt} későbbi előírás törölve, {aranyositott} előírás arányosítva a kiköltözés napjáig.",
+    en: "Closed. {torolt} later scheduled items removed, {aranyositott} pro-rated to the move-out day.",
+  },
+  "valasz.ujranyitva": {
+    hu: "Újranyitva; a havi előírások megint keletkeznek.",
+    en: "Reopened; monthly items will be created again.",
+  },
+  "berlok.lezaras": { hu: "Jogviszony lezárása", en: "Close the tenancy" },
+  "berlok.lezaras_nap": { hu: "Melyik nappal zárul?", en: "On which day does it end?" },
+  "berlok.lezaras_gomb": { hu: "Lezárom", en: "Close it" },
+  "berlok.lezaras_sugo": {
+    hu: "A kiköltözés utáni hónapok előírásait törlöm, a záró hónapét napra arányosítom. A múlthoz nem nyúlok.",
+    en: "I remove the scheduled items for months after the move-out and pro-rate the closing month. The past is untouched.",
+  },
+  "berlok.lezarva": { hu: "Lezárva {nap} napjával", en: "Closed as of {nap}" },
+  "berlok.ujranyit": { hu: "Mégis él", en: "Reopen" },
+
   // --- Betekintő nézet
   "nav.betekinto": { hu: "Betekintő", en: "Reference" },
   "betekinto.oldal.cim": { hu: "Betekintő a fizetési előzményemre", en: "A reference on my payment history" },

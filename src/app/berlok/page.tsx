@@ -2,8 +2,15 @@ import { datum, forint } from "@/domain/penz";
 import { meghivoAllapota } from "@/domain/belepes";
 import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 import { MeghivoGomb } from "./MeghivoGomb";
-import { BerloAdatok, BerloHozzaadas, BerloTorles } from "./Urlapok";
+import {
+  BerloAdatok,
+  BerloHozzaadas,
+  BerloTorles,
+  JogviszonyLezaras,
+  JogviszonyUjranyitas,
+} from "./Urlapok";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +20,9 @@ function napSzoveg(nap: Date | null): string {
 
 export default async function Berlok() {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const most = new Date();
+  const maiNap = napSzoveg(most);
 
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { ingatlan: { tulajdonosId: berbeado.id } },
@@ -55,6 +64,11 @@ export default async function Berlok() {
                 ? "egy bérlő"
                 : `${jogviszony.berlok.length} bérlő, egyetemleges felelősséggel`}
             </p>
+            {jogviszony.statusz === "lezart" ? (
+              <p className="mt-1 text-sm font-medium text-stone-700 dark:text-stone-300">
+                {sz("berlok.lezarva", { nap: datum(jogviszony.vege ?? most) })}
+              </p>
+            ) : null}
 
             <ul className="mt-3 grid gap-4">
               {jogviszony.berlok.map((berlo) => {
@@ -123,6 +137,22 @@ export default async function Berlok() {
             </ul>
 
             <BerloHozzaadas jogviszonyId={jogviszony.id} />
+
+            {jogviszony.statusz === "lezart" ? (
+              <JogviszonyUjranyitas
+                jogviszonyId={jogviszony.id}
+                cimke={sz("berlok.ujranyit")}
+              />
+            ) : (
+              <JogviszonyLezaras
+                jogviszonyId={jogviszony.id}
+                cimke={sz("berlok.lezaras")}
+                napCimke={sz("berlok.lezaras_nap")}
+                gombCimke={sz("berlok.lezaras_gomb")}
+                sugo={sz("berlok.lezaras_sugo")}
+                maiNap={maiNap}
+              />
+            )}
           </li>
         ))}
       </ul>
