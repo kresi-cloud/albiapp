@@ -20,8 +20,8 @@ export default async function Beallitasok() {
   return (
     <div className="grid gap-8">
       <section>
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("beallitasok.cim")}</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("beallitasok.bevezeto")}</p>
+        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("beallitasok.cim")}</h1>
+        <p className="mt-1 text-halvany">{sz("beallitasok.bevezeto")}</p>
       </section>
 
       <AblakUrlap
@@ -73,9 +73,9 @@ export default async function Beallitasok() {
         }}
       />
 
-      <section className="rounded-lg border border-stone-200 bg-white p-4 text-sm dark:border-stone-800 dark:bg-stone-900">
+      <section className="rounded-kartya border border-keret bg-felulet p-4 text-sm">
         <h2 className="font-semibold">{sz("beallitasok.tolerancia_cim")}</h2>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">
+        <p className="mt-1 text-halvany">
           {sz("beallitasok.tolerancia_sugo")}
         </p>
       </section>

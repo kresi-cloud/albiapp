@@ -32,13 +32,13 @@ export function ElszamolasTetelek({
         {tetelek.map((tetel) => (
           <li
             key={tetel.id}
-            className="rounded border border-stone-200 p-3 text-sm dark:border-stone-800"
+            className="rounded border border-keret p-3 text-sm"
           >
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <span className="font-medium">
                 {tetel.megnevezes}
                 {mennyiseg(tetel) ? (
-                  <span className="ml-2 font-normal text-stone-500 dark:text-stone-400">
+                  <span className="ml-2 font-normal text-nagyon-halvany">
                     {mennyiseg(tetel)}
                   </span>
                 ) : null}
@@ -47,11 +47,11 @@ export function ElszamolasTetelek({
               {forintNyelven(tetel.osszegFt, nyelv)}
             </span>
             </div>
-            <p className="mt-1 text-stone-600 dark:text-stone-400">{tetel.reszletezes}</p>
+            <p className="mt-1 text-halvany">{tetel.reszletezes}</p>
           </li>
         ))}
       </ul>
-      <div className="flex items-baseline justify-between border-t border-stone-200 pt-2 text-sm font-semibold dark:border-stone-800">
+      <div className="flex items-baseline justify-between border-t border-keret pt-2 text-sm font-semibold">
         <span>{sz("berlo.osszesen")}</span>
         <span className="tabular-nums">{forintNyelven(osszegFt, nyelv)}</span>
       </div>

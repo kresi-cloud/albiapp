@@ -110,7 +110,7 @@ export default async function Befizetesek() {
             })}{" "}
             <Link
               href="/beallitasok"
-              className="font-semibold text-albi-700 hover:text-albi-800 dark:text-albi-300"
+              className="font-semibold text-kiemelt hover:underline"
             >
               {sz("befizetesek.ablak_allit")}
             </Link>

@@ -89,7 +89,7 @@ export function UjIgazolas({
 
   if (idoszakok.length === 0) {
     return (
-      <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+      <p className="mt-2 text-sm text-halvany">
         {cimkek.nincs}
       </p>
     );
@@ -127,7 +127,7 @@ export function UjIgazolas({
             className={MEZO}
             allapot={allapot.allapot}
           />
-          <span className="text-xs text-stone-500 dark:text-stone-400">{cimkek.osszegSugo}</span>
+          <span className="text-xs text-nagyon-halvany">{cimkek.osszegSugo}</span>
         </label>
 
         <label className="grid gap-1 text-sm sm:col-span-2">

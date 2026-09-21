@@ -48,8 +48,8 @@ export default async function Rezsi() {
   return (
     <div className="grid gap-8">
       <section>
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("rezsi.cim")}</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("rezsi.bevezeto")}</p>
+        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("rezsi.cim")}</h1>
+        <p className="mt-1 text-halvany">{sz("rezsi.bevezeto")}</p>
       </section>
 
       {jogviszonyok.map((jogviszony) => (
@@ -58,7 +58,7 @@ export default async function Rezsi() {
             <h2 className="font-semibold">
               {jogviszony.ingatlan.megnevezes} · {nevsor(jogviszony.berlok.map((berlo) => berlo.nev))}
             </h2>
-            <p className="text-sm text-stone-600 dark:text-stone-400">
+            <p className="text-sm text-halvany">
               {sz("rezsi.mod", { mod: sz(`rezsi.mod.${jogviszony.rezsiElszamolas}`) })}
               {jogviszony.kozosKoltsegFt > 0
                 ? ` · ${sz("rezsi.kozos_koltseg", { osszeg: ft(jogviszony.kozosKoltsegFt) })}`
@@ -66,10 +66,10 @@ export default async function Rezsi() {
             </p>
           </div>
 
-          <div className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+          <div className="rounded-kartya border border-keret bg-felulet p-4">
             <h3 className="font-medium">{sz("rezsi.meroorak")}</h3>
             {jogviszony.ingatlan.meroorak.length === 0 ? (
-              <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+              <p className="mt-1 text-sm text-halvany">
                 {sz("rezsi.nincs_meroora")}
               </p>
             ) : (
@@ -78,18 +78,18 @@ export default async function Rezsi() {
                   const utolso = meroora.oraallasok[0];
                   const dijszabas = meroora.dijszabasok[0];
                   return (
-                    <li key={meroora.id} className="border-t border-stone-200 pt-3 first:border-0 first:pt-0 dark:border-stone-800">
+                    <li key={meroora.id} className="border-t border-keret pt-3 first:border-0 first:pt-0">
                       <div className="flex flex-wrap items-baseline justify-between gap-2">
                         <span className="font-medium">
                           {u(merooraUzenet(meroora.tipus, meroora.almero))}
                         </span>
-                        <span className="text-sm text-stone-600 tabular-nums dark:text-stone-400">
+                        <span className="text-sm text-halvany tabular-nums">
                           {utolso
                             ? `${utolso.ertek} ${meroora.mertekegyseg} · ${nap(utolso.datum)}`
                             : sz("rezsi.nincs_oraallas")}
                         </span>
                       </div>
-                      <p className="text-xs text-stone-500 dark:text-stone-400">
+                      <p className="text-xs text-nagyon-halvany">
                         {dijszabas
                           ? sz("rezsi.dijszabas", {
                               ar: szamF(dijszabas.kedvezmenyesArFiller / 100),
@@ -121,7 +121,7 @@ export default async function Rezsi() {
             )}
           </div>
 
-          <div className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+          <div className="rounded-kartya border border-keret bg-felulet p-4">
             <h3 className="font-medium">{sz("rezsi.uj_elszamolas")}</h3>
             <ElszamolasUrlap
               jogviszonyId={jogviszony.id}
@@ -139,13 +139,13 @@ export default async function Rezsi() {
           {jogviszony.elszamolasok.map((elszamolas) => (
             <div
               key={elszamolas.id}
-              className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+              className="rounded-kartya border border-keret bg-felulet p-4"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="font-medium">
                   {nap(elszamolas.idoszakKezdete)} – {nap(elszamolas.idoszakVege)}
                 </h3>
-                <span className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
+                <span className="text-xs uppercase tracking-wide text-nagyon-halvany">
                   {sz(`dokumentum.elszamolas.allapot.${elszamolas.allapot}`)}
                 </span>
               </div>
@@ -157,7 +157,7 @@ export default async function Rezsi() {
               />
 
               {elszamolas.berloiUzenet ? (
-                <p className="mt-3 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+                <p className="mt-3 rounded border border-figyelem-keret bg-figyelem-lap p-3 text-sm text-figyelem">
                   {sz("rezsi.vitatja", { uzenet: elszamolas.berloiUzenet })}
                 </p>
               ) : null}

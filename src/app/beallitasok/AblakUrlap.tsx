@@ -35,11 +35,11 @@ export function AblakUrlap({
   return (
     <form
       action={kuldes}
-      className="grid gap-3 rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+      className="grid gap-3 rounded-kartya border border-keret bg-felulet p-4"
     >
       <div>
         <h2 className="font-semibold">{cimkek.ablakCim}</h2>
-        <p className="text-sm text-stone-600 dark:text-stone-400">{cimkek.ablakSugo}</p>
+        <p className="text-sm text-halvany">{cimkek.ablakSugo}</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -76,9 +76,9 @@ export function AblakUrlap({
         </label>
       </div>
 
-      <div className="border-t border-stone-200 pt-3 dark:border-stone-800">
+      <div className="border-t border-keret pt-3">
         <h2 className="font-semibold">{cimkek.bizonylatCim}</h2>
-        <p className="text-sm text-stone-600 dark:text-stone-400">{cimkek.bizonylatSugo}</p>
+        <p className="text-sm text-halvany">{cimkek.bizonylatSugo}</p>
 
         <label className="mt-3 flex items-start gap-2 text-sm">
           <input
@@ -104,8 +104,8 @@ export function AblakUrlap({
         <div
           className={`rounded border p-3 text-sm ${
             allapot.allapot === "hiba"
-              ? "border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200"
-              : "border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
+              ? "border-gond-keret bg-gond-lap text-gond"
+              : "border-rendben-keret bg-rendben-lap text-rendben"
           }`}
         >
           <p>{allapot.uzenet}</p>

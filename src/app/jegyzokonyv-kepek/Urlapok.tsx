@@ -41,7 +41,7 @@ export function KepFeltoltes({
 
   return (
     <details className="mt-3">
-      <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
+      <summary className="cursor-pointer text-sm text-halvany underline underline-offset-2">
         {parCimke ?? cimkek.nyito}
       </summary>
       <form action={kuldes} className="mt-3 grid gap-3">
@@ -126,7 +126,7 @@ export function KepElbiralas({ kepId, cimkek }: { kepId: string; cimkek: Elbiral
         {cimkek.megerosit}
       </button>
       <details>
-        <summary className="cursor-pointer text-xs text-stone-600 underline underline-offset-2 dark:text-stone-400">
+        <summary className="cursor-pointer text-xs text-halvany underline underline-offset-2">
           {cimkek.kifogasol}
         </summary>
         <label className="mt-2 grid gap-1 text-xs">
@@ -163,7 +163,7 @@ export function KepTorles({ kepId, cimke }: { kepId: string; cimke: string }) {
       <button
         type="submit"
         disabled={folyamatban}
-        className="justify-self-start text-xs text-stone-500 underline underline-offset-2 hover:text-rose-700 disabled:opacity-60 dark:text-stone-400"
+        className="justify-self-start text-xs text-nagyon-halvany underline underline-offset-2 hover:text-gond disabled:opacity-60"
       >
         {cimke}
       </button>

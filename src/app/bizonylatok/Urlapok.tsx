@@ -54,7 +54,7 @@ export function Bizonylatok({
   const masik = meglevok.find((sor) => sor.oldal !== sajatOldal);
 
   return (
-    <div className="mt-3 rounded-lg border border-keret bg-felulet-halk p-3">
+    <div className="mt-3 rounded-kartya border border-keret bg-felulet-halk p-3">
       <h4 className="text-sm font-semibold">{cimkek.cim}</h4>
 
       <dl className="mt-2 grid gap-2 text-sm sm:grid-cols-2">

@@ -60,17 +60,17 @@ export default async function JegyzokonyvOldal({
         <h1 className="mt-2 text-2xl font-semibold tracking-tight">
           {sz(`jegyzokonyv.fajta.${bemenet.fajta}`)} · {bemenet.ingatlan.megnevezes}
         </h1>
-        <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+        <p className="mt-1 text-sm text-halvany">
           {sz(szerkesztheto ? "jegyzokonyv.tervezet_sugo" : "jegyzokonyv.vegleges_sugo")}
         </p>
         {/* A kiadott okirat magyarul érvényes: a lap ezt kimondja. */}
-        <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+        <p className="mt-1 text-sm text-halvany">
           {sz("jegyzokonyv.magyar_szoveg")}
         </p>
       </section>
 
       {!szerkesztheto ? (
-        <section className="rounded border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200">
+        <section className="rounded border border-rendben-keret bg-rendben-lap p-3 text-sm text-rendben">
           <p>
             {rogzitettOraallas > 0
               ? sz("jegyzokonyv.oraallas_bekerult", { db: rogzitettOraallas })
@@ -83,9 +83,9 @@ export default async function JegyzokonyvOldal({
       ) : null}
 
       {szerkesztheto && hianyok.length > 0 ? (
-        <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+        <section className="rounded-kartya border border-keret bg-felulet p-4">
           <h2 className="font-medium">{sz("jegyzokonyv.hianyok_cim")}</h2>
-          <ul className="mt-2 list-disc pl-5 text-sm text-stone-600 dark:text-stone-400">
+          <ul className="mt-2 list-disc pl-5 text-sm text-halvany">
             {hianyok.map((sor) => (
               <li key={`${sor.kulcs}:${u(sor)}`}>{u(sor)}</li>
             ))}
@@ -95,7 +95,7 @@ export default async function JegyzokonyvOldal({
 
       {szerkesztheto ? (
         <>
-          <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+          <section className="rounded-kartya border border-keret bg-felulet p-4">
             <JegyzokonyvUrlap
               jegyzokonyvId={id}
               idopont={idopontMezo(bemenet.idopont)}
@@ -133,7 +133,7 @@ export default async function JegyzokonyvOldal({
             />
           </section>
 
-          <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+          <section className="rounded-kartya border border-keret bg-felulet p-4">
             <h2 className="mb-3 font-medium">{sz("jegyzokonyv.uj_tetel_cim")}</h2>
             <UjTetel
               jegyzokonyvId={id}
@@ -155,7 +155,7 @@ export default async function JegyzokonyvOldal({
         </>
       ) : null}
 
-      <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+      <section className="rounded-kartya border border-keret bg-felulet p-4">
         <Album
           jegyzokonyvId={id}
           fajta={bemenet.fajta}
@@ -166,7 +166,7 @@ export default async function JegyzokonyvOldal({
         />
       </section>
 
-      <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+      <section className="rounded-kartya border border-keret bg-felulet p-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 className="font-medium">{sz("jegyzokonyv.szoveg_cim")}</h2>
           <a href={`/jegyzokonyvek/${id}/letoltes`} className="text-sm underline underline-offset-2">
@@ -179,7 +179,7 @@ export default async function JegyzokonyvOldal({
       </section>
 
       {szerkesztheto ? (
-        <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+        <section className="rounded-kartya border border-keret bg-felulet p-4">
           <VeglegesitesUrlap
             jegyzokonyvId={id}
             cimkek={{

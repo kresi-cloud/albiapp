@@ -40,9 +40,9 @@ export function BerbeadoiAdatok({ adatok, cimkek }: { adatok: Adatok; cimkek: Ad
   const [allapot, kuldes, folyamatban] = useActionState(berbeadoiAdatokatMent, KEZDETI);
 
   return (
-    <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+    <section className="rounded-kartya border border-keret bg-felulet p-4">
       <h2 className="font-semibold">{cimkek.cim}</h2>
-      <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">{cimkek.sugo}</p>
+      <p className="mt-1 text-sm text-halvany">{cimkek.sugo}</p>
 
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
         <Mezo nev="szuletesiHely" cimke={cimkek.mezo.szuletesiHely} ertek={adatok.szuletesiHely} />

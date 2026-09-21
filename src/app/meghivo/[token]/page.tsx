@@ -26,8 +26,8 @@ export default async function MeghivoOldal({
   if (!meghivo || allapot !== "ervenyes") {
     return (
       <div className="mx-auto grid max-w-sm gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("meghivo.nem_el")}</h1>
-        <p className="text-stone-600 dark:text-stone-400">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("meghivo.nem_el")}</h1>
+        <p className="text-halvany">
           {sz(allapot === "felhasznalt" ? "meghivo.felhasznalt" : "meghivo.lejart")}
         </p>
         <Link href="/belepes" className="underline underline-offset-2">
@@ -40,14 +40,14 @@ export default async function MeghivoOldal({
   return (
     <div className="mx-auto grid max-w-sm gap-6">
       <section>
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("meghivo.fiok")}</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">
+        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("meghivo.fiok")}</h1>
+        <p className="mt-1 text-halvany">
           {sz("meghivo.bevezeto", {
             berlemeny: meghivo.jogviszonyBerlo.jogviszony.ingatlan.megnevezes,
             cim: meghivo.jogviszonyBerlo.jogviszony.ingatlan.cim,
           })}
         </p>
-        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+        <p className="mt-2 text-sm text-halvany">
           {sz("meghivo.jelszo_sugo", { hossz: JELSZO_MIN_HOSSZ })}
         </p>
       </section>

@@ -13,7 +13,7 @@ export function Nyelvvalto({ nyelv, cimke }: { nyelv: Nyelv; cimke: string }) {
   return (
     <form
       action={nyelvetValt}
-      className="flex items-center gap-0.5 rounded-lg border border-keret bg-felulet-halk p-0.5"
+      className="flex items-center gap-0.5 rounded-kartya border border-keret bg-felulet-halk p-0.5"
     >
       <span className="sr-only">{cimke}</span>
       {NYELVEK.map((valaszthato) => (

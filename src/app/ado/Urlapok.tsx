@@ -35,7 +35,7 @@ export function KoltsegUrlap({
     <form action={kuldes} className="grid gap-2">
       <div className="grid gap-2 sm:grid-cols-2">
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">{cimkek.ingatlan}</span>
+          <span className="text-nagyon-halvany">{cimkek.ingatlan}</span>
           <Valaszto name="ingatlanId" className={MEZO} required allapot={allapot.allapot}>
             {ingatlanok.map((ingatlan) => (
               <option key={ingatlan.id} value={ingatlan.id}>
@@ -45,7 +45,7 @@ export function KoltsegUrlap({
           </Valaszto>
         </label>
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">{cimkek.fajta}</span>
+          <span className="text-nagyon-halvany">{cimkek.fajta}</span>
           <Valaszto name="fajta" className={MEZO} required allapot={allapot.allapot}>
             {fajtak.map((fajta) => (
               <option key={fajta.ertek} value={fajta.ertek}>
@@ -55,7 +55,7 @@ export function KoltsegUrlap({
           </Valaszto>
         </label>
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">{cimkek.datum}</span>
+          <span className="text-nagyon-halvany">{cimkek.datum}</span>
           <Mezo
             type="date"
             name="datum"
@@ -66,7 +66,7 @@ export function KoltsegUrlap({
           />
         </label>
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">{cimkek.osszeg}</span>
+          <span className="text-nagyon-halvany">{cimkek.osszeg}</span>
           <Mezo
             type="text"
             inputMode="numeric"
@@ -79,7 +79,7 @@ export function KoltsegUrlap({
         </label>
       </div>
       <label className="grid gap-1 text-xs">
-        <span className="text-stone-500 dark:text-stone-400">{cimkek.megnevezes}</span>
+        <span className="text-nagyon-halvany">{cimkek.megnevezes}</span>
         <Mezo
           type="text"
           name="megnevezes"
@@ -121,7 +121,7 @@ export function BeszerzesUrlap({
       <input type="hidden" name="ingatlanId" value={ingatlanId} />
       <div className="flex flex-wrap gap-2">
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">{cimkek.ar}</span>
+          <span className="text-nagyon-halvany">{cimkek.ar}</span>
           <Mezo
             type="text"
             inputMode="numeric"
@@ -134,7 +134,7 @@ export function BeszerzesUrlap({
           />
         </label>
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">{cimkek.nap}</span>
+          <span className="text-nagyon-halvany">{cimkek.nap}</span>
           <Mezo
             type="date"
             name="beszerzesDatuma"

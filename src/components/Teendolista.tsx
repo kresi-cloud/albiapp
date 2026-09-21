@@ -98,7 +98,7 @@ export function Teendolista({
                   {teendo.hivatkozas ? (
                     <Link
                       href={teendo.hivatkozas}
-                      className="inline-flex items-center gap-1 text-sm font-semibold text-albi-700 hover:text-albi-800 dark:text-albi-300"
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-kiemelt hover:underline"
                     >
                       {sz("teendo.megnezem")}
                       <IkonNyil meret={14} />

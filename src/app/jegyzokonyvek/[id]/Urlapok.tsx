@@ -85,7 +85,7 @@ export function JegyzokonyvUrlap({
             .map((tetel) => (
               <div
                 key={tetel.id}
-                className="grid gap-2 border-t border-stone-200 pt-3 first:border-0 first:pt-0 dark:border-stone-800"
+                className="grid gap-2 border-t border-keret pt-3 first:border-0 first:pt-0"
               >
                 <div className="grid gap-2 sm:grid-cols-2">
                   <Mezo
@@ -251,7 +251,7 @@ export function VeglegesitesUrlap({
       <button type="submit" disabled={folyamatban} className={GOMB}>
         {folyamatban ? cimkek.folyamatban : hianyzik ? cimkek.megis : cimkek.gomb}
       </button>
-      <p className="text-sm text-stone-600 dark:text-stone-400">{cimkek.sugo}</p>
+      <p className="text-sm text-halvany">{cimkek.sugo}</p>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
     </form>
   );

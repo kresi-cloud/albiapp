@@ -21,10 +21,10 @@ export default async function Ingatlanok() {
 
   return (
     <div className="grid gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">{sz("ingatlanok.cim")}</h1>
+      <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("ingatlanok.cim")}</h1>
 
       {ures ? (
-        <p className="rounded-lg border border-stone-200 bg-white p-4 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400">
+        <p className="rounded-kartya border border-keret bg-felulet p-4 text-sm text-halvany">
           {sz("ingatlanok.nincs")}
         </p>
       ) : (
@@ -32,10 +32,10 @@ export default async function Ingatlanok() {
           {ingatlanok.map((ingatlan) => (
             <li
               key={ingatlan.id}
-              className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+              className="rounded-kartya border border-keret bg-felulet p-4"
             >
               <h2 className="font-semibold">{ingatlan.megnevezes}</h2>
-              <p className="text-sm text-stone-600 dark:text-stone-400">{ingatlan.cim}</p>
+              <p className="text-sm text-halvany">{ingatlan.cim}</p>
               <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
                 <Adat
                   cimke={sz("ingatlanok.alapterulet")}
@@ -63,7 +63,7 @@ export default async function Ingatlanok() {
       */}
       <details
         open={ures}
-        className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+        className="rounded-kartya border border-keret bg-felulet p-4"
       >
         <summary className="cursor-pointer font-medium">{sz("berlemeny.uj")}</summary>
         <div className="mt-3">
@@ -88,7 +88,7 @@ export default async function Ingatlanok() {
       </details>
 
       {ures ? null : (
-        <details className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+        <details className="rounded-kartya border border-keret bg-felulet p-4">
           <summary className="cursor-pointer font-medium">{sz("jogviszony.uj")}</summary>
           <div className="mt-3">
             <JogviszonyUrlap
@@ -128,7 +128,7 @@ export default async function Ingatlanok() {
 function Adat({ cimke, ertek }: { cimke: string; ertek: string }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
+      <dt className="text-xs uppercase tracking-wide text-nagyon-halvany">
         {cimke}
       </dt>
       <dd className="tabular-nums">{ertek}</dd>

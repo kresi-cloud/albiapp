@@ -4,7 +4,7 @@
  * Az alkalmazás arculata egy helyen.
  *
  * Miért így: eddig minden lap maga írta ki a színeit, és mindegyikhez kellett
- * egy `dark:` páros is — `border-stone-200 dark:border-stone-800`. Ez két
+ * egy `dark:` páros is — `border-keret`. Ez két
  * dolgot rontott el. Egyrészt a két mód külön csúszott el: aki csak a világosat
  * nézte, észre sem vette, ha a sötétben olvashatatlan lett valami. Másrészt egy
  * színcsere húsz fájl átírása lett volna, vagyis soha nem történt meg.
