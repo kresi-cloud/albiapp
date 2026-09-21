@@ -1,6 +1,7 @@
 import { elszamolasSzovege } from "@/domain/dokumentumtar";
 import { elszamolasIrat } from "@/lib/dokumentumtar";
 import { belepettFelhasznalo } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 
 export const dynamic = "force-dynamic";
 
@@ -13,11 +14,12 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const felhasznalo = await belepettFelhasznalo();
-  if (!felhasznalo) return new Response("Ehhez nincs jogosultságod.", { status: 403 });
+  const { sz } = await szovegek();
+  if (!felhasznalo) return new Response(sz("letoltes.nincs_jogosultsag"), { status: 403 });
 
   const { id } = await params;
   const irat = await elszamolasIrat(id, felhasznalo);
-  if (!irat) return new Response("Nincs ilyen kiadott elszámolás.", { status: 404 });
+  if (!irat) return new Response(sz("letoltes.nincs_elszamolas"), { status: 404 });
 
   const idoszak = irat.idoszakVege.toISOString().slice(0, 7);
 

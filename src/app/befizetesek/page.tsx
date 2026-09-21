@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Allapotjelzo } from "@/components/Allapotjelzo";
 import { csoportositva } from "@/domain/egyeztetes";
-import type { Uzenet } from "@/domain/nyelv";
+import type { Nyelv, Szovegezo, Uzenet } from "@/domain/nyelv";
 import type { JogviszonyNezet } from "@/lib/lekerdezesek";
-import { datum, forint } from "@/domain/penz";
+import { datumNyelven, forintNyelven } from "@/domain/nyelv";
 import { egyeztetesBeallitasok, jogviszonyNezetek } from "@/lib/lekerdezesek";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
@@ -17,7 +17,9 @@ export const dynamic = "force-dynamic";
 export default async function Befizetesek() {
   const berbeado = await kotelezoSzerep("berbeado");
 
-  const { sz, u } = await szovegek();
+  const { sz, u , nyelv } = await szovegek();
+  const ft = (osszegFt: number) => forintNyelven(osszegFt, nyelv);
+  const nap = (ertek: Date) => datumNyelven(ertek, nyelv);
   const nezetek = await jogviszonyNezetek(berbeado.id);
   const beallitasok = await egyeztetesBeallitasok(berbeado.id);
 
@@ -39,7 +41,7 @@ export default async function Befizetesek() {
       oldal: sor.oldal,
       cimke: sz(`bizonylat.${sor.oldal}`),
       meret: u(meretSzoveg(sor.meretBajt)),
-      feltoltve: datum(sor.feltoltve),
+      feltoltve: nap(sor.feltoltve),
       sajat: sor.sajat,
     }));
 
@@ -60,23 +62,18 @@ export default async function Befizetesek() {
   return (
     <div className="grid gap-8">
       <section>
-        <h1 className="text-2xl font-semibold tracking-tight">Befizetések</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">
-          Három adat találkozik: mit kellett volna fizetni, mit mond a bérlő, és
-          mit mondasz te. A két fél a saját oldalát adja meg, és ha a kettő
-          egyezik, a tétel le van zárva.
+        <h1 className="text-2xl font-semibold tracking-tight">{sz("befizetesek.cim")}</h1>
+        <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("befizetesek.bevezeto")}</p>
+        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+          {sz("befizetesek.bizonylat_szabaly")}
         </p>
         <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
-          Bizonylatot csak akkor kérünk, ha a két oldal nem egyezik, és akkor is
-          csak arról az egy utalásról: tőled a fogadó oldalit, a bérlőtől a
-          küldő oldalit. Teljes bankszámlakivonatot nem kérünk, és nem is
-          fogadunk el.
-        </p>
-        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
-          Párosítási ablak: az esedékesség előtt {beallitasok.korabbiAblakNap},
-          utána {beallitasok.kesobbiAblakNap} nap.{" "}
+          {sz("befizetesek.ablak", {
+            elotte: beallitasok.korabbiAblakNap,
+            utana: beallitasok.kesobbiAblakNap,
+          })}{" "}
           <Link href="/beallitasok" className="underline underline-offset-2">
-            Átállítom
+            {sz("befizetesek.ablak_atallitom")}
           </Link>
         </p>
       </section>
@@ -101,13 +98,13 @@ export default async function Befizetesek() {
             <div>
               <h2 className="font-semibold">{nezet.ingatlanMegnevezes}</h2>
               <p className="text-sm text-stone-600 dark:text-stone-400">
-                {nezet.berlokNeve} · {forint(nezet.berletiDijFt)} / hó
+                {nezet.berlokNeve} · {sz("kozos.havi_dij", { osszeg: ft(nezet.berletiDijFt) })}
               </p>
             </div>
 
             {nezet.egyeztetesek.length === 0 ? (
               <p className="text-sm text-stone-600 dark:text-stone-400">
-                Ehhez a jogviszonyhoz még nincs egyeztetendő tétel.
+                {sz("befizetesek.nincs_tetel")}
               </p>
             ) : null}
 
@@ -124,7 +121,9 @@ export default async function Befizetesek() {
                     key={kulcs(sor)}
                     sor={sor}
                     nezetId={nezet.id}
+                    sz={sz}
                     u={u}
+                    nyelv={nyelv}
                     bizonylatSorai={bizonylatSorai}
                     bizonylatCimkek={BIZONYLAT_CIMKEK}
                   />
@@ -143,7 +142,9 @@ export default async function Befizetesek() {
                       key={kulcs(sor)}
                       sor={sor}
                       nezetId={nezet.id}
+                      sz={sz}
                       u={u}
+                      nyelv={nyelv}
                       bizonylatSorai={bizonylatSorai}
                       bizonylatCimkek={BIZONYLAT_CIMKEK}
                     />
@@ -159,7 +160,7 @@ export default async function Befizetesek() {
                 </summary>
                 <ul className="grid gap-2 p-3 pt-0">
                   {csendes.map((sor) => (
-                    <RovidSor key={kulcs(sor)} sor={sor} u={u} />
+                    <RovidSor key={kulcs(sor)} sor={sor} sz={sz} u={u} nyelv={nyelv} />
                   ))}
                 </ul>
               </details>
@@ -173,6 +174,8 @@ export default async function Befizetesek() {
 
 type Sor = JogviszonyNezet["egyeztetesek"][number];
 type Forditas = (ertek: Uzenet) => string;
+type Szoveg = Szovegezo["sz"];
+/** A nyelvet is leadjuk, mert a formázás és az összecsukott kártyák is azzal mennek. */
 type BizonylatCimkek = Parameters<typeof Bizonylatok>[0]["cimkek"];
 type BizonylatSorok = Parameters<typeof Bizonylatok>[0]["meglevok"];
 
@@ -188,24 +191,31 @@ function kulcs(sor: Sor): string {
 function Kartya({
   sor,
   nezetId,
+  sz,
   u,
+  nyelv,
   bizonylatSorai,
   bizonylatCimkek,
 }: {
   sor: Sor;
   nezetId: string;
+  sz: Szoveg;
   u: Forditas;
+  nyelv: Nyelv;
   bizonylatSorai: (eloirtTetelId: string) => BizonylatSorok;
   bizonylatCimkek: BizonylatCimkek;
 }) {
+  const ft = (osszegFt: number) => forintNyelven(osszegFt, nyelv);
+  const nap = (ertek: Date) => datumNyelven(ertek, nyelv);
+
   return (
     <li className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-medium">
-          {sor.idoszak ?? "Nincs előírás"}
-          {sor.osszegFt > 0 ? ` · ${forint(sor.osszegFt)}` : ""}
+          {sor.idoszak ?? sz("befizetesek.nincs_eloiras")}
+          {sor.osszegFt > 0 ? ` · ${ft(sor.osszegFt)}` : ""}
         </span>
-        <Allapotjelzo allapot={sor.allapot} />
+        <Allapotjelzo allapot={sor.allapot} nyelv={nyelv} />
       </div>
 
       <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">{u(sor.magyarazat)}</p>
@@ -215,24 +225,24 @@ function Kartya({
 
       <dl className="mt-3 grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
         <Reszlet
-          cimke="Előírás"
-          ertek={sor.eloirtTetelId ? `${forint(sor.osszegFt)} · ${datum(sor.esedekesseg)}` : "—"}
+          cimke={sz("befizetesek.oszlop.eloiras")}
+          ertek={sor.eloirtTetelId ? `${ft(sor.osszegFt)} · ${nap(sor.esedekesseg)}` : "—"}
         />
         <Reszlet
-          cimke="Amit a bérlő mond"
+          cimke={sz("befizetesek.oszlop.berlo")}
           ertek={
             sor.igazolasOsszegFt !== null && sor.igazolasDatuma
-              ? `${forint(sor.igazolasOsszegFt)} · ${datum(sor.igazolasDatuma)}`
+              ? `${ft(sor.igazolasOsszegFt)} · ${nap(sor.igazolasDatuma)}`
               : "—"
           }
         />
         <Reszlet
-          cimke="Ami hozzád megérkezett"
+          cimke={sz("befizetesek.oszlop.berbeado")}
           ertek={
             sor.berbeadoiOsszegFt !== null && sor.berbeadoiDatuma
-              ? `${forint(sor.berbeadoiOsszegFt)} · ${datum(sor.berbeadoiDatuma)}`
+              ? `${ft(sor.berbeadoiOsszegFt)} · ${nap(sor.berbeadoiDatuma)}`
               : sor.elteresOka === "nem_erkezett_meg"
-                ? "nem érkezett meg"
+                ? sz("befizetesek.nem_erkezett_ertek")
                 : "—"
           }
         />
@@ -240,9 +250,7 @@ function Kartya({
 
       {sor.bizonylatKell ? (
         <p className="mt-3 rounded border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200">
-          A két oldal nem egyezik. Ilyenkor van értelme az utalás bizonylatának:
-          tőled a fogadó oldali, a bérlőtől a küldő oldali. Teljes
-          bankszámlakivonat nem kell.
+          {sz("befizetesek.vita_magyarazat")}
         </p>
       ) : null}
 
@@ -264,19 +272,19 @@ function Kartya({
             eloirtTetelId={sor.eloirtTetelId}
             osszegFt={sor.osszegFt}
             esedekesseg={napSzoveg(sor.esedekesseg)}
-            cimkek={BEERKEZES_CIMKEK}
+            cimkek={beerkezesCimkek(sz)}
           />
           {sor.eloirtTetelId && sor.elteresOka !== "nem_erkezett_meg" ? (
             <NemErkezett
               eloirtTetelId={sor.eloirtTetelId}
-              cimke="Megnéztem: nem érkezett meg"
+              cimke={sz("beerkezes.nem")}
             />
           ) : null}
         </>
       ) : sor.berbeadoiIgazolasId ? (
         <BeerkezestVisszavon
           igazolasId={sor.berbeadoiIgazolasId}
-          cimke="Ezt tévedésből rögzítettem"
+          cimke={sz("beerkezes.visszavon")}
         />
       ) : null}
     </li>
@@ -288,36 +296,50 @@ function Kartya({
  * két űrlapot: amit már nem kell csinálni, azt nem kell nagyban mutatni. A
  * javítás útja megmarad, mert egy téves rögzítés később is kiderülhet.
  */
-function RovidSor({ sor, u }: { sor: Sor; u: Forditas }) {
+function RovidSor({
+  sor,
+  sz,
+  u,
+  nyelv,
+}: {
+  sor: Sor;
+  sz: Szoveg;
+  u: Forditas;
+  nyelv: Nyelv;
+}) {
+  const ft = (osszegFt: number) => forintNyelven(osszegFt, nyelv);
+
   return (
     <li className="rounded border border-stone-200 p-3 text-sm dark:border-stone-800">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-medium">
-          {sor.idoszak ?? "Nincs előírás"}
-          {sor.osszegFt > 0 ? ` · ${forint(sor.osszegFt)}` : ""}
+          {sor.idoszak ?? sz("befizetesek.nincs_eloiras")}
+          {sor.osszegFt > 0 ? ` · ${ft(sor.osszegFt)}` : ""}
         </span>
-        <Allapotjelzo allapot={sor.allapot} />
+        <Allapotjelzo allapot={sor.allapot} nyelv={nyelv} />
       </div>
       <p className="mt-1 text-stone-600 dark:text-stone-400">{u(sor.magyarazat)}</p>
       {sor.berbeadoiIgazolasId ? (
         <BeerkezestVisszavon
           igazolasId={sor.berbeadoiIgazolasId}
-          cimke="Ezt tévedésből rögzítettem"
+          cimke={sz("beerkezes.visszavon")}
         />
       ) : null}
     </li>
   );
 }
 
-const BEERKEZES_CIMKEK = {
-  nyito: "Megérkezett? Rögzítem",
-  datum: "Mikor érkezett",
-  osszeg: "Mennyi érkezett (Ft)",
-  kozlemeny: "Közlemény (ha van)",
-  gomb: "Rögzítem",
-  nem: "Megnéztem: nem érkezett meg",
-  visszavon: "Ezt tévedésből rögzítettem",
-};
+function beerkezesCimkek(sz: Szoveg) {
+  return {
+    nyito: sz("beerkezes.nyito"),
+    datum: sz("beerkezes.datum"),
+    osszeg: sz("beerkezes.osszeg"),
+    kozlemeny: sz("beerkezes.kozlemeny"),
+    gomb: sz("beerkezes.gomb"),
+    nem: sz("beerkezes.nem"),
+    visszavon: sz("beerkezes.visszavon"),
+  };
+}
 
 function napSzoveg(nap: Date): string {
   return nap.toISOString().slice(0, 10);

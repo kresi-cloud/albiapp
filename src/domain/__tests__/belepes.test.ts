@@ -38,7 +38,8 @@ describe("jelszotEllenoriz", () => {
   it("a rövid jelszót elutasítja, és megmondja a határt", () => {
     const hibak = jelszotEllenoriz("rovid");
     expect(hibak).toHaveLength(1);
-    expect(hibak[0]).toContain(String(JELSZO_MIN_HOSSZ));
+    expect(hibak[0].kulcs).toBe("jelszo.hiba.rovid");
+    expect(hibak[0].adatok?.min).toBe(JELSZO_MIN_HOSSZ);
   });
 
   it("a csak szóközből álló jelszót elutasítja", () => {
@@ -46,8 +47,8 @@ describe("jelszotEllenoriz", () => {
   });
 
   it("jelzi, ha a két jelszó nem egyezik", () => {
-    expect(jelszotEllenoriz("hosszujelszo2026", "masikjelszo2026")).toContain(
-      "A két jelszó nem egyezik.",
+    expect(jelszotEllenoriz("hosszujelszo2026", "masikjelszo2026").map((sor) => sor.kulcs)).toContain(
+      "jelszo.hiba.nem_egyezik",
     );
   });
 });

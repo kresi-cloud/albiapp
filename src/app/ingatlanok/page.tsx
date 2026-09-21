@@ -1,16 +1,15 @@
 import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { forintNyelven } from "@/domain/nyelv";
-import { szovegekNyelvvel } from "@/domain/szotar";
-import { aktualisNyelv } from "@/lib/nyelv";
+import { szovegek } from "@/lib/nyelv";
 import { IngatlanUrlap, JogviszonyUrlap } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
 
 export default async function Ingatlanok() {
   const berbeado = await kotelezoSzerep("berbeado");
-  const nyelv = await aktualisNyelv();
-  const { sz } = szovegekNyelvvel(nyelv);
+  const { sz, nyelv } = await szovegek();
+  const ft = (osszegFt: number) => forintNyelven(osszegFt, nyelv);
 
   const ingatlanok = await prisma.ingatlan.findMany({
     where: { tulajdonosId: berbeado.id },
@@ -22,11 +21,11 @@ export default async function Ingatlanok() {
 
   return (
     <div className="grid gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">{sz("berlemeny.cim")}</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{sz("ingatlanok.cim")}</h1>
 
       {ures ? (
         <p className="rounded-lg border border-stone-200 bg-white p-4 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400">
-          {sz("berlemeny.ures")}
+          {sz("ingatlanok.nincs")}
         </p>
       ) : (
         <ul className="grid gap-3">
@@ -39,19 +38,18 @@ export default async function Ingatlanok() {
               <p className="text-sm text-stone-600 dark:text-stone-400">{ingatlan.cim}</p>
               <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
                 <Adat
-                  cimke={sz("berlemeny.mezo.alapterulet")}
+                  cimke={sz("ingatlanok.alapterulet")}
                   ertek={ingatlan.alapteruletM2 ? `${ingatlan.alapteruletM2} m²` : "—"}
                 />
                 <Adat
-                  cimke={sz("berlemeny.mezo.kozos_koltseg")}
-                  ertek={
-                    ingatlan.kozosKoltsegFt
-                      ? forintNyelven(ingatlan.kozosKoltsegFt, nyelv)
-                      : "—"
-                  }
+                  cimke={sz("ingatlanok.kozos_koltseg")}
+                  ertek={ingatlan.kozosKoltsegFt ? ft(ingatlan.kozosKoltsegFt) : "—"}
                 />
-                <Adat cimke="Mérőóra" ertek={String(ingatlan.meroorak.length)} />
-                <Adat cimke="Jogviszony" ertek={String(ingatlan.jogviszonyok.length)} />
+                <Adat cimke={sz("ingatlanok.meroora")} ertek={String(ingatlan.meroorak.length)} />
+                <Adat
+                  cimke={sz("ingatlanok.jogviszony")}
+                  ertek={String(ingatlan.jogviszonyok.length)}
+                />
               </dl>
             </li>
           ))}

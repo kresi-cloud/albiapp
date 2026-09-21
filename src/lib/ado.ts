@@ -11,6 +11,7 @@ import {
   type Osszesito,
 } from "@/domain/ado";
 import { egyeztet } from "@/domain/egyeztetes";
+import { uzenet, type Uzenet } from "@/domain/nyelv";
 import { prisma } from "@/lib/db";
 import { egyeztetesBeallitasok } from "@/lib/lekerdezesek";
 
@@ -20,24 +21,24 @@ export type AdoEv = {
   bevetelSorok: BevetelSor[];
   koltsegSorok: (KoltsegSor & { datum: Date | null; fajta: string; ingatlan: string })[];
   /** Beérkezett pénz, amihez nem találtunk előírt tételt. A bérbeadónak kell eldöntenie. */
-  besorolatlan: { datum: Date; osszegFt: number; megjegyzes: string }[];
+  besorolatlan: { datum: Date; osszegFt: number; megjegyzes: Uzenet }[];
 };
 
-const KOLTSEG_FAJTAK: Record<string, string> = {
-  felujitas: "Felújítás, karbantartás",
-  kozos_koltseg: "Közös költség",
-  biztositas: "Biztosítás",
-  kozuzem: "Közüzemi számla",
-  egyeb: "Egyéb",
-};
+/**
+ * A költségfajták. A nevük a szótárban él (`ado.fajta.*`), mert a felületen
+ * megjelenik: itt csak a lista sorrendje és a tárolt érték dől el.
+ */
+export const KOLTSEG_FAJTAK = [
+  "felujitas",
+  "kozos_koltseg",
+  "biztositas",
+  "kozuzem",
+  "egyeb",
+] as const;
 
-export function koltsegFajtaNeve(fajta: string): string {
-  return KOLTSEG_FAJTAK[fajta] ?? fajta;
-}
-
-export const KOLTSEG_FAJTA_LISTA = Object.entries(KOLTSEG_FAJTAK).map(([ertek, cimke]) => ({
+export const KOLTSEG_FAJTA_LISTA = KOLTSEG_FAJTAK.map((ertek) => ({
   ertek,
-  cimke,
+  kulcs: `ado.fajta.${ertek}`,
 }));
 
 function evbenVan(nap: Date, ev: number): boolean {
@@ -114,9 +115,9 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
         besorolatlan.push({
           datum: beerkezes.erkezesDatuma,
           osszegFt: beerkezes.osszegFt,
-          megjegyzes:
-            beerkezes.kozlemeny?.trim() ||
-            "Beérkezett utalás, amihez nem tartozik előírt tétel. Döntsd el, bevétel-e.",
+          megjegyzes: beerkezes.kozlemeny?.trim()
+            ? uzenet("nyers", { szoveg: beerkezes.kozlemeny.trim() })
+            : uzenet("ado.besorolatlan_magyarazat"),
         });
         continue;
       }
@@ -139,7 +140,7 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
             datum: beerkezes.erkezesDatuma,
             osszegFt: mertReszFt,
             fajta: "rezsi",
-            megnevezes: `${megnevezes} · mért fogyasztás`,
+            megnevezes: uzenet("ado.megnevezes.mert", { alap: megnevezes }),
             mertKozuzem: true,
           });
         }
@@ -148,7 +149,12 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
             datum: beerkezes.erkezesDatuma,
             osszegFt: egyebReszFt,
             fajta: arany.csakKozosKoltseg ? "kozos_koltseg" : "rezsi",
-            megnevezes: `${megnevezes} · ${arany.csakKozosKoltseg ? "közös költség" : "átalány és közös költség"}`,
+            megnevezes: uzenet(
+              arany.csakKozosKoltseg
+                ? "ado.megnevezes.kozos_koltseg"
+                : "ado.megnevezes.atalany_es_kozos",
+              { alap: megnevezes },
+            ),
             mertKozuzem: false,
           });
         }
@@ -166,7 +172,7 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
         datum: beerkezes.erkezesDatuma,
         osszegFt: beerkezes.osszegFt,
         fajta,
-        megnevezes,
+        megnevezes: uzenet("nyers", { szoveg: megnevezes }),
       });
     }
   }
@@ -193,7 +199,7 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
   for (const ingatlan of ingatlanok) {
     for (const koltseg of ingatlan.koltsegek) {
       koltsegSorok.push({
-        megnevezes: koltseg.megnevezes,
+        megnevezes: uzenet("nyers", { szoveg: koltseg.megnevezes }),
         osszegFt: koltseg.osszegFt,
         datum: koltseg.datum,
         fajta: koltseg.fajta,
@@ -211,7 +217,7 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
     const leiras = ertekcsokkenes(ingatlan.beszerzesiArFt, napok, evNapjai(ev));
     if (leiras > 0) {
       koltsegSorok.push({
-        megnevezes: `Értékcsökkenés (${napok} kiadott nap)`,
+        megnevezes: uzenet("ado.megnevezes.ertekcsokkenes", { napok }),
         osszegFt: leiras,
         datum: null,
         fajta: "ertekcsokkenes",

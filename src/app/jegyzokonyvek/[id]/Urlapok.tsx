@@ -23,18 +23,23 @@ export type TetelNezet = {
   hatarido: string;
 };
 
-const FAJTA_CIM: Record<string, string> = {
-  meroora: "Mérőórák",
-  kulcs: "Kulcsok és hozzáférési eszközök",
-  hiba: "Hibák és hiányosságok",
-  dokumentum: "Átadott dokumentumok",
-};
-
-const ERTEK_SUGO: Record<string, string> = {
-  meroora: "óraállás, mértékegységgel",
-  kulcs: "darabszám",
-  hiba: "",
-  dokumentum: "",
+export type JegyzokonyvCimkek = {
+  idopont: string;
+  fajtaCim: Record<string, string>;
+  ertekSugo: Record<string, string>;
+  megnevezes: string;
+  ertek: string;
+  megjegyzes: string;
+  megjegyzesSugo: string;
+  kiRendezi: string;
+  nincsVallalas: string;
+  felelosBerbeado: string;
+  felelosBerlo: string;
+  mikorra: string;
+  allapotLeiras: string;
+  egyebMegjegyzes: string;
+  gomb: string;
+  folyamatban: string;
 };
 
 export function JegyzokonyvUrlap({
@@ -43,12 +48,14 @@ export function JegyzokonyvUrlap({
   allapotLeiras,
   megjegyzes,
   tetelek,
+  cimkek,
 }: {
   jegyzokonyvId: string;
   idopont: string;
   allapotLeiras: string;
   megjegyzes: string;
   tetelek: TetelNezet[];
+  cimkek: JegyzokonyvCimkek;
 }) {
   const [allapot, kuldes, folyamatban] = useActionState(jegyzokonyvetMent, KEZDETI);
   const fajtak = ["meroora", "kulcs", "hiba", "dokumentum"].filter((fajta) =>
@@ -60,7 +67,7 @@ export function JegyzokonyvUrlap({
       <input type="hidden" name="jegyzokonyvId" value={jegyzokonyvId} />
 
       <label className="grid gap-1 text-sm">
-        <span className="font-medium">Az átadás-átvétel időpontja</span>
+        <span className="font-medium">{cimkek.idopont}</span>
         <Mezo
           name="idopont"
           type="datetime-local"
@@ -72,7 +79,7 @@ export function JegyzokonyvUrlap({
 
       {fajtak.map((fajta) => (
         <section key={fajta} className="grid gap-3">
-          <h3 className="font-medium">{FAJTA_CIM[fajta]}</h3>
+          <h3 className="font-medium">{cimkek.fajtaCim[fajta]}</h3>
           {tetelek
             .filter((tetel) => tetel.fajta === fajta)
             .map((tetel) => (
@@ -85,43 +92,43 @@ export function JegyzokonyvUrlap({
                     name={`megnevezes_${tetel.id}`}
                     defaultValue={tetel.megnevezes}
                     className={MEZO}
-                    aria-label="Megnevezés"
+                    aria-label={cimkek.megnevezes}
                     allapot={allapot.allapot}
                   />
                   <Mezo
                     name={`ertek_${tetel.id}`}
                     defaultValue={tetel.ertek}
-                    placeholder={ERTEK_SUGO[fajta]}
+                    placeholder={cimkek.ertekSugo[fajta]}
                     className={MEZO}
-                    aria-label="Érték"
+                    aria-label={cimkek.ertek}
                     allapot={allapot.allapot}
                   />
                 </div>
                 <Mezo
                   name={`megjegyzes_${tetel.id}`}
                   defaultValue={tetel.megjegyzes}
-                  placeholder="megjegyzés"
+                  placeholder={cimkek.megjegyzesSugo}
                   className={MEZO}
-                  aria-label="Megjegyzés"
+                  aria-label={cimkek.megjegyzes}
                   allapot={allapot.allapot}
                 />
                 {fajta === "hiba" ? (
                   <div className="grid gap-2 sm:grid-cols-2">
                     <label className="grid gap-1 text-xs">
-                      <span>Ki rendezi</span>
+                      <span>{cimkek.kiRendezi}</span>
                       <Valaszto
                         name={`felelos_${tetel.id}`}
                         defaultValue={tetel.felelos}
                         className={MEZO}
                         allapot={allapot.allapot}
                       >
-                        <option value="">nincs vállalás</option>
-                        <option value="berbeado">a bérbeadó</option>
-                        <option value="berlo">a bérlő</option>
+                        <option value="">{cimkek.nincsVallalas}</option>
+                        <option value="berbeado">{cimkek.felelosBerbeado}</option>
+                        <option value="berlo">{cimkek.felelosBerlo}</option>
                       </Valaszto>
                     </label>
                     <label className="grid gap-1 text-xs">
-                      <span>Mikorra</span>
+                      <span>{cimkek.mikorra}</span>
                       <Mezo
                         name={`hatarido_${tetel.id}`}
                         type="date"
@@ -138,7 +145,7 @@ export function JegyzokonyvUrlap({
       ))}
 
       <label className="grid gap-1 text-sm">
-        <span className="font-medium">A bérlemény állapota</span>
+        <span className="font-medium">{cimkek.allapotLeiras}</span>
         <Szovegdoboz
           name="allapotLeiras"
           defaultValue={allapotLeiras}
@@ -149,7 +156,7 @@ export function JegyzokonyvUrlap({
       </label>
 
       <label className="grid gap-1 text-sm">
-        <span className="font-medium">Egyéb megjegyzés</span>
+        <span className="font-medium">{cimkek.egyebMegjegyzes}</span>
         <Szovegdoboz
           name="megjegyzes"
           defaultValue={megjegyzes}
@@ -160,14 +167,32 @@ export function JegyzokonyvUrlap({
       </label>
 
       <button type="submit" disabled={folyamatban} className={GOMB}>
-        {folyamatban ? "Mentem…" : "Mentés"}
+        {folyamatban ? cimkek.folyamatban : cimkek.gomb}
       </button>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
     </form>
   );
 }
 
-export function UjTetel({ jegyzokonyvId }: { jegyzokonyvId: string }) {
+export function UjTetel({
+  jegyzokonyvId,
+  cimkek,
+}: {
+  jegyzokonyvId: string;
+  cimkek: {
+    fajta: string;
+    fajtaHiba: string;
+    fajtaMeroora: string;
+    fajtaKulcs: string;
+    fajtaDokumentum: string;
+    megnevezes: string;
+    megnevezesSugo: string;
+    ertek: string;
+    ertekSugo: string;
+    gomb: string;
+    folyamatban: string;
+  };
+}) {
   const [allapot, kuldes, folyamatban] = useActionState(jegyzokonyvTetelt, KEZDETI);
 
   return (
@@ -177,31 +202,31 @@ export function UjTetel({ jegyzokonyvId }: { jegyzokonyvId: string }) {
         name="fajta"
         defaultValue="hiba"
         className={MEZO}
-        aria-label="Tétel fajtája"
+        aria-label={cimkek.fajta}
         allapot={allapot.allapot}
       >
-        <option value="hiba">hiba vagy hiányosság</option>
-        <option value="meroora">mérőóra</option>
-        <option value="kulcs">kulcs</option>
-        <option value="dokumentum">átadott dokumentum</option>
+        <option value="hiba">{cimkek.fajtaHiba}</option>
+        <option value="meroora">{cimkek.fajtaMeroora}</option>
+        <option value="kulcs">{cimkek.fajtaKulcs}</option>
+        <option value="dokumentum">{cimkek.fajtaDokumentum}</option>
       </Valaszto>
       <Mezo
         name="megnevezes"
-        placeholder="mit rögzítesz"
+        placeholder={cimkek.megnevezesSugo}
         className={MEZO}
-        aria-label="Megnevezés"
+        aria-label={cimkek.megnevezes}
         allapot={allapot.allapot}
       />
       <Mezo
         name="ertek"
-        placeholder="érték, ha van"
+        placeholder={cimkek.ertekSugo}
         className={MEZO}
-        aria-label="Érték"
+        aria-label={cimkek.ertek}
         allapot={allapot.allapot}
       />
       <div className="sm:col-span-3 grid gap-2">
         <button type="submit" disabled={folyamatban} className={GOMB}>
-          {folyamatban ? "Hozzáadom…" : "Hozzáadás"}
+          {folyamatban ? cimkek.folyamatban : cimkek.gomb}
         </button>
         <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
       </div>
@@ -209,7 +234,13 @@ export function UjTetel({ jegyzokonyvId }: { jegyzokonyvId: string }) {
   );
 }
 
-export function VeglegesitesUrlap({ jegyzokonyvId }: { jegyzokonyvId: string }) {
+export function VeglegesitesUrlap({
+  jegyzokonyvId,
+  cimkek,
+}: {
+  jegyzokonyvId: string;
+  cimkek: { gomb: string; megis: string; folyamatban: string; sugo: string };
+}) {
   const [allapot, kuldes, folyamatban] = useActionState(jegyzokonyvetVeglegesit, KEZDETI);
   const hianyzik = allapot.allapot === "hiba" && allapot.hibak.length > 0;
 
@@ -218,16 +249,9 @@ export function VeglegesitesUrlap({ jegyzokonyvId }: { jegyzokonyvId: string }) 
       <input type="hidden" name="jegyzokonyvId" value={jegyzokonyvId} />
       {hianyzik ? <input type="hidden" name="megis" value="igen" /> : null}
       <button type="submit" disabled={folyamatban} className={GOMB}>
-        {folyamatban
-          ? "Véglegesítem…"
-          : hianyzik
-            ? "Véglegesítés a hiányzó adatok nélkül"
-            : "Véglegesítés"}
+        {folyamatban ? cimkek.folyamatban : hianyzik ? cimkek.megis : cimkek.gomb}
       </button>
-      <p className="text-sm text-stone-600 dark:text-stone-400">
-        Véglegesítéskor a szöveg befagy, a rögzített óraállások bekerülnek a
-        mérőórák történetébe, a vállalt javításokból pedig teendő lesz.
-      </p>
+      <p className="text-sm text-stone-600 dark:text-stone-400">{cimkek.sugo}</p>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
     </form>
   );

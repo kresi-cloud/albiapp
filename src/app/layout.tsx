@@ -6,10 +6,11 @@ import { szovegek } from "@/lib/nyelv";
 import { kilep } from "./belepes/actions";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "Albi",
-  description: "Bérbeadás egy helyen: befizetés, rezsi, elszámolás.",
-};
+/** A lap címe és leírása a választott nyelven: ezt a böngésző és a megosztás mutatja. */
+export async function generateMetadata(): Promise<Metadata> {
+  const { sz } = await szovegek();
+  return { title: "Albi", description: sz("alkalmazas.leiras") };
+}
 
 const BERBEADO_MENU = [
   { kulcs: "nav.attekinto", utvonal: "/" },

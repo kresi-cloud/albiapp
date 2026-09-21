@@ -3,7 +3,7 @@ import { nyitott } from "@/domain/hibabejelentes";
 import { prisma } from "@/lib/db";
 import { berbeadoHibai } from "@/lib/hibabejelentes";
 import { kotelezoSzerep } from "@/lib/munkamenet";
-import { aktualisNyelv } from "@/lib/nyelv";
+import { aktualisNyelv, szovegek } from "@/lib/nyelv";
 import { HibaBejelentes } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function Hibak() {
   const berbeado = await kotelezoSzerep("berbeado");
   const nyelv = await aktualisNyelv();
+  const { sz } = await szovegek();
   const ma = new Date();
 
   const [hibak, jogviszonyok] = await Promise.all([
@@ -28,21 +29,19 @@ export default async function Hibak() {
   return (
     <div className="grid gap-8">
       <section>
-        <h1 className="text-2xl font-semibold tracking-tight">Hibák</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">
-          A bérlő bejelentése, a válaszod és az elhárítás egy helyen. A költségviselőre
-          javaslatot teszek a szerződés karbantartási pontja alapján, de a döntés a tiéd.
-          A lezárást a bérlő erősíti meg, hogy utólag ne legyen vita arról, rendben volt-e.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{sz("hibak.cim")}</h1>
+        <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("hibak.bevezeto")}</p>
       </section>
 
       <section>
         <h2 className="mb-3 text-lg font-semibold">
-          Nyitott bejelentések{nyitottak.length > 0 ? ` (${nyitottak.length})` : ""}
+          {nyitottak.length > 0
+            ? sz("hibak.nyitottak_darab", { darab: nyitottak.length })
+            : sz("hibak.nyitottak")}
         </h2>
         {nyitottak.length === 0 ? (
           <p className="rounded-lg border border-stone-200 bg-white p-4 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400">
-            Nincs nyitott hibabejelentés.
+            {sz("hibak.nincs_nyitott")}
           </p>
         ) : (
           <ul className="grid gap-3">
@@ -68,7 +67,7 @@ export default async function Hibak() {
       {lezartak.length > 0 ? (
         <details className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
           <summary className="cursor-pointer font-medium">
-            Lezárt bejelentések ({lezartak.length})
+            {sz("hibak.lezartak", { darab: lezartak.length })}
           </summary>
           <ul className="mt-3 grid gap-3">
             {lezartak.map((hiba) => (
@@ -86,11 +85,8 @@ export default async function Hibak() {
       ) : null}
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">Magam jelentek be egy hibát</h2>
-        <p className="mb-3 text-sm text-stone-600 dark:text-stone-400">
-          Ha te veszed észre a hibát, ide is felveheted: így a bérlő is látja, és ugyanaz a
-          nyoma marad, mintha ő jelentette volna.
-        </p>
+        <h2 className="mb-3 text-lg font-semibold">{sz("hibak.sajat_cim")}</h2>
+        <p className="mb-3 text-sm text-stone-600 dark:text-stone-400">{sz("hibak.sajat_sugo")}</p>
         <div className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
           <HibaBejelentes
             nyelv={nyelv}

@@ -8,7 +8,7 @@ import { prisma } from "@/lib/db";
 import { berloNezetei, berloTeendoi } from "@/lib/lekerdezesek";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv } from "@/lib/nyelv";
-import { merooraNeve } from "@/lib/rezsi";
+import { merooraUzenet } from "@/lib/rezsi";
 import { ElbiralasUrlap, OraallasUrlap } from "@/app/rezsi/Urlapok";
 import { meretSzoveg } from "@/domain/bizonylat";
 import { bizonylatokTetelekhez } from "@/lib/bizonylat";
@@ -120,7 +120,9 @@ export default async function BerloiNezet() {
                 className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <span className="font-medium">{merooraNeve(meroora.tipus, meroora.almero)}</span>
+                  <span className="font-medium">
+                    {u(merooraUzenet(meroora.tipus, meroora.almero))}
+                  </span>
                   <span className="text-sm tabular-nums text-stone-600 dark:text-stone-400">
                     {meroora.oraallasok[0]
                       ? sz("berlo.oraallas.legutobb", {
@@ -133,8 +135,13 @@ export default async function BerloiNezet() {
                 </div>
                 <OraallasUrlap
                   merooraId={meroora.id}
-                  mertekegyseg={meroora.mertekegyseg}
                   mai={mai}
+                  cimkek={{
+                    datum: sz("rezsi.oraallas.datum"),
+                    ertek: sz("rezsi.oraallas.ertek", { egyseg: meroora.mertekegyseg }),
+                    gomb: sz("rezsi.oraallas.gomb"),
+                    folyamatban: sz("rezsi.oraallas.folyamatban"),
+                  }}
                 />
               </li>
             ))}
@@ -170,7 +177,14 @@ export default async function BerloiNezet() {
                 </p>
               ) : null}
               {elszamolas.allapot === "kiadva" ? (
-                <ElbiralasUrlap elszamolasId={elszamolas.id} />
+                <ElbiralasUrlap
+                  elszamolasId={elszamolas.id}
+                  cimkek={{
+                    sugo: sz("rezsi.elbiralas.sugo"),
+                    elfogad: sz("rezsi.elbiralas.elfogad"),
+                    vitat: sz("rezsi.elbiralas.vitat"),
+                  }}
+                />
               ) : null}
             </div>
           </section>

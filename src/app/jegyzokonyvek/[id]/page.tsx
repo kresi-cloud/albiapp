@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  FAJTA_NEVE,
   hianyzoTetelek,
   jegyzokonyvSzovege,
   oraallastKiolvas,
   vallaltHibak,
 } from "@/domain/jegyzokonyv";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 import { jegyzokonyvBetoltes } from "@/lib/jegyzokonyv";
 import { birtokbaadasiKepek, kepekJegyzokonyvhoz } from "@/lib/jegyzokonyv-kepek";
 import { Album } from "@/app/jegyzokonyv-kepek/Album";
@@ -26,6 +26,7 @@ export default async function JegyzokonyvOldal({
 }) {
   const { id } = await params;
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, u } = await szovegek();
 
   const betoltott = await jegyzokonyvBetoltes(id, berbeado.id);
   if (!betoltott) notFound();
@@ -54,15 +55,17 @@ export default async function JegyzokonyvOldal({
     <div className="grid gap-6">
       <section>
         <Link href="/dokumentumok" className="text-sm underline underline-offset-2">
-          ← Dokumentumok
+          {sz("szerzodes.vissza")}
         </Link>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight">
-          {FAJTA_NEVE[bemenet.fajta] ?? bemenet.fajta} · {bemenet.ingatlan.megnevezes}
+          {sz(`jegyzokonyv.fajta.${bemenet.fajta}`)} · {bemenet.ingatlan.megnevezes}
         </h1>
         <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-          {szerkesztheto
-            ? "Tervezet. Töltsd ki a helyszínen, aztán véglegesítsd."
-            : "Véglegesítve. A szöveg be van fagyasztva."}
+          {sz(szerkesztheto ? "jegyzokonyv.tervezet_sugo" : "jegyzokonyv.vegleges_sugo")}
+        </p>
+        {/* A kiadott okirat magyarul érvényes: a lap ezt kimondja. */}
+        <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+          {sz("jegyzokonyv.magyar_szoveg")}
         </p>
       </section>
 
@@ -70,23 +73,21 @@ export default async function JegyzokonyvOldal({
         <section className="rounded border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200">
           <p>
             {rogzitettOraallas > 0
-              ? `${rogzitettOraallas} óraállás bekerült a mérőórák történetébe, így az elszámolás innen indul.`
-              : "Óraállás nem került rögzítésre."}
+              ? sz("jegyzokonyv.oraallas_bekerult", { db: rogzitettOraallas })
+              : sz("jegyzokonyv.nincs_oraallas")}
           </p>
           {vallalasok > 0 ? (
-            <p className="mt-1">
-              {vallalasok} vállalásból teendő lett, az áttekintőn látod őket.
-            </p>
+            <p className="mt-1">{sz("jegyzokonyv.vallalasok", { db: vallalasok })}</p>
           ) : null}
         </section>
       ) : null}
 
       {szerkesztheto && hianyok.length > 0 ? (
         <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-          <h2 className="font-medium">Ezek még hiányoznak</h2>
+          <h2 className="font-medium">{sz("jegyzokonyv.hianyok_cim")}</h2>
           <ul className="mt-2 list-disc pl-5 text-sm text-stone-600 dark:text-stone-400">
             {hianyok.map((sor) => (
-              <li key={sor}>{sor}</li>
+              <li key={`${sor.kulcs}:${u(sor)}`}>{u(sor)}</li>
             ))}
           </ul>
         </section>
@@ -101,12 +102,55 @@ export default async function JegyzokonyvOldal({
               allapotLeiras={bemenet.allapotLeiras}
               megjegyzes={bemenet.megjegyzes ?? ""}
               tetelek={tetelek}
+              cimkek={{
+                idopont: sz("jegyzokonyv.idopont"),
+                fajtaCim: {
+                  meroora: sz("jegyzokonyv.tetel.meroora"),
+                  kulcs: sz("jegyzokonyv.tetel.kulcs"),
+                  hiba: sz("jegyzokonyv.tetel.hiba"),
+                  dokumentum: sz("jegyzokonyv.tetel.dokumentum"),
+                },
+                ertekSugo: {
+                  meroora: sz("jegyzokonyv.ertek_sugo.meroora"),
+                  kulcs: sz("jegyzokonyv.ertek_sugo.kulcs"),
+                  hiba: "",
+                  dokumentum: "",
+                },
+                megnevezes: sz("jegyzokonyv.megnevezes"),
+                ertek: sz("jegyzokonyv.ertek"),
+                megjegyzes: sz("jegyzokonyv.megjegyzes"),
+                megjegyzesSugo: sz("jegyzokonyv.megjegyzes_sugo"),
+                kiRendezi: sz("jegyzokonyv.ki_rendezi"),
+                nincsVallalas: sz("jegyzokonyv.nincs_vallalas"),
+                felelosBerbeado: sz("jegyzokonyv.felelos_berbeado"),
+                felelosBerlo: sz("jegyzokonyv.felelos_berlo"),
+                mikorra: sz("jegyzokonyv.mikorra"),
+                allapotLeiras: sz("jegyzokonyv.allapot_leiras"),
+                egyebMegjegyzes: sz("jegyzokonyv.egyeb_megjegyzes"),
+                gomb: sz("jegyzokonyv.mentes"),
+                folyamatban: sz("jegyzokonyv.mentem"),
+              }}
             />
           </section>
 
           <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-            <h2 className="mb-3 font-medium">Új tétel</h2>
-            <UjTetel jegyzokonyvId={id} />
+            <h2 className="mb-3 font-medium">{sz("jegyzokonyv.uj_tetel_cim")}</h2>
+            <UjTetel
+              jegyzokonyvId={id}
+              cimkek={{
+                fajta: sz("jegyzokonyv.tetel_fajtaja"),
+                fajtaHiba: sz("jegyzokonyv.fajta_hiba"),
+                fajtaMeroora: sz("jegyzokonyv.fajta_meroora"),
+                fajtaKulcs: sz("jegyzokonyv.fajta_kulcs"),
+                fajtaDokumentum: sz("jegyzokonyv.fajta_dokumentum"),
+                megnevezes: sz("jegyzokonyv.megnevezes"),
+                megnevezesSugo: sz("jegyzokonyv.mit_rogzitesz"),
+                ertek: sz("jegyzokonyv.ertek"),
+                ertekSugo: sz("jegyzokonyv.ertek_ha_van"),
+                gomb: sz("jegyzokonyv.hozzaadas"),
+                folyamatban: sz("jegyzokonyv.hozzaadom"),
+              }}
+            />
           </section>
         </>
       ) : null}
@@ -124,9 +168,9 @@ export default async function JegyzokonyvOldal({
 
       <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="font-medium">A jegyzőkönyv szövege</h2>
+          <h2 className="font-medium">{sz("jegyzokonyv.szoveg_cim")}</h2>
           <a href={`/jegyzokonyvek/${id}/letoltes`} className="text-sm underline underline-offset-2">
-            Letöltés szövegként
+            {sz("jegyzokonyv.letoltes")}
           </a>
         </div>
         <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-sm leading-relaxed">
@@ -136,7 +180,15 @@ export default async function JegyzokonyvOldal({
 
       {szerkesztheto ? (
         <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-          <VeglegesitesUrlap jegyzokonyvId={id} />
+          <VeglegesitesUrlap
+            jegyzokonyvId={id}
+            cimkek={{
+              gomb: sz("jegyzokonyv.veglegesites"),
+              megis: sz("jegyzokonyv.veglegesites_megis"),
+              folyamatban: sz("jegyzokonyv.veglegesitem"),
+              sugo: sz("jegyzokonyv.veglegesites_sugo"),
+            }}
+          />
         </section>
       ) : null}
     </div>

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { belepettFelhasznalo } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 
 export type Eredmeny = { allapot: "ures" | "kesz" | "hiba"; uzenet: string; hibak: string[] };
 
@@ -12,18 +13,19 @@ export type Eredmeny = { allapot: "ures" | "kesz" | "hiba"; uzenet: string; hiba
  */
 export async function teendotLezar(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const felhasznalo = await belepettFelhasznalo();
-  if (!felhasznalo) return { allapot: "hiba", uzenet: "Lépj be.", hibak: [] };
+  const { sz } = await szovegek();
+  if (!felhasznalo) return { allapot: "hiba", uzenet: sz("teendo.hiba.lepj_be"), hibak: [] };
 
   const kulcs = String(urlap.get("kulcs") ?? "");
   const teendo = await prisma.teendo.findFirst({
     where: { kulcs, cimzettId: felhasznalo.id },
   });
-  if (!teendo) return { allapot: "hiba", uzenet: "Ez a teendő nem a tiéd.", hibak: [] };
+  if (!teendo) return { allapot: "hiba", uzenet: sz("teendo.hiba.nem_tied"), hibak: [] };
 
   await prisma.teendo.update({ where: { id: teendo.id }, data: { statusz: "kesz" } });
 
   revalidatePath("/");
   revalidatePath("/berlo");
 
-  return { allapot: "kesz", uzenet: "Lezárva.", hibak: [] };
+  return { allapot: "kesz", uzenet: sz("teendo.kesz.lezarva"), hibak: [] };
 }

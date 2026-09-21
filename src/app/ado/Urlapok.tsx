@@ -12,10 +12,22 @@ export function KoltsegUrlap({
   ingatlanok,
   fajtak,
   mai,
+  cimkek,
 }: {
   ingatlanok: { id: string; megnevezes: string }[];
   fajtak: { ertek: string; cimke: string }[];
   mai: string;
+  cimkek: {
+    ingatlan: string;
+    fajta: string;
+    datum: string;
+    osszeg: string;
+    osszegPelda: string;
+    megnevezes: string;
+    megnevezesPelda: string;
+    gomb: string;
+    folyamatban: string;
+  };
 }) {
   const [allapot, kuldes, folyamatban] = useActionState(koltsegetRogzit, KEZDETI);
 
@@ -23,7 +35,7 @@ export function KoltsegUrlap({
     <form action={kuldes} className="grid gap-2">
       <div className="grid gap-2 sm:grid-cols-2">
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">Ingatlan</span>
+          <span className="text-stone-500 dark:text-stone-400">{cimkek.ingatlan}</span>
           <Valaszto name="ingatlanId" className={MEZO} required allapot={allapot.allapot}>
             {ingatlanok.map((ingatlan) => (
               <option key={ingatlan.id} value={ingatlan.id}>
@@ -33,7 +45,7 @@ export function KoltsegUrlap({
           </Valaszto>
         </label>
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">Mi volt ez</span>
+          <span className="text-stone-500 dark:text-stone-400">{cimkek.fajta}</span>
           <Valaszto name="fajta" className={MEZO} required allapot={allapot.allapot}>
             {fajtak.map((fajta) => (
               <option key={fajta.ertek} value={fajta.ertek}>
@@ -43,7 +55,7 @@ export function KoltsegUrlap({
           </Valaszto>
         </label>
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">Dátum</span>
+          <span className="text-stone-500 dark:text-stone-400">{cimkek.datum}</span>
           <Mezo
             type="date"
             name="datum"
@@ -54,12 +66,12 @@ export function KoltsegUrlap({
           />
         </label>
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">Összeg</span>
+          <span className="text-stone-500 dark:text-stone-400">{cimkek.osszeg}</span>
           <Mezo
             type="text"
             inputMode="numeric"
             name="osszegFt"
-            placeholder="pl. 45 000"
+            placeholder={cimkek.osszegPelda}
             className={`${MEZO} tabular-nums`}
             required
             allapot={allapot.allapot}
@@ -67,18 +79,18 @@ export function KoltsegUrlap({
         </label>
       </div>
       <label className="grid gap-1 text-xs">
-        <span className="text-stone-500 dark:text-stone-400">Megnevezés</span>
+        <span className="text-stone-500 dark:text-stone-400">{cimkek.megnevezes}</span>
         <Mezo
           type="text"
           name="megnevezes"
-          placeholder="pl. Kazán karbantartás, számla 2026/114"
+          placeholder={cimkek.megnevezesPelda}
           className={MEZO}
           required
           allapot={allapot.allapot}
         />
       </label>
       <button type="submit" disabled={folyamatban} className={GOMB}>
-        {folyamatban ? "Rögzítés…" : "Költség rögzítése"}
+        {folyamatban ? cimkek.folyamatban : cimkek.gomb}
       </button>
       <Uzenetsav {...allapot} />
     </form>
@@ -89,10 +101,18 @@ export function BeszerzesUrlap({
   ingatlanId,
   beszerzesiArFt,
   beszerzesDatuma,
+  cimkek,
 }: {
   ingatlanId: string;
   beszerzesiArFt: number | null;
   beszerzesDatuma: string | null;
+  cimkek: {
+    ar: string;
+    arPelda: string;
+    nap: string;
+    gomb: string;
+    folyamatban: string;
+  };
 }) {
   const [allapot, kuldes, folyamatban] = useActionState(beszerzestRogzit, KEZDETI);
 
@@ -101,20 +121,20 @@ export function BeszerzesUrlap({
       <input type="hidden" name="ingatlanId" value={ingatlanId} />
       <div className="flex flex-wrap gap-2">
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">Beszerzési ár</span>
+          <span className="text-stone-500 dark:text-stone-400">{cimkek.ar}</span>
           <Mezo
             type="text"
             inputMode="numeric"
             name="beszerzesiArFt"
             defaultValue={beszerzesiArFt ? String(beszerzesiArFt) : ""}
-            placeholder="pl. 58 000 000"
+            placeholder={cimkek.arPelda}
             className={`${MEZO} tabular-nums`}
             required
             allapot={allapot.allapot}
           />
         </label>
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">Vásárlás napja</span>
+          <span className="text-stone-500 dark:text-stone-400">{cimkek.nap}</span>
           <Mezo
             type="date"
             name="beszerzesDatuma"
@@ -125,7 +145,7 @@ export function BeszerzesUrlap({
         </label>
       </div>
       <button type="submit" disabled={folyamatban} className={GOMB}>
-        {folyamatban ? "Mentés…" : "Mentés"}
+        {folyamatban ? cimkek.folyamatban : cimkek.gomb}
       </button>
       <Uzenetsav {...allapot} />
     </form>
