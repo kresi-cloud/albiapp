@@ -1,4 +1,4 @@
-import { datum, forint } from "@/domain/penz";
+import { datumNyelven, forintNyelven } from "@/domain/nyelv";
 import { meghivoAllapota } from "@/domain/belepes";
 import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
@@ -21,7 +21,9 @@ function napSzoveg(nap: Date | null): string {
 
 export default async function Berlok() {
   const berbeado = await kotelezoSzerep("berbeado");
-  const { sz } = await szovegek();
+  const { sz , nyelv } = await szovegek();
+  const ft = (osszegFt: number) => forintNyelven(osszegFt, nyelv);
+  const nap = (ertek: Date) => datumNyelven(ertek, nyelv);
   const most = new Date();
   const maiNap = napSzoveg(most);
 
@@ -43,13 +45,8 @@ export default async function Berlok() {
   return (
     <div className="grid gap-6">
       <section>
-        <h1 className="text-2xl font-semibold tracking-tight">Bérlők</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">
-          Egy bérleményhez több bérlő is tartozhat. A bérleti díj ilyenkor is egy
-          előírás marad: a bérlők egyetemlegesen felelnek érte, és bármelyikük
-          fizetése a többit is mentesíti. A bérlő meghívó linkkel készít magának
-          díjmentes fiókot, amelyben csak a saját bérleményét látja.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{sz("berlok.cim")}</h1>
+        <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("berlok.bevezeto")}</p>
       </section>
 
       <ul className="grid gap-4">
@@ -60,14 +57,18 @@ export default async function Berlok() {
           >
             <h2 className="font-semibold">{jogviszony.ingatlan.megnevezes}</h2>
             <p className="text-sm text-stone-600 dark:text-stone-400">
-              {forint(jogviszony.berletiDijFt)} / hó · a hónap {jogviszony.fizetesiNap}. napjára ·{" "}
+              {sz("berlok.dij_sor", {
+                osszeg: ft(jogviszony.berletiDijFt),
+                nap: jogviszony.fizetesiNap,
+              })}{" "}
+              ·{" "}
               {jogviszony.berlok.length === 1
-                ? "egy bérlő"
-                : `${jogviszony.berlok.length} bérlő, egyetemleges felelősséggel`}
+                ? sz("berlok.egy_berlo")
+                : sz("berlok.tobb_berlo", { darab: jogviszony.berlok.length })}
             </p>
             {jogviszony.statusz === "lezart" ? (
               <p className="mt-1 text-sm font-medium text-stone-700 dark:text-stone-300">
-                {sz("berlok.lezarva", { nap: datum(jogviszony.vege ?? most) })}
+                {sz("berlok.lezarva", { nap: nap(jogviszony.vege ?? most) })}
               </p>
             ) : null}
 
@@ -76,6 +77,17 @@ export default async function Berlok() {
                 const eloMeghivo = berlo.meghivok.find(
                   (meghivo) => meghivoAllapota(meghivo, most) === "ervenyes",
                 );
+                const hianyzik = hianyzoMezok(
+                  {
+                    nev: berlo.nev,
+                    szuletesiHely: berlo.szuletesiHely,
+                    szuletesiIdo: berlo.szuletesiIdo,
+                    anyjaNeve: berlo.anyjaNeve,
+                    lakcim: berlo.lakcim,
+                    igazolvanySzam: berlo.igazolvanySzam,
+                  },
+                  BERLOHOZ_KELL,
+                ).length;
 
                 return (
                   <li
@@ -91,26 +103,30 @@ export default async function Berlok() {
                             : "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200"
                         }`}
                       >
-                        {berlo.berloId ? "Van fiókja" : "Még nincs fiókja"}
+                        {berlo.berloId ? sz("berlok.van_fiok") : sz("berlok.nincs_fiok")}
                       </span>
                     </div>
 
                     {berlo.berloId ? (
                       <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-                        Belépett fiókkal használja az oldalt: {berlo.berlo?.email}
+                        {sz("berlok.belepett", { email: berlo.berlo?.email ?? "" })}
                       </p>
                     ) : (
                       <>
                         {eloMeghivo ? (
                           <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-                            Él egy meghívó {eloMeghivo.email} címre, {datum(eloMeghivo.lejar)}-ig. Ha
-                            újat készítesz, a régi link azonnal érvénytelen lesz.
+                            {sz("berlok.elo_meghivo", {
+                              email: eloMeghivo.email,
+                              nap: nap(eloMeghivo.lejar),
+                            })}
                           </p>
                         ) : null}
                         <MeghivoGomb
                           jogviszonyBerloId={berlo.id}
                           email={berlo.email ?? ""}
-                          cimke={eloMeghivo ? "Új meghívó készítése" : "Meghívó készítése"}
+                          cimke={sz(eloMeghivo ? "berlok.uj_meghivo" : "berlok.meghivo")}
+                          emailCimke={sz("berlok.meghivo_email")}
+                          folyamatbanCimke={sz("berlok.meghivo_folyamatban")}
                         />
                       </>
                     )}
@@ -130,29 +146,56 @@ export default async function Berlok() {
                           berlo.adatokForrasa === "berlo" || berlo.adatokForrasa === "berbeado"
                             ? berlo.adatokForrasa
                             : null,
-                        hianyzik: hianyzoMezok(
-                          {
-                            nev: berlo.nev,
-                            szuletesiHely: berlo.szuletesiHely,
-                            szuletesiIdo: berlo.szuletesiIdo,
-                            anyjaNeve: berlo.anyjaNeve,
-                            lakcim: berlo.lakcim,
-                            igazolvanySzam: berlo.igazolvanySzam,
-                          },
-                          BERLOHOZ_KELL,
-                        ).length,
+                        hianyzik,
+                      }}
+                      cimkek={{
+                        cim: sz("berlok.adatok_cim"),
+                        hianyzik: sz("berlok.adatok_hianyzik", { darab: hianyzik }),
+                        megvan: sz("berlok.adatok_megvan"),
+                        forras: sz(
+                          berlo.adatokForrasa === "berlo"
+                            ? "berlok.adatok_forras_berlo"
+                            : berlo.adatokForrasa === "berbeado"
+                              ? "berlok.adatok_forras_berbeado"
+                              : "berlok.adatok_forras_nincs",
+                        ),
+                        mezo: {
+                          nev: sz("adatok.mezo.nev"),
+                          email: sz("belepes.email"),
+                          szuletesiHely: sz("adatok.mezo.szuletesiHely"),
+                          szuletesiIdo: sz("adatok.mezo.szuletesiIdo"),
+                          anyjaNeve: sz("adatok.mezo.anyjaNeve"),
+                          igazolvanySzam: sz("adatok.mezo.igazolvanySzam"),
+                          telefon: sz("adatok.mezo.telefon"),
+                          lakcim: sz("adatok.mezo.lakcim"),
+                        },
+                        gomb: sz("berlok.adatok_gomb"),
+                        folyamatban: sz("berlok.adatok_folyamatban"),
                       }}
                     />
 
                     {jogviszony.berlok.length > 1 ? (
-                      <BerloTorles jogviszonyBerloId={berlo.id} nev={berlo.nev} />
+                      <BerloTorles
+                        jogviszonyBerloId={berlo.id}
+                        cimke={sz("berlok.torles", { nev: berlo.nev })}
+                        folyamatbanCimke={sz("berlok.torles_folyamatban")}
+                      />
                     ) : null}
                   </li>
                 );
               })}
             </ul>
 
-            <BerloHozzaadas jogviszonyId={jogviszony.id} />
+            <BerloHozzaadas
+              jogviszonyId={jogviszony.id}
+              cimkek={{
+                nyito: sz("berlok.hozzaadas"),
+                nev: sz("adatok.mezo.nev"),
+                email: sz("belepes.email"),
+                gomb: sz("berlok.hozzaadas_gomb"),
+                folyamatban: sz("berlok.hozzaadas_folyamatban"),
+              }}
+            />
 
             {jogviszony.statusz === "lezart" ? (
               <JogviszonyUjranyitas

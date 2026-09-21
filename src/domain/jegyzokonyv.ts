@@ -11,6 +11,7 @@
  */
 
 import { hosszuDatum, nevsor, type Fel } from "./szerzodes";
+import { uzenet, type Uzenet } from "./nyelv";
 
 export type TetelFajta = "meroora" | "kulcs" | "hiba" | "dokumentum";
 
@@ -78,29 +79,23 @@ function felSor(fel: Fel): string {
  * Hiánytalan-e a jegyzőkönyv. Nem tiltás, hanem figyelmeztetés: a bérbeadó
  * tudja, hogy a helyszínen mit mért le és mit nem.
  */
-export function hianyzoTetelek(bemenet: JegyzokonyvBemenet): string[] {
-  const hianyok: string[] = [];
+export function hianyzoTetelek(bemenet: JegyzokonyvBemenet): Uzenet[] {
+  const hianyok: Uzenet[] = [];
   const csoportok = new Map(tetelekFajtankent(bemenet.tetelek).map((cs) => [cs.fajta, cs.tetelek]));
 
   if (!csoportok.has("meroora")) {
-    hianyok.push("Nincs egyetlen mérőóraállás sem. Enélkül az első elszámolásnak nincs kiindulópontja.");
+    hianyok.push(uzenet("hiany.jegyzokonyv.nincs_meroora"));
   } else {
     for (const tetel of csoportok.get("meroora") ?? []) {
       if (!tetel.ertek || tetel.ertek.trim() === "") {
-        hianyok.push(`${tetel.megnevezes}: nincs kitöltve az óraállás.`);
+        hianyok.push(uzenet("hiany.jegyzokonyv.oraallas", { megnevezes: tetel.megnevezes }));
       }
     }
   }
 
-  if (!csoportok.has("kulcs")) {
-    hianyok.push("Nincs rögzítve, hány kulcs került át. Visszaadáskor ez lesz a hivatkozási alap.");
-  }
-  if (bemenet.allapotLeiras.trim() === "") {
-    hianyok.push("A bérlemény állapotának leírása üres.");
-  }
-  if (bemenet.berlok.length === 0) {
-    hianyok.push("A jogviszonyhoz nincs bérlő rögzítve.");
-  }
+  if (!csoportok.has("kulcs")) hianyok.push(uzenet("hiany.jegyzokonyv.nincs_kulcs"));
+  if (bemenet.allapotLeiras.trim() === "") hianyok.push(uzenet("hiany.jegyzokonyv.allapot"));
+  if (bemenet.berlok.length === 0) hianyok.push(uzenet("hiany.nincs_berlo"));
 
   return hianyok;
 }

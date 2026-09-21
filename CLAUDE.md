@@ -195,6 +195,42 @@ A bérbeadói igazolás összegét és a teljesítés napját a párosított bef
 vesszük, nem kézi beírásból. Amelyik hónapra nincs beazonosított befizetés,
 arra nem ajánlunk igazolást, és a beérkezettnél többet sem igazolunk.
 
+### A fényképalbum
+
+Az állapotot szavakkal nehéz rögzíteni, képpel nem. A kiköltözéskori vita
+jellemzően nem az, hogy van-e folt a falon, hanem hogy **eddig is ott volt-e**
+— ezt csak két kép dönti el egymás mellett.
+
+A kép a jegyzőkönyvhöz tartozik, és ha valamelyik tételről készült, akkor ahhoz
+a tételhez (`JegyzokonyvKep.tetelId`). Nem különálló album: a „karcos a
+konyhapult" sor mellett ott legyen a kép, ne egy ötven képes mappában kelljen
+keresni.
+
+A megerősítés a másik fél külön adata, ugyanaz a kétoldali elv, mint a
+befizetésnél és a hibabejelentésnél: aki feltöltötte, azt állítja, hogy ezt
+látta, a másik fél pedig rábólint vagy kifogást emel. A saját képére senki nem
+bólinthat rá, attól nem lenne kétoldali. **A kifogás nem törli a képet**:
+mindkét állítás ott marad egymás mellett, mert egy fél által kitakarított
+album pont annyit érne, mint a bemondás. Kifogás indoklás nélkül nincs, abból a
+másik fél nem tud kiindulni.
+
+A kiköltözéskori kép a birtokbaadáskorihoz kötődik (`parjaId`), és a záró
+jegyzőkönyv kiírja, melyik nyitóképnek nincs még párja: az a feladatlista.
+
+A véglegesített jegyzőkönyv albuma zárt — kép nem kerülhet bele és nem tűnhet
+el belőle. A megerősítés viszont utána is megy, mert az a nyilatkozó saját
+adata, és az albumot nem változtatja meg. A bérlő ezért **a tervezet képeit is
+látja**, szándékos kivételként a dokumentumtár szabálya alól: a megerősítés
+akkor ér valamit, ha a véglegesítés előtt történik. A jegyzőkönyv *szövegét* ő
+továbbra is csak véglegesítés után látja.
+
+A fájl típusát a tartalmából állapítjuk meg (`tipusATartalombol`), nem a
+böngésző bemondásából: ezt a tartalmat a másik fél böngészője fogja megnyitni a
+mi címünkön. Csak JPG, PNG és WEBP megy át. Az SVG azért nem, mert az
+futtatható dokumentum, nem fénykép; a HEIC pedig azért nem, mert a böngészők
+nagy része nem rajzolja ki, és épp az nem látná, akinek mutatják — a felület
+ezt meg is mondja, különben a bérbeadó azt hinné, elromlott.
+
 A teendők többsége származtatott: a rendszer állapotából jön, és magától eltűnik,
 ha az oka megszűnik. A vállalt javítás viszont tárolt teendő (`Teendo`), mert azt
 valaki vállalta, és le is kell tudni zárni.

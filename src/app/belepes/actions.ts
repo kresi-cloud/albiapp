@@ -5,6 +5,7 @@ import { emailtNormalizal } from "@/domain/belepes";
 import { prisma } from "@/lib/db";
 import { jelszoEgyezik } from "@/lib/jelszo";
 import { munkamenetetIndit, munkamenetetZar } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 
 /** A címet visszaadjuk, hogy hibás jelszó után ne kelljen újra begépelni. */
 export type BelepesEredmeny = {
@@ -17,18 +18,19 @@ export async function belep(
   _elozo: BelepesEredmeny,
   urlap: FormData,
 ): Promise<BelepesEredmeny> {
+  const { sz } = await szovegek();
   const email = emailtNormalizal(urlap.get("email"));
   const jelszo = String(urlap.get("jelszo") ?? "");
 
   if (!email || !jelszo) {
-    return { allapot: "hiba", uzenet: "Add meg az e-mail-címet és a jelszót.", email };
+    return { allapot: "hiba", uzenet: sz("belepes.hiba.hianyos"), email };
   }
 
   // Ismeretlen címre és rossz jelszóra ugyanaz a válasz: így nem lehet
   // végigpróbálgatni, kinek van egyáltalán fiókja.
   const elutasitas: BelepesEredmeny = {
     allapot: "hiba",
-    uzenet: "Nem stimmel az e-mail-cím vagy a jelszó.",
+    uzenet: sz("belepes.hiba.rossz"),
     email,
   };
 

@@ -33,10 +33,13 @@ export type ParameterNezet = {
   valaszthatok?: { ertek: string; cimke: string }[];
 };
 
-const ELLENJEGYZES_CIMKE: Record<string, string> = {
-  nincs: "Ügyvédi ellenjegyzés még nincs",
-  folyamatban: "Ellenjegyzés folyamatban",
-  ellenjegyzett: "Ügyvéd által ellenjegyzett",
+export type ModulCimkek = {
+  kotelezo: string;
+  benneVan: string;
+  nincsBenne: string;
+  benneVanJelzes: string;
+  nincsBenneJelzes: string;
+  ellenjegyzes: Record<ModulNezet["ellenjegyzes"], string>;
 };
 
 /** Modulkapcsoló. Külön űrlap modulonként, hogy egy kattintás egy döntés legyen. */
@@ -44,10 +47,12 @@ export function ModulValto({
   szerzodesId,
   modul,
   szerkesztheto,
+  cimkek,
 }: {
   szerzodesId: string;
   modul: ModulNezet;
   szerkesztheto: boolean;
+  cimkek: ModulCimkek;
 }) {
   const [allapot, kuldes, folyamatban] = useActionState(modultValt, KEZDETI);
 
@@ -56,7 +61,7 @@ export function ModulValto({
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-medium">{modul.cim}</span>
         {modul.kotelezo ? (
-          <span className="text-xs text-stone-500 dark:text-stone-400">kötelező</span>
+          <span className="text-xs text-stone-500 dark:text-stone-400">{cimkek.kotelezo}</span>
         ) : szerkesztheto ? (
           <form action={kuldes}>
             <input type="hidden" name="szerzodesId" value={szerzodesId} />
@@ -70,18 +75,18 @@ export function ModulValto({
                   : "bg-stone-200 text-stone-700 dark:bg-stone-800 dark:text-stone-300"
               }`}
             >
-              {modul.bekapcsolva ? "Benne van" : "Nincs benne"}
+              {modul.bekapcsolva ? cimkek.benneVan : cimkek.nincsBenne}
             </button>
           </form>
         ) : (
           <span className="text-xs text-stone-500 dark:text-stone-400">
-            {modul.bekapcsolva ? "benne van" : "nincs benne"}
+            {modul.bekapcsolva ? cimkek.benneVanJelzes : cimkek.nincsBenneJelzes}
           </span>
         )}
       </div>
       <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">{modul.miert}</p>
       <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
-        {ELLENJEGYZES_CIMKE[modul.ellenjegyzes]}
+        {cimkek.ellenjegyzes[modul.ellenjegyzes]}
       </p>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
     </li>
@@ -93,11 +98,13 @@ export function ParameterUrlap({
   parameterek,
   kelteHelye,
   kelte,
+  cimkek,
 }: {
   szerzodesId: string;
   parameterek: ParameterNezet[];
   kelteHelye: string;
   kelte: string;
+  cimkek: { kelteHelye: string; kelte: string; gomb: string; folyamatban: string };
 }) {
   const [allapot, kuldes, folyamatban] = useActionState(parametereketMenti, KEZDETI);
 
@@ -107,7 +114,7 @@ export function ParameterUrlap({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1 text-sm">
-          <span className="font-medium">Kelt helye</span>
+          <span className="font-medium">{cimkek.kelteHelye}</span>
           <Mezo
             name="kelteHelye"
             defaultValue={kelteHelye}
@@ -116,7 +123,7 @@ export function ParameterUrlap({
           />
         </label>
         <label className="grid gap-1 text-sm">
-          <span className="font-medium">Kelt napja</span>
+          <span className="font-medium">{cimkek.kelte}</span>
           <Mezo
             name="kelte"
             type="date"
@@ -161,22 +168,30 @@ export function ParameterUrlap({
       ))}
 
       <button type="submit" disabled={folyamatban} className={GOMB}>
-        {folyamatban ? "Mentem…" : "Mentés és szöveg frissítése"}
+        {folyamatban ? cimkek.folyamatban : cimkek.gomb}
       </button>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
     </form>
   );
 }
 
-export function VeglegesitesUrlap({ szerzodesId }: { szerzodesId: string }) {
+export function VeglegesitesUrlap({
+  szerzodesId,
+  cimkek,
+}: {
+  szerzodesId: string;
+  cimkek: { nyugtazas: string; gomb: string; megis: string; folyamatban: string };
+}) {
   const [allapot, kuldes, folyamatban] = useActionState(szerzodestVeglegesit, KEZDETI);
   // Csak az adathiány engedi a "mégis" gombot. A nyugtázás hiánya is hiba, de
   // abból nem lehet felhatalmazás arra, hogy a hiányzó adatokat átugorjuk:
   // különben egy kipipálatlan jelölőnégyzet csendben átvinné a figyelmeztetésen.
+  // A hiba melyik mezőre vonatkozik, azt a `mezo` mondja meg, nem a felsorolás:
+  // a felsorolást a felhasználó olvassa, oda mezőnév nem kerülhet.
   const hianyzik =
     allapot.allapot === "hiba" &&
     allapot.hibak.length > 0 &&
-    !allapot.hibak.includes("azonossagEllenorizve");
+    allapot.mezo !== "azonossagEllenorizve";
 
   return (
     <form action={kuldes} className="grid gap-3">
@@ -198,25 +213,24 @@ export function VeglegesitesUrlap({ szerzodesId }: { szerzodesId: string }) {
           required
           className="mt-0.5"
         />
-        <span>
-          Megnéztük egymás fényképes igazolványát, és az abban álló adatok egyeznek
-          azzal, ami a szerződésben szerepel.
-        </span>
+        <span>{cimkek.nyugtazas}</span>
       </label>
 
       <button type="submit" disabled={folyamatban} className={GOMB}>
-        {folyamatban
-          ? "Véglegesítem…"
-          : hianyzik
-            ? "Véglegesítés a hiányzó adatok nélkül"
-            : "Véglegesítés"}
+        {folyamatban ? cimkek.folyamatban : hianyzik ? cimkek.megis : cimkek.gomb}
       </button>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
     </form>
   );
 }
 
-export function VisszavonasUrlap({ szerzodesId }: { szerzodesId: string }) {
+export function VisszavonasUrlap({
+  szerzodesId,
+  cimkek,
+}: {
+  szerzodesId: string;
+  cimkek: { gomb: string; folyamatban: string };
+}) {
   const [allapot, kuldes, folyamatban] = useActionState(veglegesitestVisszavon, KEZDETI);
 
   return (
@@ -227,7 +241,7 @@ export function VisszavonasUrlap({ szerzodesId }: { szerzodesId: string }) {
         disabled={folyamatban}
         className="justify-self-start text-sm text-stone-600 underline underline-offset-2 disabled:opacity-60 dark:text-stone-400"
       >
-        {folyamatban ? "Visszaállítom…" : "Vissza tervezetre"}
+        {folyamatban ? cimkek.folyamatban : cimkek.gomb}
       </button>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
     </form>

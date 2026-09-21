@@ -12,11 +12,23 @@ export function AblakUrlap({
   kesobbiAblakNap,
   bizonylatKeres,
   maxNap,
+  cimkek,
 }: {
   korabbiAblakNap: number;
   kesobbiAblakNap: number;
   bizonylatKeres: boolean;
   maxNap: number;
+  cimkek: {
+    ablakCim: string;
+    ablakSugo: string;
+    elotte: string;
+    utana: string;
+    bizonylatCim: string;
+    bizonylatSugo: string;
+    bizonylatKapcsolo: string;
+    gomb: string;
+    folyamatban: string;
+  };
 }) {
   const [allapot, kuldes, folyamatban] = useActionState(beallitasokatMent, KEZDETI);
 
@@ -26,16 +38,13 @@ export function AblakUrlap({
       className="grid gap-3 rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
     >
       <div>
-        <h2 className="font-semibold">Párosítási időablak</h2>
-        <p className="text-sm text-stone-600 dark:text-stone-400">
-          Ennyi napon belül kötöm ugyanahhoz a havi előíráshoz a beérkezett
-          befizetést. Ami az ablakon kívül érkezik, külön tételként jelenik meg.
-        </p>
+        <h2 className="font-semibold">{cimkek.ablakCim}</h2>
+        <p className="text-sm text-stone-600 dark:text-stone-400">{cimkek.ablakSugo}</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1 text-sm">
-          <span className="font-medium">Esedékesség előtt (nap)</span>
+          <span className="font-medium">{cimkek.elotte}</span>
           <Mezo
             id="korabbiAblakNap"
             name="korabbiAblakNap"
@@ -51,7 +60,7 @@ export function AblakUrlap({
         </label>
 
         <label className="grid gap-1 text-sm">
-          <span className="font-medium">Esedékesség után (nap)</span>
+          <span className="font-medium">{cimkek.utana}</span>
           <Mezo
             id="kesobbiAblakNap"
             name="kesobbiAblakNap"
@@ -68,15 +77,8 @@ export function AblakUrlap({
       </div>
 
       <div className="border-t border-stone-200 pt-3 dark:border-stone-800">
-        <h2 className="font-semibold">Bizonylat vitás befizetésnél</h2>
-        <p className="text-sm text-stone-600 dark:text-stone-400">
-          Ha a te adatod és a bérlőé nem fedi egymást, kérhetjük mindkettőtöktől
-          annak az egy utalásnak a bizonylatát: tőled a fogadó oldalit, a
-          bérlőtől a küldő oldalit. Teljes bankszámlakivonatot soha nem kérünk,
-          és nem is fogadunk el. Ha ezt nem szeretnéd, kapcsold ki: a vita
-          attól még látszik, csak papírt nem kérünk hozzá. A már feltöltött
-          bizonylatok a kikapcsolástól nem tűnnek el.
-        </p>
+        <h2 className="font-semibold">{cimkek.bizonylatCim}</h2>
+        <p className="text-sm text-stone-600 dark:text-stone-400">{cimkek.bizonylatSugo}</p>
 
         <label className="mt-3 flex items-start gap-2 text-sm">
           <input
@@ -86,7 +88,7 @@ export function AblakUrlap({
             defaultChecked={bizonylatKeres}
             className="mt-0.5"
           />
-          <span className="font-medium">Kérjünk bizonylatot vitás tételnél</span>
+          <span className="font-medium">{cimkek.bizonylatKapcsolo}</span>
         </label>
       </div>
 
@@ -95,7 +97,7 @@ export function AblakUrlap({
         disabled={folyamatban}
         className={GOMB}
       >
-        {folyamatban ? "Mentés…" : "Mentés"}
+        {folyamatban ? cimkek.folyamatban : cimkek.gomb}
       </button>
 
       {allapot.allapot !== "ures" ? (

@@ -89,10 +89,20 @@ export async function nyelvre(oldal, nyelv) {
   await oldal.waitForFunction((cel) => document.documentElement.lang === cel, nyelv);
 }
 
-/** A választott nyelvet visszaállítja magyarra, hogy a próbák ne fertőzzék egymást. */
+/**
+ * A választott nyelvet visszaállítja magyarra, hogy a próbák ne fertőzzék
+ * egymást. A kezdőlapra megy előbb, mert a nyelvváltó a fejlécben van, és a
+ * belépés előtti lapokon nincs ott.
+ */
 export async function magyarra(oldal) {
   await oldal.goto(`${ALAP}/`);
   await nyelvre(oldal, "hu");
+}
+
+/** Átállítja a felületet angolra a nyelvváltóval, ahogy a felhasználó tenné. */
+export async function angolra(oldal) {
+  await oldal.goto(`${ALAP}/`);
+  await nyelvre(oldal, "en");
 }
 
 /**

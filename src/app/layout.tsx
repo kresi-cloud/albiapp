@@ -33,10 +33,11 @@ const cimBetu = Figtree({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Albi",
-  description: "Bérbeadás egy helyen: befizetés, rezsi, elszámolás.",
-};
+/** A lap címe és leírása a választott nyelven: ezt a böngésző és a megosztás mutatja. */
+export async function generateMetadata(): Promise<Metadata> {
+  const { sz } = await szovegek();
+  return { title: "Albi", description: sz("alkalmazas.leiras") };
+}
 
 /**
  * A színsáv a telefon állapotsorát is befesti, hogy az alkalmazás ne egy
@@ -83,7 +84,10 @@ const BERLO_FULEK = [
   { kulcs: "ful.betekinto", utvonal: "/berlo/betekinto" },
 ];
 
-const BERLO_TOBBI = [{ kulcs: "nav.adataim", utvonal: "/berlo/adatok" }];
+const BERLO_TOBBI = [
+  { kulcs: "nav.jegyzokonyveim", utvonal: "/berlo/jegyzokonyvek" },
+  { kulcs: "nav.adataim", utvonal: "/berlo/adatok" },
+];
 
 export default async function RootLayout({
   children,

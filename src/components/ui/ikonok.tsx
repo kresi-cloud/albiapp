@@ -195,6 +195,16 @@ export function IkonNyil(t: IkonTulajdonsagok) {
   );
 }
 
+export function IkonJegyzokonyv(t: IkonTulajdonsagok) {
+  return (
+    <Rajz {...t}>
+      <rect x="3" y="4.75" width="18" height="14.5" rx="2.25" />
+      <circle cx="9.25" cy="10" r="1.75" />
+      <path d="M3 16.5 8 12l3.5 3 3-2.5L21 18" />
+    </Rajz>
+  );
+}
+
 /** A navigáció ikonjai útvonal szerint, hogy a menü adatból épülhessen. */
 export const IKON_UTVONAL: Record<
   string,
@@ -212,6 +222,7 @@ export const IKON_UTVONAL: Record<
   "/berlo": IkonBerlemenyem,
   "/berlo/hibak": IkonHibabejelentes,
   "/berlo/dokumentumok": IkonDokumentumok,
+  "/berlo/jegyzokonyvek": IkonJegyzokonyv,
   "/berlo/betekinto": IkonBetekinto,
   "/berlo/adatok": IkonAdataim,
 };

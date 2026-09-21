@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { Dokumentumlista } from "@/components/Dokumentumlista";
-import { datum, forint } from "@/domain/penz";
+import { datumNyelven, forintNyelven } from "@/domain/nyelv";
 import { idoszakCimke } from "@/domain/igazolas";
-import { FAJTA_NEVE } from "@/domain/jegyzokonyv";
 import { nevsor } from "@/domain/szerzodes";
 import { prisma } from "@/lib/db";
 import { berbeadoTara } from "@/lib/dokumentumtar";
 import { igazolhatoIdoszakok } from "@/lib/igazolas";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 import { UjIgazolas, UjJegyzokonyv, UjSzerzodes } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +17,9 @@ const DOBOZ =
 
 export default async function Dokumentumok() {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz , nyelv } = await szovegek();
+  const ft = (osszegFt: number) => forintNyelven(osszegFt, nyelv);
+  const nap = (ertek: Date) => datumNyelven(ertek, nyelv);
 
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { ingatlan: { tulajdonosId: berbeado.id } },
@@ -46,19 +49,16 @@ export default async function Dokumentumok() {
   return (
     <div className="grid gap-8">
       <section>
-        <h1 className="text-2xl font-semibold tracking-tight">Dokumentumok</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">
-          Szerződés, átadás-átvételi jegyzőkönyv és bérbeadói igazolás. Mind abból
-          az adatból készül, amit már felvettél, ezért nem kell újra begépelni, és
-          nem térhet el attól, amit a befizetéseknél látsz.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{sz("dokumentumok.cim")}</h1>
+        <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("dokumentumok.bevezeto")}</p>
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">Kiadott és készülő papírok</h2>
+        <h2 className="mb-3 text-lg font-semibold">{sz("dokumentumok.tar_cim")}</h2>
         <Dokumentumlista
           dokumentumok={tar}
-          uresUzenet="Még nincs dokumentum. Lentebb tudsz szerződést, jegyzőkönyvet vagy igazolást készíteni."
+          uresUzenet={sz("dokumentumok.tar_ures")}
+          nyelv={nyelv}
         />
       </section>
 
@@ -71,17 +71,17 @@ export default async function Dokumentumok() {
               <h2 className="font-semibold">{jogviszony.ingatlan.megnevezes}</h2>
               <p className="text-sm text-stone-600 dark:text-stone-400">
                 {jogviszony.berlok.length === 0
-                  ? "Még nincs bérlő felvéve"
+                  ? sz("dokumentumok.nincs_berlo")
                   : nevsor(jogviszony.berlok.map((berlo) => berlo.nev))}{" "}
-                · {forint(jogviszony.berletiDijFt)} / hó
+                · {sz("kozos.havi_dij", { osszeg: ft(jogviszony.berletiDijFt) })}
               </p>
             </div>
 
             <div className={DOBOZ}>
-              <h3 className="font-medium">Bérleti szerződés</h3>
+              <h3 className="font-medium">{sz("dokumentumok.szerzodes_cim")}</h3>
               {jogviszony.szerzodesek.length === 0 ? (
                 <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-                  Még nincs szerződés ehhez a jogviszonyhoz.
+                  {sz("dokumentumok.nincs_szerzodes")}
                 </p>
               ) : (
                 <ul className="mt-2 grid gap-1 text-sm">
@@ -95,21 +95,24 @@ export default async function Dokumentumok() {
                       </Link>
                       <span className="text-stone-600 dark:text-stone-400">
                         {szerzodes.allapot === "veglegesitve" && szerzodes.veglegesitve
-                          ? `véglegesítve ${datum(szerzodes.veglegesitve)}`
-                          : "tervezet"}
+                          ? sz("dokumentum.veglegesitve_nap", { nap: nap(szerzodes.veglegesitve) })
+                          : sz("dokumentum.tervezet")}
                       </span>
                     </li>
                   ))}
                 </ul>
               )}
-              <UjSzerzodes jogviszonyId={jogviszony.id} />
+              <UjSzerzodes
+                jogviszonyId={jogviszony.id}
+                cimke={sz("dokumentumok.uj_szerzodes")}
+                folyamatbanCimke={sz("dokumentumok.keszitem")}
+              />
             </div>
 
             <div className={DOBOZ}>
-              <h3 className="font-medium">Átadás-átvételi jegyzőkönyv</h3>
+              <h3 className="font-medium">{sz("dokumentumok.jegyzokonyv_cim")}</h3>
               <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-                A birtokbaadáskor felvett óraállások lesznek az első rezsielszámolás
-                kiindulópontjai, a vállalt javításokból pedig teendő lesz.
+                {sz("dokumentumok.jegyzokonyv_sugo")}
               </p>
               {jogviszony.jegyzokonyvek.length > 0 ? (
                 <ul className="mt-2 grid gap-1 text-sm">
@@ -119,11 +122,13 @@ export default async function Dokumentumok() {
                         href={`/jegyzokonyvek/${jegyzokonyv.id}`}
                         className="underline underline-offset-2"
                       >
-                        {FAJTA_NEVE[jegyzokonyv.fajta] ?? jegyzokonyv.fajta} ·{" "}
-                        {datum(jegyzokonyv.idopont)}
+                        {sz(`jegyzokonyv.fajta.${jegyzokonyv.fajta}`)} ·{" "}
+                        {nap(jegyzokonyv.idopont)}
                       </Link>
                       <span className="text-stone-600 dark:text-stone-400">
-                        {jegyzokonyv.allapot === "veglegesitve" ? "véglegesítve" : "tervezet"}
+                        {jegyzokonyv.allapot === "veglegesitve"
+                          ? sz("dokumentum.veglegesitve")
+                          : sz("dokumentum.tervezet")}
                       </span>
                     </li>
                   ))}
@@ -133,21 +138,22 @@ export default async function Dokumentumok() {
                 <UjJegyzokonyv
                   jogviszonyId={jogviszony.id}
                   fajta="birtokbaadas"
-                  cimke="Birtokbaadási jegyzőkönyv"
+                  cimke={sz("jegyzokonyv.fajta.birtokbaadas")}
+                  folyamatbanCimke={sz("dokumentumok.keszitem")}
                 />
                 <UjJegyzokonyv
                   jogviszonyId={jogviszony.id}
                   fajta="visszaadas"
-                  cimke="Visszaadási jegyzőkönyv"
+                  cimke={sz("jegyzokonyv.fajta.visszaadas")}
+                  folyamatbanCimke={sz("dokumentumok.keszitem")}
                 />
               </div>
             </div>
 
             <div className={DOBOZ}>
-              <h3 className="font-medium">Bérbeadói igazolás</h3>
+              <h3 className="font-medium">{sz("dokumentumok.igazolas_cim")}</h3>
               <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-                Albérlettámogatáshoz, ösztöndíjhoz, munkáltatói térítéshez. Az
-                összeget és a teljesítés napját a párosított befizetésből veszem.
+                {sz("dokumentumok.igazolas_sugo")}
               </p>
 
               {jogviszony.berlok.map((berlo) => (
@@ -164,10 +170,10 @@ export default async function Dokumentumok() {
                             className="underline underline-offset-2"
                           >
                             {berlo.nev} · {idoszakCimke(igazolas.idoszak)} ·{" "}
-                            {forint(igazolas.osszegFt)}
+                            {ft(igazolas.osszegFt)}
                           </a>
                           <span className="text-stone-600 dark:text-stone-400">
-                            kiállítva {datum(igazolas.kiallitva)}
+                            {sz("dokumentum.kiallitva_nap", { nap: nap(igazolas.kiallitva) })}
                           </span>
                         </li>
                       ))}
@@ -176,12 +182,28 @@ export default async function Dokumentumok() {
 
                   <UjIgazolas
                     jogviszonyBerloId={berlo.id}
-                    berloNev={berlo.nev}
                     idoszakok={idoszakok.map((sor) => ({
                       idoszak: sor.idoszak,
                       cimke: idoszakCimke(sor.idoszak),
-                      osszegFt: sor.osszegFt,
+                      osszeg: ft(sor.osszegFt),
                     }))}
+                    cimkek={{
+                      nincs: sz("dokumentumok.igazolas_nincs", { nev: berlo.nev }),
+                      idoszak: sz("dokumentumok.igazolas_idoszak"),
+                      idoszakSor: sz("dokumentumok.igazolas_idoszak_sor"),
+                      osszeg: sz("dokumentumok.igazolas_osszeg"),
+                      osszegPelda: sz("dokumentumok.igazolas_osszeg_pelda"),
+                      osszegSugo: sz("dokumentumok.igazolas_osszeg_sugo"),
+                      cel: sz("dokumentumok.igazolas_cel"),
+                      celAlap: sz("dokumentumok.igazolas_cel_alap"),
+                      mod: sz("dokumentumok.igazolas_mod"),
+                      modAtutalas: sz("dokumentumok.igazolas_mod_atutalas"),
+                      modKeszpenz: sz("dokumentumok.igazolas_mod_keszpenz"),
+                      modEgyeb: sz("dokumentumok.igazolas_mod_egyeb"),
+                      hely: sz("dokumentumok.igazolas_hely"),
+                      gomb: sz("dokumentumok.igazolas_gomb", { nev: berlo.nev }),
+                      folyamatban: sz("dokumentumok.igazolas_folyamatban"),
+                    }}
                   />
                 </div>
               ))}

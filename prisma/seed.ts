@@ -12,6 +12,7 @@
  * a futó hónapban pedig szándékosan van egy vitás és egy elmaradt tétel, hogy
  * az egyeztetés összes állapota látszódjon.
  */
+import { deflateSync } from "node:zlib";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { jelszotHashel } from "../src/lib/jelszo";
@@ -32,6 +33,68 @@ const HONAP = MOST.getUTCMonth();
 /** A mostanihoz képest `elteres` hónappal arrébb lévő hónap adott napja. */
 function nap(elteres: number, napja = 1): Date {
   return new Date(Date.UTC(EV, HONAP + elteres, napja));
+}
+
+/**
+ * Példakép: egyszínű PNG, a helyszínen készült fénykép helyett.
+ *
+ * Fényképet nem tudunk kitalálni, és bemásolt fotót sem akarunk a repóba: ami
+ * a példaadatban van, annak nyilvánvalóan példaadatnak is kell látszania.
+ * Ennyi viszont elég ahhoz, hogy az album, a megerősítés és a kiköltözéskori
+ * párosítás végigpróbálható legyen.
+ */
+function crc32(adat: Buffer): number {
+  let maradek = 0xffffffff;
+  for (const bajt of adat) {
+    maradek ^= bajt;
+    for (let k = 0; k < 8; k += 1) {
+      maradek = maradek & 1 ? (maradek >>> 1) ^ 0xedb88320 : maradek >>> 1;
+    }
+  }
+  return (maradek ^ 0xffffffff) >>> 0;
+}
+
+function pngDarab(tipus: string, adat: Buffer): Buffer {
+  const hossz = Buffer.alloc(4);
+  hossz.writeUInt32BE(adat.length);
+  const test = Buffer.concat([Buffer.from(tipus, "ascii"), adat]);
+  const ellenorzo = Buffer.alloc(4);
+  ellenorzo.writeUInt32BE(crc32(test));
+  return Buffer.concat([hossz, test, ellenorzo]);
+}
+
+function peldaKep(meret: number, szin: [number, number, number]): Uint8Array<ArrayBuffer> {
+  const fejlec = Buffer.alloc(13);
+  fejlec.writeUInt32BE(meret, 0);
+  fejlec.writeUInt32BE(meret, 4);
+  fejlec[8] = 8; // bitmélység
+  fejlec[9] = 2; // színes, alfa nélkül
+
+  const sorok: Buffer[] = [];
+  for (let y = 0; y < meret; y += 1) {
+    const sor = Buffer.alloc(1 + meret * 3);
+    for (let x = 0; x < meret; x += 1) {
+      // Enyhe átmenet, hogy a kép ne legyen teljesen egyhangú.
+      const arnyalat = Math.round((y / meret) * 40);
+      sor[1 + x * 3] = Math.min(255, szin[0] + arnyalat);
+      sor[2 + x * 3] = Math.min(255, szin[1] + arnyalat);
+      sor[3 + x * 3] = Math.min(255, szin[2] + arnyalat);
+    }
+    sorok.push(sor);
+  }
+
+  const bajtok = Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    pngDarab("IHDR", fejlec),
+    pngDarab("IDAT", deflateSync(Buffer.concat(sorok))),
+    pngDarab("IEND", Buffer.alloc(0)),
+  ]);
+
+  // Saját ArrayBuffer-re másoljuk: a Buffer a Node közös pufferét osztja, és
+  // abból a Prisma nem tudja, meddig tart a kép.
+  const masolat = new Uint8Array(new ArrayBuffer(bajtok.byteLength));
+  masolat.set(bajtok);
+  return masolat;
 }
 
 async function main() {
@@ -516,6 +579,91 @@ async function main() {
       viseloFel: "megosztott",
     },
   });
+
+  // Átadás-átvételi jegyzőkönyv képekkel. A birtokbaadáskori állapot az, amihez
+  // kiköltözéskor mérni fogjuk a lakást: ezért van itt mindhárom állapot —
+  // megerősített kép, megerősítésre váró kép, és egy, amire kifogás érkezett.
+  const jegyzokonyv = await prisma.jegyzokonyv.create({
+    data: {
+      jogviszonyId: annaJogviszony.id,
+      fajta: "birtokbaadas",
+      idopont: annaJogviszony.kezdete,
+      allapotLeiras:
+        "A lakás tiszta, frissen festett. A konyhapulton egy karcolás, a fürdőszobai csempén két repedt darab.",
+      allapot: "tervezet",
+    },
+  });
+
+  const konyhapult = await prisma.jegyzokonyvTetel.create({
+    data: {
+      jegyzokonyvId: jegyzokonyv.id,
+      fajta: "hiba",
+      megnevezes: "Karcolás a konyhapulton",
+      megjegyzes: "A mosogató mellett, kb. 20 cm.",
+      sorrend: 1,
+    },
+  });
+
+  const kepek = [
+    {
+      megnevezes: "Konyhapult, a mosogató melletti karcolás",
+      tetelId: konyhapult.id,
+      feltoltoId: berbeado.id,
+      szin: [120, 130, 140] as [number, number, number],
+      // Anna megnézte és rábólintott: ez a kép kétoldali.
+      megerositoId: berloAnna.id,
+      megerositve: nap(-12, 3),
+      kifogas: null as string | null,
+    },
+    {
+      megnevezes: "Fürdőszoba, a kád melletti csempe",
+      tetelId: null,
+      feltoltoId: berbeado.id,
+      szin: [140, 150, 160] as [number, number, number],
+      megerositoId: null,
+      megerositve: null,
+      kifogas: null as string | null,
+    },
+    {
+      megnevezes: "Nappali, a kanapé mögötti fal",
+      tetelId: null,
+      feltoltoId: berbeado.id,
+      szin: [160, 140, 120] as [number, number, number],
+      megerositoId: berloAnna.id,
+      megerositve: nap(-12, 3),
+      kifogas: "Ez a folt a beköltözéskor még nem volt itt, a képen viszont már látszik.",
+    },
+    {
+      // A bérlő is tölthet fel: a saját állítása ugyanannyit ér.
+      megnevezes: "Előszoba, a beépített szekrény ajtaja",
+      tetelId: null,
+      feltoltoId: berloAnna.id,
+      szin: [130, 160, 140] as [number, number, number],
+      megerositoId: null,
+      megerositve: null,
+      kifogas: null as string | null,
+    },
+  ];
+
+  for (const kep of kepek) {
+    const tartalom = peldaKep(320, kep.szin);
+    await prisma.jegyzokonyvKep.create({
+      data: {
+        jegyzokonyvId: jegyzokonyv.id,
+        tetelId: kep.tetelId,
+        megnevezes: kep.megnevezes,
+        fajlNev: "pelda.png",
+        mimeTipus: "image/png",
+        meretBajt: tartalom.byteLength,
+        tartalom,
+        feltoltoId: kep.feltoltoId,
+        feltoltve: annaJogviszony.kezdete,
+        megerositoId: kep.megerositoId,
+        megerositve: kep.megerositve,
+        kifogas: kep.kifogas,
+      },
+    });
+  }
 
   // Betekintő: Anna megosztotta a bérleményét a szüleivel, akik fizetik.
   const betekinto = await prisma.betekinto.create({

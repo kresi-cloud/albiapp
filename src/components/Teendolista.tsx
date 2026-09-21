@@ -39,10 +39,10 @@ const SAV: Record<Surgosseg, string> = {
 
 export function Teendolista({
   teendok,
-  nyelv = "hu",
+  nyelv,
 }: {
   teendok: TeendoSurgosseggel[];
-  nyelv?: Nyelv;
+  nyelv: Nyelv;
 }) {
   const { sz, u } = szovegekNyelvvel(nyelv);
 

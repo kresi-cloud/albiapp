@@ -1,9 +1,13 @@
-import { adoEv, koltsegFajtaNeve } from "@/lib/ado";
+import { adoEv } from "@/lib/ado";
+import { szovegekNyelvvel } from "@/domain/szotar";
 import { belepettFelhasznalo } from "@/lib/munkamenet";
 
 /**
  * Az év összesítője CSV-ben, hogy a könyvelőnek is át lehessen adni.
  * Pontosvesszős elválasztás és BOM: így nyitja meg helyesen a magyar Excel.
+ *
+ * A tábla magyarul marad akkor is, ha a felület angolul megy: ez a fájl a
+ * könyvelőnek készül, és a magyar adózási szakszavakat ő keresi benne.
  */
 export async function GET(keres: Request): Promise<Response> {
   const felhasznalo = await belepettFelhasznalo();
@@ -14,6 +18,7 @@ export async function GET(keres: Request): Promise<Response> {
   const cim = new URL(keres.url);
   const ev = Number(cim.searchParams.get("ev")) || new Date().getUTCFullYear();
   const adatok = await adoEv(felhasznalo.id, ev);
+  const { sz, u } = szovegekNyelvvel("hu");
 
   const nap = (datum: Date | null) => (datum ? datum.toISOString().slice(0, 10) : "");
   const idezojel = (szoveg: string) => `"${szoveg.replace(/"/g, '""')}"`;
@@ -24,11 +29,11 @@ export async function GET(keres: Request): Promise<Response> {
     sorok.push([
       "Bevétel",
       nap(sor.datum),
-      sor.megnevezes,
+      u(sor.megnevezes),
       String(sor.bevetelFt),
       String(sor.nemBevetelFt),
       "",
-      sor.indoklas,
+      u(sor.indoklas),
     ]);
   }
 
@@ -36,16 +41,24 @@ export async function GET(keres: Request): Promise<Response> {
     sorok.push([
       "Költség",
       nap(sor.datum),
-      `${sor.ingatlan} · ${sor.megnevezes}`,
+      `${sor.ingatlan} · ${u(sor.megnevezes)}`,
       "",
       "",
       String(sor.osszegFt),
-      koltsegFajtaNeve(sor.fajta),
+      sz(`ado.fajta.${sor.fajta}`),
     ]);
   }
 
   for (const sor of adatok.besorolatlan) {
-    sorok.push(["Besorolatlan", nap(sor.datum), sor.megjegyzes, String(sor.osszegFt), "", "", ""]);
+    sorok.push([
+      "Besorolatlan",
+      nap(sor.datum),
+      u(sor.megjegyzes),
+      String(sor.osszegFt),
+      "",
+      "",
+      "",
+    ]);
   }
 
   const o = adatok.osszesito;

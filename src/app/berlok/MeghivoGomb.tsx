@@ -11,10 +11,14 @@ export function MeghivoGomb({
   jogviszonyBerloId,
   email,
   cimke,
+  emailCimke,
+  folyamatbanCimke,
 }: {
   jogviszonyBerloId: string;
   email: string;
   cimke: string;
+  emailCimke: string;
+  folyamatbanCimke: string;
 }) {
   const [allapot, kuldes, folyamatban] = useActionState(meghivotKeszit, KEZDETI);
 
@@ -23,7 +27,7 @@ export function MeghivoGomb({
       <input type="hidden" name="jogviszonyBerloId" value={jogviszonyBerloId} />
 
       <label className="grid gap-1 text-sm">
-        <span className="font-medium">A bérlő e-mail-címe</span>
+        <span className="font-medium">{emailCimke}</span>
         <Mezo
           name="email"
           type="email"
@@ -39,7 +43,7 @@ export function MeghivoGomb({
         disabled={folyamatban}
         className={GOMB}
       >
-        {folyamatban ? "Készítem…" : cimke}
+        {folyamatban ? folyamatbanCimke : cimke}
       </button>
 
       {allapot.allapot !== "ures" ? (
