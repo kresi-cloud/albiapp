@@ -1,4 +1,5 @@
 import { Dokumentumlista } from "@/components/Dokumentumlista";
+import { Lapfej } from "@/components/ui/alap";
 import { szovegekNyelvvel } from "@/domain/szotar";
 import { berloTara } from "@/lib/dokumentumtar";
 import { kotelezoSzerep } from "@/lib/munkamenet";
@@ -17,16 +18,14 @@ export default async function BerloiDokumentumok() {
   const dokumentumok = await berloTara(berlo.id);
 
   return (
-    <div className="grid gap-6">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("dokumentum.oldal.cim")}</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">
-          {sz("dokumentum.oldal.bevezeto")}
-        </p>
-        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
-          {sz("dokumentum.oldal.magyarul")}
-        </p>
-      </section>
+    <div className="grid gap-5">
+      <Lapfej cim={sz("dokumentum.oldal.cim")} alcim={sz("dokumentum.oldal.bevezeto")} />
+
+      {/* Hogy az okirat magyarul érvényes, azt nem csukjuk össze: az angol
+          felületen álló bérlő pont ezt nem sejti magától. */}
+      <p className="rounded-kartya border border-dashed border-keret px-4 py-3 text-sm leading-relaxed text-halvany">
+        {sz("dokumentum.oldal.magyarul")}
+      </p>
 
       <Dokumentumlista
         dokumentumok={dokumentumok}

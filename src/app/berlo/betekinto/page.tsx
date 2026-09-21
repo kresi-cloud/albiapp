@@ -4,6 +4,7 @@ import { szovegekNyelvvel } from "@/domain/szotar";
 import { berloBetekintoi, berloJogviszonyai } from "@/lib/betekinto";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv } from "@/lib/nyelv";
+import { Jelzo, Kartya, Lapfej, Sugo, Szakaszcim, Ures } from "@/components/ui/alap";
 import { BetekintoUrlap, VisszavonGomb } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +12,9 @@ export const dynamic = "force-dynamic";
 /**
  * A bérlő betekintő linkjei. Az ő oldala, mert az ő adatáról van szó: ő dönti
  * el, kinek adja ki, mennyi időre, és mikor vonja vissza.
+ *
+ * Ami kimarad a linkből, az elv, és nem tűnhet el — de nem is áll kinyitva a
+ * lap tetején: a `Sugo` egy sorban tartja, és aki kíváncsi rá, kinyitja.
  */
 export default async function Betekintok() {
   const berlo = await kotelezoSzerep("berlo");
@@ -23,66 +27,62 @@ export default async function Betekintok() {
   ]);
 
   return (
-    <div className="grid gap-6">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("betekinto.oldal.cim")}</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">
-          {sz("betekinto.oldal.bevezeto")}
-        </p>
-        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
-          {sz("betekinto.oldal.mit_nem")}
-        </p>
-      </section>
+    <div className="grid gap-5">
+      <Lapfej cim={sz("betekinto.oldal.cim")} alcim={sz("betekinto.oldal.bevezeto")} />
+
+      <Sugo cim={sz("betekinto.oldal.mit_nem_cim")}>
+        <p>{sz("betekinto.oldal.mit_nem")}</p>
+      </Sugo>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">{sz("betekinto.urlap.cim")}</h2>
-        <div className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+        <Szakaszcim>{sz("betekinto.urlap.cim")}</Szakaszcim>
+        <Kartya osztaly="p-4">
           <BetekintoUrlap nyelv={nyelv} jogviszonyok={jogviszonyok} />
-        </div>
+        </Kartya>
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">{sz("betekinto.lista.cim")}</h2>
+        <Szakaszcim>{sz("betekinto.lista.cim")}</Szakaszcim>
         {linkek.length === 0 ? (
-          <p className="rounded-lg border border-stone-200 bg-white p-4 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400">
-            {sz("betekinto.lista.ures")}
-          </p>
+          <Ures>{sz("betekinto.lista.ures")}</Ures>
         ) : (
           <ul className="grid gap-3">
             {linkek.map((link) => (
-              <li
-                key={link.id}
-                className="grid gap-2 rounded-lg border border-stone-200 bg-white p-4 text-sm dark:border-stone-800 dark:bg-stone-900"
-              >
-                <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <span className="font-medium">{link.cel}</span>
-                  <span className="text-xs text-stone-600 dark:text-stone-400">
-                    {u(allapotNeve(link.allapot))}
-                  </span>
-                </div>
+              <li key={link.id}>
+                <Kartya osztaly="grid gap-2 p-4 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                    <span className="min-w-0 font-semibold">{link.cel}</span>
+                    <Jelzo allapot={link.allapot === "elo" ? "rendben" : "semleges"}>
+                      {u(allapotNeve(link.allapot))}
+                    </Jelzo>
+                  </div>
 
-                {link.allapot === "elo" ? (
-                  <p className="overflow-x-auto rounded bg-stone-100 px-2 py-1 font-mono text-xs dark:bg-stone-800">
-                    /betekinto/{link.token}
+                  {/* A linket ki kell tudni másolni, ezért egybefüggő, írógép
+                      betűs sor: a tördelt cím közepén a szülő nem látja, hol
+                      ér véget. Telefonon oldalra gördül, nem a lapot feszíti. */}
+                  {link.allapot === "elo" ? (
+                    <p className="overflow-x-auto rounded-lg bg-felulet-halk px-2 py-1.5 font-mono text-xs">
+                      /betekinto/{link.token}
+                    </p>
+                  ) : null}
+
+                  <p className="text-xs leading-relaxed text-halvany">
+                    {sz("betekinto.lista.lejar", { nap: datumNyelven(link.lejar, nyelv) })}
+                    {" · "}
+                    {link.megnyitasok === 0
+                      ? sz("betekinto.lista.megnyitas_soha")
+                      : sz("betekinto.lista.megnyitas", { darab: link.megnyitasok })}
+                    {link.utolsoMegnyitas
+                      ? ` · ${sz("betekinto.lista.utoljara", {
+                          nap: datumNyelven(link.utolsoMegnyitas, nyelv),
+                        })}`
+                      : ""}
                   </p>
-                ) : null}
 
-                <p className="text-xs text-stone-600 dark:text-stone-400">
-                  {sz("betekinto.lista.lejar", { nap: datumNyelven(link.lejar, nyelv) })}
-                  {" · "}
-                  {link.megnyitasok === 0
-                    ? sz("betekinto.lista.megnyitas_soha")
-                    : sz("betekinto.lista.megnyitas", { darab: link.megnyitasok })}
-                  {link.utolsoMegnyitas
-                    ? ` · ${sz("betekinto.lista.utoljara", {
-                        nap: datumNyelven(link.utolsoMegnyitas, nyelv),
-                      })}`
-                    : ""}
-                </p>
-
-                {link.allapot === "elo" ? (
-                  <VisszavonGomb id={link.id} cimke={sz("betekinto.lista.visszavon")} />
-                ) : null}
+                  {link.allapot === "elo" ? (
+                    <VisszavonGomb id={link.id} cimke={sz("betekinto.lista.visszavon")} />
+                  ) : null}
+                </Kartya>
               </li>
             ))}
           </ul>

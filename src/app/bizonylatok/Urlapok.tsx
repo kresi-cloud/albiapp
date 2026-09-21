@@ -106,7 +106,7 @@ function Oldal({
           <>
             <a
               href={`/bizonylatok/${sor.id}`}
-              className="font-semibold text-albi-700 hover:text-albi-800 dark:text-albi-300"
+              className="font-semibold text-kiemelt hover:underline"
               rel="noopener"
             >
               {cimkek.letoltes}

@@ -42,6 +42,12 @@
   --color-halvany: var(--betu-halvany);
   --color-nagyon-halvany: var(--betu-nagyon-halvany);
 
+  /* A kiemelt (aktív) elem színe: a fülsáv aktuális füle, a menü nyitott
+     sora. A márkaskála önmagában nem elég hozzá, mert sötét módban a 700-as
+     zöld olvashatatlan — a jelentés viszont ugyanaz, ezért kap nevet. */
+  --color-kiemelt: var(--jel-kiemelt);
+  --color-kiemelt-lap: var(--jel-kiemelt-lap);
+
   /* Állapotszínek jelentés szerint. A párosítás nyelve: ami egyezik, az
      rendben; ami még nem derült ki, az figyelem; ahol a két fél mást mond,
      ott gond van. */
@@ -82,6 +88,9 @@
   --allapot-gond-lap: #fdeeee;
   --allapot-gond-keret: #f3c4c4;
 
+  --jel-kiemelt: #1e564d;
+  --jel-kiemelt-lap: #f1f8f6;
+
   color-scheme: light;
 }
 
@@ -105,6 +114,9 @@
     --allapot-gond: #f0908f;
     --allapot-gond-lap: #331718;
     --allapot-gond-keret: #5e2a2c;
+
+    --jel-kiemelt: #8bc2b7;
+    --jel-kiemelt-lap: #142623;
 
     color-scheme: dark;
   }

@@ -228,6 +228,10 @@ export const SZOTAR: Szotar = {
       "now than in a rush before signing. You can skip this and come back later.",
   },
 
+  "adatok.berlo_sugo_cim": {
+    hu: "Ki látja, amit itt megadok?",
+    en: "Who sees what I enter here?",
+  },
   "adatok.berlo_sugo": {
     hu:
       "A bérbeadó ezeket látja majd a szerződésen. Amit itt megadsz, az felülírja azt, " +
@@ -941,6 +945,10 @@ export const SZOTAR: Szotar = {
   "betekinto.oldal.mit_nem": {
     hu: "A link nem árulja el a bérbeadód nevét, a pontos címet, a lakótársaid nevét és semmilyen személyes adatot. Aki megkapja, annak a pontos cím úgyis megvan; a linkhez viszont bárki hozzáfér, akihez eljut, ezért nem tesszük bele. Bármikor visszavonhatod, és az azonnal hat.",
     en: "The link does not reveal your landlord's name, the exact address, your flatmates' names or any personal data. Whoever you send it to already knows the address; anyone the link reaches can open it, so we leave it out. You can revoke it at any time, and that takes effect immediately.",
+  },
+  "betekinto.oldal.mit_nem_cim": {
+    hu: "Mi nem kerül bele a linkbe?",
+    en: "What the link does not include",
   },
   "betekinto.urlap.cim": { hu: "Új betekintő", en: "New reference" },
   "betekinto.urlap.jogviszony": { hu: "Melyik bérleményről?", en: "Which tenancy?" },

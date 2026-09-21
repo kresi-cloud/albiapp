@@ -88,8 +88,8 @@ export function IngatlanUrlap({ cimkek }: { cimkek: IngatlanCimkek }) {
         allapot={allapot}
       />
 
-      <fieldset className="grid gap-3 rounded border border-stone-200 p-3 dark:border-stone-800">
-        <legend className="px-1 text-xs text-stone-500 dark:text-stone-400">
+      <fieldset className="grid gap-3 rounded border border-keret p-3">
+        <legend className="px-1 text-xs text-nagyon-halvany">
           {cimkek.adozasSugo}
         </legend>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -128,7 +128,7 @@ export function JogviszonyUrlap({
 
   return (
     <form action={kuldes} className="grid gap-3">
-      <p className="text-sm text-stone-600 dark:text-stone-400">{cimkek.sugo}</p>
+      <p className="text-sm text-halvany">{cimkek.sugo}</p>
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">{cimkek.ingatlan}</span>
@@ -236,7 +236,7 @@ function Figyelmeztetesek({ cimke, sorok }: { cimke: string; sorok: string[] }) 
   if (sorok.length === 0) return null;
 
   return (
-    <div className="rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+    <div className="rounded border border-figyelem-keret bg-figyelem-lap p-3 text-sm text-figyelem">
       <p className="font-medium">{cimke}</p>
       <ul className="mt-1 grid gap-1">
         {sorok.map((sor) => (
@@ -286,10 +286,10 @@ function Mezo({
         max={max}
         required={kotelezo}
         allapot={allapot.allapot}
-        className={`${MEZO} ${hibas ? "border-rose-400 dark:border-rose-700" : ""}`}
+        className={`${MEZO} ${hibas ? "border-gond" : ""}`}
       />
       {sugo ? (
-        <span className="text-xs text-stone-600 dark:text-stone-400">{sugo}</span>
+        <span className="text-xs text-halvany">{sugo}</span>
       ) : null}
     </label>
   );

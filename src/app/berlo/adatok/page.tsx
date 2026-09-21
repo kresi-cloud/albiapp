@@ -2,6 +2,7 @@ import { szovegekNyelvvel } from "@/domain/szotar";
 import { berloSajatSorai } from "@/lib/szemelyes-adatok";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv } from "@/lib/nyelv";
+import { Kartya, Lapfej, Sugo } from "@/components/ui/alap";
 import { SajatAdatok } from "./Urlap";
 
 export const dynamic = "force-dynamic";
@@ -34,32 +35,34 @@ export default async function BerloiAdatok({
   const allapot = alap?.allapot ?? { teljes: false, hianyzo: [], megvan: 0, osszesen: 6 };
 
   return (
-    <main className="mx-auto grid max-w-2xl gap-6 p-4">
-      <header className="grid gap-2">
-        <h1 className="text-xl font-semibold">{sz("adatok.cim")}</h1>
-        {elso === "1" ? (
-          <p className="rounded border border-stone-300 bg-stone-50 p-3 text-sm dark:border-stone-700 dark:bg-stone-900">
-            {sz("adatok.elso_belepes")}
-          </p>
-        ) : null}
-        <p className="text-sm text-stone-600 dark:text-stone-300">{sz("adatok.miert")}</p>
-        <p className="text-sm text-stone-600 dark:text-stone-300">{sz("adatok.berlo_sugo")}</p>
-      </header>
+    // A lap nem nyit saját `main`-t: az elrendezésben már van egy, és a
+    // kettő egymásba ágyazva dupla margót és két főtartalmat jelentene.
+    <div className="mx-auto grid max-w-2xl gap-5">
+      <Lapfej cim={sz("adatok.cim")} alcim={sz("adatok.miert")} />
 
-      <p
-        className={`rounded border p-3 text-sm ${
-          allapot.teljes
-            ? "border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
-            : "border-stone-300 bg-stone-50 text-stone-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200"
-        }`}
-      >
-        {allapot.teljes
-          ? sz("adatok.teljes")
-          : u({
-              kulcs: "adatok.keszultseg",
-              adatok: { megvan: allapot.megvan, osszesen: allapot.osszesen },
-            })}
-      </p>
+      {elso === "1" ? (
+        <p className="rounded-kartya border border-dashed border-keret px-4 py-3 text-sm leading-relaxed">
+          {sz("adatok.elso_belepes")}
+        </p>
+      ) : null}
+
+      {/* A készültség a lap egyetlen állapotmondata, ezért kártyában áll,
+          nem a bevezető bekezdései közt: aki most tér vissza, ebből tudja
+          meg, van-e még dolga. */}
+      <Kartya allapot={allapot.teljes ? "rendben" : "semleges"} osztaly="px-4 py-3">
+        <p className={`text-sm font-medium ${allapot.teljes ? "text-rendben" : "text-szoveg"}`}>
+          {allapot.teljes
+            ? sz("adatok.teljes")
+            : u({
+                kulcs: "adatok.keszultseg",
+                adatok: { megvan: allapot.megvan, osszesen: allapot.osszesen },
+              })}
+        </p>
+      </Kartya>
+
+      <Sugo cim={sz("adatok.berlo_sugo_cim")}>
+        <p>{sz("adatok.berlo_sugo")}</p>
+      </Sugo>
 
       <SajatAdatok
         kihagyhato={berlo.adatkeresLatta === null}
@@ -86,10 +89,10 @@ export default async function BerloiAdatok({
       />
 
       {sorok.length > 1 ? (
-        <p className="text-xs text-stone-500 dark:text-stone-400">
+        <p className="text-xs text-nagyon-halvany">
           {sz("adatok.sajat_oldal")}
         </p>
       ) : null}
-    </main>
+    </div>
   );
 }

@@ -1,19 +1,19 @@
 import type { JogiOldal } from "@/domain/jogi";
+import { Lapfej, Szakaszcim } from "@/components/ui/alap";
 
 /** Jogi tájékoztató megjelenítése. Szakaszcímek és bekezdések, semmi több. */
 export function Jogilap({ oldal }: { oldal: JogiOldal }) {
   return (
-    <article className="grid gap-6">
+    <article className="mx-auto grid max-w-2xl gap-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{oldal.cim}</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">{oldal.bevezeto}</p>
-        <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">{oldal.frissitve}</p>
+        <Lapfej cim={oldal.cim} alcim={oldal.bevezeto} />
+        <p className="mt-2 text-xs text-nagyon-halvany">{oldal.frissitve}</p>
       </header>
 
       {oldal.szakaszok.map((szakasz) => (
         <section key={szakasz.cim}>
-          <h2 className="text-lg font-semibold">{szakasz.cim}</h2>
-          <div className="mt-2 grid gap-2 text-sm text-stone-700 dark:text-stone-300">
+          <Szakaszcim>{szakasz.cim}</Szakaszcim>
+          <div className="grid gap-2 text-sm leading-relaxed text-szoveg">
             {szakasz.bekezdesek.map((bekezdes) => (
               <p key={bekezdes}>{bekezdes}</p>
             ))}

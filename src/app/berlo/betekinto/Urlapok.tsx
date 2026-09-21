@@ -49,7 +49,7 @@ export function BetekintoUrlap({
           required
           allapot={allapot.allapot}
         />
-        <span className="text-xs text-stone-600 dark:text-stone-400">
+        <span className="text-xs text-halvany">
           {sz("betekinto.urlap.cel_sugo")}
         </span>
       </label>
@@ -80,7 +80,7 @@ export function BetekintoUrlap({
         />
         <span>
           <span className="font-medium">{sz("betekinto.urlap.osszeg")}</span>
-          <span className="block text-xs text-stone-600 dark:text-stone-400">
+          <span className="block text-xs text-halvany">
             {sz("betekinto.urlap.osszeg_sugo")}
           </span>
         </span>

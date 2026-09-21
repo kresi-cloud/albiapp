@@ -64,7 +64,7 @@ export function Utalas({
 
   return (
     <details className="mt-3">
-      <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
+      <summary className="cursor-pointer text-sm text-halvany underline underline-offset-2">
         {cimkek.nyito}
       </summary>
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -84,7 +84,7 @@ export function Utalas({
         />
         <div className="grid gap-3 sm:col-span-2">
           <Mezo nev="kozlemeny" cimke={cimkek.kozlemeny} ertek="" allapot={allapot.allapot} />
-          <p className="text-xs text-stone-500 dark:text-stone-400">{cimkek.sugo}</p>
+          <p className="text-xs text-nagyon-halvany">{cimkek.sugo}</p>
           <button type="submit" disabled={folyamatban} className={GOMB}>
             {folyamatban ? "…" : cimkek.gomb}
           </button>
@@ -111,7 +111,7 @@ export function UtalastVisszavon({
       <button
         type="submit"
         disabled={folyamatban}
-        className="justify-self-start text-xs text-stone-500 underline underline-offset-2 hover:text-rose-700 disabled:opacity-60 dark:text-stone-400"
+        className="justify-self-start text-xs text-nagyon-halvany underline underline-offset-2 hover:text-gond disabled:opacity-60"
       >
         {folyamatban ? "…" : cimke}
       </button>

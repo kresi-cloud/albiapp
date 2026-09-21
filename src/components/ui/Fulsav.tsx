@@ -70,7 +70,7 @@ export function Fulsav({
                     href={elem.utvonal}
                     className={`flex min-h-12 items-center gap-3 rounded-lg px-3 text-sm font-medium ${
                       aktiv(utvonal, elem.utvonal)
-                        ? "bg-albi-50 text-albi-700 dark:bg-albi-950 dark:text-albi-200"
+                        ? "bg-kiemelt-lap text-kiemelt"
                         : "text-szoveg hover:bg-felulet-halk"
                     }`}
                   >
@@ -103,7 +103,7 @@ export function Fulsav({
                   href={elem.utvonal}
                   aria-current={be ? "page" : undefined}
                   className={`flex min-h-16 flex-col items-center justify-center gap-1 px-1 ${
-                    be ? "text-albi-700 dark:text-albi-300" : "text-halvany"
+                    be ? "text-kiemelt" : "text-halvany"
                   }`}
                 >
                   {Ikon ? <Ikon meret={22} /> : null}
@@ -121,9 +121,7 @@ export function Fulsav({
                 onClick={() => nyitvaAllit((elozo) => !elozo)}
                 aria-expanded={nyitva}
                 className={`flex min-h-16 w-full flex-col items-center justify-center gap-1 px-1 ${
-                  nyitva || tobbiAktiv
-                    ? "text-albi-700 dark:text-albi-300"
-                    : "text-halvany"
+                  nyitva || tobbiAktiv ? "text-kiemelt" : "text-halvany"
                 }`}
               >
                 <IkonTobb meret={22} />
