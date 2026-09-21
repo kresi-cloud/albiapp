@@ -56,20 +56,27 @@ export const viewport: Viewport = {
  * A menü két részre oszlik.
  *
  * Az első négy az, amit hetente elővesz valaki: az áttekintő a belépés helye,
- * a befizetés-egyeztetés, a rezsi és a dokumentumok pedig a termék három
- * megkülönböztető funkciója. A többi — az ingatlan- és bérlőnyilvántartás, a
- * hibák, az adóösszesítő, a beállítások — ritkább, és a „Több” alatt van.
- * Telefonon ez a felosztás dönti el, mi fér az alsó sávba; nagyobb kijelzőn
- * mind a kilenc kifér a fejlécbe, ott nincs jelentősége.
+ * a befizetés-egyeztetés és a rezsi a termék két megkülönböztető funkciója, az
+ * üzenetek pedig az egyetlen hely, ahová magától érkezik valami. A többi — az
+ * ingatlan- és bérlőnyilvántartás, a dokumentumtár, a hibák, az adóösszesítő,
+ * a beállítások — ritkább, és a „Több” alatt van. Telefonon ez a felosztás
+ * dönti el, mi fér az alsó sávba; nagyobb kijelzőn mind a tíz kifér a
+ * fejlécbe, ott nincs jelentősége.
+ *
+ * Az iratok azért kerültek a „Több” alá, mert a dokumentumtárat akkor nyitja
+ * meg valaki, amikor éppen kell egy papír — az üzenetekbe viszont a másik fél
+ * ír, és az elmaradt válasz drágább, mint egy kattintással messzebb került
+ * szerződés.
  */
 const BERBEADO_FULEK = [
   { kulcs: "ful.attekinto", utvonal: "/" },
   { kulcs: "ful.befizetesek", utvonal: "/befizetesek" },
   { kulcs: "ful.rezsi", utvonal: "/rezsi" },
-  { kulcs: "ful.dokumentumok", utvonal: "/dokumentumok" },
+  { kulcs: "ful.uzenetek", utvonal: "/uzenetek" },
 ];
 
 const BERBEADO_TOBBI = [
+  { kulcs: "nav.dokumentumok", utvonal: "/dokumentumok" },
   { kulcs: "nav.ingatlanok", utvonal: "/ingatlanok" },
   { kulcs: "nav.berlok", utvonal: "/berlok" },
   { kulcs: "nav.hibak", utvonal: "/hibak" },
@@ -80,11 +87,12 @@ const BERBEADO_TOBBI = [
 const BERLO_FULEK = [
   { kulcs: "ful.berlemenyem", utvonal: "/berlo" },
   { kulcs: "ful.hibabejelentes", utvonal: "/berlo/hibak" },
-  { kulcs: "ful.dokumentumaim", utvonal: "/berlo/dokumentumok" },
+  { kulcs: "ful.uzenetek", utvonal: "/berlo/uzenetek" },
   { kulcs: "ful.betekinto", utvonal: "/berlo/betekinto" },
 ];
 
 const BERLO_TOBBI = [
+  { kulcs: "nav.dokumentumaim", utvonal: "/berlo/dokumentumok" },
   { kulcs: "nav.jegyzokonyveim", utvonal: "/berlo/jegyzokonyvek" },
   { kulcs: "nav.adataim", utvonal: "/berlo/adatok" },
 ];

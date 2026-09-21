@@ -15,9 +15,11 @@ import { IKON_UTVONAL, IkonTobb } from "./ikonok";
  *
  * Helyette: négy gyakran használt hely az alsó sávban, ahol az ujj amúgy is
  * van, plusz egy „Több”, ami a ritkábbakat hozza elő. A négy kiválasztása nem
- * ízlés kérdése: a befizetés-egyeztetés, a rezsi és az adó a termék három
- * megkülönböztető funkciója, az áttekintő pedig a belépés helye. Az ingatlan-
- * és bérlőnyilvántartást havonta ha egyszer nyitja meg valaki.
+ * ízlés kérdése: az áttekintő a belépés helye, a befizetés-egyeztetés és a
+ * rezsi a termék két megkülönböztető funkciója, az üzenetek pedig az egyetlen
+ * hely, ahová a másik fél magától ír. Az ingatlan- és bérlőnyilvántartást
+ * havonta ha egyszer nyitja meg valaki, a dokumentumtárat pedig akkor, amikor
+ * éppen kell egy papír — azok a „Több” alatt vannak.
  *
  * Nagyobb kijelzőn a sáv eltűnik, ott a fejléc vízszintes menüje marad, mert
  * ott elfér, és ott az egér útja a felső sávhoz a rövidebb.

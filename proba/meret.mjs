@@ -50,13 +50,14 @@ const BERBEADOI = [
   "/ado",
   "/dokumentumok",
   "/hibak",
-  "/teendok",
+  "/uzenetek",
   "/beallitasok",
 ];
 
 const BERLOI = [
   "/berlo",
   "/berlo/hibak",
+  "/berlo/uzenetek",
   "/berlo/jegyzokonyvek",
   "/berlo/dokumentumok",
   "/berlo/betekinto",
@@ -85,7 +86,15 @@ const MAX_KEPERNYO = 8;
 
 async function vizsgal(oldal, utvonalak, cimke) {
   for (const utvonal of utvonalak) {
-    await oldal.goto(`${ALAP}${utvonal}`);
+    const valasz = await oldal.goto(`${ALAP}${utvonal}`);
+    // Előbb az, hogy a lap egyáltalán létezik. A hibalap rövid és keskeny,
+    // tehát minden méretállítást simán teljesít: a `/teendok` évekig szerepelt
+    // ebben a listában úgy, hogy nincs is ilyen lap, és a kapu végig igent
+    // mondott rá. Egy kapu, ami a semmit is átengedi, rosszabb a semminél.
+    all(
+      (valasz?.status() ?? 0) < 400,
+      `${utvonal} létező lap ${cimke} (válasz: ${valasz?.status() ?? "nincs"})`,
+    );
     await oldal.waitForLoadState("networkidle");
 
     const tobblet = await tullogas(oldal);
@@ -153,6 +162,21 @@ async function meresOnprobaja(oldal) {
 }
 
 /**
+ * A létezésellenőrzés önpróbája.
+ *
+ * Ez az az állítás, ami eddig hiányzott, tehát itt a legfontosabb kimondani,
+ * hogy tényleg elutasítja a rosszat: egy biztosan nem létező útvonalra
+ * elvárjuk a hibakódot.
+ */
+async function letezesOnprobaja(oldal) {
+  const valasz = await oldal.goto(`${ALAP}/nincs-ilyen-lap-sosem-volt`);
+  all(
+    (valasz?.status() ?? 0) >= 400,
+    `a létezésellenőrzés elutasít egy nem létező lapot (válasz: ${valasz?.status() ?? "nincs"})`,
+  );
+}
+
+/**
  * A szélességmérés önpróbája.
  *
  * Ugyanaz az ok, mint a magasságnál: ha a mérés mindenre nullát adna, a kapu
@@ -196,6 +220,7 @@ async function dokumentumUtja(oldal, elotag) {
 export async function futtat(oldal) {
   await meresOnprobaja(oldal);
   await szelessegOnprobaja(oldal);
+  await letezesOnprobaja(oldal);
 
   for (const [nyelv, cimke] of NYELVEK) {
     await oldal.goto(`${ALAP}/belepes`);

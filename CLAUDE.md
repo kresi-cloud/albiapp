@@ -417,6 +417,12 @@ képponton öt sorba tört, és a képernyő felső negyedét elvette minden lap
 kilépés is a „Több” alá került, ezért a böngészős próba `kilep()` függvénye
 előbb kinyitja azt.
 
+A négy hely: áttekintő, befizetés, rezsi, üzenetek. A dokumentumtár a „Több”
+alatt van, mert azt akkor nyitja meg valaki, amikor éppen kell egy papír — az
+üzenetekbe viszont a másik fél ír, és az elmaradt válasz drágább, mint egy
+kattintással messzebb került szerződés. Ez a felosztás dönti el, mi fér az
+alsó sávba; nagyobb kijelzőn úgyis mind kifér a fejlécbe.
+
 A hosszú magyarázat nem áll kinyitva a lap tetején: `Sugo` elemben, egy sorban
 áll, és aki kíváncsi rá, kinyitja. Az elv, amit kimond, nem tűnhet el — a
 bérlő különben joggal hinné, hogy előbb-utóbb mégis kérünk bankszámlakivonatot.

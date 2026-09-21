@@ -1195,6 +1195,12 @@ export const SZOTAR: Szotar = {
   "ful.attekinto": { hu: "Áttekintő", en: "Overview" },
   "ful.befizetesek": { hu: "Befizetés", en: "Payments" },
   "ful.rezsi": { hu: "Rezsi", en: "Utilities" },
+  "ful.uzenetek": { hu: "Üzenetek", en: "Messages" },
+  "uzenetek.cim": { hu: "Üzenetek", en: "Messages" },
+  "uzenetek.keszul": {
+    hu: "Ez a rész még készül: itt lehet majd a másik féllel kétoldali és több résztvevős beszélgetést indítani.",
+    en: "This part is still being built: two-way and group conversations with the other party will live here.",
+  },
   "ful.dokumentumok": { hu: "Iratok", en: "Documents" },
   "ful.berlemenyem": { hu: "Bérlemény", en: "My home" },
   "ful.hibabejelentes": { hu: "Hibák", en: "Faults" },
