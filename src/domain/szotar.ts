@@ -1416,6 +1416,10 @@ export const SZOTAR: Szotar = {
     en: ", allowance {keret} {egyseg}/year, above it {piaci} HUF/{egyseg}",
   },
   "rezsi.dijszabas_nincs_savhatar": { hu: ", nincs sávhatár", en: ", no band limit" },
+  "rezsi.dijszabas_csatorna": {
+    hu: ", csatornadíj {ar} Ft/{egyseg}",
+    en: ", sewage {ar} HUF/{egyseg}",
+  },
   "rezsi.nincs_dijszabas": { hu: "nincs díjszabás felvéve", en: "no tariff has been added" },
   "rezsi.uj_elszamolas": { hu: "Új elszámolás", en: "New settlement" },
   "rezsi.vitatja": { hu: "A bérlő vitatja: {uzenet}", en: "The tenant disputes it: {uzenet}" },

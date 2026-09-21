@@ -279,10 +279,13 @@ async function main() {
       data: {
         merooraId: meroora.id,
         ervenyesTol: nap(-8),
-        kedvezmenyesArFiller: 79900, // 799 Ft/m3, víz és csatorna együtt
-        piaciArFiller: 79900,
+        kedvezmenyesArFiller: 37300, // 373 Ft/m3 ivóvíz
+        piaciArFiller: 37300,
         evesKeret: null, // a víznél nincs sáv
         alapdijFt: 0,
+        // Ugyanarra a köbméterre a szennyvízelvezetés. Külön sor lesz belőle az
+        // elszámolásban, ahogy a vízszámlán is külön áll.
+        csatornaArFiller: 42600, // 426 Ft/m3
       },
     });
   }

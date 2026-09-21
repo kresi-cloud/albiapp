@@ -20,6 +20,20 @@ export type Dijszabas = {
   evesKeret: number | null;
   /** Havi alapdíj forintban. Az elszámolt napokra arányosítjuk. */
   alapdijFt: number;
+  /**
+   * Csatornadíj egységára fillérben, ugyanarra a mért mennyiségre.
+   *
+   * A magyar vízszámla két díjat ír ugyanarra a köbméterre: az ivóvízét és a
+   * szennyvízelvezetését. Aki csak az egyiket hárítja tovább, az a másikat
+   * magán hagyja — a csatornadíj nagyságrendileg akkora, mint a vízdíj, tehát
+   * ez nem kerekítési kérdés.
+   *
+   * Nincs sávja: a víz- és csatornadíj nem a rezsicsökkentés kétsávos
+   * rendszerében megy, hanem egy egységáron. A nulla ár nem hiányzó adat,
+   * hanem érvényes eset: a locsolási mellékmérőn átfolyt víz nem megy
+   * csatornába, és egy emésztőgödrös ingatlanon sincs mit elvezetni.
+   */
+  csatornaArFiller: number;
 };
 
 export type Oraallas = { datum: Date; ertek: number };
@@ -32,6 +46,10 @@ export type MerooraElszamolas = {
   osszegFt: number;
   alapdijReszFt: number;
   reszletezes: string;
+  /** A csatornadíj összege. Külön tétel lesz belőle, nem a vízdíjba olvad. */
+  csatornaFt: number;
+  /** Null: ehhez a mérőórához nincs csatornadíj, tehát tétel sem lesz. */
+  csatornaReszletezes: string | null;
 };
 
 /** Az év hossza a keret arányosításához. Szökőévvel nem számolunk: a különbség
@@ -92,6 +110,10 @@ export function merooratElszamol(
       reszletezes:
         `A záró óraállás (${egesz(jelenlegi.ertek)}) kisebb a nyitónál (${egesz(elozo.ertek)}), ` +
         "ezért fogyasztást nem számoltam. Nézd meg az óraállásokat.",
+      // Csatornadíjat sem számolunk, és külön sorban sem írjuk ki: ugyanarról
+      // az egy hibáról a bérlő ne kapjon két figyelmeztetést.
+      csatornaFt: 0,
+      csatornaReszletezes: null,
     };
   }
 
@@ -126,6 +148,13 @@ export function merooratElszamol(
     reszek.push(`Alapdíj ${napok} napra: ${forintSzoveg(alapdijReszFt)}.`);
   }
 
+  // A csatornadíj ugyanarra a mennyiségre megy, sáv nélkül, és külön kerekítjük:
+  // a végösszeg a kerekített tételek összege, tehát a két sor külön-külön áll meg.
+  const csatornaFt =
+    dijszabas.csatornaArFiller > 0
+      ? Math.round((nyersFogyasztas * dijszabas.csatornaArFiller) / 100)
+      : 0;
+
   return {
     fogyasztas: nyersFogyasztas,
     kedvezmenyesEgyseg,
@@ -134,6 +163,13 @@ export function merooratElszamol(
     osszegFt: fogyasztasFt + alapdijReszFt,
     alapdijReszFt,
     reszletezes: reszek.join(" "),
+    csatornaFt,
+    csatornaReszletezes:
+      dijszabas.csatornaArFiller > 0
+        ? `Ugyanaz a ${egesz(nyersFogyasztas)} ${mertekegyseg} elvezetve, ` +
+          `${arSzoveg(dijszabas.csatornaArFiller)}/${mertekegyseg}. ` +
+          "A csatornadíj a mért vízfogyasztás után jár, nem külön mérve."
+        : null,
   };
 }
 
@@ -195,6 +231,22 @@ export function elszamolastKeszit(bemenet: ElszamolasBemenet): Elszamolas {
       osszegFt: eredmeny.osszegFt,
       merooraId: meroora.id,
     });
+
+    // A csatornadíj külön sor, nem a vízdíjba olvasztva. A vízszámla is így
+    // írja, tehát a bérlő össze tudja vetni a kettőt; egy összevont számot
+    // viszont nem tudna hol keresni. A fajtája ettől ugyanúgy mért fogyasztás:
+    // az adóösszesítő innen tudja, hogy nem bevétel, ha továbbhárítjuk.
+    if (eredmeny.csatornaReszletezes !== null) {
+      tetelek.push({
+        fajta: "meroora",
+        megnevezes: `${meroora.megnevezes} · csatornadíj`,
+        mennyiseg: eredmeny.fogyasztas,
+        mertekegyseg: meroora.mertekegyseg,
+        reszletezes: eredmeny.csatornaReszletezes,
+        osszegFt: eredmeny.csatornaFt,
+        merooraId: meroora.id,
+      });
+    }
   }
 
   if (bemenet.atalanyFt && bemenet.atalanyFt > 0) {

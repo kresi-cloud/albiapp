@@ -125,6 +125,17 @@ kerekítetlen összeg kerekítése: a bérlő össze fogja adni a sorokat.
 Az éves kedvezményes keret az elszámolt napokra arányosítva jár. Minden tételhez
 tartozik emberi nyelvű részletezés; számot magyarázat nélkül nem küldünk ki.
 
+A vízóra mért köbmétere után két díj jár: az ivóvízé és a szennyvízelvezetésé.
+A csatornadíj ezért a vízóra díjszabásának része (`csatornaArFiller`), nem külön
+mérőóra: külön óraállás nincs hozzá, és nem is lenne mit leolvasni rajta. Sávja
+nincs, mert a víz- és csatornadíj nem a rezsicsökkentés kétsávos rendszerében
+megy. A nulla ár nem hiányzó adat, hanem érvényes eset: a locsolási mellékmérőn
+átfolyt víz nem megy csatornába, és emésztőgödrös ingatlanon sincs mit elvezetni.
+
+Az elszámolásban külön sor, nem a vízdíjba olvasztva, mert a vízszámla is így
+írja, és a bérlő a kettőt össze fogja vetni. A fajtája ettől ugyanúgy mért
+fogyasztás, tehát az adóösszesítő továbbhárítva nem számolja bevételnek.
+
 ## Az adóösszesítő alapelve
 
 Összesítő, nem bevallás; a felület is ezt mondja. A bevétel pénzforgalmi: a

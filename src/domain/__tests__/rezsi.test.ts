@@ -17,6 +17,16 @@ const VILLANY: Dijszabas = {
   piaciArFiller: 7010,
   evesKeret: 2523,
   alapdijFt: 0,
+  csatornaArFiller: 0, // villanyhoz nincs csatornadíj
+};
+
+// Budapesti nagyságrend: 373 Ft/m3 ivóvíz és 426 Ft/m3 csatorna, sáv nélkül.
+const VIZ: Dijszabas = {
+  kedvezmenyesArFiller: 37300,
+  piaciArFiller: 37300,
+  evesKeret: null,
+  alapdijFt: 0,
+  csatornaArFiller: 42600,
 };
 
 const NYITO = { datum: new Date(Date.UTC(2026, 0, 1)), ertek: 1000 };
@@ -124,6 +134,67 @@ describe("merooratElszamol", () => {
     );
     expect(eredmeny.fogyasztas).toBe(0);
     expect(eredmeny.osszegFt).toBe(0);
+  });
+});
+
+describe("csatornadíj", () => {
+  const nyito = { datum: new Date(Date.UTC(2026, 0, 1)), ertek: 240 };
+  const zaro = { datum: new Date(Date.UTC(2026, 0, 31)), ertek: 252 };
+
+  it("ugyanarra a mennyiségre számol, mint a vízdíj", () => {
+    const eredmeny = merooratElszamol(nyito, zaro, VIZ, "m3");
+    expect(eredmeny.fogyasztas).toBe(12);
+    // 12 m3 × 373 Ft, illetve 12 m3 × 426 Ft.
+    expect(eredmeny.osszegFt).toBe(4476);
+    expect(eredmeny.csatornaFt).toBe(5112);
+  });
+
+  it("nulla ár mellett nincs csatornadíj és nincs róla sor", () => {
+    // A locsolási mellékmérő esete: amit kiöntöttek a kertre, az nem megy
+    // csatornába, tehát nincs mit elvezetni.
+    const locsolo = { ...VIZ, csatornaArFiller: 0 };
+    const eredmeny = merooratElszamol(nyito, zaro, locsolo, "m3");
+    expect(eredmeny.csatornaFt).toBe(0);
+    expect(eredmeny.csatornaReszletezes).toBeNull();
+  });
+
+  it("a részletezés kimondja, hogy a mért víz után jár", () => {
+    const eredmeny = merooratElszamol(nyito, zaro, VIZ, "m3");
+    expect(eredmeny.csatornaReszletezes).toContain("12 m3");
+    expect(eredmeny.csatornaReszletezes).toContain("426 Ft");
+  });
+
+  it("visszafelé forgó óránál csatornadíjat sem számolunk", () => {
+    const vissza = { datum: new Date(Date.UTC(2026, 0, 31)), ertek: 230 };
+    const eredmeny = merooratElszamol(nyito, vissza, VIZ, "m3");
+    expect(eredmeny.csatornaFt).toBe(0);
+    expect(eredmeny.csatornaReszletezes).toBeNull();
+  });
+
+  it("külön tétel lesz belőle, és ugyanahhoz a mérőórához tartozik", () => {
+    const elszamolas = elszamolastKeszit({
+      idoszakKezdete: nyito.datum,
+      idoszakVege: zaro.datum,
+      meroorak: [
+        {
+          id: "vizora",
+          megnevezes: "Víz",
+          mertekegyseg: "m3",
+          dijszabas: VIZ,
+          nyito,
+          zaro,
+        },
+      ],
+    });
+    expect(elszamolas.tetelek).toHaveLength(2);
+    expect(elszamolas.tetelek[0].osszegFt).toBe(4476);
+    expect(elszamolas.tetelek[1].megnevezes).toBe("Víz · csatornadíj");
+    expect(elszamolas.tetelek[1].osszegFt).toBe(5112);
+    expect(elszamolas.tetelek[1].merooraId).toBe("vizora");
+    // Az adóösszesítő a fajtából tudja, hogy ez is mért fogyasztás, tehát
+    // továbbhárítva nem bevétel.
+    expect(elszamolas.tetelek[1].fajta).toBe("meroora");
+    expect(elszamolas.osszegFt).toBe(4476 + 5112);
   });
 });
 
