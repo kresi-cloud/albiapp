@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   ALAPERTELMEZETT_ELETTARTAM,
+  ELETTARTAM_NAPOK,
   SOHA_NEM_MUTATJUK,
   URES,
   allapota,
   allapotNeve,
+  haviAllapotNeve,
+  havonta,
   lejarat,
   mondatok,
   osszesit,
@@ -13,7 +16,14 @@ import {
 } from "../betekinto";
 
 function tetel(reszlet: Partial<BetekintoTetel>): BetekintoTetel {
-  return { idoszak: "2026-09", allapot: "egyezik", keses: 0, osszegFt: 180000, ...reszlet };
+  return {
+    idoszak: "2026-09",
+    allapot: "egyezik",
+    keses: 0,
+    eloirtFt: 180000,
+    erkezettFt: 180000,
+    ...reszlet,
+  };
 }
 
 describe("összesítés", () => {
@@ -52,7 +62,7 @@ describe("összesítés", () => {
 
   it("a hiányzó hónap nem számít se határidősnek, se késettnek", () => {
     const osszesites = osszesit([
-      tetel({ idoszak: "2026-08", allapot: "hianyzik", keses: 0 }),
+      tetel({ idoszak: "2026-08", allapot: "hianyzik", keses: 0, erkezettFt: 0 }),
       tetel({ idoszak: "2026-09" }),
     ]);
     expect(osszesites.hianyzo).toBe(1);
@@ -61,7 +71,7 @@ describe("összesítés", () => {
   });
 
   it("az eltérő összegű befizetés külön számol, de megérkezettnek számít", () => {
-    const osszesites = osszesit([tetel({ allapot: "elter", osszegFt: 150000 })]);
+    const osszesites = osszesit([tetel({ allapot: "elter", erkezettFt: 150000 })]);
     expect(osszesites.eltero).toBe(1);
     expect(osszesites.hataridore).toBe(1);
   });
@@ -113,8 +123,8 @@ describe("mondatok", () => {
     const kulcsok = mondatok(
       osszesit([
         tetel({ idoszak: "2026-07", keses: 11 }),
-        tetel({ idoszak: "2026-08", allapot: "hianyzik" }),
-        tetel({ idoszak: "2026-09", allapot: "elter", osszegFt: 120000 }),
+        tetel({ idoszak: "2026-08", allapot: "hianyzik", erkezettFt: 0 }),
+        tetel({ idoszak: "2026-09", allapot: "elter", erkezettFt: 120000 }),
       ]),
     ).map((sor) => sor.kulcs);
     expect(kulcsok).toContain("betekinto.mondat.kesve");
@@ -130,6 +140,111 @@ describe("mondatok", () => {
     for (const tiltott of ["pont", "minosites", "ertekeles", "score"]) {
       expect(szoveg).not.toContain(tiltott);
     }
+  });
+});
+
+describe("havi összevonás", () => {
+  it("egy hónap három előírása egy sorrá áll össze", () => {
+    // Bérleti díj, közös költség, rezsiátalány: a szülő egy sort akar látni.
+    const sorok = havonta([
+      tetel({ idoszak: "2026-09", eloirtFt: 180000, erkezettFt: 180000 }),
+      tetel({ idoszak: "2026-09", eloirtFt: 22000, erkezettFt: 22000 }),
+      tetel({ idoszak: "2026-09", eloirtFt: 25000, erkezettFt: 25000 }),
+    ]);
+    expect(sorok).toHaveLength(1);
+    expect(sorok[0].eloirtFt).toBe(227000);
+    expect(sorok[0].erkezettFt).toBe(227000);
+    expect(sorok[0].allapot).toBe("egyezik");
+  });
+
+  it("egyetlen rendezetlen tétel rendezetlenné teszi a hónapot", () => {
+    const sorok = havonta([
+      tetel({ idoszak: "2026-09", eloirtFt: 180000, erkezettFt: 180000 }),
+      tetel({ idoszak: "2026-09", allapot: "hianyzik", eloirtFt: 22000, erkezettFt: 0 }),
+    ]);
+    expect(sorok[0].allapot).toBe("hianyzik");
+    expect(sorok[0].eloirtFt).toBe(202000);
+    expect(sorok[0].erkezettFt).toBe(180000);
+  });
+
+  it("a hónap késése a leghosszabb tételkésés", () => {
+    const sorok = havonta([
+      tetel({ idoszak: "2026-09", keses: 2 }),
+      tetel({ idoszak: "2026-09", keses: 9 }),
+    ]);
+    expect(sorok[0].keses).toBe(9);
+  });
+
+  it("a hiányzó tétel nem hoz késést: nincs mihez képest késnie", () => {
+    const sorok = havonta([
+      tetel({ idoszak: "2026-09", keses: 3 }),
+      tetel({ idoszak: "2026-09", allapot: "hianyzik", keses: 0, erkezettFt: 0 }),
+    ]);
+    expect(sorok[0].keses).toBe(3);
+  });
+
+  it("a legfrissebb hónappal kezd", () => {
+    const sorok = havonta([
+      tetel({ idoszak: "2026-07" }),
+      tetel({ idoszak: "2026-09" }),
+      tetel({ idoszak: "2026-08" }),
+    ]);
+    expect(sorok.map((sor) => sor.idoszak)).toEqual(["2026-09", "2026-08", "2026-07"]);
+  });
+});
+
+describe("a nyitott összeg", () => {
+  it("nulla, ha minden megérkezett", () => {
+    expect(osszesit([tetel({ idoszak: "2026-08" }), tetel({ idoszak: "2026-09" })]).nyitottFt).toBe(
+      0,
+    );
+  });
+
+  it("a hiányzó hónap teljes előírása nyitott", () => {
+    const osszesites = osszesit([
+      tetel({ idoszak: "2026-08" }),
+      tetel({ idoszak: "2026-09", allapot: "hianyzik", erkezettFt: 0 }),
+    ]);
+    expect(osszesites.nyitottFt).toBe(180000);
+    expect(osszesites.eloirtFt).toBe(360000);
+    expect(osszesites.erkezettFt).toBe(180000);
+  });
+
+  it("a kevesebb beérkezésből a különbség marad nyitva", () => {
+    expect(osszesit([tetel({ allapot: "elter", erkezettFt: 150000 })]).nyitottFt).toBe(30000);
+  });
+
+  it("a túlfizetett hónap nem fedi el a következő elmaradását", () => {
+    // Hónaponként vágunk nullára, különben egy februári túlutalás eltüntetné a
+    // márciusi elmaradást, és pont a lényeg veszne el.
+    const osszesites = osszesit([
+      tetel({ idoszak: "2026-08", allapot: "elter", erkezettFt: 250000 }),
+      tetel({ idoszak: "2026-09", allapot: "hianyzik", erkezettFt: 0 }),
+    ]);
+    expect(osszesites.nyitottFt).toBe(180000);
+  });
+});
+
+describe("a havi sor címkéje", () => {
+  it("minden ághoz más kulcs tartozik", () => {
+    expect(haviAllapotNeve(tetel({}))).toEqual({ kulcs: "betekinto.havi.rendben" });
+    expect(haviAllapotNeve(tetel({ keses: 4 }))).toEqual({
+      kulcs: "betekinto.havi.kesve",
+      adatok: { napok: 4 },
+    });
+    expect(haviAllapotNeve(tetel({ allapot: "elter", erkezettFt: 1 }))).toEqual({
+      kulcs: "betekinto.havi.elter",
+    });
+    expect(haviAllapotNeve(tetel({ allapot: "hianyzik", erkezettFt: 0 }))).toEqual({
+      kulcs: "betekinto.havi.hianyzik",
+    });
+  });
+
+  it("a késés erősebb jelzés, mint az eltérő összeg", () => {
+    // Aki késve fizetett mást, arról az számít, hogy késett.
+    expect(haviAllapotNeve(tetel({ allapot: "elter", keses: 5, erkezettFt: 1 })).kulcs).toBe(
+      "betekinto.havi.kesve",
+    );
   });
 });
 
@@ -160,9 +275,14 @@ describe("a link állapota", () => {
   });
 
   it("a lejárat naptári napokkal számol", () => {
-    expect(lejarat(most, ALAPERTELMEZETT_ELETTARTAM).toISOString()).toBe(
-      new Date(Date.UTC(2026, 9, 20)).toISOString(),
-    );
+    expect(lejarat(most, 30).toISOString()).toBe(new Date(Date.UTC(2026, 9, 20)).toISOString());
+  });
+
+  it("az alapértelmezett élettartam egy tanévnél hosszabb", () => {
+    // Ha a link egy hónap múlva lejár, abból nem óvatosság lesz, hanem havi
+    // kérdezősködés — pont az, amit a betekintő el akar kerülni.
+    expect(ALAPERTELMEZETT_ELETTARTAM).toBeGreaterThanOrEqual(365);
+    expect(ELETTARTAM_NAPOK).toContain(ALAPERTELMEZETT_ELETTARTAM);
   });
 });
 

@@ -3,6 +3,7 @@ import { NYELVEK, szovegezo, uzenet, type Szotar } from "../nyelv";
 import { SZOTAR, szovegekNyelvvel } from "../szotar";
 import {
   allapotNeve as betekintoAllapotNeve,
+  haviAllapotNeve,
   mondatok,
   osszesit,
   type Allapot as BetekintoAllapot,
@@ -128,7 +129,8 @@ describe("a domain kulcsai megvannak a szótárban", () => {
       idoszak,
       allapot: "egyezik",
       keses: 0,
-      osszegFt: 180000,
+      eloirtFt: 180000,
+      erkezettFt: 180000,
       ...reszlet,
     });
 
@@ -139,14 +141,20 @@ describe("a domain kulcsai megvannak a szótárban", () => {
     mondatok(
       osszesit([
         tetel("2026-06", { keses: 11 }),
-        tetel("2026-07", { allapot: "hianyzik" }),
-        tetel("2026-08", { allapot: "elter", osszegFt: 120000 }),
+        tetel("2026-07", { allapot: "hianyzik", erkezettFt: 0 }),
+        tetel("2026-08", { allapot: "elter", erkezettFt: 120000 }),
         tetel("2026-09"),
       ]),
     ).forEach(megvan);
 
     const allapotok: BetekintoAllapot[] = ["elo", "lejart", "visszavonva"];
     allapotok.forEach((allapot) => megvan(betekintoAllapotNeve(allapot)));
+
+    // A havi sorok címkéi is a szótáron mennek át, mind a négy ág.
+    megvan(haviAllapotNeve(tetel("2026-09")));
+    megvan(haviAllapotNeve(tetel("2026-09", { keses: 3 })));
+    megvan(haviAllapotNeve(tetel("2026-09", { allapot: "elter", erkezettFt: 1 })));
+    megvan(haviAllapotNeve(tetel("2026-09", { allapot: "hianyzik", erkezettFt: 0 })));
   });
 
   it("dokumentumfajták és elszámolásállapotok", () => {

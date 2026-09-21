@@ -64,7 +64,13 @@ export function BetekintoUrlap({
       </label>
 
       <label className="flex items-start gap-2 text-sm">
-        <input type="checkbox" name="osszegetMutat" value="igen" className="mt-1" />
+        <input
+          type="checkbox"
+          name="osszegetMutat"
+          value="igen"
+          defaultChecked
+          className="mt-1"
+        />
         <span>
           <span className="font-medium">{sz("betekinto.urlap.osszeg")}</span>
           <span className="block text-xs text-stone-600 dark:text-stone-400">

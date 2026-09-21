@@ -588,9 +588,11 @@ model Betekinto {
    */
   cel           String
   /**
-   * Az összegek megjelenjenek-e. Alapból nem: a tény elég, a díj magánügy.
+   * Az összegek megjelenjenek-e. Alapból igen: a betekintőt jellemzően annak
+   * adja ki a bérlő, aki a bérleményt fizeti, és összeg nélkül semmit nem ér
+   * neki. Aki mégsem akarja, kikapcsolja.
    */
-  osszegetMutat Boolean   @default(false)
+  osszegetMutat Boolean   @default(true)
   lejar         DateTime
   visszavonva   DateTime?
   letrehozva    DateTime  @default(now())

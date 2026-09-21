@@ -224,27 +224,45 @@ lakótárs igazolását a bérlő nem látja.
 
 ## A betekintő alapelve
 
-A bérlőszűrés jogilag korlátos, és jó okkal. A betekintő ugyanannyit old meg a
-másik irányból: nem a bérbeadó kutat a bérlő után, hanem a bérlő ad ki magáról
-egy igazolható előzményt, akkor és annak, akinek akarja.
+Egy egyetemista albérletét jellemzően a szülei fizetik vagy segítik. A szülő
+távol van, nem látja a számlákat, és nincs joga belépni a bérlő fiókjába — eddig
+csak annyi maradt neki, hogy megkérdezi, és elhiszi a választ. Ebből lesz otthon
+a bizalmi kérdés. A betekintő ezt oldja meg: a bérlő maga oszt meg egy
+ellenőrizhető képet a bérleményéről, akkor és annak, akinek akarja.
 
-Három dolog teszi használhatóvá. Az adat nem a bérlő bemondása, hanem abból jön,
-amit a mostani bérbeadó a beérkezésről maga rögzített: egy tétel akkor számít
-megérkezettnek, ha a **bérbeadó oldalán** van mögötte beérkezés. A bérlő saját
-bejelentése nem bizonyít semmit annak, aki ezt olvassa — épp ez adja a nézet
-súlyát —, ezért a vitás tétel sem számít teljesítettnek.
+Nem bérlőszűrésre való, és nem is arra hangoljuk. A leendő bérbeadónak mutatott
+„fizetési előzmény" a kezdeti olvasat volt, és rossz volt: abból következett,
+hogy alapból nem látszottak az összegek, csak a bérleti díj számított bele, és a
+link harminc nap múlva lejárt. Mindhárom pont azt rontotta el, amiért a funkció
+van.
+
+Amit ebből következően mutat: az **összegeket alapból**, mert aki fizeti, annak
+összeg nélkül semmit nem ér; **minden előírástípust**, mert a közös költséget és
+a rezsiátalányt ugyanaz a szülő fizeti; és a **mostani állapotot** is, nem csak
+az összesített előzményt — a nyitott összeget és a hónapról hónapra bontást.
+
+Az adat nem a bérlő bemondása, hanem abból jön, amit a bérbeadó a beérkezésről
+maga rögzített: egy tétel akkor számít megérkezettnek, ha a **bérbeadó oldalán**
+van mögötte beérkezés. A vitás tétel sem számít teljesítettnek. A nyitott összeg
+ezért nem „tartozás": a friss hónap is nyitott, amíg a bérbeadó rá nem nézett a
+számlájára, és az oldal ezt ki is mondja.
 
 A párosítást ugyanaz az `egyeztet` végzi, mint a befizetések lapon. A nézet nem
-olvashat külön tárolt egyeztetési eredményt: egy ilyen tábla volt a sémában, amibe
-soha semmi nem írt, és emiatt a betekintő minden hónapra azt mondta, hogy nem
-érkezett befizetés — miközben a lap hibátlanul nézett ki. A tábla kivezetve. Pontszámot nem adunk: a
-súlyozás, amit mi találnánk ki, mérésnek látszana, pedig nem az. És szűk: se
-bérbeadói név, se pontos cím (csak település), se személyes adat, se más bérlő —
-ha egy adat nem a fizetési fegyelemről szól, nincs ott helye.
+olvashat külön tárolt egyeztetési eredményt: egy ilyen tábla volt a sémában,
+amibe soha semmi nem írt, és emiatt a betekintő minden hónapra azt mondta, hogy
+nem érkezett befizetés — miközben a lap hibátlanul nézett ki. A tábla kivezetve.
 
-A link rövid életű, a bérlő bármikor visszavonja, és a megnyitásból csak az
-időpontot tároljuk. IP-t és böngészőazonosítót nem: a bérlőnek az számít,
-hányszor nézték meg.
+Pontszámot nem adunk: a súlyozás, amit mi találnánk ki, mérésnek látszana, pedig
+nem az. És szűk marad: se bérbeadói név, se pontos cím (csak település), se
+személyes adat, se más bérlő. A pontos cím azért sem, mert akinek a bérlő
+megmutatja, annak úgyis megvan, a linket viszont bárki megnyithatja, akihez
+eljut — vagyis csak kockázat lenne, haszon nélkül. A bérbeadó neve pedig nem a
+bérlő adata: arról nem az ő hozzájárulása dönt.
+
+Az élettartam a jogviszony hosszához igazodik (alapból egy év), nem egy
+pályázathoz. A valódi fék a visszavonás: azonnal hat, és a bérlő kezében van. A
+megnyitásból csak az időpontot tároljuk, IP-t és böngészőazonosítót nem: a
+bérlőnek az számít, hányszor nézték meg.
 
 ## Jogi tájékoztatók
 

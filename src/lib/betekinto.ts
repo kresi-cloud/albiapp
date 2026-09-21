@@ -13,8 +13,10 @@ import { egyeztet } from "@/domain/egyeztetes";
 import { napKulonbseg } from "@/domain/penz";
 import { egyeztetesBeallitasok } from "@/lib/lekerdezesek";
 import {
+  ALAPERTELMEZETT_ELETTARTAM,
   ELETTARTAM_NAPOK,
   allapota,
+  havonta,
   lejarat,
   osszesit,
   telepules,
@@ -42,7 +44,10 @@ export type NyilvanosNezet = {
   jogviszonyEl: boolean;
   berloNeve: string;
   berletiDijFt: number | null;
+  osszegetMutat: boolean;
   osszesites: Osszesites;
+  /** Havi bontás, a legfrissebb hónappal kezdve. */
+  honapok: BetekintoTetel[];
   kiadva: Date;
   lejar: Date;
 };
@@ -103,7 +108,7 @@ export async function betekintotKeszit(bemenet: {
 
   const napok = (ELETTARTAM_NAPOK as readonly number[]).includes(bemenet.napok)
     ? bemenet.napok
-    : ELETTARTAM_NAPOK[1];
+    : ALAPERTELMEZETT_ELETTARTAM;
 
   const betekinto = await prisma.betekinto.create({
     data: {
@@ -175,8 +180,11 @@ export async function nyilvanosNezet(
   // saját bejelentése nem bizonyít semmit annak, aki ezt olvassa — épp ez adja
   // a betekintő súlyát. Ezért egy vitás tétel sem számít megérkezettnek, amíg
   // a bérbeadó oldalán nincs mögötte beérkezés.
-  const tetelek: BetekintoTetel[] = betekinto.jogviszony.eloirtTetelek
-    .filter((tetel) => tetel.tipus === "berleti_dij" && tetel.esedekesseg <= most)
+  //
+  // Minden előírástípus benne van, nem csak a bérleti díj: a közös költséget és
+  // a rezsiátalányt ugyanaz a szülő fizeti, tehát ugyanúgy látnia kell.
+  const tetelenkent: BetekintoTetel[] = betekinto.jogviszony.eloirtTetelek
+    .filter((tetel) => tetel.esedekesseg <= most)
     .map((tetel) => {
       const sor = tetelhez.get(tetel.id);
       const berbeadoi = sor?.berbeadoiIgazolasId
@@ -184,16 +192,25 @@ export async function nyilvanosNezet(
         : undefined;
 
       if (!berbeadoi || !berbeadoi.megerkezett) {
-        return { idoszak: tetel.idoszak, allapot: "hianyzik" as const, keses: 0, osszegFt: tetel.osszegFt };
+        return {
+          idoszak: tetel.idoszak,
+          allapot: "hianyzik" as const,
+          keses: 0,
+          eloirtFt: tetel.osszegFt,
+          erkezettFt: 0,
+        };
       }
 
       return {
         idoszak: tetel.idoszak,
         allapot: berbeadoi.osszegFt === tetel.osszegFt ? ("egyezik" as const) : ("elter" as const),
         keses: napKulonbseg(tetel.esedekesseg, berbeadoi.erkezesDatuma),
-        osszegFt: tetel.osszegFt,
+        eloirtFt: tetel.osszegFt,
+        erkezettFt: berbeadoi.osszegFt,
       };
     });
+
+  const honapok = havonta(tetelenkent);
 
   await prisma.betekintoMegnyitas.create({ data: { betekintoId: betekinto.id } });
 
@@ -204,7 +221,11 @@ export async function nyilvanosNezet(
     jogviszonyEl: betekinto.jogviszony.statusz === "elo",
     berloNeve: betekinto.berlo.nev,
     berletiDijFt: betekinto.osszegetMutat ? betekinto.jogviszony.berletiDijFt : null,
-    osszesites: osszesit(tetelek),
+    osszegetMutat: betekinto.osszegetMutat,
+    osszesites: osszesit(honapok),
+    // A teljes előzmény összesítve látszik; tételesen az utolsó egy év, mert
+    // ennél régebbi hónapot a szülő nem fog visszakeresni.
+    honapok: honapok.slice(0, 12),
     kiadva: betekinto.letrehozva,
     lejar: betekinto.lejar,
   };
