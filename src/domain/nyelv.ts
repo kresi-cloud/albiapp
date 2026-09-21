@@ -147,6 +147,21 @@ export function datumNyelven(ertek: Date, nyelv: Nyelv): string {
 }
 
 /**
+ * Dátum órával-perccel. A beszélgetésben ez kell: egy aznapi üzenetnél a puszta
+ * dátum semmit nem mond arról, mi mire válasz volt.
+ *
+ * Másodperc nincs benne: két üzenet sorrendjét a lista adja, nem az óra.
+ */
+export function datumIdovelNyelven(ertek: Date, nyelv: Nyelv): string {
+  return new Intl.DateTimeFormat(helyszin(nyelv), {
+    dateStyle: "medium",
+    timeStyle: "short",
+  })
+    .format(ertek)
+    .replace(/[\u00a0\u202f]/g, " ");
+}
+
+/**
  * Az "ÉÉÉÉ-HH" alakú időszak emberi alakja: "2026. szeptember", illetve
  * "September 2026". A két nyelv szórendje sem azonos, ezért ez is itt van, és
  * nem az oldalakon.

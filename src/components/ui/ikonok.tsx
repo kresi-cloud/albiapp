@@ -207,13 +207,13 @@ export function IkonJegyzokonyv(t: IkonTulajdonsagok) {
 
 /** A navigáció ikonjai útvonal szerint, hogy a menü adatból épülhessen. */
 /**
- * Az üzenetek jele buborék, nem boríték.
+ * A beszélgetés jele buborék, nem boríték.
  *
  * A boríték a levelet idézi: megírom, elküldöm, megvárom a választ. Itt nem
  * az történik — a bérlő és a bérbeadó ugyanabban a szálban beszélget, és a
  * buborék ezt mondja el egy pillantásra.
  */
-export function IkonUzenetek(t: IkonTulajdonsagok) {
+export function IkonBeszelgetes(t: IkonTulajdonsagok) {
   return (
     <Rajz {...t}>
       <path d="M4.5 4h14A2.5 2.5 0 0 1 21 6.5v8a2.5 2.5 0 0 1-2.5 2.5H9.5L5 20.5V17h-.5A2.5 2.5 0 0 1 2 14.5v-8A2.5 2.5 0 0 1 4.5 4Z" />
@@ -231,14 +231,13 @@ export const IKON_UTVONAL: Record<
   "/berlok": IkonBerlok,
   "/befizetesek": IkonBefizetesek,
   "/rezsi": IkonRezsi,
-  "/uzenetek": IkonUzenetek,
+  "/beszelgetesek": IkonBeszelgetes,
   "/hibak": IkonHibak,
   "/dokumentumok": IkonDokumentumok,
   "/ado": IkonAdo,
   "/beallitasok": IkonBeallitasok,
   "/berlo": IkonBerlemenyem,
   "/berlo/hibak": IkonHibabejelentes,
-  "/berlo/uzenetek": IkonUzenetek,
   "/berlo/dokumentumok": IkonDokumentumok,
   "/berlo/jegyzokonyvek": IkonJegyzokonyv,
   "/berlo/betekinto": IkonBetekinto,
