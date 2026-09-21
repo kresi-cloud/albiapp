@@ -28,7 +28,6 @@ const BERBEADOI = [
   "/dokumentumok",
   "/hibak",
   "/beszelgetesek",
-  "/teendok",
   "/beallitasok",
 ];
 
