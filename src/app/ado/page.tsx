@@ -38,7 +38,9 @@ export default async function Ado({
   return (
     <div className="grid gap-8">
       <section className="grid gap-3">
-        <Lapfej cim={sz("ado.cim", { ev })} />
+        {/* Az évszám szövegként megy át: számként a formázó ezres
+            elválasztót tenne bele, és a cím „Tax summary · 2,026" lenne. */}
+        <Lapfej cim={sz("ado.cim", { ev: String(ev) })} />
         <div className="flex flex-wrap gap-2 text-sm">
           {evek.map((evszam) => (
             <Link

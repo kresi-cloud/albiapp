@@ -382,8 +382,9 @@ elolvasni őket.
 
 A laphossz ezért kapu: a `proba/meret.mjs` minden lapon megméri, és nyolc
 telefonképernyőnél hosszabb lap megbukik. Ha egy lap átlépi, csoportosítani
-vagy összecsukni kell, nem a korlátot emelni. A mérés önpróbával kezd, mert
-ebben a projektben már két olyan próbaállítás volt, ami mindig igazat adott.
+vagy összecsukni kell, nem a korlátot emelni. A mérés önpróbával kezd —
+magassággal és szélességgel egyaránt —, mert ebben a projektben már két
+olyan próbaállítás volt, ami mindig igazat adott.
 
 ## Az arculat alapelve
 
@@ -462,3 +463,10 @@ tiltott alakot: egy kapu, ami mindenre igent mond, rosszabb a semminél.
 A böngészős próbák a `proba` mappában vannak, és 360 képpont széles ablakban
 futnak. A `proba/meret.mjs` minden oldalon azt nézi, kilóg-e valami
 vízszintesen; ez a hiba nagy kijelzőn soha nem látszik.
+
+**Mindkét nyelven mér, és a kinyitott szakaszokat is megnézi.** Csak magyarul
+mérve a felület fele őrizetlen marad: az angol felirat hosszabb, tehát előbb
+lóg ki és előbb tör sorba. A csukott szakaszban ülő széles elem — egy
+legördülő, egy hosszú gombfelirat — pedig csukva nem is látszik, a felhasználó
+viszont ki fogja nyitni. A hosszt ezzel szemben csukva mérjük: az összecsukás
+a lap része, nem a próba kényelme.

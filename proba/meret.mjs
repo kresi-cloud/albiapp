@@ -1,21 +1,45 @@
 /**
  * Telefonméret-próba.
  *
- * Két kérdést tesz fel minden oldalon, és egyiket sem lehet nagy kijelzőn
+ * Három kérdést tesz fel minden oldalon, és egyiket sem lehet nagy kijelzőn
  * észrevenni.
  *
  * Az első: kilóg-e valami vízszintesen 360 képpontnál. A bérbeadó telefonján
  * ez az első pillanatban látszik — oldalra kell húzogatni a táblázatot, és a
  * gomb kicsúszik a képernyőről.
  *
- * A második: milyen hosszú a lap. Ez lassan romlik el, és nem egy hibás
+ * A második: kilóg-e valami akkor is, ha az összecsukott szakaszok ki vannak
+ * nyitva. Csukva a lap rövid, és a benne ülő széles elem — egy legördülő, egy
+ * hosszú gombfelirat — nem is látszik; a felhasználó viszont ki fogja nyitni.
+ *
+ * A harmadik: milyen hosszú a lap. Ez lassan romlik el, és nem egy hibás
  * sortól, hanem attól, hogy gyűlik az adat. A befizetések lapja egy év
  * példaadattól tizenhat telefonképernyő magas lett, és semmi nem szólt: a
  * tételek szépen jelentek meg, csak épp használhatatlanul sokan. Ezért van itt
  * felső korlát: ami hosszabb, azt csoportosítani vagy összecsukni kell.
+ *
+ * Mindhármat mindkét nyelven megméri. A mérés korábban csak magyarul futott,
+ * és ez pont a nyelvre jellemző hibát engedte át: az angol felirat hosszabb
+ * („Kit terhel a költség" helyett „Who bears the cost"), tehát előbb lóg ki és
+ * előbb tör sorba — a magyar lapon viszont semmi nem látszik belőle. Egy kapu,
+ * ami csak az egyik nyelvet nézi, a felület felét nem őrzi.
  */
 
-import { ALAP, SZELESSEG, all, belep, magyarra, tullogas } from "./kozos.mjs";
+import {
+  ALAP,
+  SZELESSEG,
+  all,
+  belep,
+  mindetKinyit,
+  nyelvre,
+  tullogas,
+} from "./kozos.mjs";
+
+/** A két felületi nyelv, és a magyar megnevezésük a próba üzeneteihez. */
+const NYELVEK = [
+  ["hu", "magyarul"],
+  ["en", "angolul"],
+];
 
 const BERBEADOI = [
   "/",
@@ -59,19 +83,32 @@ const NYILVANOS = ["/belepes", "/jogi/adatkezeles", "/jogi/feltetelek"];
 const KEPERNYO = 844;
 const MAX_KEPERNYO = 8;
 
-async function vizsgal(oldal, utvonalak) {
+async function vizsgal(oldal, utvonalak, cimke) {
   for (const utvonal of utvonalak) {
     await oldal.goto(`${ALAP}${utvonal}`);
     await oldal.waitForLoadState("networkidle");
 
     const tobblet = await tullogas(oldal);
-    all(tobblet <= 1, `${utvonal} elfér ${SZELESSEG} képponton (túllógás: ${tobblet}px)`);
+    all(
+      tobblet <= 1,
+      `${utvonal} elfér ${SZELESSEG} képponton ${cimke} (túllógás: ${tobblet}px)`,
+    );
 
+    // A hosszt csukva mérjük: az összecsukás a lap része, nem a próba
+    // kényelme. A szélességet viszont kinyitva is, mert a csukott szakaszban
+    // ülő széles elem ugyanúgy kilóg, amint a felhasználó rákattint.
     const magassag = await oldal.evaluate(() => document.documentElement.scrollHeight);
     const kepernyok = magassag / KEPERNYO;
     all(
       kepernyok <= MAX_KEPERNYO,
-      `${utvonal} nem hosszabb ${MAX_KEPERNYO} telefonképernyőnél (${kepernyok.toFixed(1)} képernyő, ${magassag}px)`,
+      `${utvonal} nem hosszabb ${MAX_KEPERNYO} telefonképernyőnél ${cimke} (${kepernyok.toFixed(1)} képernyő, ${magassag}px)`,
+    );
+
+    await mindetKinyit(oldal);
+    const nyitva = await tullogas(oldal);
+    all(
+      nyitva <= 1,
+      `${utvonal} kinyitott szakaszokkal is elfér ${cimke} (túllógás: ${nyitva}px)`,
     );
   }
 }
@@ -116,6 +153,33 @@ async function meresOnprobaja(oldal) {
 }
 
 /**
+ * A szélességmérés önpróbája.
+ *
+ * Ugyanaz az ok, mint a magasságnál: ha a mérés mindenre nullát adna, a kapu
+ * némán engedne át minden kilógást. Beszúrunk egy a képernyőnél szélesebb
+ * elemet, és elvárjuk, hogy a mérés meglássa.
+ */
+async function szelessegOnprobaja(oldal) {
+  await oldal.goto(`${ALAP}/belepes`);
+  const elotte = await tullogas(oldal);
+  await oldal.evaluate((szeles) => {
+    const proba = document.createElement("div");
+    proba.id = "szelesseg-onproba";
+    proba.style.width = `${szeles}px`;
+    proba.style.height = "1px";
+    document.body.append(proba);
+  }, SZELESSEG * 2);
+  const utana = await tullogas(oldal);
+  await oldal.evaluate(() => document.getElementById("szelesseg-onproba")?.remove());
+
+  all(
+    utana > SZELESSEG / 2,
+    `a szélességmérés meglátja a kilógó elemet (${elotte}px → ${utana}px)`,
+  );
+  all((await tullogas(oldal)) === elotte, "a szélességpróba nem hagy nyomot a lapon");
+}
+
+/**
  * A dinamikus lapok útja nem rögzített, de mérni kell őket: a
  * szerződéstervezet a leghosszabb lapunk, a jegyzőkönyv pedig fényképalbumot
  * hordoz, ami adattal együtt nő.
@@ -131,18 +195,37 @@ async function dokumentumUtja(oldal, elotag) {
 
 export async function futtat(oldal) {
   await meresOnprobaja(oldal);
-  await vizsgal(oldal, NYILVANOS);
-  await belep(oldal, "berbeado@pelda.hu");
-  await magyarra(oldal);
-  await vizsgal(oldal, BERBEADOI);
-  const szerzodes = await dokumentumUtja(oldal, "/szerzodesek/");
-  all(szerzodes !== null, "van szerződéslap, amin a hossz mérhető");
-  if (szerzodes) await vizsgal(oldal, [szerzodes]);
+  await szelessegOnprobaja(oldal);
 
-  const jegyzokonyv = await dokumentumUtja(oldal, "/jegyzokonyvek/");
-  all(jegyzokonyv !== null, "van jegyzőkönyvlap, amin a hossz mérhető");
-  if (jegyzokonyv) await vizsgal(oldal, [jegyzokonyv]);
+  for (const [nyelv, cimke] of NYELVEK) {
+    await oldal.goto(`${ALAP}/belepes`);
+    await nyelvre(oldal, nyelv);
+    await vizsgal(oldal, NYILVANOS, cimke);
+  }
+
+  await belep(oldal, "berbeado@pelda.hu");
+  for (const [nyelv, cimke] of NYELVEK) {
+    await oldal.goto(`${ALAP}/`);
+    await nyelvre(oldal, nyelv);
+    await vizsgal(oldal, BERBEADOI, cimke);
+
+    const szerzodes = await dokumentumUtja(oldal, "/szerzodesek/");
+    all(szerzodes !== null, `van szerződéslap, amin a hossz mérhető (${cimke})`);
+    if (szerzodes) await vizsgal(oldal, [szerzodes], cimke);
+
+    const jegyzokonyv = await dokumentumUtja(oldal, "/jegyzokonyvek/");
+    all(jegyzokonyv !== null, `van jegyzőkönyvlap, amin a hossz mérhető (${cimke})`);
+    if (jegyzokonyv) await vizsgal(oldal, [jegyzokonyv], cimke);
+  }
+
   await belep(oldal, "anna@pelda.hu");
-  await magyarra(oldal);
-  await vizsgal(oldal, BERLOI);
+  for (const [nyelv, cimke] of NYELVEK) {
+    await oldal.goto(`${ALAP}/berlo`);
+    await nyelvre(oldal, nyelv);
+    await vizsgal(oldal, BERLOI, cimke);
+  }
+
+  // A nyelv választása sütiben él, tehát átmenne a következő próbára is.
+  await oldal.goto(`${ALAP}/berlo`);
+  await nyelvre(oldal, "hu");
 }
