@@ -40,7 +40,7 @@ const teli: TarJogviszony = {
   jegyzokonyvek: [
     {
       id: "jk1",
-      fajtaNeve: "Birtokbaadás",
+      fajta: "Birtokbaadás",
       idopont: nap("2026-09-01"),
       allapot: "veglegesitve",
       veglegesitve: nap("2026-09-02"),
@@ -50,7 +50,7 @@ const teli: TarJogviszony = {
     {
       id: "ig1",
       berloNev: "Szabó Tamás",
-      idoszakCimke: "2026. szeptember",
+      idoszak: "2026-09",
       osszegFt: 150_000,
       kiallitva: nap("2026-09-10"),
     },

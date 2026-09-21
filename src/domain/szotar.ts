@@ -810,11 +810,6 @@ export const SZOTAR: Szotar = {
     en: "Without the purchase price and date we cannot calculate depreciation in the itemised tax method. Everything else works without it.",
   },
   "berlemeny.mentve": { hu: "A bérlemény elmentve.", en: "The property has been saved." },
-  "berlemeny.cim": { hu: "Bérlemények", en: "Properties" },
-  "berlemeny.ures": {
-    hu: "Még nincs felvett bérlemény. Kezdd ezzel: minden más ebből indul ki.",
-    en: "No property yet. Start here: everything else follows from it.",
-  },
   "berlemeny.uj": { hu: "Új bérlemény", en: "New property" },
   "berlemeny.mezo.megnevezes": { hu: "Név", en: "Name" },
   "berlemeny.mezo.megnevezes_sugo": {
@@ -1070,6 +1065,1114 @@ export const SZOTAR: Szotar = {
   "jogi.lablec": {
     hu: "Az alkalmazás összesítéseket készít, nem ad jogi vagy adótanácsot.",
     en: "This app produces summaries; it does not give legal or tax advice.",
+  },
+
+  // --- Közös szövegdarabok
+  "kozos.havi_dij": { hu: "{osszeg} / hó", en: "{osszeg} / month" },
+
+  // --- Befizetések (bérbeadói oldal)
+  "befizetesek.cim": { hu: "Befizetések", en: "Payments" },
+  "befizetesek.bevezeto": {
+    hu:
+      "Három adat találkozik: mit kellett volna fizetni, mit mond a bérlő, és mit mondasz te. A " +
+      "két fél a saját oldalát adja meg, és ha a kettő egyezik, a tétel le van zárva.",
+    en:
+      "Three records meet here: what was due, what the tenant reports, and what you report. Each " +
+      "side enters its own, and where the two agree, the item is closed.",
+  },
+  "befizetesek.bizonylat_szabaly": {
+    hu:
+      "Bizonylatot csak akkor kérünk, ha a két oldal nem egyezik, és akkor is csak arról az egy " +
+      "utalásról: tőled a fogadó oldalit, a bérlőtől a küldő oldalit. Teljes bankszámlakivonatot " +
+      "nem kérünk, és nem is fogadunk el.",
+    en:
+      "We ask for a receipt only when the two sides disagree, and even then only for that one " +
+      "transfer: the receiving side from you, the sending side from the tenant. We never ask for " +
+      "a full bank statement, and we do not accept one.",
+  },
+  "befizetesek.ablak": {
+    hu: "Párosítási ablak: az esedékesség előtt {elotte}, utána {utana} nap.",
+    en: "Matching window: {elotte} days before the due date, {utana} days after.",
+  },
+  "befizetesek.ablak_atallitom": { hu: "Átállítom", en: "Change it" },
+  "befizetesek.nincs_tetel": {
+    hu: "Ehhez a jogviszonyhoz még nincs egyeztetendő tétel.",
+    en: "There is nothing to reconcile for this tenancy yet.",
+  },
+  "befizetesek.nincs_eloiras": { hu: "Nincs előírás", en: "No charge" },
+  "befizetesek.oszlop.eloiras": { hu: "Előírás", en: "Charged" },
+  "befizetesek.oszlop.berlo": { hu: "Amit a bérlő mond", en: "What the tenant reports" },
+  "befizetesek.oszlop.berbeado": { hu: "Ami hozzád megérkezett", en: "What reached you" },
+  "befizetesek.nem_erkezett_ertek": { hu: "nem érkezett meg", en: "nothing arrived" },
+  "befizetesek.vita_magyarazat": {
+    hu:
+      "A két oldal nem egyezik. Ilyenkor van értelme az utalás bizonylatának: tőled a fogadó " +
+      "oldali, a bérlőtől a küldő oldali. Teljes bankszámlakivonat nem kell.",
+    en:
+      "The two sides do not match. This is where the receipt of that one transfer helps: the " +
+      "receiving side from you, the sending side from the tenant. No full bank statement is needed.",
+  },
+
+  // --- Beérkezés rögzítése (bérbeadói űrlap)
+  "beerkezes.nyito": { hu: "Megérkezett? Rögzítem", en: "Did it arrive? Record it" },
+  "beerkezes.datum": { hu: "Mikor érkezett", en: "When it arrived" },
+  "beerkezes.osszeg": { hu: "Mennyi érkezett (Ft)", en: "How much arrived (HUF)" },
+  "beerkezes.kozlemeny": { hu: "Közlemény (ha van)", en: "Reference (if any)" },
+  "beerkezes.gomb": { hu: "Rögzítem", en: "Record it" },
+  "beerkezes.nem": { hu: "Megnéztem: nem érkezett meg", en: "I checked: nothing arrived" },
+  "beerkezes.visszavon": { hu: "Ezt tévedésből rögzítettem", en: "I recorded this by mistake" },
+
+  // --- Adóösszesítő
+  "ado.cim": { hu: "Adóösszesítő · {ev}", en: "Tax summary · {ev}" },
+  "ado.bevezeto": {
+    hu:
+      "Ez összesítő, nem bevallás: a bevallást te adod be, ezekkel a számokkal ellenőrizve. A " +
+      "bevétel pénzforgalmi, vagyis az számít, ami ebben az évben tényleg megérkezett.",
+    en:
+      "This is a summary, not a tax return: you file the return, checking it against these " +
+      "figures. Income is counted when it is received, so only what actually arrived this year " +
+      "is here.",
+  },
+  "ado.letoltes": { hu: "Letöltés táblázatba", en: "Download as a spreadsheet" },
+  "ado.bevetel": { hu: "Bevétel", en: "Income" },
+  "ado.nem_bevetel": { hu: "Nem bevétel", en: "Not income" },
+  "ado.nem_bevetel_alcim": { hu: "mért, továbbhárított rezsi", en: "metered utilities passed on" },
+  "ado.nem_bevetel_jelzes": { hu: "nem bevétel", en: "not income" },
+  "ado.koltseg": { hu: "Költség", en: "Costs" },
+  "ado.melyik_mod": { hu: "Melyik elszámolással jársz jobban", en: "Which method leaves you better off" },
+  "ado.mod.hanyad": { hu: "{szazalek}%-os költséghányad", en: "{szazalek}% flat expense ratio" },
+  "ado.mod.hanyad_magyarazat": {
+    hu: "Nem kell számlákat gyűjteni: a bevétel {szazalek}%-a az adóalap.",
+    en: "No invoices to collect: {szazalek}% of your income is the tax base.",
+  },
+  "ado.mod.hanyad_rag": { hu: "A költséghányaddal", en: "the flat expense ratio" },
+  "ado.mod.teteles": { hu: "Tételes költségelszámolás", en: "Itemised expenses" },
+  "ado.mod.teteles_magyarazat": {
+    hu: "A ténylegesen felmerült költségek, számlával, az értékcsökkenéssel együtt.",
+    en: "Your actual costs, with invoices, depreciation included.",
+  },
+  "ado.mod.teteles_rag": { hu: "A tételes elszámolással", en: "itemised expenses" },
+  "ado.ajanlott": { hu: "ezzel jársz jobban", en: "better for you" },
+  "ado.adoalap": { hu: "Adóalap", en: "Tax base" },
+  "ado.szja": { hu: "Szja", en: "Income tax" },
+  "ado.egyforma": { hu: "A két mód most ugyanannyit hoz.", en: "The two methods come out the same this year." },
+  "ado.megtakaritas": {
+    hu: "{mod} {osszeg} adóval kevesebbet fizetsz. Az szja kulcsa {kulcs}%.",
+    en: "You pay {osszeg} less tax with {mod}. The income tax rate is {kulcs}%.",
+  },
+  "ado.befolyt": { hu: "Ami befolyt", en: "What came in" },
+  "ado.nincs_bevetel": {
+    hu: "Ebben az évben még nem érkezett párosított befizetés.",
+    en: "No matched payment has arrived this year yet.",
+  },
+  "ado.besorolatlan": { hu: "Besorolatlan befizetés", en: "Unmatched payment" },
+  "ado.besorolatlan_magyarazat": {
+    hu: "Beérkezett utalás, amihez nem tartozik előírt tétel. Döntsd el, bevétel-e.",
+    en: "A transfer arrived with no charge behind it. You decide whether it is income.",
+  },
+  "ado.koltsegek": { hu: "Költségek", en: "Costs" },
+  "ado.nincs_koltseg": {
+    hu: "Ebben az évben még nincs rögzített költség.",
+    en: "No cost has been recorded for this year yet.",
+  },
+  "ado.uj_koltseg": { hu: "Új költség", en: "New cost" },
+  "ado.uj_koltseg_sugo": {
+    hu:
+      "Csak a tételes elszámolásnál számít, de érdemes rögzíteni: év végén derül ki, melyik " +
+      "móddal jársz jobban.",
+    en:
+      "It only counts under itemised expenses, but record it anyway: which method wins only " +
+      "becomes clear at the end of the year.",
+  },
+  "ado.ertekcsokkenes": { hu: "Értékcsökkenés alapja", en: "Basis for depreciation" },
+  "ado.ertekcsokkenes_sugo": {
+    hu:
+      "A tételes elszámolásban az épület beszerzési árának évi 2%-a leírható, a kiadott napokra " +
+      "arányosítva. Enélkül a tételes mód hiányos.",
+    en:
+      "Under itemised expenses you may write off 2% of the purchase price a year, pro-rated for " +
+      "the days let. Without it the itemised method is incomplete.",
+  },
+  "ado.nincs_megadva": { hu: "nincs megadva", en: "not set" },
+  "ado.lablec": {
+    hu:
+      "Az összesítő a rögzített adatokból számol, és nem helyettesíti a könyvelőt. A mért, " +
+      "továbbhárított közüzemi díj azért nem bevétel, mert a tényleges fogyasztás szerint hárul " +
+      "át; az átalányban fizetett rezsi viszont bevétel.",
+    en:
+      "The summary is calculated from what you recorded, and does not replace an accountant. " +
+      "Metered utilities passed on are not income because they are charged on by actual " +
+      "consumption; a flat-rate utility charge is income.",
+  },
+
+  // Költségfajták
+  "ado.fajta.felujitas": { hu: "Felújítás, karbantartás", en: "Renovation, maintenance" },
+  "ado.fajta.kozos_koltseg": { hu: "Közös költség", en: "Service charge" },
+  "ado.fajta.biztositas": { hu: "Biztosítás", en: "Insurance" },
+  "ado.fajta.kozuzem": { hu: "Közüzemi számla", en: "Utility bill" },
+  "ado.fajta.egyeb": { hu: "Egyéb", en: "Other" },
+  "ado.fajta.ertekcsokkenes": { hu: "Értékcsökkenés", en: "Depreciation" },
+
+  // Miért bevétel, vagy miért nem
+  "ado.indok.mert": {
+    hu: "Fogyasztás szerint mért, továbbhárított közüzemi díj, ezért nem bevétel.",
+    en: "A metered utility charge passed on at cost, so it is not income.",
+  },
+  "ado.indok.atalany": {
+    hu:
+      "Átalányban fizetett rezsi: nincs mögötte tényleges fogyasztás szerinti arányosítás, ezért " +
+      "bevétel.",
+    en:
+      "A flat-rate utility charge: nothing is apportioned by actual consumption behind it, so it " +
+      "is income.",
+  },
+  "ado.indok.kozos_koltseg": {
+    hu: "A bérlőtől kapott közös költség bevétel; ha te fizeted a társasháznak, költségként leírható.",
+    en:
+      "A service charge received from the tenant is income; if you pay it to the building, you " +
+      "can deduct it as a cost.",
+  },
+  "ado.indok.berleti_dij": { hu: "Bérleti díjként befolyt összeg.", en: "Received as rent." },
+
+  // A bevételi sor megnevezése
+  "ado.megnevezes.mert": { hu: "{alap} · mért fogyasztás", en: "{alap} · metered use" },
+  "ado.megnevezes.kozos_koltseg": { hu: "{alap} · közös költség", en: "{alap} · service charge" },
+  "ado.megnevezes.atalany_es_kozos": {
+    hu: "{alap} · átalány és közös költség",
+    en: "{alap} · flat rate and service charge",
+  },
+  "ado.megnevezes.ertekcsokkenes": {
+    hu: "Értékcsökkenés ({napok} kiadott nap)",
+    en: "Depreciation ({napok} days let)",
+  },
+
+  // Költség űrlap
+  "ado.urlap.ingatlan": { hu: "Ingatlan", en: "Property" },
+  "ado.urlap.fajta": { hu: "Mi volt ez", en: "What was it" },
+  "ado.urlap.datum": { hu: "Dátum", en: "Date" },
+  "ado.urlap.osszeg": { hu: "Összeg", en: "Amount" },
+  "ado.urlap.osszeg_pelda": { hu: "pl. 45 000", en: "e.g. 45 000" },
+  "ado.urlap.megnevezes": { hu: "Megnevezés", en: "Description" },
+  "ado.urlap.megnevezes_pelda": {
+    hu: "pl. Kazán karbantartás, számla 2026/114",
+    en: "e.g. Boiler service, invoice 2026/114",
+  },
+  "ado.urlap.gomb": { hu: "Költség rögzítése", en: "Record cost" },
+  "ado.urlap.folyamatban": { hu: "Rögzítés…", en: "Recording…" },
+
+  // Beszerzési ár
+  "ado.beszerzes.ar": { hu: "Beszerzési ár", en: "Purchase price" },
+  "ado.beszerzes.ar_pelda": { hu: "pl. 58 000 000", en: "e.g. 58 000 000" },
+  "ado.beszerzes.nap": { hu: "Vásárlás napja", en: "Date of purchase" },
+  "ado.beszerzes.gomb": { hu: "Mentés", en: "Save" },
+  "ado.beszerzes.folyamatban": { hu: "Mentés…", en: "Saving…" },
+
+  // --- Mérőórák
+  "meroora.villany": { hu: "Villany", en: "Electricity" },
+  "meroora.viz": { hu: "Víz", en: "Water" },
+  "meroora.gaz": { hu: "Gáz", en: "Gas" },
+  "meroora.futes": { hu: "Fűtés", en: "Heating" },
+  "meroora.almero": { hu: "{nev} (almérő)", en: "{nev} (submeter)" },
+
+  // --- Rezsi és elszámolás (bérbeadói oldal)
+  "rezsi.cim": { hu: "Rezsi és elszámolás", en: "Utilities and settlement" },
+  "rezsi.bevezeto": {
+    hu:
+      "Az óraállásokból tételes elszámolás készül, a magyar sávos árazással: a kedvezményes " +
+      "keretig kedvezményes áron, fölötte piaci áron. A kiadott elszámolás előírt tételként megy " +
+      "tovább a befizetésekhez.",
+    en:
+      "Meter readings become an itemised settlement, with the Hungarian banded pricing: at the " +
+      "reduced price up to the annual allowance, at the market price above it. Once issued, the " +
+      "settlement becomes a charge on the payments page.",
+  },
+  "rezsi.mod": { hu: "Rezsi elszámolása {mod}", en: "Utilities settled {mod}" },
+  "rezsi.mod.almero": { hu: "mérőóra szerint", en: "by meter" },
+  "rezsi.mod.atalany": { hu: "átalánnyal", en: "at a flat rate" },
+  "rezsi.mod.kozos_koltsegben": { hu: "a közös költségben", en: "within the service charge" },
+  "rezsi.kozos_koltseg": {
+    hu: "közös költség {osszeg} / hó",
+    en: "service charge {osszeg} / month",
+  },
+  "rezsi.meroorak": { hu: "Mérőórák", en: "Meters" },
+  "rezsi.nincs_meroora": {
+    hu: "Ehhez az ingatlanhoz nincs mérőóra felvéve.",
+    en: "No meter has been added for this property.",
+  },
+  "rezsi.nincs_oraallas": { hu: "még nincs óraállás", en: "no reading yet" },
+  "rezsi.dijszabas": {
+    hu: "{ar} Ft/{egyseg} a kereten belül",
+    en: "{ar} HUF/{egyseg} within the allowance",
+  },
+  "rezsi.dijszabas_keret": {
+    hu: ", {keret} {egyseg}/év keret, fölötte {piaci} Ft/{egyseg}",
+    en: ", allowance {keret} {egyseg}/year, above it {piaci} HUF/{egyseg}",
+  },
+  "rezsi.dijszabas_nincs_savhatar": { hu: ", nincs sávhatár", en: ", no band limit" },
+  "rezsi.nincs_dijszabas": { hu: "nincs díjszabás felvéve", en: "no tariff has been added" },
+  "rezsi.uj_elszamolas": { hu: "Új elszámolás", en: "New settlement" },
+  "rezsi.vitatja": { hu: "A bérlő vitatja: {uzenet}", en: "The tenant disputes it: {uzenet}" },
+
+  // Óraállás űrlap
+  "rezsi.oraallas.datum": { hu: "Dátum", en: "Date" },
+  "rezsi.oraallas.ertek": { hu: "Óraállás ({egyseg})", en: "Reading ({egyseg})" },
+  "rezsi.oraallas.gomb": { hu: "Óraállás rögzítése", en: "Record reading" },
+  "rezsi.oraallas.folyamatban": { hu: "Rögzítés…", en: "Recording…" },
+
+  // Elszámolás készítése és kiadása
+  "rezsi.elszamolas.kezdete": { hu: "Időszak kezdete", en: "Period starts" },
+  "rezsi.elszamolas.vege": { hu: "Időszak vége", en: "Period ends" },
+  "rezsi.elszamolas.gomb": { hu: "Elszámolás készítése", en: "Prepare settlement" },
+  "rezsi.elszamolas.folyamatban": { hu: "Számolás…", en: "Calculating…" },
+  "rezsi.kiadas.hatarido": { hu: "Fizetési határidő", en: "Payment due" },
+  "rezsi.kiadas.gomb": { hu: "Kiadom a bérlőnek", en: "Issue to the tenant" },
+  "rezsi.kiadas.folyamatban": { hu: "Kiadás…", en: "Issuing…" },
+
+  // A bérlő elbírálása
+  "rezsi.elbiralas.sugo": {
+    hu: "Ha vitatod, írd le, melyik tétellel van baj",
+    en: "If you dispute it, say which item is wrong",
+  },
+  "rezsi.elbiralas.elfogad": { hu: "Elfogadom", en: "I accept it" },
+  "rezsi.elbiralas.vitat": { hu: "Vitatom", en: "I dispute it" },
+
+  // --- Bérlők lapja
+  "berlok.cim": { hu: "Bérlők", en: "Tenants" },
+  "berlok.bevezeto": {
+    hu:
+      "Egy bérleményhez több bérlő is tartozhat. A bérleti díj ilyenkor is egy előírás marad: a " +
+      "bérlők egyetemlegesen felelnek érte, és bármelyikük fizetése a többit is mentesíti. A " +
+      "bérlő meghívó linkkel készít magának díjmentes fiókot, amelyben csak a saját bérleményét " +
+      "látja.",
+    en:
+      "A flat can have several tenants. The rent stays a single charge even then: the tenants are " +
+      "jointly and severally liable for it, and a payment by any of them clears it for all. A " +
+      "tenant creates a free account from an invitation link, and sees only their own flat in it.",
+  },
+  "berlok.dij_sor": {
+    hu: "{osszeg} / hó · a hónap {nap}. napjára",
+    en: "{osszeg} / month · due on day {nap} of the month",
+  },
+  "berlok.egy_berlo": { hu: "egy bérlő", en: "one tenant" },
+  "berlok.tobb_berlo": {
+    hu: "{darab} bérlő, egyetemleges felelősséggel",
+    en: "{darab} tenants, jointly and severally liable",
+  },
+  "berlok.van_fiok": { hu: "Van fiókja", en: "Has an account" },
+  "berlok.nincs_fiok": { hu: "Még nincs fiókja", en: "No account yet" },
+  "berlok.belepett": {
+    hu: "Belépett fiókkal használja az oldalt: {email}",
+    en: "Uses the app with an account: {email}",
+  },
+  "berlok.elo_meghivo": {
+    hu:
+      "Él egy meghívó {email} címre, {nap}-ig. Ha újat készítesz, a régi link azonnal érvénytelen " +
+      "lesz.",
+    en:
+      "An invitation to {email} is live until {nap}. If you create a new one, the old link stops " +
+      "working immediately.",
+  },
+  "berlok.meghivo": { hu: "Meghívó készítése", en: "Create an invitation" },
+  "berlok.uj_meghivo": { hu: "Új meghívó készítése", en: "Create a new invitation" },
+  "berlok.meghivo_email": { hu: "A bérlő e-mail-címe", en: "The tenant's email address" },
+  "berlok.meghivo_folyamatban": { hu: "Készítem…", en: "Creating…" },
+  "berlok.adatok_cim": { hu: "Szerződéshez szükséges adatok", en: "Details needed for the contract" },
+  "berlok.adatok_hianyzik": { hu: "még {darab} hiányzik", en: "{darab} still missing" },
+  "berlok.adatok_megvan": { hu: "megvannak", en: "all filled in" },
+  "berlok.adatok_forras_berlo": {
+    hu: "Ezeket a bérlő adta meg magáról.",
+    en: "The tenant entered these about themselves.",
+  },
+  "berlok.adatok_forras_berbeado": {
+    hu: "Ezeket te írtad be. Ha a bérlő belép, felülírhatja a sajátjával.",
+    en: "You entered these. Once the tenant signs in, they can replace them with their own.",
+  },
+  "berlok.adatok_forras_nincs": {
+    hu: "Még senki nem adta meg. A bérlő belépés után maga is kitöltheti.",
+    en: "Nobody has entered these yet. The tenant can fill them in after signing in.",
+  },
+  "berlok.adatok_gomb": { hu: "Adatok mentése", en: "Save details" },
+  "berlok.adatok_folyamatban": { hu: "Mentem…", en: "Saving…" },
+  "berlok.hozzaadas": { hu: "További bérlő hozzáadása", en: "Add another tenant" },
+  "berlok.hozzaadas_gomb": { hu: "Hozzáadás", en: "Add" },
+  "berlok.hozzaadas_folyamatban": { hu: "Hozzáadom…", en: "Adding…" },
+  "berlok.torles": {
+    hu: "{nev} levétele a jogviszonyról",
+    en: "Remove {nev} from this tenancy",
+  },
+  "berlok.torles_folyamatban": { hu: "Leveszem…", en: "Removing…" },
+
+  // --- Az alkalmazás maga
+  "alkalmazas.leiras": {
+    hu: "Bérbeadás egy helyen: befizetés, rezsi, elszámolás.",
+    en: "Renting out a flat in one place: payments, utilities, settlement.",
+  },
+
+  // --- Áttekintő (bérbeadói kezdőlap)
+  "attekinto.cim": { hu: "Áttekintő", en: "Overview" },
+  "attekinto.udvozles": {
+    hu: "Szia, {nev}. A következő hét nap teendői elöl.",
+    en: "Hello, {nev}. The next seven days' tasks are up front.",
+  },
+  "attekinto.jogviszony": { hu: "Bérleti jogviszony", en: "Tenancies" },
+  "attekinto.rendezetlen": { hu: "Rendezetlen tétel", en: "Unsettled items" },
+  "attekinto.elmaradas": { hu: "Elmaradás", en: "Outstanding" },
+  "attekinto.kozeli": { hu: "A következő napokban", en: "In the coming days" },
+  "attekinto.kesobbi": { hu: "Később", en: "Later" },
+
+  // --- Ingatlanok
+  "ingatlanok.cim": { hu: "Ingatlanok", en: "Properties" },
+  "ingatlanok.nincs": {
+    hu: "Még nincs felvett bérlemény. Kezdd ezzel: minden más ebből indul ki.",
+    en: "No property yet. Start here: everything else follows from it.",
+  },
+  "ingatlanok.alapterulet": { hu: "Alapterület", en: "Floor area" },
+  "ingatlanok.kozos_koltseg": { hu: "Közös költség", en: "Service charge" },
+  "ingatlanok.meroora": { hu: "Mérőóra", en: "Meters" },
+  "ingatlanok.jogviszony": { hu: "Jogviszony", en: "Tenancies" },
+
+  // --- Hibák (bérbeadói oldal)
+  "hibak.cim": { hu: "Hibák", en: "Repairs" },
+  "hibak.bevezeto": {
+    hu:
+      "A bérlő bejelentése, a válaszod és az elhárítás egy helyen. A költségviselőre javaslatot " +
+      "teszek a szerződés karbantartási pontja alapján, de a döntés a tiéd. A lezárást a bérlő " +
+      "erősíti meg, hogy utólag ne legyen vita arról, rendben volt-e.",
+    en:
+      "The tenant's report, your reply and the repair in one place. I suggest who should bear the " +
+      "cost, based on the maintenance clause of the contract, but the decision is yours. The " +
+      "tenant confirms the fix, so there is no argument later about whether it was put right.",
+  },
+  "hibak.nyitottak": { hu: "Nyitott bejelentések", en: "Open reports" },
+  "hibak.nyitottak_darab": { hu: "Nyitott bejelentések ({darab})", en: "Open reports ({darab})" },
+  "hibak.nincs_nyitott": { hu: "Nincs nyitott hibabejelentés.", en: "No open fault reports." },
+  "hibak.lezartak": { hu: "Lezárt bejelentések ({darab})", en: "Closed reports ({darab})" },
+  "hibak.sajat_cim": { hu: "Magam jelentek be egy hibát", en: "Report a fault myself" },
+  "hibak.sajat_sugo": {
+    hu:
+      "Ha te veszed észre a hibát, ide is felveheted: így a bérlő is látja, és ugyanaz a nyoma " +
+      "marad, mintha ő jelentette volna.",
+    en:
+      "If you spot the fault, add it here too: the tenant sees it as well, and it leaves the same " +
+      "trail as if they had reported it.",
+  },
+
+  // --- Meghívó elfogadása
+  "meghivo.email_sugo": {
+    hu: "Erre a címre szól a meghívó, ezért nem írható át.",
+    en: "The invitation is addressed here, so it cannot be changed.",
+  },
+  "meghivo.nev": { hu: "Neved", en: "Your name" },
+  "meghivo.jelszo_ujra": { hu: "Jelszó még egyszer", en: "Password again" },
+  "meghivo.gomb": { hu: "Fiók készítése", en: "Create account" },
+  "meghivo.folyamatban": { hu: "Fiók készítése…", en: "Creating account…" },
+
+  // --- Beállítások
+  "beallitasok.cim": { hu: "Beállítások", en: "Settings" },
+  "beallitasok.bevezeto": {
+    hu:
+      "Ami itt változik, az a befizetések párosítására hat: a rendszer azonnal újraszámolja az " +
+      "állapotokat és a teendőket.",
+    en:
+      "What you change here affects how payments are matched: the states and the tasks are " +
+      "recalculated straight away.",
+  },
+  "beallitasok.ablak_cim": { hu: "Párosítási időablak", en: "Matching window" },
+  "beallitasok.ablak_sugo": {
+    hu:
+      "Ennyi napon belül kötöm ugyanahhoz a havi előíráshoz a beérkezett befizetést. Ami az " +
+      "ablakon kívül érkezik, külön tételként jelenik meg.",
+    en:
+      "A payment that arrives within this many days is tied to the same monthly charge. Anything " +
+      "outside the window shows up as a separate item.",
+  },
+  "beallitasok.ablak_elotte": { hu: "Esedékesség előtt (nap)", en: "Before the due date (days)" },
+  "beallitasok.ablak_utana": { hu: "Esedékesség után (nap)", en: "After the due date (days)" },
+  "beallitasok.bizonylat_cim": {
+    hu: "Bizonylat vitás befizetésnél",
+    en: "Receipt for a disputed payment",
+  },
+  "beallitasok.bizonylat_sugo": {
+    hu:
+      "Ha a te adatod és a bérlőé nem fedi egymást, kérhetjük mindkettőtöktől annak az egy " +
+      "utalásnak a bizonylatát: tőled a fogadó oldalit, a bérlőtől a küldő oldalit. Teljes " +
+      "bankszámlakivonatot soha nem kérünk, és nem is fogadunk el. Ha ezt nem szeretnéd, kapcsold " +
+      "ki: a vita attól még látszik, csak papírt nem kérünk hozzá. A már feltöltött bizonylatok a " +
+      "kikapcsolástól nem tűnnek el.",
+    en:
+      "When your record and the tenant's do not match, we can ask both of you for the receipt of " +
+      "that one transfer: the receiving side from you, the sending side from the tenant. We never " +
+      "ask for, and never accept, a full bank statement. If you would rather not ask, switch it " +
+      "off: the dispute is still visible, we simply ask for no paperwork. Receipts already " +
+      "uploaded do not disappear when you switch it off.",
+  },
+  "beallitasok.bizonylat_kapcsolo": {
+    hu: "Kérjünk bizonylatot vitás tételnél",
+    en: "Ask for a receipt on a disputed item",
+  },
+  "beallitasok.gomb": { hu: "Mentés", en: "Save" },
+  "beallitasok.folyamatban": { hu: "Mentés…", en: "Saving…" },
+  "beallitasok.adatok_cim": { hu: "A te adataid a szerződéshez", en: "Your details for the contract" },
+  "beallitasok.adatok_sugo": {
+    hu:
+      "Ezek a szerződésbe és az igazolásokba kerülnek. A belépéshez egyik sem kell, és naplóba sem " +
+      "írjuk őket. A telefonszámodat a bérlő a hibabejelentésnél látja: veszélyhelyzetben az " +
+      "alkalmazás nem csörög.",
+    en:
+      "These go into the contract and the certificates. None of them is needed to sign in, and " +
+      "none is written to a log. The tenant sees your phone number when reporting a fault: in an " +
+      "emergency the app does not ring anyone.",
+  },
+  "beallitasok.mezo.adoazonosito": { hu: "Adóazonosító jel", en: "Tax identification number" },
+  "beallitasok.mezo.bank": { hu: "Bank neve", en: "Name of the bank" },
+  "beallitasok.adatok_gomb": { hu: "Mentés", en: "Save" },
+  "beallitasok.adatok_folyamatban": { hu: "Mentem…", en: "Saving…" },
+  "beallitasok.tolerancia_cim": { hu: "Összegeltérés", en: "Difference in amount" },
+  "beallitasok.tolerancia_sugo": {
+    hu:
+      "Az elfogadott eltérés nulla forint, és ez nem állítható. Bármekkora különbség az előírt és " +
+      "a beérkezett összeg között „eltér” állapotot kap, vagyis egyeztetés indul róla. Így " +
+      "egyetlen hiányzó forint sem tűnik el csendben.",
+    en:
+      "The accepted difference is zero forints, and that cannot be changed. Any gap between the " +
+      "amount charged and the amount received is marked as a difference, so it gets reconciled. " +
+      "That way not a single missing forint disappears quietly.",
+  },
+
+  // --- Dokumentumok lap
+  "dokumentum.veglegesitve_nap": { hu: "véglegesítve {nap}", en: "finalised {nap}" },
+  "dokumentum.kiallitva_nap": { hu: "kiállítva {nap}", en: "issued {nap}" },
+  "jegyzokonyv.fajta.birtokbaadas": { hu: "Birtokbaadás", en: "Handover" },
+  "jegyzokonyv.fajta.visszaadas": { hu: "Visszaadás", en: "Move-out" },
+  "dokumentumok.cim": { hu: "Dokumentumok", en: "Documents" },
+  "dokumentumok.bevezeto": {
+    hu: "Szerződés, jegyzőkönyv és igazolás egy helyen. A kiadott okiratok magyarul készülnek, mert magyarul érvényesek.",
+    en: "Contracts, handover records and certificates in one place. Issued documents are drawn up in Hungarian, because that is the language in which they are valid.",
+  },
+  "dokumentumok.tar_cim": { hu: "Dokumentumtár", en: "Document library" },
+  "dokumentumok.tar_ures": {
+    hu: "Még nincs egyetlen dokumentum sem.",
+    en: "There are no documents yet.",
+  },
+  "dokumentumok.nincs_berlo": { hu: "Nincs bérlő rögzítve", en: "No tenant recorded" },
+  "dokumentumok.szerzodes_cim": { hu: "Bérleti szerződés", en: "Lease agreement" },
+  "dokumentumok.nincs_szerzodes": {
+    hu: "Ehhez a jogviszonyhoz még nem készült szerződés.",
+    en: "No contract has been drawn up for this tenancy yet.",
+  },
+  "dokumentumok.uj_szerzodes": { hu: "Új szerződéstervezet", en: "New draft contract" },
+  "dokumentumok.keszitem": { hu: "Készítem…", en: "Creating…" },
+  "dokumentumok.jegyzokonyv_cim": { hu: "Átadás-átvételi jegyzőkönyv", en: "Handover record" },
+  "dokumentumok.jegyzokonyv_sugo": {
+    hu: "A véglegesített jegyzőkönyv óraállásai bekerülnek a mérőórák történetébe, és a birtokbaadás állása lesz az első rezsielszámolás kiindulópontja.",
+    en: "Meter readings from a finalised record are added to the meters' history, so the handover reading becomes the starting point of the first utility statement.",
+  },
+  "dokumentumok.igazolas_cim": { hu: "Bérbeadói igazolás", en: "Landlord's certificate" },
+  "dokumentumok.igazolas_sugo": {
+    hu: "Az összeget és a teljesítés napját a beazonosított befizetésből vesszük. Amelyik hónapra nincs igazolt beérkezés, arra nem ajánlunk igazolást.",
+    en: "The amount and the payment date come from the matched payment. We do not offer a certificate for a month with no confirmed receipt.",
+  },
+  "dokumentumok.igazolas_nincs": {
+    hu: "{nev} részére még nincs olyan hónap, amire igazolást adhatnánk: ehhez a bérbeadónak igazolt beérkezés kell.",
+    en: "There is no month yet for which a certificate could be issued to {nev}: that needs a receipt confirmed by the landlord.",
+  },
+  "dokumentumok.igazolas_idoszak": { hu: "Időszak", en: "Period" },
+  "dokumentumok.igazolas_idoszak_sor": { hu: "{honap} — {osszeg} Ft", en: "{honap} — HUF {osszeg}" },
+  "dokumentumok.igazolas_osszeg": { hu: "Igazolt összeg (Ft)", en: "Amount certified (HUF)" },
+  "dokumentumok.igazolas_osszeg_pelda": { hu: "az időszak összege", en: "the period's amount" },
+  "dokumentumok.igazolas_osszeg_sugo": {
+    hu: "Üresen hagyva az időszakra beazonosított összeg kerül bele. Ennél többet nem igazolunk.",
+    en: "Left empty, the amount matched for the period is used. We never certify more than that.",
+  },
+  "dokumentumok.igazolas_cel": { hu: "Mire kéri", en: "Purpose" },
+  "dokumentumok.igazolas_mod": { hu: "Teljesítés módja", en: "Method of payment" },
+  "dokumentumok.igazolas_mod_atutalas": { hu: "Átutalás", en: "Bank transfer" },
+  "dokumentumok.igazolas_mod_keszpenz": { hu: "Készpénz", en: "Cash" },
+  "dokumentumok.igazolas_mod_egyeb": { hu: "Egyéb", en: "Other" },
+  "dokumentumok.igazolas_hely": { hu: "Kiállítás helye", en: "Place of issue" },
+  "dokumentumok.igazolas_gomb": { hu: "Igazolás {nev} részére", en: "Certificate for {nev}" },
+  "dokumentumok.igazolas_folyamatban": { hu: "Kiállítom…", en: "Issuing…" },
+
+  // --- Hiányzó adatok a szerződéshez
+  "hiany.berbeado.lakcim": {
+    hu: "A bérbeadó lakcíme hiányzik.",
+    en: "The landlord's address is missing.",
+  },
+  "hiany.berbeado.szuletes": {
+    hu: "A bérbeadó születési helye vagy ideje hiányzik.",
+    en: "The landlord's place or date of birth is missing.",
+  },
+  "hiany.berbeado.anyjaNeve": {
+    hu: "A bérbeadó anyja neve hiányzik.",
+    en: "The landlord's mother's name is missing.",
+  },
+  "hiany.berbeado.igazolvanySzam": {
+    hu: "A bérbeadó igazolványszáma hiányzik.",
+    en: "The landlord's ID number is missing.",
+  },
+  "hiany.berbeado.bankszamla": {
+    hu: "A bérbeadó bankszámlaszáma hiányzik, enélkül nincs hová utalni.",
+    en: "The landlord's bank account number is missing, so there is nowhere to transfer to.",
+  },
+  "hiany.berlo": { hu: "{nev}: {mezo} hiányzik.", en: "{nev}: {mezo} is missing." },
+  "hiany.ingatlan.helyrajziSzam": {
+    hu: "Az ingatlan helyrajzi száma hiányzik, enélkül a bérlemény azonosítása hiányos.",
+    en: "The property's land registry number is missing, so the property is not fully identified.",
+  },
+  "hiany.ingatlan.energetikai": {
+    hu: "Az energetikai tanúsítvány azonosítója hiányzik; átadása jogszabályi kötelezettség.",
+    en: "The energy certificate identifier is missing; handing it over is a legal obligation.",
+  },
+  "hiany.nincs_berlo": {
+    hu: "A jogviszonyhoz nincs bérlő rögzítve.",
+    en: "No tenant is recorded for this tenancy.",
+  },
+
+  // --- Szerződés szerkesztő lap
+  "szerzodes.vissza": { hu: "← Dokumentumok", en: "← Documents" },
+  "szerzodes.tervezet_sugo": {
+    hu: "Tervezet. A szöveg minden mentés után újraépül a modulokból.",
+    en: "Draft. The text is rebuilt from the modules after every save.",
+  },
+  "szerzodes.vegleges_sugo": {
+    hu: "Véglegesítve. A szöveg be van fagyasztva, egy későbbi modulfrissítés sem írja át.",
+    en: "Finalised. The text is frozen; a later module update will not rewrite it.",
+  },
+  "szerzodes.ellenjegyzes_figyelmeztetes": {
+    hu: "A modulok ügyvédi ellenjegyzése még nincs meg, ezért ez egyelőre tervezet: használat előtt nézesd át ügyvéddel. Az ellenjegyzett modulok megjelölve fognak megjelenni.",
+    en: "The modules have not yet been countersigned by a lawyer, so this is a draft for now: have a lawyer review it before use. Countersigned modules will be marked as such.",
+  },
+  "szerzodes.magyar_szoveg": {
+    hu: "A szerződés szövege és a modulok magyarul állnak, mert a szerződés magyarul érvényes: a fordítás nem az, amit a felek aláírnak.",
+    en: "The contract text and the modules stay in Hungarian, because that is the language in which the contract is valid: a translation is not what the parties sign.",
+  },
+  "szerzodes.azonossag_cim": {
+    hu: "Szerződés előtt: igazoljátok a személyazonosságot",
+    en: "Before signing: verify each other's identity",
+  },
+  "szerzodes.azonossag_sugo": {
+    hu: "Az alkalmazás nem ellenőrzi, hogy ki kicsoda: amit a felek megadtak, az a saját állításuk. Aláírás előtt nézzétek meg egymás fényképes igazolványát személyesen, és vessétek össze a szerződésben álló adatokkal.",
+    en: "The app does not check who anyone is: what the parties entered is their own statement. Before signing, look at each other's photo ID in person and compare it with the details in the contract.",
+  },
+  "szerzodes.hianyok_cim": { hu: "Ezek még hiányoznak", en: "Still missing" },
+  "szerzodes.hianyok_hol": {
+    hu: "A bérlők adatai a Bérlők lapon, a tieid a Beállítások lapon tölthetők ki:",
+    en: "The tenants' details go on the Tenants page, yours on the Settings page:",
+  },
+  "szerzodes.dontes_cim": { hu: "Amiről dönteni kell", en: "What you need to decide" },
+  "szerzodes.dontes_sugo": {
+    hu: "Minden modul mellett ott van, miért van rá szükség: nem vagy jogász, és amit nem értesz, azt nem tudod eldönteni.",
+    en: "Every module says why it is needed: you are not a lawyer, and you cannot decide about something you do not understand.",
+  },
+  "szerzodes.kotelezoek_nyito": {
+    hu: "Minden szerződésben benne van · {db} pont",
+    en: "In every contract · {db} clauses",
+  },
+  "szerzodes.beallitasok_cim": { hu: "Beállítások", en: "Settings" },
+  "szerzodes.beallitasok_sugo": {
+    hu: "Csak azt kérdezzük, ami a bekapcsolt modulokhoz kell. Ami üresen marad, az az alapértelmezéssel kerül a szövegbe.",
+    en: "We only ask what the modules you switched on need. Anything left empty goes into the text with its default.",
+  },
+  "szerzodes.szoveg_nyito": {
+    hu: "A szerződés szövege · {db} szakasz",
+    en: "The contract text · {db} sections",
+  },
+  "szerzodes.letoltes": { hu: "Letöltés szövegként", en: "Download as text" },
+
+  // --- Szerződés űrlapok
+  "szerzodes.kotelezo_jelzes": { hu: "kötelező", en: "mandatory" },
+  "szerzodes.benne_van": { hu: "Benne van", en: "Included" },
+  "szerzodes.nincs_benne": { hu: "Nincs benne", en: "Not included" },
+  "szerzodes.benne_van_jelzes": { hu: "benne van", en: "included" },
+  "szerzodes.nincs_benne_jelzes": { hu: "nincs benne", en: "not included" },
+  "szerzodes.ellenjegyzes.nincs": {
+    hu: "Ügyvédi ellenjegyzés még nincs",
+    en: "Not yet countersigned by a lawyer",
+  },
+  "szerzodes.ellenjegyzes.folyamatban": {
+    hu: "Ellenjegyzés folyamatban",
+    en: "Countersigning in progress",
+  },
+  "szerzodes.ellenjegyzes.ellenjegyzett": {
+    hu: "Ügyvéd által ellenjegyzett",
+    en: "Countersigned by a lawyer",
+  },
+  "szerzodes.kelt_helye": { hu: "Kelt helye", en: "Place of signing" },
+  "szerzodes.kelt_napja": { hu: "Kelt napja", en: "Date of signing" },
+  "szerzodes.mentem": { hu: "Mentem…", en: "Saving…" },
+  "szerzodes.mentes": { hu: "Mentés és szöveg frissítése", en: "Save and rebuild the text" },
+  "szerzodes.nyugtazas": {
+    hu: "Megnéztük egymás fényképes igazolványát, és az abban álló adatok egyeznek azzal, ami a szerződésben szerepel.",
+    en: "We have looked at each other's photo ID and the details in it match what the contract says.",
+  },
+  "szerzodes.veglegesitem": { hu: "Véglegesítem…", en: "Finalising…" },
+  "szerzodes.veglegesites_megis": {
+    hu: "Véglegesítés a hiányzó adatok nélkül",
+    en: "Finalise without the missing details",
+  },
+  "szerzodes.veglegesites": { hu: "Véglegesítés", en: "Finalise" },
+  "szerzodes.visszaallitom": { hu: "Visszaállítom…", en: "Reverting…" },
+  "szerzodes.vissza_tervezetre": { hu: "Vissza tervezetre", en: "Back to draft" },
+
+  // --- Szerződés műveletek üzenetei
+  "szerzodes.hiba.jogviszony_nem_tied": {
+    hu: "Ez a jogviszony nem a tiéd.",
+    en: "This tenancy is not yours.",
+  },
+  "szerzodes.hiba.nincs_berlo": {
+    hu: "Előbb vedd fel a bérlőt a jogviszonyhoz, különben nincs kivel szerződni.",
+    en: "Add the tenant to the tenancy first, otherwise there is nobody to contract with.",
+  },
+  "szerzodes.hiba.nincs_modul": { hu: "Nincs ilyen modul.", en: "No such module." },
+  "szerzodes.hiba.kotelezo_modul": {
+    hu: "Ez a modul kötelező, nem kapcsolható ki.",
+    en: "This module is mandatory and cannot be switched off.",
+  },
+  "szerzodes.hiba.nem_tied": {
+    hu: "Ez a szerződés nem a tiéd.",
+    en: "This contract is not yours.",
+  },
+  "szerzodes.hiba.vegleges_nem_valtozik": {
+    hu: "A véglegesített szerződés szövege nem változtatható.",
+    en: "The text of a finalised contract cannot be changed.",
+  },
+  "szerzodes.hiba.mar_vegleges": {
+    hu: "Ez a szerződés már véglegesített.",
+    en: "This contract has already been finalised.",
+  },
+  "szerzodes.hiba.nyugtazas": {
+    hu: "Előbb nyugtázd, hogy megnéztétek egymás fényképes igazolványát.",
+    en: "First confirm that you have looked at each other's photo ID.",
+  },
+  "szerzodes.hiba.hianyok": {
+    hu: "Hiányzó adatok. Pótold őket, vagy véglegesítsd így.",
+    en: "Details are missing. Fill them in, or finalise as is.",
+  },
+  "szerzodes.kesz.modul_be": { hu: "„{cim}” bekapcsolva.", en: "\u201C{cim}\u201D switched on." },
+  "szerzodes.kesz.modul_ki": { hu: "„{cim}” kikapcsolva.", en: "\u201C{cim}\u201D switched off." },
+  "szerzodes.kesz.parameterek": {
+    hu: "A beállítások mentve, a szöveg frissült.",
+    en: "Settings saved, the text has been rebuilt.",
+  },
+  "szerzodes.kesz.veglegesitve": {
+    hu: "A szerződés véglegesítve. A szövege innentől nem változik.",
+    en: "The contract is finalised. Its text will not change from now on.",
+  },
+  "szerzodes.kesz.visszaallt": {
+    hu: "Visszaállt tervezetre, újra szerkeszthető.",
+    en: "Back to draft, editable again.",
+  },
+
+  // --- Jegyzőkönyv lap
+  "hiany.jegyzokonyv.nincs_meroora": {
+    hu: "Nincs egyetlen mérőóraállás sem. Enélkül az első elszámolásnak nincs kiindulópontja.",
+    en: "There is not a single meter reading. Without one the first statement has no starting point.",
+  },
+  "hiany.jegyzokonyv.oraallas": {
+    hu: "{megnevezes}: nincs kitöltve az óraállás.",
+    en: "{megnevezes}: the meter reading is empty.",
+  },
+  "hiany.jegyzokonyv.nincs_kulcs": {
+    hu: "Nincs rögzítve, hány kulcs került át. Visszaadáskor ez lesz a hivatkozási alap.",
+    en: "How many keys were handed over is not recorded. This is the reference at move-out.",
+  },
+  "hiany.jegyzokonyv.allapot": {
+    hu: "A bérlemény állapotának leírása üres.",
+    en: "The description of the property's condition is empty.",
+  },
+  "jegyzokonyv.tervezet_sugo": {
+    hu: "Tervezet. Töltsd ki a helyszínen, aztán véglegesítsd.",
+    en: "Draft. Fill it in on site, then finalise it.",
+  },
+  "jegyzokonyv.vegleges_sugo": {
+    hu: "Véglegesítve. A szöveg be van fagyasztva.",
+    en: "Finalised. The text is frozen.",
+  },
+  "jegyzokonyv.magyar_szoveg": {
+    hu: "A jegyzőkönyv szövege magyarul készül, mert magyarul érvényes.",
+    en: "The record itself is drawn up in Hungarian, because that is the language in which it is valid.",
+  },
+  "jegyzokonyv.oraallas_bekerult": {
+    hu: "{db} óraállás bekerült a mérőórák történetébe, így az elszámolás innen indul.",
+    en: "{db} meter readings were added to the meters' history, so the statement starts from here.",
+  },
+  "jegyzokonyv.nincs_oraallas": {
+    hu: "Óraállás nem került rögzítésre.",
+    en: "No meter reading was recorded.",
+  },
+  "jegyzokonyv.vallalasok": {
+    hu: "{db} vállalásból teendő lett, az áttekintőn látod őket.",
+    en: "{db} promises became tasks; you can see them on the overview.",
+  },
+  "jegyzokonyv.hianyok_cim": { hu: "Ezek még hiányoznak", en: "Still missing" },
+  "jegyzokonyv.szoveg_cim": { hu: "A jegyzőkönyv szövege", en: "The text of the record" },
+  "jegyzokonyv.letoltes": { hu: "Letöltés szövegként", en: "Download as text" },
+  "jegyzokonyv.uj_tetel_cim": { hu: "Új tétel", en: "New item" },
+
+  // --- Jegyzőkönyv űrlapok
+  "jegyzokonyv.tetel.meroora": { hu: "Mérőórák", en: "Meters" },
+  "jegyzokonyv.tetel.kulcs": {
+    hu: "Kulcsok és hozzáférési eszközök",
+    en: "Keys and access devices",
+  },
+  "jegyzokonyv.tetel.hiba": { hu: "Hibák és hiányosságok", en: "Faults and shortcomings" },
+  "jegyzokonyv.tetel.dokumentum": { hu: "Átadott dokumentumok", en: "Documents handed over" },
+  "jegyzokonyv.ertek_sugo.meroora": {
+    hu: "óraállás, mértékegységgel",
+    en: "meter reading, with its unit",
+  },
+  "jegyzokonyv.ertek_sugo.kulcs": { hu: "darabszám", en: "number of items" },
+  "jegyzokonyv.idopont": {
+    hu: "Az átadás-átvétel időpontja",
+    en: "Date and time of the handover",
+  },
+  "jegyzokonyv.megnevezes": { hu: "Megnevezés", en: "Name" },
+  "jegyzokonyv.ertek": { hu: "Érték", en: "Value" },
+  "jegyzokonyv.megjegyzes": { hu: "Megjegyzés", en: "Note" },
+  "jegyzokonyv.megjegyzes_sugo": { hu: "megjegyzés", en: "note" },
+  "jegyzokonyv.ki_rendezi": { hu: "Ki rendezi", en: "Who will fix it" },
+  "jegyzokonyv.nincs_vallalas": { hu: "nincs vállalás", en: "nobody has promised" },
+  "jegyzokonyv.felelos_berbeado": { hu: "a bérbeadó", en: "the landlord" },
+  "jegyzokonyv.felelos_berlo": { hu: "a bérlő", en: "the tenant" },
+  "jegyzokonyv.mikorra": { hu: "Mikorra", en: "By when" },
+  "jegyzokonyv.allapot_leiras": { hu: "A bérlemény állapota", en: "Condition of the property" },
+  "jegyzokonyv.egyeb_megjegyzes": { hu: "Egyéb megjegyzés", en: "Other notes" },
+  "jegyzokonyv.mentem": { hu: "Mentem…", en: "Saving…" },
+  "jegyzokonyv.mentes": { hu: "Mentés", en: "Save" },
+  "jegyzokonyv.tetel_fajtaja": { hu: "Tétel fajtája", en: "Type of item" },
+  "jegyzokonyv.fajta_hiba": { hu: "hiba vagy hiányosság", en: "fault or shortcoming" },
+  "jegyzokonyv.fajta_meroora": { hu: "mérőóra", en: "meter" },
+  "jegyzokonyv.fajta_kulcs": { hu: "kulcs", en: "key" },
+  "jegyzokonyv.fajta_dokumentum": { hu: "átadott dokumentum", en: "document handed over" },
+  "jegyzokonyv.mit_rogzitesz": { hu: "mit rögzítesz", en: "what you are recording" },
+  "jegyzokonyv.ertek_ha_van": { hu: "érték, ha van", en: "value, if any" },
+  "jegyzokonyv.hozzaadom": { hu: "Hozzáadom…", en: "Adding…" },
+  "jegyzokonyv.hozzaadas": { hu: "Hozzáadás", en: "Add" },
+  "jegyzokonyv.veglegesitem": { hu: "Véglegesítem…", en: "Finalising…" },
+  "jegyzokonyv.veglegesites_megis": {
+    hu: "Véglegesítés a hiányzó adatok nélkül",
+    en: "Finalise without the missing details",
+  },
+  "jegyzokonyv.veglegesites": { hu: "Véglegesítés", en: "Finalise" },
+  "jegyzokonyv.veglegesites_sugo": {
+    hu: "Véglegesítéskor a szöveg befagy, a rögzített óraállások bekerülnek a mérőórák történetébe, a vállalt javításokból pedig teendő lesz.",
+    en: "On finalising, the text is frozen, the recorded meter readings are added to the meters' history, and the repairs promised become tasks.",
+  },
+
+  // --- Dokumentum műveletek üzenetei
+  "dokumentumok.hiba.jogviszony_nem_tied": {
+    hu: "Ez a jogviszony nem a tiéd.",
+    en: "This tenancy is not yours.",
+  },
+  "dokumentumok.hiba.nincs_berlo": {
+    hu: "Előbb vedd fel a bérlőt, különben nincs kivel jegyzőkönyvet felvenni.",
+    en: "Add the tenant first, otherwise there is nobody to record the handover with.",
+  },
+  "jegyzokonyv.hiba.nem_tied": {
+    hu: "Ez a jegyzőkönyv nem a tiéd.",
+    en: "This record is not yours.",
+  },
+  "jegyzokonyv.hiba.vegleges": {
+    hu: "A véglegesített jegyzőkönyv nem módosítható.",
+    en: "A finalised record cannot be changed.",
+  },
+  "jegyzokonyv.hiba.mar_vegleges": {
+    hu: "Ez a jegyzőkönyv már véglegesített.",
+    en: "This record has already been finalised.",
+  },
+  "jegyzokonyv.hiba.idopont": {
+    hu: "Adj meg egy érvényes időpontot.",
+    en: "Enter a valid date and time.",
+  },
+  "jegyzokonyv.hiba.tetelfajta": { hu: "Ismeretlen tételfajta.", en: "Unknown type of item." },
+  "jegyzokonyv.hiba.megnevezes": {
+    hu: "Add meg, mit rögzítesz.",
+    en: "Say what you are recording.",
+  },
+  "jegyzokonyv.hiba.hianyok": {
+    hu: "Hiányzó adatok. Pótold őket, vagy véglegesítsd így.",
+    en: "Details are missing. Fill them in, or finalise as is.",
+  },
+  "jegyzokonyv.hiba.olvashatatlan": {
+    hu: "{nev}: az óraállásból nem tudtam számot kiolvasni, ezért nem rögzítettem.",
+    en: "{nev}: I could not read a number from the meter reading, so I did not record it.",
+  },
+  "jegyzokonyv.kesz.mentve": { hu: "Mentve.", en: "Saved." },
+  "jegyzokonyv.kesz.tetel": { hu: "„{megnevezes}” hozzáadva.", en: "\u201C{megnevezes}\u201D added." },
+  "jegyzokonyv.kesz.veglegesitve": {
+    hu: "A jegyzőkönyv véglegesítve.",
+    en: "The record is finalised.",
+  },
+  "jegyzokonyv.kesz.oraallasok": {
+    hu: "{db} óraállás bekerült a mérőórák történetébe.",
+    en: "{db} meter readings were added to the meters' history.",
+  },
+  "jegyzokonyv.kesz.vallalasok": {
+    hu: "{db} vállalásból teendő lett.",
+    en: "{db} promises became tasks.",
+  },
+  "igazolas.hiba.nem_tied": {
+    hu: "Ez a bérlő nem a te jogviszonyodhoz tartozik.",
+    en: "This tenant does not belong to a tenancy of yours.",
+  },
+  "igazolas.hiba.cel": {
+    hu: "Add meg, mihez kell az igazolás.",
+    en: "Say what the certificate is needed for.",
+  },
+  "igazolas.hiba.nincs_befizetes": {
+    hu: "Erre a hónapra nincs beazonosított befizetés, ezért nem állítok ki róla igazolást.",
+    en: "There is no matched payment for this month, so I will not issue a certificate for it.",
+  },
+  "igazolas.hiba.tobb": {
+    hu: "Erre a hónapra {osszeg} Ft érkezett; ennél többet nem igazolok.",
+    en: "HUF {osszeg} arrived for this month; I will not certify more than that.",
+  },
+  "igazolas.kesz": {
+    hu: "Kész az igazolás {nev} részére. Letöltheted és aláírhatod.",
+    en: "The certificate for {nev} is ready. You can download and sign it.",
+  },
+
+  // --- Beállítás- és jelszó-ellenőrzés
+  "beallitasok.hiba.nap_kell": {
+    hu: "{mezo}: adj meg egy napszámot.",
+    en: "{mezo}: enter a number of days.",
+  },
+  "beallitasok.hiba.egesz_nap": {
+    hu: "{mezo}: csak egész napszám adható meg.",
+    en: "{mezo}: only a whole number of days is allowed.",
+  },
+  "beallitasok.hiba.max_nap": {
+    hu: "{mezo}: legfeljebb {max} nap adható meg.",
+    en: "{mezo}: at most {max} days are allowed.",
+  },
+  "beallitasok.hiba.nem_mentve": { hu: "A beállítás nem mentve.", en: "The setting was not saved." },
+  "beallitasok.kesz.ablak": {
+    hu: "Mentve. Mostantól az esedékesség előtt {elotte} és utána {utana} nappal érkezett befizetést kötöm ugyanahhoz az előíráshoz.",
+    en: "Saved. From now on I match a payment arriving up to {elotte} days before and {utana} days after the due date to the same charge.",
+  },
+  "beallitasok.kesz.bizonylat_kerek": {
+    hu: "Vitás tételnél bizonylatot kérek mindkét féltől.",
+    en: "For a disputed item I ask both parties for a receipt.",
+  },
+  "beallitasok.kesz.bizonylat_nem": {
+    hu: "Vitás tételnél nem kérek bizonylatot.",
+    en: "For a disputed item I do not ask for a receipt.",
+  },
+  "beallitasok.kesz.adatok": { hu: "Az adataid mentve.", en: "Your details are saved." },
+  "jelszo.hiba.rovid": {
+    hu: "A jelszó legyen legalább {min} karakter.",
+    en: "The password must be at least {min} characters.",
+  },
+  "jelszo.hiba.csak_szokoz": {
+    hu: "A jelszó nem állhat csak szóközökből.",
+    en: "The password cannot be only spaces.",
+  },
+  "jelszo.hiba.nem_egyezik": { hu: "A két jelszó nem egyezik.", en: "The two passwords differ." },
+
+  // --- Belépés, meghívó, teendő
+  "belepes.hiba.hianyos": {
+    hu: "Add meg az e-mail-címet és a jelszót.",
+    en: "Enter your email address and password.",
+  },
+  "belepes.hiba.rossz": {
+    hu: "Nem stimmel az e-mail-cím vagy a jelszó.",
+    en: "The email address or the password is wrong.",
+  },
+  "meghivo.hiba.ervenytelen": {
+    hu: "Ez a meghívó már nem érvényes. Kérj újat a bérbeadódtól.",
+    en: "This invitation is no longer valid. Ask your landlord for a new one.",
+  },
+  "meghivo.hiba.nev": { hu: "Add meg a neved.", en: "Enter your name." },
+  "meghivo.hiba.nem_kesz": {
+    hu: "A fiók nem készült el.",
+    en: "The account was not created.",
+  },
+  "meghivo.letezo_fiok": {
+    hu: "Ezzel az e-mail-címmel már van fiókod, ezért a lakást hozzákötöttem. Lépj be a meglévő jelszavaddal.",
+    en: "You already have an account with this email address, so I linked the flat to it. Sign in with your existing password.",
+  },
+  "teendo.hiba.lepj_be": { hu: "Lépj be.", en: "Please sign in." },
+  "teendo.hiba.nem_tied": { hu: "Ez a teendő nem a tiéd.", en: "This task is not yours." },
+  "teendo.kesz.lezarva": { hu: "Lezárva.", en: "Closed." },
+  "teendo.jegyzokonyvi_vallalas": {
+    hu: "A jegyzőkönyvben {felelos} a rendezését.",
+    en: "In the handover record, {felelos} to fix it.",
+  },
+  "teendo.vallalo.berbeado": { hu: "te vállaltad", en: "you undertook" },
+  "teendo.vallalo.berlo": { hu: "a bérlő vállalta", en: "the tenant undertook" },
+
+  // --- Bérlők műveletei
+  "berlok.hiba.nem_tied": {
+    hu: "Ez a bérlő nem a te jogviszonyodhoz tartozik.",
+    en: "This tenant does not belong to a tenancy of yours.",
+  },
+  "berlok.hiba.email": {
+    hu: "Adj meg egy érvényes e-mail-címet.",
+    en: "Enter a valid email address.",
+  },
+  "berlok.hiba.email_gyanus": {
+    hu: "Az e-mail-cím nem tűnik érvényesnek.",
+    en: "That email address does not look valid.",
+  },
+  "berlok.hiba.nev_kell": { hu: "Add meg a bérlő nevét.", en: "Enter the tenant's name." },
+  "berlok.hiba.nev_ures": {
+    hu: "A név nem maradhat üresen.",
+    en: "The name cannot be left empty.",
+  },
+  "berlok.hiba.jogviszony_nem_tied": {
+    hu: "Ez a jogviszony nem a tiéd.",
+    en: "This tenancy is not yours.",
+  },
+  "berlok.hiba.utolso_berlo": {
+    hu: "Az utolsó bérlőt nem veszem le: jogviszony bérlő nélkül nem értelmes.",
+    en: "I will not remove the last tenant: a tenancy without a tenant makes no sense.",
+  },
+  "berlok.kesz.meghivo": {
+    hu: "Kész a meghívó {email} címre. Küldd el neki, és két hétig érvényes.",
+    en: "The invitation for {email} is ready. Send it to them; it is valid for two weeks.",
+  },
+  "berlok.kesz.hozzaadva": {
+    hu: "{nev} hozzáadva. A bérleti díj továbbra is egy előírás: a bérlők egyetemlegesen felelnek érte.",
+    en: "{nev} added. The rent stays a single charge: the tenants are jointly and severally liable for it.",
+  },
+  "berlok.kesz.adatok": { hu: "Az adatok mentve.", en: "The details are saved." },
+  "berlok.kesz.torolve": {
+    hu: "{nev} levéve a jogviszonyról.",
+    en: "{nev} removed from the tenancy.",
+  },
+
+  // --- Adóműveletek
+  "ado.hiba.datum": { hu: "Adj meg egy dátumot.", en: "Enter a date." },
+  "ado.hiba.megnevezes": {
+    hu: "Írd le, mi volt ez a költség.",
+    en: "Describe what this cost was.",
+  },
+  "ado.hiba.osszeg": {
+    hu: "Az összeg pozitív forint legyen.",
+    en: "The amount must be a positive number of forints.",
+  },
+  "ado.hiba.ingatlan": { hu: "Ez az ingatlan nem a tiéd.", en: "This property is not yours." },
+  "ado.hiba.beszerzesi_ar": {
+    hu: "A beszerzési ár pozitív forint legyen.",
+    en: "The purchase price must be a positive number of forints.",
+  },
+  "ado.kesz.koltseg": { hu: "Rögzítve: {megnevezes}.", en: "Recorded: {megnevezes}." },
+  "ado.kesz.beszerzes": {
+    hu: "Mentve. Az értékcsökkenés mostantól szerepel a tételes elszámolásban.",
+    en: "Saved. Depreciation is now included in the itemised calculation.",
+  },
+
+  // --- Rezsi műveletei
+  "rezsi.kihagyott.oraallas": {
+    hu: "{nev}: az időszak elejéhez és végéhez is kell egy-egy óraállás.",
+    en: "{nev}: a reading is needed both at the start and at the end of the period.",
+  },
+  "rezsi.kihagyott.dijszabas": {
+    hu: "{nev}: nincs erre az időszakra érvényes díjszabás.",
+    en: "{nev}: there is no tariff in force for this period.",
+  },
+  "rezsi.hiba.lepj_be": { hu: "Lépj be a rögzítéshez.", en: "Sign in to record a reading." },
+  "rezsi.hiba.datum": { hu: "Adj meg egy dátumot.", en: "Enter a date." },
+  "rezsi.hiba.oraallas_negativ": {
+    hu: "Az óraállás csak nem negatív szám lehet.",
+    en: "A meter reading cannot be negative.",
+  },
+  "rezsi.hiba.meroora_nem_tied": {
+    hu: "Ehhez a mérőórához nincs jogosultságod.",
+    en: "You do not have access to this meter.",
+  },
+  "rezsi.hiba.kisebb_allas": {
+    hu: "A legutóbbi állás {ertek} volt ({nap}). Ennél kisebb értéket nem rögzítek: nézd meg még egyszer a számokat.",
+    en: "The last reading was {ertek} ({nap}). I will not record a lower value: check the figures again.",
+  },
+  "rezsi.hiba.idoszak": {
+    hu: "Adj meg egy kezdő és egy záró napot.",
+    en: "Enter a start and an end date.",
+  },
+  "rezsi.hiba.sorrend": {
+    hu: "A záró nap legyen későbbi a kezdőnél.",
+    en: "The end date must be later than the start date.",
+  },
+  "rezsi.hiba.jogviszony_nem_tied": {
+    hu: "Ez a jogviszony nem a tiéd.",
+    en: "This tenancy is not yours.",
+  },
+  "rezsi.hiba.nincs_tetel": {
+    hu: "Ebből az időszakból nem jött ki egyetlen tétel sem.",
+    en: "No item came out of this period.",
+  },
+  "rezsi.hiba.hatarido": {
+    hu: "Adj meg egy fizetési határidőt.",
+    en: "Enter a payment deadline.",
+  },
+  "rezsi.hiba.nem_kiadhato": {
+    hu: "Ez az elszámolás nem adható ki.",
+    en: "This statement cannot be issued.",
+  },
+  "rezsi.hiba.dontes": { hu: "Ismeretlen döntés.", en: "Unknown decision." },
+  "rezsi.hiba.vita_uzenet": {
+    hu: "Írd le, melyik tétellel van baj: ebből tud a bérbeadó javítani.",
+    en: "Say which item is wrong: that is what lets the landlord fix it.",
+  },
+  "rezsi.hiba.elszamolas_nem_tied": {
+    hu: "Ez az elszámolás nem a tiéd, vagy már lezárult.",
+    en: "This statement is not yours, or it is already closed.",
+  },
+  "rezsi.kesz.oraallas": { hu: "Óraállás rögzítve.", en: "Meter reading recorded." },
+  "rezsi.kesz.tervezet": {
+    hu: "Elkészült a tervezet. Nézd át, és ha rendben van, add ki a bérlőnek.",
+    en: "The draft is ready. Look it over, and if it is right, issue it to the tenant.",
+  },
+  "rezsi.kesz.kiadva": {
+    hu: "Kiadva. A bérlő látja a tételeket, és a befizetése a {nap}-i határidőhöz párosul.",
+    en: "Issued. The tenant can see the items, and their payment will be matched to the {nap} deadline.",
+  },
+  "rezsi.kesz.elfogadva": {
+    hu: "Elfogadtad az elszámolást.",
+    en: "You have accepted the statement.",
+  },
+  "rezsi.kesz.vitatva": {
+    hu: "Jeleztem a bérbeadónak, hogy vitatod. Az üzeneted is látja.",
+    en: "I have told the landlord that you dispute it. They can see your message too.",
+  },
+
+  // --- Letöltési válaszok
+  "letoltes.nincs_jogosultsag": {
+    hu: "Ehhez nincs jogosultságod.",
+    en: "You do not have access to this.",
+  },
+  "letoltes.nincs_szerzodes": {
+    hu: "Nincs ilyen szerződés.",
+    en: "No such contract.",
+  },
+  "letoltes.nincs_vegleges_szerzodes": {
+    hu: "Nincs ilyen véglegesített szerződés.",
+    en: "No such finalised contract.",
+  },
+  "letoltes.nincs_jegyzokonyv": { hu: "Nincs ilyen jegyzőkönyv.", en: "No such record." },
+  "letoltes.nincs_vegleges_jegyzokonyv": {
+    hu: "Nincs ilyen véglegesített jegyzőkönyv.",
+    en: "No such finalised record.",
+  },
+  "letoltes.nincs_igazolas": { hu: "Nincs ilyen igazolás.", en: "No such certificate." },
+  "letoltes.nincs_elszamolas": {
+    hu: "Nincs ilyen kiadott elszámolás.",
+    en: "No such issued statement.",
+  },
+
+  "letoltes.nincs_bizonylat": { hu: "Nincs ilyen bizonylat.", en: "No such receipt." },
+  "dokumentumok.igazolas_cel_alap": {
+    // Ez a szöveg a magyar igazolásba kerül, ezért angol felületen is magyar.
+    hu: "a lakhatási támogatáshoz",
+    en: "a lakhatási támogatáshoz",
+  },
+
+  "dokumentum.igazolas.cim": { hu: "{nev} · {honap}", en: "{nev} · {honap}" },
+  "dokumentum.elszamolas.cim": { hu: "{kezdet} – {veg}", en: "{kezdet} – {veg}" },
+
+  "szerzodes.megnevezes": {
+    hu: "Bérleti szerződés – {ingatlan}",
+    en: "Lease agreement – {ingatlan}",
   },
 };
 

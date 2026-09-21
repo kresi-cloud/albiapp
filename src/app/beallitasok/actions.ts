@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { ablakotEllenoriz } from "@/domain/egyeztetes";
 import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 import { adatkeresLatta } from "@/lib/szemelyes-adatok";
 
 export type MentesEredmeny = {
@@ -17,6 +18,7 @@ export async function beallitasokatMent(
   urlap: FormData,
 ): Promise<MentesEredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, u } = await szovegek();
 
   const { ablak, hibak } = ablakotEllenoriz({
     korabbiAblakNap: urlap.get("korabbiAblakNap"),
@@ -24,7 +26,7 @@ export async function beallitasokatMent(
   });
 
   if (!ablak) {
-    return { allapot: "hiba", uzenet: "A beállítás nem mentve.", hibak };
+    return { allapot: "hiba", uzenet: sz("beallitasok.hiba.nem_mentve"), hibak: hibak.map(u) };
   }
 
   // A jelöletlen kapcsoló nem küld értéket: a hiánya a "nem" válasz.
@@ -46,11 +48,12 @@ export async function beallitasokatMent(
   return {
     allapot: "kesz",
     uzenet:
-      `Mentve. Mostantól az esedékesség előtt ${ablak.korabbiAblakNap} és utána ` +
-      `${ablak.kesobbiAblakNap} nappal érkezett befizetést kötöm ugyanahhoz az előíráshoz. ` +
-      (bizonylatKeres
-        ? "Vitás tételnél bizonylatot kérek mindkét féltől."
-        : "Vitás tételnél nem kérek bizonylatot."),
+      sz("beallitasok.kesz.ablak", {
+        elotte: ablak.korabbiAblakNap,
+        utana: ablak.kesobbiAblakNap,
+      }) +
+      " " +
+      sz(bizonylatKeres ? "beallitasok.kesz.bizonylat_kerek" : "beallitasok.kesz.bizonylat_nem"),
     hibak: [],
   };
 }
@@ -75,6 +78,7 @@ export async function berbeadoiAdatokatMent(
   urlap: FormData,
 ): Promise<MentesEredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
 
   const adatok = {
     szuletesiHely: szoveg(urlap.get("szuletesiHely")) || null,
@@ -100,5 +104,5 @@ export async function berbeadoiAdatokatMent(
   revalidatePath("/beallitasok");
   revalidatePath("/szerzodesek");
 
-  return { allapot: "kesz", uzenet: "Az adataid mentve.", hibak: [] };
+  return { allapot: "kesz", uzenet: sz("beallitasok.kesz.adatok"), hibak: [] };
 }

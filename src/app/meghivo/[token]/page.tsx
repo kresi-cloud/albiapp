@@ -52,7 +52,19 @@ export default async function MeghivoOldal({
         </p>
       </section>
 
-      <MeghivoUrlap token={token} email={meghivo.email} />
+      <MeghivoUrlap
+        token={token}
+        email={meghivo.email}
+        cimkek={{
+          email: sz("belepes.email"),
+          emailSugo: sz("meghivo.email_sugo"),
+          nev: sz("meghivo.nev"),
+          jelszo: sz("belepes.jelszo"),
+          jelszoUjra: sz("meghivo.jelszo_ujra"),
+          gomb: sz("meghivo.gomb"),
+          folyamatban: sz("meghivo.folyamatban"),
+        }}
+      />
     </div>
   );
 }

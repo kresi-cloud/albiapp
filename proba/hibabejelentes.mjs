@@ -122,7 +122,9 @@ export async function futtat(oldal) {
 
   await oldal.goto(`${ALAP}/dokumentumok`);
   all(
-    (await oldal.getByText("Kiadott és készülő papírok").count()) > 0,
+    // A tár címére állítunk, nem a bevezető mondatra: a cím a szótárból jön,
+    // és nem változik, ha a bevezetőt átírjuk.
+    (await oldal.getByText("Dokumentumtár").count()) > 0,
     "a dokumentumtár megjelenik a bérbeadónál",
   );
 

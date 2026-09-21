@@ -10,11 +10,11 @@ import { fajtaCimke, fajtankent, type Dokumentum } from "@/domain/dokumentumtar"
 export function Dokumentumlista({
   dokumentumok,
   uresUzenet,
-  nyelv = "hu",
+  nyelv,
 }: {
   dokumentumok: Dokumentum[];
   uresUzenet: string;
-  nyelv?: Nyelv;
+  nyelv: Nyelv;
 }) {
   const { sz, u } = szovegekNyelvvel(nyelv);
 
@@ -40,7 +40,7 @@ export function Dokumentumlista({
                 className="rounded-lg border border-stone-200 bg-white p-3 dark:border-stone-800 dark:bg-stone-900"
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <span className="font-medium">{sor.cim}</span>
+                  <span className="font-medium">{u(sor.cim)}</span>
                   <span className="text-xs text-stone-500 dark:text-stone-400">
                     {sor.jogviszonyCimke} · {datumNyelven(sor.datum, nyelv)}
                   </span>

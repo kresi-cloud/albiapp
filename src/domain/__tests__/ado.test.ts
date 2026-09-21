@@ -10,11 +10,18 @@ import {
   SZJA_KULCS,
   type BeerkezettTetel,
 } from "../ado";
+import { uzenet } from "../nyelv";
 
 const NAP = new Date(Date.UTC(2026, 2, 5));
 
 function tetel(reszlet: Partial<BeerkezettTetel> = {}): BeerkezettTetel {
-  return { datum: NAP, osszegFt: 180000, fajta: "berleti_dij", megnevezes: "Bérleti díj", ...reszlet };
+  return {
+    datum: NAP,
+    osszegFt: 180000,
+    fajta: "berleti_dij",
+    megnevezes: uzenet("nyers", { szoveg: "Bérleti díj" }),
+    ...reszlet,
+  };
 }
 
 describe("bevetelketBesorol", () => {
@@ -30,7 +37,7 @@ describe("bevetelketBesorol", () => {
     ]);
     expect(sor.bevetelFt).toBe(0);
     expect(sor.nemBevetelFt).toBe(42000);
-    expect(sor.indoklas).toContain("nem bevétel");
+    expect(sor.indoklas.kulcs).toBe("ado.indok.mert");
   });
 
   it("az átalányban fizetett rezsi viszont bevétel", () => {
@@ -39,13 +46,13 @@ describe("bevetelketBesorol", () => {
     ]);
     expect(sor.bevetelFt).toBe(30000);
     expect(sor.nemBevetelFt).toBe(0);
-    expect(sor.indoklas).toContain("Átalányban");
+    expect(sor.indoklas.kulcs).toBe("ado.indok.atalany");
   });
 
   it("a közös költség bevétel, és ezt meg is indokolja", () => {
     const [sor] = bevetelketBesorol([tetel({ fajta: "kozos_koltseg", osszegFt: 14000 })]);
     expect(sor.bevetelFt).toBe(14000);
-    expect(sor.indoklas).toContain("költségként leírható");
+    expect(sor.indoklas.kulcs).toBe("ado.indok.kozos_koltseg");
   });
 });
 
@@ -118,15 +125,15 @@ describe("adoosszesito", () => {
   });
 
   it("kevés költségnél a tíz százalékos hányad az olcsóbb", () => {
-    const osszesito = adoosszesito(sorok, [{ megnevezes: "Biztosítás", osszegFt: 40_000 }]);
+    const osszesito = adoosszesito(sorok, [{ megnevezes: uzenet("nyers", { szoveg: "Biztosítás" }), osszegFt: 40_000 }]);
     expect(osszesito.ajanlott).toBe("hanyad");
     expect(osszesito.adoHanyadFt).toBe(Math.round(2_160_000 * 0.9 * SZJA_KULCS));
   });
 
   it("sok költségnél a tételes elszámolás jön ki jobban, és megmondja, mennyivel", () => {
     const osszesito = adoosszesito(sorok, [
-      { megnevezes: "Értékcsökkenés", osszegFt: 1_200_000 },
-      { megnevezes: "Felújítás", osszegFt: 300_000 },
+      { megnevezes: uzenet("nyers", { szoveg: "Értékcsökkenés" }), osszegFt: 1_200_000 },
+      { megnevezes: uzenet("nyers", { szoveg: "Felújítás" }), osszegFt: 300_000 },
     ]);
     expect(osszesito.ajanlott).toBe("teteles");
     expect(osszesito.adoTetelesFt).toBe(Math.round((2_160_000 - 1_500_000) * SZJA_KULCS));
@@ -134,7 +141,7 @@ describe("adoosszesito", () => {
   });
 
   it("a költség nem visz negatív adóalapot", () => {
-    const osszesito = adoosszesito(sorok, [{ megnevezes: "Nagy felújítás", osszegFt: 9_000_000 }]);
+    const osszesito = adoosszesito(sorok, [{ megnevezes: uzenet("nyers", { szoveg: "Nagy felújítás" }), osszegFt: 9_000_000 }]);
     expect(osszesito.adoalapTetelesFt).toBe(0);
     expect(osszesito.adoTetelesFt).toBe(0);
   });

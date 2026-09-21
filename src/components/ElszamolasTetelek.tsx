@@ -14,11 +14,11 @@ export type MutatottTetel = {
 export function ElszamolasTetelek({
   tetelek,
   osszegFt,
-  nyelv = "hu",
+  nyelv,
 }: {
   tetelek: MutatottTetel[];
   osszegFt: number;
-  nyelv?: Nyelv;
+  nyelv: Nyelv;
 }) {
   const { sz } = szovegekNyelvvel(nyelv);
   const mennyiseg = (tetel: MutatottTetel) =>
