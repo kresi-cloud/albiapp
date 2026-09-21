@@ -154,7 +154,6 @@ model Jogviszony {
   eloirtTetelek       EloirtTetel[]
   berloiIgazolasok    BerloiIgazolas[]
   berbeadoiIgazolasok BerbeadoiIgazolas[]
-  egyeztetesek        Egyeztetes[]
   elszamolasok        Elszamolas[]
   teendok             Teendo[]
   szerzodesek         Szerzodes[]
@@ -255,7 +254,6 @@ model EloirtTetel {
   letrehozva   DateTime @default(now())
 
   jogviszony          Jogviszony          @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
-  egyeztetes          Egyeztetes?
   elszamolas          Elszamolas?
   berbeadoiIgazolasok BerbeadoiIgazolas[]
   bizonylatok         Bizonylat[]
@@ -275,7 +273,6 @@ model BerloiIgazolas {
   rogzitve        DateTime @default(now())
 
   jogviszony Jogviszony  @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
-  egyeztetes Egyeztetes?
 
   @@index([jogviszonyId, utalasDatuma])
 }
@@ -297,7 +294,6 @@ model BerbeadoiIgazolas {
   tulajdonos  Felhasznalo  @relation(fields: [tulajdonosId], references: [id], onDelete: Cascade)
   jogviszony  Jogviszony   @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
   eloirtTetel EloirtTetel? @relation(fields: [eloirtTetelId], references: [id], onDelete: Cascade)
-  egyeztetes  Egyeztetes?
 
   // Egy előírásra egy tagadás elég; a tagadást a beérkezés rögzítése váltja fel.
   @@unique([eloirtTetelId])
@@ -329,25 +325,6 @@ model Bizonylat {
   @@index([eloirtTetelId])
 }
 
-model Egyeztetes {
-  id                  String   @id @default(cuid())
-  jogviszonyId        String
-  eloirtTetelId       String?  @unique
-  berloiIgazolasId    String?  @unique
-  berbeadoiIgazolasId String?  @unique
-  allapot             String // "egyezik" | "elter" | "vitas" | "varakozik" | "hianyzik"
-  elteresOka          String? // "osszeg" | "ket_oldal_elter" | "nincs_berbeadoi_igazolas" | "nincs_berloi_igazolas" | "nincs_eloiras"
-  elteresFt           Int      @default(0)
-  keses               Int      @default(0) // naptári nap, negatív, ha korábban érkezett
-  frissitve           DateTime @updatedAt
-
-  jogviszony        Jogviszony         @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
-  eloirtTetel       EloirtTetel?       @relation(fields: [eloirtTetelId], references: [id])
-  berloiIgazolas    BerloiIgazolas?    @relation(fields: [berloiIgazolasId], references: [id])
-  berbeadoiIgazolas BerbeadoiIgazolas? @relation(fields: [berbeadoiIgazolasId], references: [id])
-
-  @@index([jogviszonyId, allapot])
-}
 
 /// Egy időszak rezsielszámolása. Tételesen áll össze, hogy a bérlő
 /// ellenőrizni tudja, ne csak elhinni.

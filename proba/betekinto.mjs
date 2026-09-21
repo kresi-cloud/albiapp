@@ -79,6 +79,24 @@ export async function futtat(oldal) {
     "a település látszik, a pontos cím nem",
   );
 
+  // Ez a próba azért van, mert a nézet egyszer már egy olyan táblát olvasott,
+  // amibe soha semmi nem írt: a szöveg hibátlanul jelent meg, csak épp minden
+  // hónapra azt mondta, hogy nem érkezett befizetés. Egy "a lap betöltődik"
+  // próba ezt nem fogja meg, egy szám viszont igen.
+  const osszefoglalo = await oldal.textContent("body");
+  const hataridore = osszefoglalo.match(/Ebből (\d+) hónapban a határidőig/);
+  all(hataridore !== null, "a nyilvános oldal kiírja a határidőre érkezett hónapokat");
+  all(
+    hataridore !== null && Number(hataridore[1]) > 0,
+    `a példaadaton van határidőre érkezett befizetés (most: ${hataridore?.[1]})`,
+  );
+
+  const esedekes = osszefoglalo.match(/Eddig (\d+) hónapra volt esedékes/);
+  all(
+    esedekes !== null && Number(esedekes[1]) > 6,
+    `a nézet a teljes jogviszonyt látja, nem csak pár hónapot (most: ${esedekes?.[1]})`,
+  );
+
   const tobblet = await tullogas(oldal);
   all(tobblet <= 1, `a nyilvános oldal elfér ${SZELESSEG} képponton (túllógás: ${tobblet}px)`);
 

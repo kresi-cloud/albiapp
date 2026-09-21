@@ -1,19 +1,38 @@
 /**
- * Példaadat a próbakörnyezethez. Egy bérbeadó, két lakás, két bérlő, és egy
- * szeptemberi hónap, amiben szándékosan van egy pontos, egy hiányos és egy
- * elmaradt befizetés — hogy az egyeztetés mindhárom állapota látszódjon.
+ * Példaadat a próbakörnyezethez. Egy bérbeadó, két lakás, három bérlő.
+ *
+ * Minden dátum a **mostani hónaphoz** igazodik, nem beégetett évszámokhoz.
+ * Ez nem kozmetika: a havi előírások a jogviszonyból, a mai naphoz képest
+ * generálódnak, tehát egy beégetett példaadat hónapról hónapra jobban
+ * elcsúszik tőlük. Így állt elő az, hogy a betekintő szerint a bérlő
+ * tizenhárom hónapból egyszer sem fizetett — pedig csak a példaadat
+ * maradt le az előírások mögött.
+ *
+ * A történet: a két bérlő végigfizeti a jogviszonyát, néhány hónap csúszással,
+ * a futó hónapban pedig szándékosan van egy vitás és egy elmaradt tétel, hogy
+ * az egyeztetés összes állapota látszódjon.
  */
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { jelszotHashel } from "../src/lib/jelszo";
 import { meghivoLejarata } from "../src/domain/belepes";
 import { meghivoToken } from "../src/lib/meghivo";
+import { eloirasok, type JogviszonyAdat } from "../src/domain/eloirasok";
 
 const url = (process.env.DATABASE_URL ?? "file:./dev.db").replace(/^file:/, "");
 const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url }) });
 
 // Próbajelszó a példafiókokhoz. Éles adatbázisba ez a seed nem fut.
 const PROBA_JELSZO = "probajelszo2026";
+
+const MOST = new Date();
+const EV = MOST.getUTCFullYear();
+const HONAP = MOST.getUTCMonth();
+
+/** A mostanihoz képest `elteres` hónappal arrébb lévő hónap adott napja. */
+function nap(elteres: number, napja = 1): Date {
+  return new Date(Date.UTC(EV, HONAP + elteres, napja));
+}
 
 async function main() {
   const jelszoHash = await jelszotHashel(PROBA_JELSZO);
@@ -24,7 +43,6 @@ async function main() {
   await prisma.dijszabas.deleteMany();
   await prisma.meghivo.deleteMany();
   await prisma.teendo.deleteMany();
-  await prisma.egyeztetes.deleteMany();
   await prisma.berbeadoiIgazolas.deleteMany();
   await prisma.berloiIgazolas.deleteMany();
   await prisma.eloirtTetel.deleteMany();
@@ -124,7 +142,8 @@ async function main() {
           },
         ],
       },
-      kezdete: new Date(Date.UTC(2025, 8, 1)),
+      // Tizenkét hónapja fut: van mit mutatnia a betekintőnek.
+      kezdete: nap(-12),
       berletiDijFt: 180000,
       kozosKoltsegFt: 14000,
       kaucioFt: 360000,
@@ -162,12 +181,15 @@ async function main() {
           },
         ],
       },
-      kezdete: new Date(Date.UTC(2026, 1, 1)),
+      kezdete: nap(-7),
       berletiDijFt: 240000,
       kozosKoltsegFt: 21000,
       kaucioFt: 480000,
       fizetesiNap: 10,
       rezsiElszamolas: "atalany",
+      // Átalány mellé kell összeg is, különben az "átalány" elszámolás nem ír
+      // elő semmit — és az adóösszesítőn pont ez a bevételnek számító rész.
+      rezsiAtalanyFt: 25000,
     },
   });
 
@@ -180,7 +202,7 @@ async function main() {
     await prisma.dijszabas.create({
       data: {
         merooraId: meroora.id,
-        ervenyesTol: new Date(Date.UTC(2026, 0, 1)),
+        ervenyesTol: nap(-8),
         kedvezmenyesArFiller: 3690, // 36,90 Ft/kWh
         piaciArFiller: 7010, // 70,10 Ft/kWh a keret fölött
         evesKeret: 2523, // kWh/év, az átlagfogyasztásig
@@ -193,7 +215,7 @@ async function main() {
     await prisma.dijszabas.create({
       data: {
         merooraId: meroora.id,
-        ervenyesTol: new Date(Date.UTC(2026, 0, 1)),
+        ervenyesTol: nap(-8),
         kedvezmenyesArFiller: 79900, // 799 Ft/m3, víz és csatorna együtt
         piaciArFiller: 79900,
         evesKeret: null, // a víznél nincs sáv
@@ -209,9 +231,9 @@ async function main() {
   if (ferencvarosiVillany) {
     await prisma.oraallas.createMany({
       data: [
-        { merooraId: ferencvarosiVillany.id, datum: new Date(Date.UTC(2026, 6, 1)), ertek: 12480, rogzitoId: berloAnna.id },
-        { merooraId: ferencvarosiVillany.id, datum: new Date(Date.UTC(2026, 7, 1)), ertek: 12790, rogzitoId: berloAnna.id },
-        { merooraId: ferencvarosiVillany.id, datum: new Date(Date.UTC(2026, 8, 1)), ertek: 13165, rogzitoId: berloAnna.id },
+        { merooraId: ferencvarosiVillany.id, datum: nap(-2), ertek: 12480, rogzitoId: berloAnna.id },
+        { merooraId: ferencvarosiVillany.id, datum: nap(-1), ertek: 12790, rogzitoId: berloAnna.id },
+        { merooraId: ferencvarosiVillany.id, datum: nap(0), ertek: 13165, rogzitoId: berloAnna.id },
       ],
     });
   }
@@ -219,44 +241,136 @@ async function main() {
   if (ferencvarosiViz) {
     await prisma.oraallas.createMany({
       data: [
-        { merooraId: ferencvarosiViz.id, datum: new Date(Date.UTC(2026, 6, 1)), ertek: 214.2, rogzitoId: berloAnna.id },
-        { merooraId: ferencvarosiViz.id, datum: new Date(Date.UTC(2026, 7, 1)), ertek: 218.9, rogzitoId: berloAnna.id },
-        { merooraId: ferencvarosiViz.id, datum: new Date(Date.UTC(2026, 8, 1)), ertek: 223.4, rogzitoId: berloAnna.id },
+        { merooraId: ferencvarosiViz.id, datum: nap(-2), ertek: 214.2, rogzitoId: berloAnna.id },
+        { merooraId: ferencvarosiViz.id, datum: nap(-1), ertek: 218.9, rogzitoId: berloAnna.id },
+        { merooraId: ferencvarosiViz.id, datum: nap(0), ertek: 223.4, rogzitoId: berloAnna.id },
       ],
     });
   }
 
-  await prisma.eloirtTetel.createMany({
-    data: [
-      // Anna: augusztus rendben, szeptemberben kevesebb érkezett.
-      { jogviszonyId: annaJogviszony.id, tipus: "berleti_dij", idoszak: "2026-08", esedekesseg: new Date(Date.UTC(2026, 7, 5)), osszegFt: 180000 },
-      { jogviszonyId: annaJogviszony.id, tipus: "berleti_dij", idoszak: "2026-09", esedekesseg: new Date(Date.UTC(2026, 8, 5)), osszegFt: 180000 },
-      { jogviszonyId: annaJogviszony.id, tipus: "kozos_koltseg", idoszak: "2026-09", esedekesseg: new Date(Date.UTC(2026, 8, 5)), osszegFt: 14000 },
-      // Tamás: szeptemberre nem érkezett semmi.
-      { jogviszonyId: tamasJogviszony.id, tipus: "berleti_dij", idoszak: "2026-08", esedekesseg: new Date(Date.UTC(2026, 7, 10)), osszegFt: 240000 },
-      { jogviszonyId: tamasJogviszony.id, tipus: "berleti_dij", idoszak: "2026-09", esedekesseg: new Date(Date.UTC(2026, 8, 10)), osszegFt: 240000 },
-    ],
+  // Az előírásokat ugyanaz a függvény állítja elő, mint éles használatban.
+  // Ha kézzel írnánk be őket, a példaadat megint el tudna csúszni attól, amit
+  // az alkalmazás magától generál — és pont ez volt a baj.
+  async function eloirasokatKiir(jogviszonyId: string, adat: JogviszonyAdat) {
+    const sorok = eloirasok(adat, MOST);
+    const kesz: { id: string; tipus: string; idoszak: string; esedekesseg: Date; osszegFt: number }[] = [];
+
+    for (const eloiras of sorok) {
+      const tetel = await prisma.eloirtTetel.create({
+        data: {
+          jogviszonyId,
+          tipus: eloiras.tipus,
+          idoszak: eloiras.idoszak,
+          esedekesseg: eloiras.esedekesseg,
+          osszegFt: eloiras.osszegFt,
+          reszletezes: eloiras.reszletezes ? JSON.stringify(eloiras.reszletezes) : null,
+        },
+      });
+      kesz.push(tetel);
+    }
+
+    return kesz;
+  }
+
+  /**
+   * A befizetés sorsa egy adott hónapban. A futó hónap a kivétel: ott van a
+   * vitás és az elmaradt tétel, hogy az egyeztetés minden állapota látszódjon.
+   */
+  type Sors =
+    | { fajta: "pontos" }
+    | { fajta: "keses"; nap: number }
+    | { fajta: "vitas"; berbeadoOsszeg: number }
+    | { fajta: "elmaradt" };
+
+  function annaSorsa(honapokVissza: number, tipus: string): Sors {
+    if (honapokVissza === 0 && tipus === "berleti_dij") {
+      // A klasszikus eset: a bérlő szerint teljes összeg ment, a bérbeadó
+      // szerint kevesebb érkezett. Innen jön a bizonylatkérés.
+      return { fajta: "vitas", berbeadoOsszeg: 175000 };
+    }
+    // Két csúszás a múltban, hogy a betekintő ne csak makulátlan sort mutasson.
+    if (honapokVissza === 4 || honapokVissza === 9) return { fajta: "keses", nap: 6 };
+    return { fajta: "pontos" };
+  }
+
+  function tamasSorsa(honapokVissza: number): Sors {
+    // A futó hónapra még nem érkezett semmi: a tétel a bérbeadóra vár.
+    if (honapokVissza === 0) return { fajta: "elmaradt" };
+    if (honapokVissza === 3) return { fajta: "keses", nap: 4 };
+    return { fajta: "pontos" };
+  }
+
+  /** Hány hónappal a mostani hónap előtt van ez az időszak. */
+  function honapokVissza(idoszak: string): number {
+    const [ev, ho] = idoszak.split("-").map(Number);
+    return (EV - ev) * 12 + (HONAP - (ho - 1));
+  }
+
+  async function befizeteseketKiir(
+    jogviszonyId: string,
+    tetelek: { id: string; tipus: string; idoszak: string; esedekesseg: Date; osszegFt: number }[],
+    sorsa: (honapokVissza: number, tipus: string) => Sors,
+    kozlemenyek: Record<string, string>,
+  ) {
+    for (const tetel of tetelek) {
+      const sors = sorsa(honapokVissza(tetel.idoszak), tetel.tipus);
+      if (sors.fajta === "elmaradt") continue;
+
+      const csuszas = sors.fajta === "keses" ? sors.nap : -1;
+      const utalas = new Date(tetel.esedekesseg.getTime() + csuszas * 86400000);
+      const kozlemeny = `${kozlemenyek[tetel.tipus] ?? "Befizetés"} — ${tetel.idoszak}`;
+
+      await prisma.berloiIgazolas.create({
+        data: { jogviszonyId, utalasDatuma: utalas, osszegFt: tetel.osszegFt, kozlemeny },
+      });
+
+      await prisma.berbeadoiIgazolas.create({
+        data: {
+          tulajdonosId: berbeado.id,
+          jogviszonyId,
+          // A bérbeadó egy nappal később veszi észre: ennyi tűrés van a két
+          // oldal dátuma közt, és így életszerűbb is.
+          erkezesDatuma: new Date(utalas.getTime() + 86400000),
+          osszegFt: sors.fajta === "vitas" ? sors.berbeadoOsszeg : tetel.osszegFt,
+          kozlemeny,
+        },
+      });
+    }
+  }
+
+  const KOZLEMENYEK = {
+    berleti_dij: "Bérleti díj",
+    kozos_koltseg: "Közös költség",
+    rezsi_atalany: "Rezsiátalány",
+  };
+
+  const annaTetelek = await eloirasokatKiir(annaJogviszony.id, {
+    kezdete: annaJogviszony.kezdete,
+    vege: annaJogviszony.vege,
+    berletiDijFt: annaJogviszony.berletiDijFt,
+    kozosKoltsegFt: annaJogviszony.kozosKoltsegFt,
+    rezsiElszamolas: annaJogviszony.rezsiElszamolas,
+    rezsiAtalanyFt: annaJogviszony.rezsiAtalanyFt,
+    fizetesiNap: annaJogviszony.fizetesiNap,
   });
 
-  await prisma.berloiIgazolas.createMany({
-    data: [
-      { jogviszonyId: annaJogviszony.id, utalasDatuma: new Date(Date.UTC(2026, 7, 4)), osszegFt: 180000, kozlemeny: "Augusztusi bérleti díj" },
-      { jogviszonyId: annaJogviszony.id, utalasDatuma: new Date(Date.UTC(2026, 8, 4)), osszegFt: 180000, kozlemeny: "Szeptemberi bérleti díj" },
-      { jogviszonyId: tamasJogviszony.id, utalasDatuma: new Date(Date.UTC(2026, 7, 9)), osszegFt: 240000, kozlemeny: "Augusztus" },
-    ],
+  const tamasTetelek = await eloirasokatKiir(tamasJogviszony.id, {
+    kezdete: tamasJogviszony.kezdete,
+    vege: tamasJogviszony.vege,
+    berletiDijFt: tamasJogviszony.berletiDijFt,
+    kozosKoltsegFt: tamasJogviszony.kozosKoltsegFt,
+    rezsiElszamolas: tamasJogviszony.rezsiElszamolas,
+    rezsiAtalanyFt: tamasJogviszony.rezsiAtalanyFt,
+    fizetesiNap: tamasJogviszony.fizetesiNap,
   });
 
-  // A bérbeadó saját oldala. Szándékosan nem minden tételre van meg: a
-  // próbaadat így mutatja a négy helyzetet — egyezik, eltér az előírástól,
-  // a két oldal mást mond, és a még egyoldalú tétel.
-  await prisma.berbeadoiIgazolas.createMany({
-    data: [
-      { tulajdonosId: berbeado.id, jogviszonyId: annaJogviszony.id, erkezesDatuma: new Date(Date.UTC(2026, 7, 4)), osszegFt: 180000, kozlemeny: "Augusztusi bérleti díj" },
-      { tulajdonosId: berbeado.id, jogviszonyId: annaJogviszony.id, erkezesDatuma: new Date(Date.UTC(2026, 8, 4)), osszegFt: 175000, kozlemeny: "Szeptemberi bérleti díj" },
-      { tulajdonosId: berbeado.id, jogviszonyId: annaJogviszony.id, erkezesDatuma: new Date(Date.UTC(2026, 8, 6)), osszegFt: 14000, kozlemeny: "Közös költség" },
-      { tulajdonosId: berbeado.id, jogviszonyId: tamasJogviszony.id, erkezesDatuma: new Date(Date.UTC(2026, 7, 9)), osszegFt: 240000, kozlemeny: "Augusztus" },
-    ],
-  });
+  await befizeteseketKiir(annaJogviszony.id, annaTetelek, annaSorsa, KOZLEMENYEK);
+  await befizeteseketKiir(
+    tamasJogviszony.id,
+    tamasTetelek,
+    (vissza) => tamasSorsa(vissza),
+    KOZLEMENYEK,
+  );
 
   // Egy kiadott és befizetett rezsielszámolás, hogy az adóösszesítőn látszódjon
   // a lényeg: a mért fogyasztás nem bevétel, a közös költség viszont igen.
@@ -265,7 +379,7 @@ async function main() {
       jogviszonyId: annaJogviszony.id,
       tipus: "rezsi",
       idoszak: "2026-09",
-      esedekesseg: new Date(Date.UTC(2026, 8, 15)),
+      esedekesseg: nap(0, 15),
       osszegFt: 71513,
     },
   });
@@ -273,13 +387,13 @@ async function main() {
   const rezsiElszamolas = await prisma.elszamolas.create({
     data: {
       jogviszonyId: annaJogviszony.id,
-      idoszakKezdete: new Date(Date.UTC(2026, 6, 1)),
-      idoszakVege: new Date(Date.UTC(2026, 8, 1)),
+      idoszakKezdete: nap(-2),
+      idoszakVege: nap(0),
       allapot: "elfogadva",
       osszegFt: 71513,
       eloirtTetelId: rezsiEloiras.id,
-      kiadva: new Date(Date.UTC(2026, 8, 5)),
-      lezarva: new Date(Date.UTC(2026, 8, 6)),
+      kiadva: nap(0, 5),
+      lezarva: nap(0, 6),
       tetelek: {
         create: [
           { fajta: "meroora", megnevezes: "Villany", mennyiseg: 685, mertekegyseg: "kWh", reszletezes: "12 480 → 13 165 kWh, 62 nap. Ebből 428,56 kWh kedvezményes áron (36,9 Ft/kWh), a keret fölötti 256,44 kWh piaci áron (70,1 Ft/kWh). Alapdíj 62 napra: 1835 Ft.", osszegFt: 35625, sorrend: 0 },
@@ -294,7 +408,7 @@ async function main() {
     data: {
       tulajdonosId: berbeado.id,
       jogviszonyId: annaJogviszony.id,
-      erkezesDatuma: new Date(Date.UTC(2026, 8, 14)),
+      erkezesDatuma: nap(0, 14),
       osszegFt: 71513,
       kozlemeny: "Rezsielszámolás 2026 nyár",
     },
@@ -304,9 +418,9 @@ async function main() {
 
   await prisma.koltseg.createMany({
     data: [
-      { ingatlanId: ferencvaros.id, datum: new Date(Date.UTC(2026, 2, 18)), fajta: "felujitas", megnevezes: "Kazán karbantartás, számla 2026/114", osszegFt: 48000 },
-      { ingatlanId: ferencvaros.id, datum: new Date(Date.UTC(2026, 0, 9)), fajta: "biztositas", megnevezes: "Lakásbiztosítás éves díja", osszegFt: 62000 },
-      { ingatlanId: ujbuda.id, datum: new Date(Date.UTC(2026, 5, 2)), fajta: "felujitas", megnevezes: "Fürdőszoba csaptelep csere", osszegFt: 85000 },
+      { ingatlanId: ferencvaros.id, datum: nap(-6, 18), fajta: "felujitas", megnevezes: "Kazán karbantartás, számla 2026/114", osszegFt: 48000 },
+      { ingatlanId: ferencvaros.id, datum: nap(-8, 9), fajta: "biztositas", megnevezes: "Lakásbiztosítás éves díja", osszegFt: 62000 },
+      { ingatlanId: ujbuda.id, datum: nap(-3, 2), fajta: "felujitas", megnevezes: "Fürdőszoba csaptelep csere", osszegFt: 85000 },
     ],
   });
 
@@ -329,7 +443,7 @@ async function main() {
       jogviszonyId: tamasJogviszony.id,
       megnevezes: "Bérleti szerződés – Újbudai kétszobás",
       kelteHelye: "Budapest",
-      kelte: new Date(Date.UTC(2026, 0, 28)),
+      kelte: nap(-8, 28),
       modulok: {
         create: [
           "ovadek",
@@ -362,8 +476,8 @@ async function main() {
       ok: "elhasznalodas",
       surgosseg: "surgos",
       allapot: "atvette",
-      atvetve: new Date(Date.UTC(2026, 8, 17)),
-      bejelentve: new Date(Date.UTC(2026, 8, 16)),
+      atvetve: nap(0, 17),
+      bejelentve: nap(0, 16),
       viseloFel: "berbeado",
     },
   });
@@ -374,13 +488,13 @@ async function main() {
         hibabejelentesId: csaptelep.id,
         szerzoId: berbeado.id,
         szoveg: "Szerdán 16 órakor tud jönni a szerelő, megfelel?",
-        letrehozva: new Date(Date.UTC(2026, 8, 17)),
+        letrehozva: nap(0, 17),
       },
       {
         hibabejelentesId: csaptelep.id,
         szerzoId: berloAnna.id,
         szoveg: "Igen, itthon leszek.",
-        letrehozva: new Date(Date.UTC(2026, 8, 17)),
+        letrehozva: nap(0, 17),
       },
     ],
   });
@@ -395,10 +509,10 @@ async function main() {
       ok: "elhasznalodas",
       surgosseg: "normal",
       allapot: "lezarva",
-      bejelentve: new Date(Date.UTC(2026, 7, 3)),
-      atvetve: new Date(Date.UTC(2026, 7, 3)),
-      elharitva: new Date(Date.UTC(2026, 7, 6)),
-      lezarva: new Date(Date.UTC(2026, 7, 7)),
+      bejelentve: nap(-1, 3),
+      atvetve: nap(-1, 3),
+      elharitva: nap(-1, 6),
+      lezarva: nap(-1, 7),
       viseloFel: "megosztott",
     },
   });
@@ -411,7 +525,7 @@ async function main() {
       token: "probabetekinto2026",
       cel: "Lakásbérléshez, egy meghirdetett albérlet megpályázásához",
       osszegetMutat: false,
-      lejar: new Date(Date.UTC(2026, 11, 31)),
+      lejar: nap(3, 28),
     },
   });
 

@@ -9,6 +9,9 @@
 
 import { randomBytes } from "node:crypto";
 import { prisma } from "@/lib/db";
+import { egyeztet } from "@/domain/egyeztetes";
+import { napKulonbseg } from "@/domain/penz";
+import { egyeztetesBeallitasok } from "@/lib/lekerdezesek";
 import {
   ELETTARTAM_NAPOK,
   allapota,
@@ -138,21 +141,59 @@ export async function nyilvanosNezet(
       jogviszony: {
         include: {
           ingatlan: true,
-          eloirtTetelek: { include: { egyeztetes: true } },
+          eloirtTetelek: true,
+          berloiIgazolasok: true,
+          berbeadoiIgazolasok: true,
         },
       },
     },
   });
   if (!betekinto || allapota(betekinto, most) !== "elo") return null;
 
+  // A párosítást itt is ugyanaz a függvény végzi, mint a befizetések lapon.
+  // Korábban ez egy `Egyeztetes` táblát olvasott, amibe viszont soha semmi nem
+  // írt: így minden hónap "hiányzik" lett, akármit rögzítettek a felek.
+  const beallitasok = await egyeztetesBeallitasok(betekinto.jogviszony.ingatlan.tulajdonosId);
+  const parositas = egyeztet(
+    betekinto.jogviszony.eloirtTetelek,
+    betekinto.jogviszony.berloiIgazolasok,
+    betekinto.jogviszony.berbeadoiIgazolasok,
+    most,
+    beallitasok,
+  );
+
+  const berbeadoiak = new Map(
+    betekinto.jogviszony.berbeadoiIgazolasok.map((sor) => [sor.id, sor]),
+  );
+  const tetelhez = new Map(
+    parositas
+      .filter((sor) => sor.eloirtTetelId !== null)
+      .map((sor) => [sor.eloirtTetelId as string, sor]),
+  );
+
+  // A nézet szándékosan **csak a bérbeadó rögzítését** veszi alapul. A bérlő
+  // saját bejelentése nem bizonyít semmit annak, aki ezt olvassa — épp ez adja
+  // a betekintő súlyát. Ezért egy vitás tétel sem számít megérkezettnek, amíg
+  // a bérbeadó oldalán nincs mögötte beérkezés.
   const tetelek: BetekintoTetel[] = betekinto.jogviszony.eloirtTetelek
     .filter((tetel) => tetel.tipus === "berleti_dij" && tetel.esedekesseg <= most)
-    .map((tetel) => ({
-      idoszak: tetel.idoszak,
-      allapot: (tetel.egyeztetes?.allapot ?? "hianyzik") as BetekintoTetel["allapot"],
-      keses: tetel.egyeztetes?.keses ?? 0,
-      osszegFt: tetel.osszegFt,
-    }));
+    .map((tetel) => {
+      const sor = tetelhez.get(tetel.id);
+      const berbeadoi = sor?.berbeadoiIgazolasId
+        ? berbeadoiak.get(sor.berbeadoiIgazolasId)
+        : undefined;
+
+      if (!berbeadoi || !berbeadoi.megerkezett) {
+        return { idoszak: tetel.idoszak, allapot: "hianyzik" as const, keses: 0, osszegFt: tetel.osszegFt };
+      }
+
+      return {
+        idoszak: tetel.idoszak,
+        allapot: berbeadoi.osszegFt === tetel.osszegFt ? ("egyezik" as const) : ("elter" as const),
+        keses: napKulonbseg(tetel.esedekesseg, berbeadoi.erkezesDatuma),
+        osszegFt: tetel.osszegFt,
+      };
+    });
 
   await prisma.betekintoMegnyitas.create({ data: { betekintoId: betekinto.id } });
 
