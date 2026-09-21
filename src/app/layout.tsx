@@ -54,7 +54,13 @@ export default async function RootLayout({
             >
               Albi
             </Link>
-            <nav className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+            {/*
+              A `min-w-0` nem díszítés: enélkül a menü a tartalma teljes
+              szélességét kapja a külső sorban, és a `flex-wrap` sosem lép
+              életbe — a hivatkozások egyszerűen kilógnak a telefon
+              képernyőjéről. Ez a bérlemények menüpontjával lett látható.
+            */}
+            <nav className="flex min-w-0 flex-1 flex-wrap gap-x-4 gap-y-1 text-sm">
               {menu.map((elem) => (
                 <Link
                   key={elem.utvonal}
