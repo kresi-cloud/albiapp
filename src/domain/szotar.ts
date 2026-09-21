@@ -1145,6 +1145,10 @@ export const SZOTAR: Szotar = {
       "The two sides do not match. This is where the receipt of the transfer matters: the " +
       "receiving side from you, the sending side from the tenant. No full bank statement is needed.",
   },
+  "betekinto.nyilvanos.nyitott_cimke": {
+    hu: "Amire a bérbeadó még nem igazolt beérkezést",
+    en: "Not yet confirmed as received by the landlord",
+  },
   "befizetesek.varr_rad": { hu: "Rád vár", en: "Waiting on you" },
   "befizetesek.beerkezes_nyito": { hu: "Megérkezett? Rögzítem", en: "Arrived? Record it" },
   "befizetesek.beerkezes_datum": { hu: "Mikor érkezett", en: "When it arrived" },
