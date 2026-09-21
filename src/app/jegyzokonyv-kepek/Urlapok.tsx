@@ -5,6 +5,7 @@ import { Mezo, Szovegdoboz, Valaszto } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import { APRO_GOMB, GOMB, MEZO } from "@/components/urlap";
 import { kepetElbiralAction, kepetFeltolt, kepetTorolAction, type Eredmeny } from "./actions";
+import { NYITO } from "@/components/ui/alap";
 
 const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
 
@@ -41,7 +42,7 @@ export function KepFeltoltes({
 
   return (
     <details className="mt-3">
-      <summary className="cursor-pointer text-sm text-halvany underline underline-offset-2">
+      <summary className={NYITO}>
         {parCimke ?? cimkek.nyito}
       </summary>
       <form action={kuldes} className="mt-3 grid gap-3">
@@ -126,7 +127,7 @@ export function KepElbiralas({ kepId, cimkek }: { kepId: string; cimkek: Elbiral
         {cimkek.megerosit}
       </button>
       <details>
-        <summary className="cursor-pointer text-xs text-halvany underline underline-offset-2">
+        <summary className={NYITO}>
           {cimkek.kifogasol}
         </summary>
         <label className="mt-2 grid gap-1 text-xs">

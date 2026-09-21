@@ -5,7 +5,7 @@ import { berbeadoHibai } from "@/lib/hibabejelentes";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv, szovegek } from "@/lib/nyelv";
 import { HibaBejelentes } from "./Urlapok";
-import { Lapfej, Sugo, Szakaszcim } from "@/components/ui/alap";
+import { Lapfej, NYITO, Sugo, Szakaszcim } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +66,7 @@ export default async function Hibak() {
       */}
       {lezartak.length > 0 ? (
         <details className="rounded-kartya border border-keret bg-felulet p-4">
-          <summary className="cursor-pointer font-medium">
+          <summary className={NYITO}>
             {sz("hibak.lezartak", { darab: lezartak.length })}
           </summary>
           <ul className="mt-3 grid gap-3">

@@ -258,6 +258,21 @@ export function Lapfej({
 }
 
 /**
+ * Összecsukott szakasz nyitósora.
+ *
+ * Miért közös: a lapokon hatféle alakban élt ugyanez a sor — aláhúzott apró
+ * szöveg, félkövér mondat, kártya tetején ülő szürke csík —, holott
+ * mindegyik ugyanazt ígéri: van itt még valami, és egy koppintásra előjön.
+ * A natív háromszög marker megmarad, mert az mondja meg, hogy nyitható —
+ * ezért nincs `flex` sem rajta: a böngésző a flex konténerré tett
+ * `summary`-ről szó nélkül leveszi a markert, és marad egy félkövér mondat,
+ * amiről semmi nem árulja el, hogy rá lehet koppintani. A 44 képpontos
+ * magasság pedig azért, hogy ujjal is el lehessen találni.
+ */
+export const NYITO =
+  "min-h-11 cursor-pointer py-2.5 text-sm font-medium text-szoveg marker:text-nagyon-halvany";
+
+/**
  * Összecsukott magyarázat.
  *
  * A lapok tetején eddig három bekezdésnyi tájékoztató állt, amit az első

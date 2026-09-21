@@ -5,6 +5,7 @@ import { hianyzoAdatok, szakaszok, zaradekSorok } from "@/domain/szerzodes-keszi
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { szerzodesBemenet } from "@/lib/szerzodes";
+import { NYITO } from "@/components/ui/alap";
 import {
   ModulValto,
   ParameterUrlap,
@@ -159,7 +160,7 @@ export default async function SzerzodesOldal({
       </section>
 
       <details className="rounded-kartya border border-keret bg-felulet p-4">
-        <summary className="cursor-pointer font-medium">
+        <summary className={NYITO}>
           {sz("szerzodes.kotelezoek_nyito", { db: kotelezoek.length })}
         </summary>
         <ul className="mt-2">
@@ -215,7 +216,7 @@ export default async function SzerzodesOldal({
         open={veglegesSzoveg !== null}
         className="rounded-kartya border border-keret bg-felulet p-4"
       >
-        <summary className="cursor-pointer font-medium">
+        <summary className={NYITO}>
           {sz("szerzodes.szoveg_nyito", { db: kesz.length })}
         </summary>
         <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">

@@ -5,6 +5,7 @@ import { Mezo as MegorzoMezo, type UrlapAllapot } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import { GOMB, MEZO } from "@/components/urlap";
 import { utalastRogzit, utalastTorol, type Eredmeny } from "./actions";
+import { NYITO } from "@/components/ui/alap";
 
 const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
 
@@ -64,7 +65,7 @@ export function Utalas({
 
   return (
     <details className="mt-3">
-      <summary className="cursor-pointer text-sm text-halvany underline underline-offset-2">
+      <summary className={NYITO}>
         {cimkek.nyito}
       </summary>
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">

@@ -2,6 +2,7 @@ import { hianyzoParok, osszesit, type KepAllapot } from "@/domain/jegyzokonyv-ke
 import type { KepNezet } from "@/lib/jegyzokonyv-kepek";
 import { szovegek } from "@/lib/nyelv";
 import { KepElbiralas, KepFeltoltes, KepTorles } from "./Urlapok";
+import { NYITO } from "@/components/ui/alap";
 
 /**
  * A jegyzőkönyv fényképalbuma, ugyanaz a bérbeadónál és a bérlőnél.
@@ -93,7 +94,7 @@ export async function Album({
 
         {parja ? (
           <details>
-            <summary className="cursor-pointer text-xs text-halvany underline underline-offset-2">
+            <summary className={NYITO}>
               {sz("kep.par_cim")}
             </summary>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -136,7 +137,7 @@ export async function Album({
 
       {rendezett.length > 0 ? (
         <details className="mt-3">
-          <summary className="cursor-pointer text-sm text-halvany underline underline-offset-2">
+          <summary className={NYITO}>
             {sz("lista.korabbiak", { darab: rendezett.length })}
           </summary>
           <ul className="mt-3 grid grid-cols-2 gap-3">

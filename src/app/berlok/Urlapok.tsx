@@ -12,6 +12,7 @@ import {
   type Eredmeny,
 } from "./actions";
 import { MEZO, GOMB, APRO_GOMB } from "@/components/urlap";
+import { NYITO } from "@/components/ui/alap";
 
 const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
 
@@ -82,7 +83,7 @@ export function BerloAdatok({ berlo, cimkek }: { berlo: BerloAdat; cimkek: AdatC
 
   return (
     <details className="mt-3">
-      <summary className="cursor-pointer text-sm text-halvany underline underline-offset-2">
+      <summary className={NYITO}>
         {cimkek.cim}
         {berlo.hianyzik > 0 ? ` — ${cimkek.hianyzik}` : ` — ${cimkek.megvan}`}
       </summary>
@@ -163,7 +164,7 @@ export function BerloHozzaadas({
 
   return (
     <details className="mt-3">
-      <summary className="cursor-pointer text-sm text-halvany underline underline-offset-2">
+      <summary className={NYITO}>
         {cimkek.nyito}
       </summary>
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -231,7 +232,7 @@ export function JogviszonyLezaras({
 
   return (
     <details className="mt-3">
-      <summary className="cursor-pointer text-sm text-halvany underline underline-offset-2">
+      <summary className={NYITO}>
         {cimke}
       </summary>
       <form action={kuldes} className="mt-3 grid gap-3">

@@ -3,7 +3,7 @@ import { kotelezoSzerep } from "@/lib/munkamenet";
 import { forintNyelven } from "@/domain/nyelv";
 import { szovegek } from "@/lib/nyelv";
 import { IngatlanUrlap, JogviszonyUrlap } from "./Urlapok";
-import { Lapfej, Ures } from "@/components/ui/alap";
+import { Lapfej, NYITO, Ures } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +64,7 @@ export default async function Ingatlanok() {
         open={ures}
         className="rounded-kartya border border-keret bg-felulet p-4"
       >
-        <summary className="cursor-pointer font-medium">{sz("berlemeny.uj")}</summary>
+        <summary className={NYITO}>{sz("berlemeny.uj")}</summary>
         <div className="mt-3">
           <IngatlanUrlap
             cimkek={{
@@ -88,7 +88,7 @@ export default async function Ingatlanok() {
 
       {ures ? null : (
         <details className="rounded-kartya border border-keret bg-felulet p-4">
-          <summary className="cursor-pointer font-medium">{sz("jogviszony.uj")}</summary>
+          <summary className={NYITO}>{sz("jogviszony.uj")}</summary>
           <div className="mt-3">
             <JogviszonyUrlap
               ingatlanok={ingatlanok.map((ingatlan) => ({

@@ -13,7 +13,7 @@ import { ElbiralasUrlap, OraallasUrlap } from "@/app/rezsi/Urlapok";
 import { meretSzoveg } from "@/domain/bizonylat";
 import { bizonylatokTetelekhez } from "@/lib/bizonylat";
 import { Bizonylatok } from "@/app/bizonylatok/Urlapok";
-import { Lapfej, Szakaszcim } from "@/components/ui/alap";
+import { Lapfej, NYITO, Szakaszcim } from "@/components/ui/alap";
 import { Utalas, UtalastVisszavon } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -218,7 +218,7 @@ export default async function BerloiNezet() {
 
             {bizonylatos.length > 0 ? (
               <details className="mt-3 rounded-kartya border border-keret bg-felulet">
-                <summary className="cursor-pointer p-3 text-sm font-medium">
+                <summary className={`${NYITO} px-3`}>
                   {sz("lista.rendezett_bizonylattal", { darab: bizonylatos.length })}
                 </summary>
                 <ul className="grid gap-2 p-3 pt-0">{bizonylatos.map(Tetel)}</ul>
@@ -227,7 +227,7 @@ export default async function BerloiNezet() {
 
             {csendes.length > 0 ? (
               <details className="mt-3 rounded-kartya border border-keret bg-felulet">
-                <summary className="cursor-pointer p-3 text-sm font-medium">
+                <summary className={`${NYITO} px-3`}>
                   {sz("lista.rendezett", { darab: csendes.length })}
                 </summary>
                 <ul className="grid gap-2 p-3 pt-0">{csendes.map(Tetel)}</ul>

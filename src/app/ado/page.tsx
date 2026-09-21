@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { BeszerzesUrlap, KoltsegUrlap } from "./Urlapok";
-import { Lapfej, Sugo, Szakaszcim } from "@/components/ui/alap";
+import { Lapfej, NYITO, Sugo, Szakaszcim } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -363,7 +363,7 @@ function Lista({
 
   return (
     <details className="rounded-kartya border border-keret bg-felulet">
-      <summary className="cursor-pointer p-3 text-sm font-medium">{cimke}</summary>
+      <summary className={`${NYITO} px-3`}>{cimke}</summary>
       <div className="p-3 pt-0">{lista}</div>
     </details>
   );

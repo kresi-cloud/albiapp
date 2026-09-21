@@ -6,7 +6,7 @@ import { berbeadoElerhetosege, berloHibai } from "@/lib/hibabejelentes";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv } from "@/lib/nyelv";
 import { HibaBejelentes } from "@/app/hibak/Urlapok";
-import { Lapfej, Sugo, Szakaszcim } from "@/components/ui/alap";
+import { Lapfej, NYITO, Sugo, Szakaszcim } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -106,7 +106,7 @@ export default async function BerloiHibak() {
       {/* Ugyanaz, mint a bérbeadói oldalon: a lezártak csak gyűlnek. */}
       {lezartak.length > 0 ? (
         <details className="rounded-kartya border border-keret bg-felulet p-4">
-          <summary className="cursor-pointer font-medium">
+          <summary className={NYITO}>
             {sz("hiba.oldal.lezartak")} ({lezartak.length})
           </summary>
           <ul className="mt-3 grid gap-3">
