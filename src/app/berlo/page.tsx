@@ -2,7 +2,7 @@ import { Allapotjelzo } from "@/components/Allapotjelzo";
 import { csoportositva } from "@/domain/egyeztetes";
 import { ElszamolasTetelek } from "@/components/ElszamolasTetelek";
 import { Teendolista } from "@/components/Teendolista";
-import { datumNyelven, forintNyelven } from "@/domain/nyelv";
+import { datumNyelven, forintNyelven, honapNyelven } from "@/domain/nyelv";
 import { szovegekNyelvvel } from "@/domain/szotar";
 import { prisma } from "@/lib/db";
 import { berloNezetei, berloTeendoi } from "@/lib/lekerdezesek";
@@ -13,6 +13,7 @@ import { ElbiralasUrlap, OraallasUrlap } from "@/app/rezsi/Urlapok";
 import { meretSzoveg } from "@/domain/bizonylat";
 import { bizonylatokTetelekhez } from "@/lib/bizonylat";
 import { Bizonylatok } from "@/app/bizonylatok/Urlapok";
+import { Lapfej, Szakaszcim } from "@/components/ui/alap";
 import { Utalas, UtalastVisszavon } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -88,31 +89,28 @@ export default async function BerloiNezet() {
   if (nezetek.length === 0) {
     return (
       <div className="grid gap-3">
-        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("nav.berlemenyem")}</h1>
-        <p className="text-halvany">{sz("berlo.nincs_berlemeny")}</p>
+        <Lapfej cim={sz("nav.berlemenyem")} alcim={sz("berlo.nincs_berlemeny")} />
       </div>
     );
   }
 
   return (
-    <div className="grid gap-8">
-      <section>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">
-          {sz("berlo.udvozles", { nev: berlo.nev })}
-        </h1>
-        <p className="mt-1 text-halvany">
-          {nezetek.map((nezet) => `${nezet.ingatlanMegnevezes}, ${nezet.ingatlanCim}`).join(" · ")}
-        </p>
-      </section>
+    <div className="grid gap-6">
+      <Lapfej
+        cim={sz("berlo.udvozles", { nev: berlo.nev })}
+        alcim={nezetek
+          .map((nezet) => `${nezet.ingatlanMegnevezes}, ${nezet.ingatlanCim}`)
+          .join(" · ")}
+      />
 
       <section>
-        <h2 className="mb-2 font-display text-base font-bold tracking-tight">{sz("berlo.teendok")}</h2>
+        <Szakaszcim>{sz("berlo.teendok")}</Szakaszcim>
         <Teendolista teendok={sajatTeendok} nyelv={nyelv} />
       </section>
 
       {meroorasJogviszonyok.map((jogviszony) => (
         <section key={`orak-${jogviszony.id}`}>
-          <h2 className="mb-2 font-display text-base font-bold tracking-tight">{sz("berlo.oraallas")}</h2>
+          <Szakaszcim>{sz("berlo.oraallas")}</Szakaszcim>
           <ul className="grid gap-3">
             {jogviszony.ingatlan.meroorak.map((meroora) => (
               <li
@@ -152,12 +150,12 @@ export default async function BerloiNezet() {
       {jogviszonyok.flatMap((jogviszony) =>
         jogviszony.elszamolasok.map((elszamolas) => (
           <section key={elszamolas.id}>
-            <h2 className="mb-2 font-display text-base font-bold tracking-tight">
+            <Szakaszcim>
               {sz("berlo.elszamolas", {
                 tol: datumNyelven(elszamolas.idoszakKezdete, nyelv),
                 ig: datumNyelven(elszamolas.idoszakVege, nyelv),
               })}
-            </h2>
+            </Szakaszcim>
             <div className="rounded-kartya border border-keret bg-felulet p-4">
               <p className="text-sm text-halvany">
                 {elszamolas.allapot === "kiadva"
@@ -204,9 +202,9 @@ export default async function BerloiNezet() {
 
         return (
           <section key={nezet.id}>
-            <h2 className="mb-2 font-display text-base font-bold tracking-tight">
+            <Szakaszcim>
               {sz("berlo.befizetesek", { berlemeny: nezet.ingatlanMegnevezes })}
-            </h2>
+            </Szakaszcim>
 
             {soronVan.length === 0 && tetelek.length > 0 ? (
               <p className="mb-3 rounded-lg border border-rendben-keret bg-rendben-lap p-3 text-sm text-rendben">
@@ -248,7 +246,8 @@ export default async function BerloiNezet() {
                     >
                       <div className="flex flex-wrap items-baseline justify-between gap-2">
                         <span className="font-medium">
-                          {sor.idoszak} · {forintNyelven(sor.osszegFt, nyelv)}
+                          {sor.idoszak ? `${honapNyelven(sor.idoszak, nyelv)} · ` : ""}
+                          {forintNyelven(sor.osszegFt, nyelv)}
                         </span>
                         <Allapotjelzo allapot={sor.allapot} nyelv={nyelv} />
                       </div>

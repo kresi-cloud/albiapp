@@ -5,6 +5,7 @@ import { Album } from "@/app/jegyzokonyv-kepek/Album";
 import { berloJegyzokonyvei } from "@/lib/jegyzokonyv-kepek";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv } from "@/lib/nyelv";
+import { Lapfej } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -24,10 +25,7 @@ export default async function BerloiJegyzokonyvek() {
 
   return (
     <div className="grid gap-6">
-      <section>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("kep.oldal.cim")}</h1>
-        <p className="mt-1 text-halvany">{sz("kep.oldal.bevezeto")}</p>
-      </section>
+      <Lapfej cim={sz("kep.oldal.cim")} alcim={sz("kep.oldal.bevezeto")} />
 
       {jegyzokonyvek.length === 0 ? (
         <p className="text-sm text-halvany">{sz("kep.oldal.ures")}</p>

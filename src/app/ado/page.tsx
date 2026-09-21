@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { BeszerzesUrlap, KoltsegUrlap } from "./Urlapok";
+import { Lapfej, Szakaszcim } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -36,20 +37,20 @@ export default async function Ado({
 
   return (
     <div className="grid gap-8">
-      <section>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">
-          {sz("ado.cim", { ev })}
-        </h1>
-        <p className="mt-1 text-halvany">{sz("ado.bevezeto")}</p>
-        <div className="mt-3 flex flex-wrap gap-2 text-sm">
+      <section className="grid gap-3">
+        <Lapfej cim={sz("ado.cim", { ev })} alcim={sz("ado.bevezeto")} />
+        <div className="flex flex-wrap gap-2 text-sm">
           {evek.map((evszam) => (
             <Link
               key={evszam}
               href={`/ado?ev=${evszam}`}
-              className={`rounded border px-3 py-1 ${
+              // A választott év a márkaszínt kapja, nem fordított feketét: az
+              // sötét módban külön párost kívánna, és épp az a baj, amit a
+              // jelentés szerinti nevekkel kiváltottunk.
+              className={`inline-flex min-h-9 items-center rounded-lg border px-3 ${
                 evszam === ev
-                  ? "border-keret bg-felulet text-white"
-                  : "border-keret-eros"
+                  ? "border-transparent bg-albi-700 font-semibold text-white"
+                  : "border-keret-eros hover:bg-felulet-halk"
               }`}
             >
               {evszam}
@@ -112,7 +113,7 @@ export default async function Ado({
       </section>
 
       <section>
-        <h2 className="mb-2 font-display text-base font-bold tracking-tight">{sz("ado.befolyt")}</h2>
+        <Szakaszcim>{sz("ado.befolyt")}</Szakaszcim>
         {osszesites.bevetelSorok.length === 0 ? (
           <p className="text-sm text-halvany">
             {sz("ado.nincs_bevetel")}
@@ -147,7 +148,7 @@ export default async function Ado({
 
       {osszesites.besorolatlan.length > 0 ? (
         <section>
-          <h2 className="mb-2 font-display text-base font-bold tracking-tight">{sz("ado.besorolatlan")}</h2>
+          <Szakaszcim>{sz("ado.besorolatlan")}</Szakaszcim>
           <ul className="grid gap-2">
             {osszesites.besorolatlan.map((sor, sorszam) => (
               <li
@@ -166,7 +167,7 @@ export default async function Ado({
       ) : null}
 
       <section>
-        <h2 className="mb-2 font-display text-base font-bold tracking-tight">{sz("ado.koltsegek")}</h2>
+        <Szakaszcim>{sz("ado.koltsegek")}</Szakaszcim>
         {osszesites.koltsegSorok.length === 0 ? (
           <p className="text-sm text-halvany">
             {sz("ado.nincs_koltseg")}
@@ -226,7 +227,7 @@ export default async function Ado({
       ) : null}
 
       <section>
-        <h2 className="mb-2 font-display text-base font-bold tracking-tight">{sz("ado.ertekcsokkenes")}</h2>
+        <Szakaszcim>{sz("ado.ertekcsokkenes")}</Szakaszcim>
         <p className="mb-3 text-sm text-halvany">
           {sz("ado.ertekcsokkenes_sugo")}
         </p>

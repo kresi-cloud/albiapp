@@ -5,6 +5,7 @@ import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { AblakUrlap } from "./AblakUrlap";
 import { BerbeadoiAdatok } from "./BerbeadoiAdatok";
+import { Lapfej } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +20,7 @@ export default async function Beallitasok() {
 
   return (
     <div className="grid gap-8">
-      <section>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("beallitasok.cim")}</h1>
-        <p className="mt-1 text-halvany">{sz("beallitasok.bevezeto")}</p>
-      </section>
+      <Lapfej cim={sz("beallitasok.cim")} alcim={sz("beallitasok.bevezeto")} />
 
       <AblakUrlap
         korabbiAblakNap={beallitasok.korabbiAblakNap}

@@ -5,6 +5,7 @@ import { berbeadoHibai } from "@/lib/hibabejelentes";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv, szovegek } from "@/lib/nyelv";
 import { HibaBejelentes } from "./Urlapok";
+import { Lapfej, Szakaszcim } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -28,17 +29,12 @@ export default async function Hibak() {
 
   return (
     <div className="grid gap-8">
-      <section>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("hibak.cim")}</h1>
-        <p className="mt-1 text-halvany">{sz("hibak.bevezeto")}</p>
-      </section>
+      <Lapfej cim={sz("hibak.cim")} alcim={sz("hibak.bevezeto")} />
 
       <section>
-        <h2 className="mb-2 font-display text-base font-bold tracking-tight">
-          {nyitottak.length > 0
+        <Szakaszcim>{nyitottak.length > 0
             ? sz("hibak.nyitottak_darab", { darab: nyitottak.length })
-            : sz("hibak.nyitottak")}
-        </h2>
+            : sz("hibak.nyitottak")}</Szakaszcim>
         {nyitottak.length === 0 ? (
           <p className="rounded-kartya border border-keret bg-felulet p-4 text-sm text-halvany">
             {sz("hibak.nincs_nyitott")}
@@ -85,7 +81,7 @@ export default async function Hibak() {
       ) : null}
 
       <section>
-        <h2 className="mb-2 font-display text-base font-bold tracking-tight">{sz("hibak.sajat_cim")}</h2>
+        <Szakaszcim>{sz("hibak.sajat_cim")}</Szakaszcim>
         <p className="mb-3 text-sm text-halvany">{sz("hibak.sajat_sugo")}</p>
         <div className="rounded-kartya border border-keret bg-felulet p-4">
           <HibaBejelentes

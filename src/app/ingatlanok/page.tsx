@@ -3,6 +3,7 @@ import { kotelezoSzerep } from "@/lib/munkamenet";
 import { forintNyelven } from "@/domain/nyelv";
 import { szovegek } from "@/lib/nyelv";
 import { IngatlanUrlap, JogviszonyUrlap } from "./Urlapok";
+import { Lapfej, Ures } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -21,12 +22,10 @@ export default async function Ingatlanok() {
 
   return (
     <div className="grid gap-6">
-      <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("ingatlanok.cim")}</h1>
+      <Lapfej cim={sz("ingatlanok.cim")} />
 
       {ures ? (
-        <p className="rounded-kartya border border-keret bg-felulet p-4 text-sm text-halvany">
-          {sz("ingatlanok.nincs")}
-        </p>
+        <Ures>{sz("ingatlanok.nincs")}</Ures>
       ) : (
         <ul className="grid gap-3">
           {ingatlanok.map((ingatlan) => (

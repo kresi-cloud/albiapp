@@ -4,6 +4,7 @@ import { szovegekNyelvvel } from "@/domain/szotar";
 import { prisma } from "@/lib/db";
 import { aktualisNyelv } from "@/lib/nyelv";
 import { MeghivoUrlap } from "./MeghivoUrlap";
+import { Lapfej } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -26,10 +27,10 @@ export default async function MeghivoOldal({
   if (!meghivo || allapot !== "ervenyes") {
     return (
       <div className="mx-auto grid max-w-sm gap-4">
-        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("meghivo.nem_el")}</h1>
-        <p className="text-halvany">
-          {sz(allapot === "felhasznalt" ? "meghivo.felhasznalt" : "meghivo.lejart")}
-        </p>
+        <Lapfej
+          cim={sz("meghivo.nem_el")}
+          alcim={sz(allapot === "felhasznalt" ? "meghivo.felhasznalt" : "meghivo.lejart")}
+        />
         <Link href="/belepes" className="underline underline-offset-2">
           {sz("belepes.cim")}
         </Link>
@@ -40,13 +41,13 @@ export default async function MeghivoOldal({
   return (
     <div className="mx-auto grid max-w-sm gap-6">
       <section>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("meghivo.fiok")}</h1>
-        <p className="mt-1 text-halvany">
-          {sz("meghivo.bevezeto", {
+        <Lapfej
+          cim={sz("meghivo.fiok")}
+          alcim={sz("meghivo.bevezeto", {
             berlemeny: meghivo.jogviszonyBerlo.jogviszony.ingatlan.megnevezes,
             cim: meghivo.jogviszonyBerlo.jogviszony.ingatlan.cim,
           })}
-        </p>
+        />
         <p className="mt-2 text-sm text-halvany">
           {sz("meghivo.jelszo_sugo", { hossz: JELSZO_MIN_HOSSZ })}
         </p>

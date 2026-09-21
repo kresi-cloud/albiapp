@@ -6,6 +6,7 @@ import { berbeadoElerhetosege, berloHibai } from "@/lib/hibabejelentes";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv } from "@/lib/nyelv";
 import { HibaBejelentes } from "@/app/hibak/Urlapok";
+import { Lapfej, Szakaszcim } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -37,13 +38,10 @@ export default async function BerloiHibak() {
 
   return (
     <div className="grid gap-8">
-      <section>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("hiba.oldal.cim")}</h1>
-        <p className="mt-1 text-halvany">{sz("hiba.oldal.bevezeto")}</p>
-      </section>
+      <Lapfej cim={sz("hiba.oldal.cim")} alcim={sz("hiba.oldal.bevezeto")} />
 
       <section>
-        <h2 className="mb-2 font-display text-base font-bold tracking-tight">{sz("hiba.oldal.uj")}</h2>
+        <Szakaszcim>{sz("hiba.oldal.uj")}</Szakaszcim>
         <div className="rounded-kartya border border-keret bg-felulet p-4">
           <HibaBejelentes
             nyelv={nyelv}
@@ -56,7 +54,7 @@ export default async function BerloiHibak() {
       </section>
 
       <section>
-        <h2 className="mb-2 font-display text-base font-bold tracking-tight">{sz("hiba.oldal.elerhetoseg")}</h2>
+        <Szakaszcim>{sz("hiba.oldal.elerhetoseg")}</Szakaszcim>
         <ul className="grid gap-2">
           {elerhetosegek.map(({ jogviszony, berbeado }) => (
             <li
@@ -79,10 +77,8 @@ export default async function BerloiHibak() {
       </section>
 
       <section>
-        <h2 className="mb-2 font-display text-base font-bold tracking-tight">
-          {sz("hiba.oldal.nyitottak")}
-          {nyitottak.length > 0 ? ` (${nyitottak.length})` : ""}
-        </h2>
+        <Szakaszcim>{sz("hiba.oldal.nyitottak")}
+          {nyitottak.length > 0 ? ` (${nyitottak.length})` : ""}</Szakaszcim>
         {nyitottak.length === 0 ? (
           <p className="rounded-kartya border border-keret bg-felulet p-4 text-sm text-halvany">
             {sz("hiba.oldal.nincs_nyitott")}

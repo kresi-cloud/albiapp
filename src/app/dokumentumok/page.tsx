@@ -9,6 +9,7 @@ import { igazolhatoIdoszakok } from "@/lib/igazolas";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { UjIgazolas, UjJegyzokonyv, UjSzerzodes } from "./Urlapok";
+import { Lapfej, Szakaszcim } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -48,13 +49,10 @@ export default async function Dokumentumok() {
 
   return (
     <div className="grid gap-8">
-      <section>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("dokumentumok.cim")}</h1>
-        <p className="mt-1 text-halvany">{sz("dokumentumok.bevezeto")}</p>
-      </section>
+      <Lapfej cim={sz("dokumentumok.cim")} alcim={sz("dokumentumok.bevezeto")} />
 
       <section>
-        <h2 className="mb-2 font-display text-base font-bold tracking-tight">{sz("dokumentumok.tar_cim")}</h2>
+        <Szakaszcim>{sz("dokumentumok.tar_cim")}</Szakaszcim>
         <Dokumentumlista
           dokumentumok={tar}
           uresUzenet={sz("dokumentumok.tar_ures")}

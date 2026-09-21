@@ -5,6 +5,7 @@ import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { MeghivoGomb } from "./MeghivoGomb";
 import { BERLOHOZ_KELL, hianyzoMezok } from "@/domain/szemelyes-adatok";
+import { Lapfej } from "@/components/ui/alap";
 import {
   BerloAdatok,
   BerloHozzaadas,
@@ -44,10 +45,7 @@ export default async function Berlok() {
 
   return (
     <div className="grid gap-6">
-      <section>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("berlok.cim")}</h1>
-        <p className="mt-1 text-halvany">{sz("berlok.bevezeto")}</p>
-      </section>
+      <Lapfej cim={sz("berlok.cim")} alcim={sz("berlok.bevezeto")} />
 
       <ul className="grid gap-4">
         {jogviszonyok.map((jogviszony) => (

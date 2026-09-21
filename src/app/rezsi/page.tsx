@@ -6,6 +6,7 @@ import { merooraUzenet } from "@/lib/rezsi";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { ElszamolasUrlap, KiadasUrlap, OraallasUrlap } from "./Urlapok";
+import { Lapfej } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -47,10 +48,7 @@ export default async function Rezsi() {
 
   return (
     <div className="grid gap-8">
-      <section>
-        <h1 className="font-display text-2xl font-bold tracking-tight text-balance">{sz("rezsi.cim")}</h1>
-        <p className="mt-1 text-halvany">{sz("rezsi.bevezeto")}</p>
-      </section>
+      <Lapfej cim={sz("rezsi.cim")} alcim={sz("rezsi.bevezeto")} />
 
       {jogviszonyok.map((jogviszony) => (
         <section key={jogviszony.id} className="grid gap-3">
