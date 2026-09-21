@@ -72,7 +72,7 @@ const BERBEADO_FULEK = [
   { kulcs: "ful.attekinto", utvonal: "/" },
   { kulcs: "ful.befizetesek", utvonal: "/befizetesek" },
   { kulcs: "ful.rezsi", utvonal: "/rezsi" },
-  { kulcs: "ful.uzenetek", utvonal: "/uzenetek" },
+  { kulcs: "ful.uzenetek", utvonal: "/beszelgetesek" },
 ];
 
 const BERBEADO_TOBBI = [
@@ -87,7 +87,7 @@ const BERBEADO_TOBBI = [
 const BERLO_FULEK = [
   { kulcs: "ful.berlemenyem", utvonal: "/berlo" },
   { kulcs: "ful.hibabejelentes", utvonal: "/berlo/hibak" },
-  { kulcs: "ful.uzenetek", utvonal: "/berlo/uzenetek" },
+  { kulcs: "ful.uzenetek", utvonal: "/beszelgetesek" },
   { kulcs: "ful.betekinto", utvonal: "/berlo/betekinto" },
 ];
 
