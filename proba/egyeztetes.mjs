@@ -48,25 +48,20 @@ function haviIdoszak(most) {
 
 const IDOSZAK = haviIdoszak(new Date());
 const DIJ = "180 000 Ft";
+const DIJ_FT = 180000;
 
 /**
- * A vizsgált hónap bérleti díjának sora. A teendőlista ugyanezt a hónapot és
- * összeget kiírja, ezért a befizetési kártyát arról ismerjük meg, hogy van
- * rajta befizetéshez tartozó művelet vagy magyarázat.
+ * A vizsgált hónap bérleti díjának sora.
  *
- * A szűrő szándékosan nem a hasábcímkékre (`Amit a bérlő mond`) megy. A
- * rendezett tétel rövid sort kap, azon nincsenek hasábok — és a próba épp
- * onnan indul, ahol az előző menet befejezte, vagyis rendezett tételről.
+ * A kártya `data-idoszak` és `data-osszeg` jelzőin keresünk, nem a képernyőn
+ * látható szövegen. Korábban az utóbbi volt, és három dolog is elvitte: a
+ * hasábcímkék átfogalmazása, a hónap emberi alakja („2026. szeptember” a
+ * „2026-09” helyett), és hogy a rendezett tétel rövid sort kap, amin nincsenek
+ * hasábok. A jelző viszont nyelv- és megjelenésfüggetlen, ugyanúgy, ahogy a
+ * bizonylatblokk `data-oldal`-ja.
  */
 function sorA(oldal) {
-  return oldal
-    .locator("li", { hasText: IDOSZAK })
-    .filter({ hasText: DIJ })
-    .filter({
-      hasText:
-        /Amit a bérlő mond|Amit te mondtál|Megérkezett\? Rögzítem|Elutaltam, rögzítem|Ezt tévedésből rögzítettem|Ezt elgépeltem/,
-    })
-    .first();
+  return oldal.locator(`li[data-idoszak="${IDOSZAK}"][data-osszeg="${DIJ_FT}"]`).first();
 }
 
 /** Ha van rögzített adat, visszavonja. Így ismert helyzetből indulunk. */

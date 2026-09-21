@@ -297,8 +297,8 @@ export const SZOTAR: Szotar = {
   "teendo.kesz": { hu: "Kész", en: "Done" },
   "teendo.lezarom": { hu: "Lezárom…", en: "Closing…" },
   "teendo.idoszak_osszeg": {
-    hu: "{idoszak} időszak, {osszeg} Ft.",
-    en: "Period {idoszak}, HUF {osszeg}.",
+    hu: "{idoszak} · {osszeg} Ft",
+    en: "{idoszak} · HUF {osszeg}",
   },
   "teendo.elteres": { hu: "Eltérés: {osszeg} Ft.", en: "Difference: HUF {osszeg}." },
   "teendo.hianyzik.berlo": {
@@ -1062,6 +1062,102 @@ export const SZOTAR: Szotar = {
   "valasz.betekinto_cel_kell": {
     hu: "Írd be, mire kéred; enélkül a másik fél nem tudja, mit néz.",
     en: "Say what it is for; without that the reader does not know what they are looking at.",
+  },
+
+  // --- Alsó fülsáv és a „Több” lapja
+  //
+  // A fülcímkék szándékosan rövidebbek a lapok címénél: az alsó sávban egy
+  // fülre 360 képponton nagyjából 70 képpont jut, és ami nem fér ki, azt a
+  // böngésző levágja. A „Dokumentumok” így „Iratok”, a „Hibabejelentés” pedig
+  // „Hibák” — a lap címe mindkettőnél a hosszú alak marad.
+  "nav.tobb": { hu: "Több", en: "More" },
+  "nav.bezaras": { hu: "Bezárás", en: "Close" },
+  "ful.attekinto": { hu: "Áttekintő", en: "Overview" },
+  "ful.befizetesek": { hu: "Befizetés", en: "Payments" },
+  "ful.rezsi": { hu: "Rezsi", en: "Utilities" },
+  "ful.dokumentumok": { hu: "Iratok", en: "Documents" },
+  "ful.berlemenyem": { hu: "Bérlemény", en: "My home" },
+  "ful.hibabejelentes": { hu: "Hibák", en: "Faults" },
+  "ful.dokumentumaim": { hu: "Irataim", en: "Documents" },
+  "ful.betekinto": { hu: "Betekintő", en: "Sharing" },
+
+  // --- Áttekintő
+  "attekinto.koszones": { hu: "Szia, {nev}", en: "Hi, {nev}" },
+  "attekinto.alcim": {
+    hu: "A következő hét nap teendői elöl.",
+    en: "What the next seven days need from you, first.",
+  },
+  "attekinto.jogviszony": { hu: "Jogviszony", en: "Tenancies" },
+  "attekinto.rendezetlen": { hu: "Rendezetlen", en: "Unsettled" },
+  "attekinto.elmaradas": { hu: "Elmaradás", en: "Outstanding" },
+  "attekinto.most": { hu: "A következő napokban", en: "In the coming days" },
+  "attekinto.kesobb": { hu: "Később", en: "Later" },
+
+  // --- Befizetések lapja
+  "befizetesek.cim": { hu: "Befizetések", en: "Payments" },
+  "befizetesek.alcim": {
+    hu: "Mit kellett fizetni, mit mond a bérlő, és mit mondasz te.",
+    en: "What was due, what the tenant says, and what you say.",
+  },
+  "befizetesek.sugo_cim": {
+    hu: "Hogyan működik az egyeztetés?",
+    en: "How does reconciliation work?",
+  },
+  "befizetesek.sugo_harom": {
+    hu:
+      "Három adat találkozik: mit kellett volna fizetni, mit mond a bérlő, és mit mondasz te. A " +
+      "két fél a saját oldalát adja meg, és ha a kettő egyezik, a tétel le van zárva.",
+    en:
+      "Three pieces of data meet here: what was due, what the tenant says, and what you say. " +
+      "Each side enters their own, and when the two agree the item is settled.",
+  },
+  "befizetesek.sugo_bizonylat": {
+    hu:
+      "Bizonylatot csak akkor kérünk, ha a két oldal nem egyezik, és akkor is csak arról az egy " +
+      "utalásról: tőled a fogadó oldalit, a bérlőtől a küldő oldalit. Teljes bankszámlakivonatot " +
+      "nem kérünk, és nem is fogadunk el.",
+    en:
+      "We ask for a receipt only when the two sides disagree, and then only for that one " +
+      "transfer: the receiving side from you, the sending side from the tenant. We never ask " +
+      "for a full bank statement, and we do not accept one.",
+  },
+  "befizetesek.ablak": {
+    hu: "Párosítási ablak: az esedékesség előtt {elotte}, utána {utana} nap.",
+    en: "Matching window: {elotte} days before the due date, {utana} days after.",
+  },
+  "befizetesek.ablak_allit": { hu: "Átállítom", en: "Change" },
+  "befizetesek.havi_dij": { hu: "{osszeg} / hó", en: "{osszeg} / month" },
+  "befizetesek.nincs_tetel": {
+    hu: "Ehhez a jogviszonyhoz még nincs egyeztetendő tétel.",
+    en: "This tenancy has nothing to reconcile yet.",
+  },
+  "befizetesek.nincs_eloiras": { hu: "Nincs előírás", en: "No charge" },
+  "befizetesek.eloiras": { hu: "Előírás", en: "Charged" },
+  "befizetesek.berlo_szerint": { hu: "A bérlő szerint", en: "The tenant says" },
+  "befizetesek.nalad": { hu: "Nálad", en: "You say" },
+  "befizetesek.nem_erkezett": { hu: "nem érkezett meg", en: "did not arrive" },
+  "befizetesek.nincs_adat": { hu: "még nem mondta meg", en: "not stated yet" },
+  "befizetesek.vita_bizonylat": {
+    hu:
+      "A két oldal nem egyezik. Ilyenkor van értelme az utalás bizonylatának: tőled a fogadó " +
+      "oldali, a bérlőtől a küldő oldali. Teljes bankszámlakivonat nem kell.",
+    en:
+      "The two sides do not match. This is where the receipt of the transfer matters: the " +
+      "receiving side from you, the sending side from the tenant. No full bank statement is needed.",
+  },
+  "befizetesek.varr_rad": { hu: "Rád vár", en: "Waiting on you" },
+  "befizetesek.beerkezes_nyito": { hu: "Megérkezett? Rögzítem", en: "Arrived? Record it" },
+  "befizetesek.beerkezes_datum": { hu: "Mikor érkezett", en: "When it arrived" },
+  "befizetesek.beerkezes_osszeg": { hu: "Mennyi érkezett (Ft)", en: "How much arrived (HUF)" },
+  "befizetesek.beerkezes_kozlemeny": { hu: "Közlemény (ha van)", en: "Reference (if any)" },
+  "befizetesek.beerkezes_gomb": { hu: "Rögzítem", en: "Record it" },
+  "befizetesek.nem_erkezett_gomb": {
+    hu: "Megnéztem: nem érkezett meg",
+    en: "I checked: it did not arrive",
+  },
+  "befizetesek.visszavon": {
+    hu: "Ezt tévedésből rögzítettem",
+    en: "I recorded this by mistake",
   },
 
   // --- Jogi tájékoztatók

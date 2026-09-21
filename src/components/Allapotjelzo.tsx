@@ -1,16 +1,24 @@
 import type { Allapot } from "@/domain/egyeztetes";
 import type { Nyelv } from "@/domain/nyelv";
 import { szovegekNyelvvel } from "@/domain/szotar";
+import { Jelzo, type Allapotszin } from "@/components/ui/alap";
 
-const STILUS: Record<Allapot, string> = {
-  egyezik:
-    "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
-  elter: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300",
-  // A vitás nem ugyanaz, mint az eltérő: ott a két fél mond mást, és csak ott
-  // kérünk bizonylatot. A várakozó pedig még semmiképp nem baj.
-  vitas: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
-  varakozik: "bg-stone-200 text-stone-700 dark:bg-stone-800 dark:text-stone-300",
-  hianyzik: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
+/**
+ * Az öt egyeztetési állapot három színre képződik le, és a leképezés
+ * termékdöntés, nem ízlés.
+ *
+ * Az `elter` azért nem piros, mert ott a két fél egyetért abban, mi történt,
+ * csak nem az előírt összeg jött — az nem vita, és bizonylatot sem kérünk rá.
+ * A `varakozik` pedig végképp nem baj: még csak az egyik fél nyilatkozott.
+ * Pirosat egyedül az kap, ahol tényleg tenni kell valamit: a két fél mást
+ * mond, vagy a pénz nem jött meg.
+ */
+const SZIN: Record<Allapot, Allapotszin> = {
+  egyezik: "rendben",
+  elter: "figyelem",
+  vitas: "gond",
+  varakozik: "semleges",
+  hianyzik: "gond",
 };
 
 const KULCS: Record<Allapot, string> = {
@@ -25,10 +33,8 @@ export function Allapotjelzo({ allapot, nyelv = "hu" }: { allapot: Allapot; nyel
   const { sz } = szovegekNyelvvel(nyelv);
 
   return (
-    <span
-      className={`inline-block rounded px-2 py-0.5 text-xs font-medium capitalize ${STILUS[allapot]}`}
-    >
-      {sz(KULCS[allapot])}
-    </span>
+    <Jelzo allapot={SZIN[allapot]}>
+      <span className="capitalize">{sz(KULCS[allapot])}</span>
+    </Jelzo>
   );
 }

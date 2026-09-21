@@ -6,7 +6,7 @@
  * `lang` attribútumig, és nem szivárog-e ki nyers szótárkulcs a képernyőre.
  */
 
-import { ALAP, all, belep, kilep, magyarra } from "./kozos.mjs";
+import { ALAP, all, belep, kilep, magyarra, nyelvre } from "./kozos.mjs";
 
 export const nev = "Kétnyelvű felület";
 
@@ -16,8 +16,7 @@ export async function futtat(oldal) {
   await magyarra(oldal);
   await oldal.goto(`${ALAP}/belepes`);
   all((await oldal.getByText("Belépés").count()) > 0, "a belépés magyarul jelenik meg");
-  await oldal.locator('form:has(button[name="nyelv"]) button[value="en"]').click();
-  await oldal.waitForLoadState("networkidle");
+  await nyelvre(oldal, "en");
   all(
     (await oldal.getByRole("heading", { name: "Sign in" }).count()) > 0,
     "a nyelvváltó belépés előtt is működik",
@@ -49,11 +48,6 @@ export async function futtat(oldal) {
     (await oldal.getByRole("heading", { name: "What I need to do" }).count()) > 0,
     "a teendők fejléce angol",
   );
-  all(
-    (await oldal.getByText(/Report a fault|Open fault|New fault report/).count()) > 0,
-    "a hibából származó teendő is angolul jön",
-  );
-
   await oldal.goto(`${ALAP}/berlo/hibak`);
   all(
     (await oldal.getByRole("heading", { name: "Report a fault" }).count()) > 0,
@@ -84,14 +78,29 @@ export async function futtat(oldal) {
     "a választott nyelv a fiókon marad",
   );
 
-  await oldal.locator('form:has(button[name="nyelv"]) button[value="hu"]').click();
-  await oldal.waitForLoadState("networkidle");
+  await nyelvre(oldal, "hu");
   all(
     (await oldal.getByRole("heading", { name: /Szia,/ }).count()) > 0,
     "magyarra visszaváltva újra magyar a kezdőlap",
   );
 
   await belep(oldal, "berbeado@pelda.hu");
+
+  // A hibából származó teendő a bérbeadó kezdőlapján van, nem a bérlőén, és a
+  // keresés kifejezetten a `main`-re szűkít.
+  //
+  // Korábban ez az állítás a bérlői oldalon állt, és mindig igazat adott —
+  // csakhogy nem a teendőt találta meg, hanem a fejléc „Report a fault"
+  // menüpontját. Amikor a menü címkéje rövidebb lett, kiderült, hogy a bérlő
+  // példaadatában ilyen teendő nincs is. Egy kapu, ami a navigációt méri
+  // teendő helyett, nem kapu.
+  await nyelvre(oldal, "en");
+  await oldal.goto(`${ALAP}/`);
+  all(
+    (await oldal.locator("main").getByText(/Open fault|New fault report/).count()) > 0,
+    "a hibából származó teendő is angolul jön",
+  );
+
   await magyarra(oldal);
   await oldal.goto(`${ALAP}/befizetesek`);
   all(

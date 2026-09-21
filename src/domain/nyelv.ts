@@ -30,7 +30,21 @@ export function nyelvet(nyers: string | null | undefined): Nyelv {
  * A bérbeadó átvette” mondat két fordítható darabból áll össze, és nem kell
  * minden kombinációra külön szótársor.
  */
-export type Adatok = Record<string, string | number | Uzenet>;
+export type Adatok = Record<string, string | number | Uzenet | Idoszak>;
+
+/**
+ * Egy „ÉÉÉÉ-HH” alakú hónap, behelyettesítendő értékként.
+ *
+ * Nem sima szöveg, mert akkor a gépi alak kerülne a mondatba: a teendők listája
+ * így írta ki, hogy „2026-09 időszak, 240 000 Ft”. A domain viszont nem tudhat
+ * a nyelvről, ezért csak megjelöli, hogy ez egy hónap, a kiírást pedig ugyanúgy
+ * a szövegező végzi, mint a számokét.
+ */
+export type Idoszak = { idoszak: string };
+
+export function honap(ertek: string): Idoszak {
+  return { idoszak: ertek };
+}
 
 /** Egy fordítható szöveg: kulcs és a behelyettesítendő értékek. */
 export type Uzenet = { kulcs: string; adatok?: Adatok };
@@ -66,6 +80,10 @@ function uzenetE(ertek: unknown): ertek is Uzenet {
   return typeof ertek === "object" && ertek !== null && "kulcs" in ertek;
 }
 
+function idoszakE(ertek: unknown): ertek is Idoszak {
+  return typeof ertek === "object" && ertek !== null && "idoszak" in ertek;
+}
+
 export type Szovegezo = {
   nyelv: Nyelv;
   /** Kulcs szerinti szöveg, behelyettesítéssel. */
@@ -91,6 +109,7 @@ export function szovegezo(nyelv: Nyelv, szotar: Szotar): Szovegezo {
       if (!(nev in adatok)) return egesz;
       const ertek = adatok[nev];
       if (uzenetE(ertek)) return sz(ertek.kulcs, ertek.adatok);
+      if (idoszakE(ertek)) return honapNyelven(ertek.idoszak, nyelv);
       // A számot a nyelv szerint tagoljuk; a pénznemet a szótársor mondja ki,
       // mert a "150 000 Ft" és a "HUF 150,000" szórendje sem azonos.
       return typeof ertek === "number" ? szamot(ertek, nyelv) : String(ertek);

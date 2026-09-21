@@ -228,6 +228,8 @@ export default async function BerloiNezet() {
           return (
                     <li
                       key={sor.eloirtTetelId ?? ""}
+                      data-idoszak={sor.idoszak ?? ""}
+                      data-osszeg={sor.osszegFt}
                       className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
                     >
                       <div className="flex flex-wrap items-baseline justify-between gap-2">

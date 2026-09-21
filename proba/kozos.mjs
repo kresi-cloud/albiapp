@@ -42,9 +42,16 @@ export async function bongeszot() {
 
 export async function kilep(oldal) {
   await oldal.goto(`${ALAP}/`);
+  // Telefonméretben a kilépés a „Több" lapjára került, mert az alsó fülsávra a
+  // négy gyakran használt hely fért ki. A próba 360 képponton fut, tehát előbb
+  // ki kell nyitnia ezt a lapot — ugyanúgy, ahogy a felhasználó is teszi.
+  const tobb = oldal.getByRole("button", { name: /^(Több|More)$/ });
+  if (await tobb.count()) {
+    await tobb.first().click();
+  }
   const kilepes = oldal.getByRole("button", { name: /Kilépés|Sign out/ });
   if (await kilepes.count()) {
-    await kilepes.click();
+    await kilepes.first().click();
     await oldal.waitForLoadState("networkidle");
   }
 }
@@ -66,14 +73,26 @@ export async function tullogas(oldal) {
   });
 }
 
+/**
+ * Átállítja a felület nyelvét, és megvárja, amíg tényleg át is állt.
+ *
+ * A nyelvváltás kiszolgálói művelet, és a `networkidle` hazudik rá: vissza tud
+ * térni azelőtt, hogy a válasz megérkezne, a következő `goto` pedig elvágja a
+ * függőben lévő kérést. Ilyenkor a próba magyar lapon keres angol szöveget, és
+ * a bukás attól függ, melyik gépen fut — ami rosszabb, mint egy egyenes hiba.
+ * Ezért nem a hálózatra várunk, hanem az eredményre: a `lang` attribútumra.
+ */
+export async function nyelvre(oldal, nyelv) {
+  const valto = oldal.locator(`form:has(button[name="nyelv"]) button[value="${nyelv}"]`);
+  if ((await valto.count()) === 0) return;
+  await valto.first().click();
+  await oldal.waitForFunction((cel) => document.documentElement.lang === cel, nyelv);
+}
+
 /** A választott nyelvet visszaállítja magyarra, hogy a próbák ne fertőzzék egymást. */
 export async function magyarra(oldal) {
   await oldal.goto(`${ALAP}/`);
-  const valto = oldal.locator('form:has(button[name="nyelv"]) button[value="hu"]');
-  if (await valto.count()) {
-    await valto.first().click();
-    await oldal.waitForLoadState("networkidle");
-  }
+  await nyelvre(oldal, "hu");
 }
 
 /**

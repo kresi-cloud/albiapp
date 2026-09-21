@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { Mezo as MegorzoMezo, type UrlapAllapot } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
-import { APRO_GOMB, GOMB, MEZO } from "@/components/urlap";
+import { APRO_GOMB, CIMKE, GOMB, MEZO, VISSZAVONO_GOMB } from "@/components/urlap";
 import { beerkezestRogzit, beerkezestTorol, nemErkezettMeg, type Eredmeny } from "./actions";
 
 const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
@@ -22,8 +22,8 @@ function Mezo({
   tipus?: string;
 }) {
   return (
-    <label className="grid gap-1 text-sm">
-      <span className="font-medium">{cimke}</span>
+    <label className="grid gap-1">
+      <span className={CIMKE}>{cimke}</span>
       <MegorzoMezo
         name={nev}
         type={tipus}
@@ -49,6 +49,11 @@ export type BeerkezesCimkek = {
  * A bérbeadó saját oldala: mikor mennyi érkezett. Az összeg és a dátum az
  * előírásból van előtöltve, mert a leggyakoribb eset az, hogy pontosan annyi
  * jött — de felülírható, mert az egyeztetés éppen az eltérésről szól.
+ *
+ * A nyitósor gombnak van kiszerelve, nem aláhúzott szövegnek: ez a lap fő
+ * művelete, és telefonon a szöveges hivatkozás a legrosszabb célpont. A
+ * `list-none` a böngésző saját kis háromszögét veszi le, ami egy gomb közepén
+ * csak zavar.
  */
 export function Beerkezes({
   jogviszonyId,
@@ -67,9 +72,7 @@ export function Beerkezes({
 
   return (
     <details className="mt-3">
-      <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
-        {cimkek.nyito}
-      </summary>
+      <summary className={`${GOMB} w-full list-none sm:w-auto`}>{cimkek.nyito}</summary>
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
         <input type="hidden" name="jogviszonyId" value={jogviszonyId} />
         {eloirtTetelId ? (
@@ -111,7 +114,7 @@ export function NemErkezett({
   const [allapot, kuldes, folyamatban] = useActionState(nemErkezettMeg, KEZDETI);
 
   return (
-    <form action={kuldes} className="mt-2 grid gap-2">
+    <form action={kuldes} className="mt-2 grid justify-items-start gap-2">
       <input type="hidden" name="eloirtTetelId" value={eloirtTetelId} />
       <button type="submit" disabled={folyamatban} className={APRO_GOMB}>
         {folyamatban ? "…" : cimke}
@@ -132,13 +135,9 @@ export function BeerkezestVisszavon({
   const [allapot, kuldes, folyamatban] = useActionState(beerkezestTorol, KEZDETI);
 
   return (
-    <form action={kuldes} className="mt-2 grid gap-2">
+    <form action={kuldes} className="mt-2 grid justify-items-start gap-2">
       <input type="hidden" name="igazolasId" value={igazolasId} />
-      <button
-        type="submit"
-        disabled={folyamatban}
-        className="justify-self-start text-xs text-stone-500 underline underline-offset-2 hover:text-rose-700 disabled:opacity-60 dark:text-stone-400"
-      >
+      <button type="submit" disabled={folyamatban} className={VISSZAVONO_GOMB}>
         {folyamatban ? "…" : cimke}
       </button>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
