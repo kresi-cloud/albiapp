@@ -149,6 +149,36 @@ befizetés legyen. Minden bevételi sor mellé indoklás kerül.
 Amit nem tudunk besorolni (előírás nélkül beérkezett pénz), azt nem tippeljük
 meg: külön listán megy a bérbeadóhoz.
 
+## Az előfizetések alapelve
+
+A vezetékes tévé, telefon és internet opcionális: sok albérlethez nincs, és
+amelyikhez van, ott sem egyforma. A lényegi adat nem a szolgáltató, hanem hogy
+**ki az előfizető** (`Elofizetes.elofizeto`), mert a kettő pénzügyileg nem
+ugyanaz. Ha a bérbeadó az előfizető, a számla az ő nevére jön, és a bérlő neki
+téríti meg: ebből havi előírás lesz. Ha a bérlő az előfizető, ő szerződik és ő
+fizet a szolgáltatónak — pénz nem megy át az alkalmazáson, de a szerződésbe
+attól még bekerül, mert a létesítés és a megszüntetés a bérleményt érinti.
+
+A jóváhagyás nem formaság. A bérlőnek olyan havi kiadása keletkezik, amiről a
+szerződéskötéskor nem volt szó, ezért ugyanaz a kétoldali elv áll rá, mint a
+befizetésre és a fényképre: a bérbeadó beállítja, a bérlő a saját adatával mond
+rá igent vagy nemet, és **amíg nem mondta, nem írunk elő belőle semmit**.
+Jóváhagyni mindenkinek kell, akinek van fiókja; egy kifogás viszont egymagában
+is dönt, mert a lakótárs nem szavazhatja le azt, aki nem kéri a szolgáltatást.
+Fiók nélküli bérlőt nem lehet megkérdezni, és a felület ezt ki is mondja.
+Kifogás indoklás nélkül nincs, és a kifogás nem törli az előfizetést.
+
+Az előírás előfizetésenként külön sor, nem összevonva: két előfizetés más napon
+indulhat és más napon szűnhet meg, tehát az arányosításuk sem ugyanaz. Ezért kapott
+az `EloirtTetel` `forrasId` mezőt, és ezért lett az egyediségi kulcs
+`jogviszonyId + tipus + idoszak + forrasId`. A mező üres szöveg, nem null: a
+null az egyediségi kulcsban külön értéknek számítana, és ugyanarra a hónapra
+kétszer is beengedné a bérleti díjat.
+
+Az előfizetést törölni nem lehet, csak megszüntetni egy nappal, ugyanúgy, ahogy
+a jogviszonyt: a lefutott hónapok előírásai mögött ez az előfizetés áll, és a
+bérlő már ki is fizette őket.
+
 ## A bérleti szerződés alapelve
 
 Egy jogviszonyhoz több bérlő tartozhat (`JogviszonyBerlo`). A fizetési

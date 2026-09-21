@@ -839,6 +839,129 @@ export const SZOTAR: Szotar = {
     hu: "Töredékhónap: {elso}–{utolso}. ({napok} nap a hónap {honapNapjai} napjából). A teljes havi összeg {teljes} Ft.",
     en: "Partial month: {elso}–{utolso} ({napok} of the month's {honapNapjai} days). The full monthly amount is {teljes} HUF.",
   },
+  "eloiras.elofizetes": { hu: "Előfizetés: {nev}.", en: "Subscription: {nev}." },
+  "eloiras.elofizetes_toredek": {
+    hu: "Előfizetés: {nev}. Nem teljes hónap: {elso}–{utolso}. ({napok} nap a hónap {honapNapjai} napjából). A teljes havi díj {teljes} Ft.",
+    en: "Subscription: {nev}. Partial month: {elso}–{utolso} ({napok} of the month's {honapNapjai} days). The full monthly fee is {teljes} HUF.",
+  },
+
+  // --- Előfizetések
+  "elofizetes.cim": { hu: "Előfizetések", en: "Subscriptions" },
+  "elofizetes.bevezeto": {
+    hu: "Vezetékes tévé, telefon és internet a bérleményhez. Nem kötelező; amit felveszel, azt a bérlő hagyja jóvá.",
+    en: "Cable TV, landline and internet for the property. Optional; whatever you add, the tenant approves.",
+  },
+  "nav.elofizetesek": { hu: "Előfizetések", en: "Subscriptions" },
+  "elofizetes.nincs": {
+    hu: "Ehhez a bérleményhez nincs előfizetés felvéve.",
+    en: "No subscription has been added for this property.",
+  },
+  "elofizetes.fajta.tv": { hu: "Tévé", en: "TV" },
+  "elofizetes.fajta.telefon": { hu: "Telefon", en: "Landline" },
+  "elofizetes.fajta.internet": { hu: "Internet", en: "Internet" },
+  "elofizetes.fajta.egyeb": { hu: "Egyéb", en: "Other" },
+  "elofizetes.elofizeto.berbeado": { hu: "A bérbeadó az előfizető", en: "The landlord is the subscriber" },
+  "elofizetes.elofizeto.berlo": { hu: "A bérlő az előfizető", en: "The tenant is the subscriber" },
+  "elofizetes.allapot.varakozik": { hu: "Jóváhagyásra vár", en: "Waiting for approval" },
+  "elofizetes.allapot.jovahagyva": { hu: "Jóváhagyva", en: "Approved" },
+  "elofizetes.allapot.kifogasolt": { hu: "Kifogásolt", en: "Objected to" },
+  "elofizetes.varunk_rad": { hu: "Rád vár: {nevek}", en: "Waiting for: {nevek}" },
+  "elofizetes.nincs_fiokos_berlo": {
+    hu: "Egyik bérlőnek sincs még fiókja, ezért jóváhagyni sem tudják. Küldj nekik meghívót.",
+    en: "No tenant has an account yet, so nobody can approve it. Send them an invitation.",
+  },
+  "elofizetes.havi_dij": { hu: "{osszeg} / hó", en: "{osszeg} / month" },
+  "elofizetes.berlo_fizeti_kozvetlenul": {
+    hu: "A bérlő közvetlenül a szolgáltatónak fizet, ezért ebből nem lesz havi előírás.",
+    en: "The tenant pays the provider directly, so this creates no monthly charge.",
+  },
+  "elofizetes.eloiras_lesz": {
+    hu: "Jóváhagyás után havi előírás lesz belőle a befizetéseknél.",
+    en: "Once approved, this becomes a monthly charge on the payments page.",
+  },
+  "elofizetes.jovahagyas_elott": {
+    hu: "Amíg nincs jóváhagyva, nem írunk elő belőle semmit.",
+    en: "Until it is approved, we charge nothing for it.",
+  },
+  "elofizetes.idoszak": { hu: "{kezdete} óta", en: "since {kezdete}" },
+  "elofizetes.idoszak_zart": { hu: "{kezdete} – {vege}", en: "{kezdete} – {vege}" },
+
+  // Bérbeadói űrlap
+  "elofizetes.uj": { hu: "Előfizetés felvétele", en: "Add a subscription" },
+  "elofizetes.mezo.fajta": { hu: "Miféle szolgáltatás", en: "Type of service" },
+  "elofizetes.mezo.megnevezes": { hu: "Megnevezés", en: "Name" },
+  "elofizetes.mezo.megnevezes_sugo": {
+    hu: "Ahogy a számlán áll, például „Telekom 500/100 internet”.",
+    en: "As it appears on the bill, for example “Telekom 500/100 internet”.",
+  },
+  "elofizetes.mezo.szolgaltato": { hu: "Szolgáltató", en: "Provider" },
+  "elofizetes.mezo.elofizeto": { hu: "Kinek a nevén van az előfizetés?", en: "Whose name is the subscription in?" },
+  "elofizetes.mezo.havi_dij": { hu: "Havi díj (Ft)", en: "Monthly fee (HUF)" },
+  "elofizetes.mezo.kezdete": { hu: "Mettől", en: "From" },
+  "elofizetes.mezo.vege": { hu: "Meddig (üresen hagyható)", en: "Until (may be left empty)" },
+  "elofizetes.gomb.felvesz": { hu: "Felvétel", en: "Add" },
+  "elofizetes.gomb.felveszem": { hu: "Felveszem…", en: "Adding…" },
+  "elofizetes.gomb.megszuntet": { hu: "Megszüntetés mai nappal", en: "End it today" },
+  "elofizetes.gomb.megszuntetem": { hu: "Megszüntetem…", en: "Ending…" },
+  "elofizetes.megszunt": { hu: "Megszűnt {vege}-n.", en: "Ended on {vege}." },
+
+  // Bérlői nyilatkozat
+  "elofizetes.berlo.cim": { hu: "Előfizetések", en: "Subscriptions" },
+  "elofizetes.berlo.bevezeto": {
+    hu: "Ezeket a bérbeadó vette fel a bérleményhez. Amíg nem mondasz rá igent, nem kérünk érte pénzt.",
+    en: "The landlord added these to the property. Until you say yes, we charge nothing for them.",
+  },
+  "elofizetes.gomb.jovahagy": { hu: "Rendben, jóváhagyom", en: "Fine, I approve it" },
+  "elofizetes.gomb.jovahagyom": { hu: "Jóváhagyom…", en: "Approving…" },
+  "elofizetes.gomb.kifogas": { hu: "Kifogást emelek", en: "I object" },
+  "elofizetes.gomb.kifogasolom": { hu: "Küldöm…", en: "Sending…" },
+  "elofizetes.mezo.indoklas": { hu: "Miért nem jó így?", en: "What is wrong with it?" },
+  "elofizetes.mar_nyilatkoztal": { hu: "Erről már nyilatkoztál.", en: "You have already responded to this." },
+  "elofizetes.sajat_nyilatkozat.jovahagyva": { hu: "Jóváhagytad.", en: "You approved it." },
+  "elofizetes.sajat_nyilatkozat.kifogasolt": { hu: "Kifogást emeltél: {indoklas}", en: "You objected: {indoklas}" },
+  "elofizetes.masik_kifogasa": { hu: "{nev} kifogása: {indoklas}", en: "{nev} objected: {indoklas}" },
+
+  // Kifogások és figyelmeztetések
+  "elofizetes.kifogas.nincs_megnevezes": {
+    hu: "Adj nevet az előfizetésnek, különben a bérlő nem tudja, miről mond igent.",
+    en: "Name the subscription, otherwise the tenant cannot tell what they are approving.",
+  },
+  "elofizetes.kifogas.negativ_dij": {
+    hu: "A havi díj nem lehet negatív.",
+    en: "The monthly fee cannot be negative.",
+  },
+  "elofizetes.kifogas.vege_a_kezdet_elott": {
+    hu: "A megszűnés napja nem lehet a kezdet előtt.",
+    en: "The end date cannot precede the start date.",
+  },
+  "elofizetes.kifogas.nincs_indoklas": {
+    hu: "Írd le, mi a kifogásod: enélkül a bérbeadó nem tud mit kezdeni vele.",
+    en: "Say what your objection is: without it the landlord has nothing to act on.",
+  },
+  "elofizetes.figyelmeztet.nulla_dij": {
+    hu: "Nulla forintos havi díjból nem lesz előírás: ezt a bérleti díjban hagyod.",
+    en: "A zero monthly fee creates no charge: you are leaving it inside the rent.",
+  },
+  "elofizetes.figyelmeztet.berlo_fizet": {
+    hu: "A bérlő a saját előfizetését a szolgáltatónak fizeti, ezért a havi díjat nem írjuk elő neki. Tájékoztatásként megmarad.",
+    en: "The tenant pays their own subscription to the provider, so we do not charge the fee. It stays here for information.",
+  },
+  "elofizetes.hiba.nincs_jogosultsag": {
+    hu: "Ez az előfizetés nem a tiéd.",
+    en: "This subscription is not yours.",
+  },
+  "elofizetes.hiba.mar_nyilatkozott": {
+    hu: "Erről már nyilatkoztál, és a nyilatkozatot nem írjuk felül.",
+    en: "You have already responded to this, and we do not overwrite your response.",
+  },
+  "elofizetes.rendezettek": {
+    hu: "Rendezett és megszűnt előfizetések ({darab})",
+    en: "Settled and ended subscriptions ({darab})",
+  },
+  "elofizetes.felvettuk": { hu: "Felvettük. A bérlő most kapja meg jóváhagyásra.", en: "Added. The tenant now has it to approve." },
+  "elofizetes.megszuntettuk": { hu: "Megszüntettük mai nappal.", en: "Ended as of today." },
+  "elofizetes.nyilatkoztal": { hu: "Elmentettük, amit mondtál.", en: "We saved your response." },
+
   "valasz.datum_kell": { hu: "Adj meg egy dátumot.", en: "Give a date." },
   "valasz.osszeg_kell": {
     hu: "Adj meg egy összeget egész forintban.",

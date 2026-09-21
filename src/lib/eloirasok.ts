@@ -8,10 +8,11 @@
  * Azért pótlás és nem ütemezett feladat, mert az alkalmazásban nincs ütemező, és
  * egy magánbérbeadónak nem is kell: a hiány akkor derül ki, amikor valaki
  * ránéz a befizetésekre, és ott azonnal pótolható. A művelet idempotens, a
- * `jogviszonyId + tipus + idoszak` egyediség védi.
+ * `jogviszonyId + tipus + idoszak + forrasId` egyediség védi.
  */
 
 import { eloirasok, type Eloiras, type JogviszonyAdat } from "@/domain/eloirasok";
+import { FAJTAK, type ElofizetesAdat } from "@/domain/elofizetes";
 import type { Uzenet } from "@/domain/nyelv";
 import { prisma } from "@/lib/db";
 
@@ -30,7 +31,38 @@ export function reszletezesbol(nyers: string | null): Uzenet | null {
   }
 }
 
-function adatta(jogviszony: {
+export type ElofizetesSor = {
+  id: string;
+  fajta: string;
+  megnevezes: string;
+  szolgaltato: string | null;
+  elofizeto: string;
+  haviDijFt: number;
+  kezdete: Date;
+  vege: Date | null;
+  jovahagyasok: { berloId: string; allapot: string; indoklas: string | null }[];
+};
+
+/** Az adatbázis sorából a domain alakja. A szűkítés itt történik, egy helyen. */
+export function elofizetesAdatta(sor: ElofizetesSor): ElofizetesAdat {
+  return {
+    id: sor.id,
+    fajta: (FAJTAK as string[]).includes(sor.fajta) ? (sor.fajta as ElofizetesAdat["fajta"]) : "egyeb",
+    megnevezes: sor.megnevezes,
+    szolgaltato: sor.szolgaltato,
+    elofizeto: sor.elofizeto === "berlo" ? "berlo" : "berbeado",
+    haviDijFt: sor.haviDijFt,
+    kezdete: sor.kezdete,
+    vege: sor.vege,
+    nyilatkozatok: sor.jovahagyasok.map((jovahagyas) => ({
+      berloId: jovahagyas.berloId,
+      allapot: jovahagyas.allapot === "kifogasolt" ? "kifogasolt" : "jovahagyva",
+      indoklas: jovahagyas.indoklas,
+    })),
+  };
+}
+
+export function jogviszonyAdatta(jogviszony: {
   kezdete: Date;
   vege: Date | null;
   berletiDijFt: number;
@@ -38,6 +70,8 @@ function adatta(jogviszony: {
   rezsiElszamolas: string;
   rezsiAtalanyFt: number;
   fizetesiNap: number;
+  elofizetesek?: ElofizetesSor[];
+  berlok?: { berloId: string | null }[];
 }): JogviszonyAdat {
   return {
     kezdete: jogviszony.kezdete,
@@ -47,6 +81,12 @@ function adatta(jogviszony: {
     rezsiElszamolas: jogviszony.rezsiElszamolas,
     rezsiAtalanyFt: jogviszony.rezsiAtalanyFt,
     fizetesiNap: jogviszony.fizetesiNap,
+    elofizetesek: (jogviszony.elofizetesek ?? []).map(elofizetesAdatta),
+    // Csak az a bérlő nyilatkozhat, akinek van fiókja: aki még meghívóra vár,
+    // annak a nevében nem mond igent senki.
+    fiokosBerlok: (jogviszony.berlok ?? [])
+      .map((berlo) => berlo.berloId)
+      .filter((berloId): berloId is string => Boolean(berloId)),
   };
 }
 
@@ -57,16 +97,22 @@ function adatta(jogviszony: {
 export async function eloirasokatPotol(tulajdonosId: string, ma = new Date()): Promise<number> {
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { ingatlan: { tulajdonosId } },
-    include: { eloirtTetelek: { select: { tipus: true, idoszak: true } } },
+    include: {
+      eloirtTetelek: { select: { tipus: true, idoszak: true, forrasId: true } },
+      elofizetesek: { include: { jovahagyasok: true } },
+      berlok: { select: { berloId: true } },
+    },
   });
 
   let letrejott = 0;
   for (const jogviszony of jogviszonyok) {
     const megvan = new Set(
-      jogviszony.eloirtTetelek.map((tetel) => `${tetel.tipus}|${tetel.idoszak}`),
+      jogviszony.eloirtTetelek.map(
+        (tetel) => `${tetel.tipus}|${tetel.idoszak}|${tetel.forrasId}`,
+      ),
     );
-    const hianyzo = eloirasok(adatta(jogviszony), ma).filter(
-      (eloiras) => !megvan.has(`${eloiras.tipus}|${eloiras.idoszak}`),
+    const hianyzo = eloirasok(jogviszonyAdatta(jogviszony), ma).filter(
+      (eloiras) => !megvan.has(`${eloiras.tipus}|${eloiras.idoszak}|${eloiras.forrasId}`),
     );
     if (hianyzo.length === 0) continue;
 
@@ -75,14 +121,20 @@ export async function eloirasokatPotol(tulajdonosId: string, ma = new Date()): P
     // duplikátumot vagy felülírást okozni.
     for (const eloiras of hianyzo) {
       const elotte = await prisma.eloirtTetel.count({
-        where: { jogviszonyId: jogviszony.id, tipus: eloiras.tipus, idoszak: eloiras.idoszak },
+        where: {
+          jogviszonyId: jogviszony.id,
+          tipus: eloiras.tipus,
+          idoszak: eloiras.idoszak,
+          forrasId: eloiras.forrasId,
+        },
       });
       await prisma.eloirtTetel.upsert({
         where: {
-          jogviszonyId_tipus_idoszak: {
+          jogviszonyId_tipus_idoszak_forrasId: {
             jogviszonyId: jogviszony.id,
             tipus: eloiras.tipus,
             idoszak: eloiras.idoszak,
+            forrasId: eloiras.forrasId,
           },
         },
         update: {},
@@ -90,6 +142,7 @@ export async function eloirasokatPotol(tulajdonosId: string, ma = new Date()): P
           jogviszonyId: jogviszony.id,
           tipus: eloiras.tipus,
           idoszak: eloiras.idoszak,
+          forrasId: eloiras.forrasId,
           esedekesseg: eloiras.esedekesseg,
           osszegFt: eloiras.osszegFt,
           reszletezes: reszletezest(eloiras),

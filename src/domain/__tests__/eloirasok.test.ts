@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { eloirasok, type Eloiras, type JogviszonyAdat } from "../eloirasok";
+import type { ElofizetesAdat } from "../elofizetes";
 
 function jogviszony(reszlet: Partial<JogviszonyAdat> = {}): JogviszonyAdat {
   return {
@@ -197,5 +198,128 @@ describe("a bérleti díjon túl", () => {
       new Date(Date.UTC(2026, 8, 20)),
     );
     expect(sorok.every((sor) => Number.isInteger(sor.osszegFt))).toBe(true);
+  });
+});
+
+describe("előfizetés előírásai", () => {
+  const JAN = new Date(Date.UTC(2026, 0, 1));
+
+  function elofizetes(reszlet: Partial<ElofizetesAdat> = {}): ElofizetesAdat {
+    return {
+      id: "e1",
+      fajta: "internet",
+      megnevezes: "Telekom 500/100",
+      szolgaltato: "Telekom",
+      elofizeto: "berbeado",
+      haviDijFt: 6000,
+      kezdete: JAN,
+      vege: null,
+      nyilatkozatok: [{ berloId: "anna", allapot: "jovahagyva", indoklas: null }],
+      ...reszlet,
+    };
+  }
+
+  function havi(reszlet: Partial<JogviszonyAdat> = {}) {
+    return jogviszony({
+      kezdete: JAN,
+      berletiDijFt: 150000,
+      kozosKoltsegFt: 0,
+      elofizetesek: [elofizetes()],
+      fiokosBerlok: ["anna"],
+      ...reszlet,
+    });
+  }
+
+  it("jóváhagyott előfizetésből havonta egy előírás lesz", () => {
+    const sorok = eloirasok(havi(), new Date(Date.UTC(2026, 2, 15))).filter(
+      (sor) => sor.tipus === "elofizetes",
+    );
+    expect(sorok).toHaveLength(3);
+    expect(sorok.map((sor) => sor.idoszak)).toEqual(["2026-01", "2026-02", "2026-03"]);
+    expect(sorok.every((sor) => sor.osszegFt === 6000)).toBe(true);
+    expect(sorok[0].forrasId).toBe("e1");
+  });
+
+  it("jóváhagyás nélkül egyetlen előírás sem lesz belőle", () => {
+    const sorok = eloirasok(
+      havi({ elofizetesek: [elofizetes({ nyilatkozatok: [] })] }),
+      new Date(Date.UTC(2026, 2, 15)),
+    );
+    expect(sorok.filter((sor) => sor.tipus === "elofizetes")).toEqual([]);
+    // A bérleti díj közben rendesen megvan: nem az egész hónap veszett el.
+    expect(sorok.filter((sor) => sor.tipus === "berleti_dij")).toHaveLength(3);
+  });
+
+  it("a bérlő saját előfizetéséből nem lesz előírás", () => {
+    const sorok = eloirasok(
+      havi({ elofizetesek: [elofizetes({ elofizeto: "berlo" })] }),
+      new Date(Date.UTC(2026, 1, 15)),
+    );
+    expect(sorok.filter((sor) => sor.tipus === "elofizetes")).toEqual([]);
+  });
+
+  it("két előfizetés két külön sor, nem összevonva", () => {
+    const sorok = eloirasok(
+      havi({
+        elofizetesek: [
+          elofizetes(),
+          elofizetes({ id: "e2", megnevezes: "Vodafone tévé", haviDijFt: 4000 }),
+        ],
+      }),
+      new Date(Date.UTC(2026, 0, 20)),
+    ).filter((sor) => sor.tipus === "elofizetes");
+
+    expect(sorok).toHaveLength(2);
+    expect(sorok.map((sor) => sor.forrasId).sort()).toEqual(["e1", "e2"]);
+    expect(sorok.map((sor) => sor.osszegFt).sort((a, b) => a - b)).toEqual([4000, 6000]);
+  });
+
+  it("hónap közben induló előfizetés napra arányosan jár", () => {
+    // Január 20-tól: 12 nap a 31-ből.
+    const sorok = eloirasok(
+      havi({ elofizetesek: [elofizetes({ kezdete: new Date(Date.UTC(2026, 0, 20)) })] }),
+      new Date(Date.UTC(2026, 0, 31)),
+    ).filter((sor) => sor.tipus === "elofizetes");
+
+    expect(sorok).toHaveLength(1);
+    expect(sorok[0].osszegFt).toBe(Math.round((6000 * 12) / 31));
+    expect(sorok[0].reszletezes?.kulcs).toBe("eloiras.elofizetes_toredek");
+  });
+
+  it("a megszűnés utáni hónapra nincs előírás", () => {
+    const sorok = eloirasok(
+      havi({ elofizetesek: [elofizetes({ vege: new Date(Date.UTC(2026, 0, 31)) })] }),
+      new Date(Date.UTC(2026, 2, 15)),
+    ).filter((sor) => sor.tipus === "elofizetes");
+
+    expect(sorok).toHaveLength(1);
+    expect(sorok[0].idoszak).toBe("2026-01");
+  });
+
+  it("a teljes hónap részletezése is megnevezi az előfizetést", () => {
+    // Két előfizetés közül a bérlőnek tudnia kell, melyikről szól a sor.
+    const sor = eloirasok(havi(), new Date(Date.UTC(2026, 0, 20))).find(
+      (eloiras) => eloiras.tipus === "elofizetes",
+    );
+    expect(sor?.reszletezes?.kulcs).toBe("eloiras.elofizetes");
+    expect(sor?.reszletezes?.adatok?.nev).toBe("Telekom 500/100");
+  });
+
+  it("a kiköltözés hónapjában az előfizetés is a jogviszony napjaira jár", () => {
+    // A jogviszony január 15-én zárul: az előfizetés sem futhat tovább.
+    const sorok = eloirasok(
+      havi({ vege: new Date(Date.UTC(2026, 0, 15)) }),
+      new Date(Date.UTC(2026, 2, 15)),
+    ).filter((sor) => sor.tipus === "elofizetes");
+
+    expect(sorok).toHaveLength(1);
+    expect(sorok[0].osszegFt).toBe(Math.round((6000 * 15) / 31));
+  });
+
+  it("a bérleti díj forrásazonosítója üres marad", () => {
+    const sorok = eloirasok(havi(), new Date(Date.UTC(2026, 0, 20)));
+    expect(sorok.filter((sor) => sor.tipus === "berleti_dij").every((sor) => sor.forrasId === "")).toBe(
+      true,
+    );
   });
 });
