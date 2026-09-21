@@ -1,5 +1,5 @@
 import { Dokumentumlista } from "@/components/Dokumentumlista";
-import { Lapfej } from "@/components/ui/alap";
+import { Lapfej, Sugo } from "@/components/ui/alap";
 import { szovegekNyelvvel } from "@/domain/szotar";
 import { berloTara } from "@/lib/dokumentumtar";
 import { kotelezoSzerep } from "@/lib/munkamenet";
@@ -19,7 +19,11 @@ export default async function BerloiDokumentumok() {
 
   return (
     <div className="grid gap-5">
-      <Lapfej cim={sz("dokumentum.oldal.cim")} alcim={sz("dokumentum.oldal.bevezeto")} />
+      <Lapfej cim={sz("dokumentum.oldal.cim")} />
+
+      <Sugo cim={sz("dokumentum.oldal.sugo_cim")}>
+        <p>{sz("dokumentum.oldal.bevezeto")}</p>
+      </Sugo>
 
       {/* Hogy az okirat magyarul érvényes, azt nem csukjuk össze: az angol
           felületen álló bérlő pont ezt nem sejti magától. */}

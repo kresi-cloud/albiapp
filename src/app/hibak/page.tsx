@@ -5,7 +5,7 @@ import { berbeadoHibai } from "@/lib/hibabejelentes";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv, szovegek } from "@/lib/nyelv";
 import { HibaBejelentes } from "./Urlapok";
-import { Lapfej, Szakaszcim } from "@/components/ui/alap";
+import { Lapfej, Sugo, Szakaszcim } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +29,11 @@ export default async function Hibak() {
 
   return (
     <div className="grid gap-8">
-      <Lapfej cim={sz("hibak.cim")} alcim={sz("hibak.bevezeto")} />
+      <Lapfej cim={sz("hibak.cim")} />
+
+      <Sugo cim={sz("hibak.sugo_cim")}>
+        <p>{sz("hibak.bevezeto")}</p>
+      </Sugo>
 
       <section>
         <Szakaszcim>{nyitottak.length > 0

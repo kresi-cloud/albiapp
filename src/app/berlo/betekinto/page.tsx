@@ -28,9 +28,12 @@ export default async function Betekintok() {
 
   return (
     <div className="grid gap-5">
-      <Lapfej cim={sz("betekinto.oldal.cim")} alcim={sz("betekinto.oldal.bevezeto")} />
+      <Lapfej cim={sz("betekinto.oldal.cim")} />
 
-      <Sugo cim={sz("betekinto.oldal.mit_nem_cim")}>
+      {/* A mire jó és a mi marad ki egy súgóba tartozik: aki most találkozik
+          a funkcióval, egyben olvassa el, aki nem, annak egy sor marad. */}
+      <Sugo cim={sz("betekinto.oldal.sugo_cim")}>
+        <p>{sz("betekinto.oldal.bevezeto")}</p>
         <p>{sz("betekinto.oldal.mit_nem")}</p>
       </Sugo>
 

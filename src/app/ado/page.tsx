@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { BeszerzesUrlap, KoltsegUrlap } from "./Urlapok";
-import { Lapfej, Szakaszcim } from "@/components/ui/alap";
+import { Lapfej, Sugo, Szakaszcim } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +38,7 @@ export default async function Ado({
   return (
     <div className="grid gap-8">
       <section className="grid gap-3">
-        <Lapfej cim={sz("ado.cim", { ev })} alcim={sz("ado.bevezeto")} />
+        <Lapfej cim={sz("ado.cim", { ev })} />
         <div className="flex flex-wrap gap-2 text-sm">
           {evek.map((evszam) => (
             <Link
@@ -64,6 +64,10 @@ export default async function Ado({
           </a>
         </div>
       </section>
+
+      <Sugo cim={sz("ado.sugo_cim")}>
+        <p>{sz("ado.bevezeto")}</p>
+      </Sugo>
 
       <section className="grid gap-3 sm:grid-cols-3">
         <Szamlap cimke={sz("ado.bevetel")} ertek={ft(osszesito.bevetelFt)} />

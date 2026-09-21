@@ -1048,10 +1048,6 @@ export const SZOTAR: Szotar = {
     hu: "A link nem árulja el a bérbeadód nevét, a pontos címet, a lakótársaid nevét és semmilyen személyes adatot. Aki megkapja, annak a pontos cím úgyis megvan; a linkhez viszont bárki hozzáfér, akihez eljut, ezért nem tesszük bele. Bármikor visszavonhatod, és az azonnal hat.",
     en: "The link does not reveal your landlord's name, the exact address, your flatmates' names or any personal data. Whoever you send it to already knows the address; anyone the link reaches can open it, so we leave it out. You can revoke it at any time, and that takes effect immediately.",
   },
-  "betekinto.oldal.mit_nem_cim": {
-    hu: "Mi nem kerül bele a linkbe?",
-    en: "What the link does not include",
-  },
   "betekinto.urlap.cim": { hu: "Új betekintő", en: "New reference" },
   "betekinto.urlap.jogviszony": { hu: "Melyik bérleményről?", en: "Which tenancy?" },
   "betekinto.urlap.cel": { hu: "Kinek készül?", en: "Who is it for?" },
@@ -1180,6 +1176,20 @@ export const SZOTAR: Szotar = {
   // fülre 360 képponton nagyjából 70 képpont jut, és ami nem fér ki, azt a
   // böngésző levágja. A „Dokumentumok” így „Iratok”, a „Hibabejelentés” pedig
   // „Hibák” — a lap címe mindkettőnél a hosszú alak marad.
+  "berlok.sugo_cim": { hu: "Hogyan működik a több bérlő?", en: "How do several tenants work?" },
+  "rezsi.sugo_cim": { hu: "Hogyan készül az elszámolás?", en: "How is the settlement produced?" },
+  "hibak.sugo_cim": { hu: "Hogyan megy a hibabejelentés?", en: "How does a fault report work?" },
+  "ado.sugo_cim": { hu: "Mit jelent, hogy összesítő?", en: "What does \"summary\" mean here?" },
+  "hiba.oldal.sugo_cim": {
+    hu: "Mi történik a bejelentés után?",
+    en: "What happens after you report it?",
+  },
+  "dokumentum.oldal.sugo_cim": { hu: "Mit látsz itt?", en: "What you see here" },
+  "betekinto.oldal.sugo_cim": {
+    hu: "Mire jó a betekintő, és mi nem kerül bele?",
+    en: "What the shared view is for, and what it leaves out",
+  },
+
   "nav.tobb": { hu: "Több", en: "More" },
   "nav.bezaras": { hu: "Bezárás", en: "Close" },
   "ful.attekinto": { hu: "Áttekintő", en: "Overview" },

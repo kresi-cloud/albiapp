@@ -6,7 +6,7 @@ import { berbeadoElerhetosege, berloHibai } from "@/lib/hibabejelentes";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv } from "@/lib/nyelv";
 import { HibaBejelentes } from "@/app/hibak/Urlapok";
-import { Lapfej, Szakaszcim } from "@/components/ui/alap";
+import { Lapfej, Sugo, Szakaszcim } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +38,11 @@ export default async function BerloiHibak() {
 
   return (
     <div className="grid gap-8">
-      <Lapfej cim={sz("hiba.oldal.cim")} alcim={sz("hiba.oldal.bevezeto")} />
+      <Lapfej cim={sz("hiba.oldal.cim")} />
+
+      <Sugo cim={sz("hiba.oldal.sugo_cim")}>
+        <p>{sz("hiba.oldal.bevezeto")}</p>
+      </Sugo>
 
       <section>
         <Szakaszcim>{sz("hiba.oldal.uj")}</Szakaszcim>
