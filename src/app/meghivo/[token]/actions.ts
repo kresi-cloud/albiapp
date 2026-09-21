@@ -5,6 +5,7 @@ import { emailtNormalizal, jelszotEllenoriz, meghivoAllapota } from "@/domain/be
 import { prisma } from "@/lib/db";
 import { jelszotHashel } from "@/lib/jelszo";
 import { munkamenetetIndit } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 
 /** A nevet visszaadjuk, hogy hibás jelszó után ne kelljen újra begépelni. */
 export type RegisztracioEredmeny = {
@@ -18,6 +19,7 @@ export async function meghivotElfogad(
   _elozo: RegisztracioEredmeny,
   urlap: FormData,
 ): Promise<RegisztracioEredmeny> {
+  const { sz, u } = await szovegek();
   const token = String(urlap.get("token") ?? "");
   const nev = String(urlap.get("nev") ?? "").trim();
   const jelszo = String(urlap.get("jelszo") ?? "");
@@ -30,16 +32,17 @@ export async function meghivotElfogad(
   if (!meghivo || meghivoAllapota(meghivo, new Date()) !== "ervenyes") {
     return {
       allapot: "hiba",
-      uzenet: "Ez a meghívó már nem érvényes. Kérj újat a bérbeadódtól.",
+      uzenet: sz("meghivo.hiba.ervenytelen"),
       hibak: [],
       nev,
     };
   }
 
-  const hibak = jelszotEllenoriz(jelszo, urlap.get("jelszoUjra"));
-  if (nev === "") hibak.push("Add meg a neved.");
+  const ellenorzes = jelszotEllenoriz(jelszo, urlap.get("jelszoUjra"));
+  const hibak = ellenorzes.map(u);
+  if (nev === "") hibak.push(sz("meghivo.hiba.nev"));
   if (hibak.length > 0) {
-    return { allapot: "hiba", uzenet: "A fiók nem készült el.", hibak, nev };
+    return { allapot: "hiba", uzenet: sz("meghivo.hiba.nem_kesz"), hibak, nev };
   }
 
   const email = emailtNormalizal(meghivo.email);
@@ -60,8 +63,7 @@ export async function meghivotElfogad(
     ]);
     return {
       allapot: "letezo",
-      uzenet:
-        "Ezzel az e-mail-címmel már van fiókod, ezért a lakást hozzákötöttem. Lépj be a meglévő jelszavaddal.",
+      uzenet: sz("meghivo.letezo_fiok"),
       hibak: [],
       nev,
     };

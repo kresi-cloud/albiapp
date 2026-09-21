@@ -65,7 +65,7 @@ export default async function BerloiHibak() {
             >
               <p className="font-medium">{jogviszony.ingatlan.megnevezes}</p>
               <p className="mt-1 text-stone-600 dark:text-stone-400">
-                {berbeado?.nev ?? "Bérbeadó"} · {berbeado?.email ?? ""}
+                {berbeado?.nev ?? sz("hiba.kartya.berbeado")} · {berbeado?.email ?? ""}
                 {berbeado?.telefon ? ` · ${berbeado.telefon}` : ""}
               </p>
               {berbeado && !berbeado.telefon ? (

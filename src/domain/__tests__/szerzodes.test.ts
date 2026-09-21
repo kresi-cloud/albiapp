@@ -260,10 +260,17 @@ describe("hianyzoAdatok", () => {
         berlok: [{ nev: "Tóth Anna" }],
       }),
     );
-    expect(hianyok.join(" ")).toContain("bérbeadó lakcíme");
-    expect(hianyok.join(" ")).toContain("bankszámlaszáma");
-    expect(hianyok.join(" ")).toContain("helyrajzi száma");
-    expect(hianyok.join(" ")).toContain("Tóth Anna");
+    const kulcsok = hianyok.map((sor) => sor.kulcs);
+    expect(kulcsok).toContain("hiany.berbeado.lakcim");
+    expect(kulcsok).toContain("hiany.berbeado.bankszamla");
+    expect(kulcsok).toContain("hiany.ingatlan.helyrajziSzam");
+    // A bérlő hiányai névre szólnak, és a mezőnév is fordítható üzenet.
+    const berloi = hianyok.filter((sor) => sor.kulcs === "hiany.berlo");
+    expect(berloi.length).toBeGreaterThan(0);
+    expect(berloi.every((sor) => sor.adatok?.nev === "Tóth Anna")).toBe(true);
+    expect(berloi.map((sor) => sor.adatok?.mezo)).toContainEqual({
+      kulcs: "adatok.mezo.lakcim",
+    });
   });
 
   it("teljes adatsornál nincs hiány", () => {

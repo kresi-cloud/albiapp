@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 import { szerzodesBemenet } from "@/lib/szerzodes";
 import {
   ajanlottModulok,
@@ -16,10 +17,15 @@ export type Eredmeny = {
   allapot: "ures" | "kesz" | "hiba";
   uzenet: string;
   hibak: string[];
+  /**
+   * Melyik mezőre vonatkozik a hiba. Külön mezőben, mert a `hibak` felsorolását
+   * a felhasználó olvassa: oda mezőnév nem kerülhet.
+   */
+  mezo?: string;
 };
 
-function hiba(uzenet: string, hibak: string[] = []): Eredmeny {
-  return { allapot: "hiba", uzenet, hibak };
+function hiba(uzenet: string, hibak: string[] = [], mezo?: string): Eredmeny {
+  return { allapot: "hiba", uzenet, hibak, mezo };
 }
 
 function szoveg(nyers: unknown): string {
@@ -36,15 +42,16 @@ function napotOlvas(nyers: unknown): Date | null {
 /** Új tervezet a jogviszony adataiból, az ajánlott modulkészlettel. */
 export async function szerzodestKeszit(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const jogviszonyId = szoveg(urlap.get("jogviszonyId"));
 
   const jogviszony = await prisma.jogviszony.findFirst({
     where: { id: jogviszonyId, ingatlan: { tulajdonosId: berbeado.id } },
     include: { ingatlan: true, berlok: { orderBy: { sorrend: "asc" } } },
   });
-  if (!jogviszony) return hiba("Ez a jogviszony nem a tiéd.");
+  if (!jogviszony) return hiba(sz("szerzodes.hiba.jogviszony_nem_tied"));
   if (jogviszony.berlok.length === 0) {
-    return hiba("Előbb vedd fel a bérlőt a jogviszonyhoz, különben nincs kivel szerződni.");
+    return hiba(sz("szerzodes.hiba.nincs_berlo"));
   }
 
   const berbeadoiAdatok = await prisma.berbeadoiAdatok.findUnique({
@@ -86,7 +93,9 @@ export async function szerzodestKeszit(_elozo: Eredmeny, urlap: FormData): Promi
   const szerzodes = await prisma.szerzodes.create({
     data: {
       jogviszonyId,
-      megnevezes: `Bérleti szerződés – ${jogviszony.ingatlan.megnevezes}`,
+      // A tervezet neve a bérbeadó akkori nyelvén készül: elmentett szöveg, ami
+      // később nem tud nyelvet váltani. A szerződés szövege ettől függetlenül magyar.
+      megnevezes: sz("szerzodes.megnevezes", { ingatlan: jogviszony.ingatlan.megnevezes }),
       modulok: { create: valaszthatok.map((kulcs, sorrend) => ({ kulcs, sorrend })) },
     },
   });
@@ -98,20 +107,21 @@ export async function szerzodestKeszit(_elozo: Eredmeny, urlap: FormData): Promi
 /** Modul be- vagy kikapcsolása. Kötelező modult nem lehet kikapcsolni. */
 export async function modultValt(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const szerzodesId = szoveg(urlap.get("szerzodesId"));
   const kulcs = szoveg(urlap.get("kulcs"));
 
   const modul = modultKeres(kulcs);
-  if (!modul) return hiba("Nincs ilyen modul.");
-  if (modul.kotelezo) return hiba("Ez a modul kötelező, nem kapcsolható ki.");
+  if (!modul) return hiba(sz("szerzodes.hiba.nincs_modul"));
+  if (modul.kotelezo) return hiba(sz("szerzodes.hiba.kotelezo_modul"));
 
   const szerzodes = await prisma.szerzodes.findFirst({
     where: { id: szerzodesId, jogviszony: { ingatlan: { tulajdonosId: berbeado.id } } },
     include: { modulok: true },
   });
-  if (!szerzodes) return hiba("Ez a szerződés nem a tiéd.");
+  if (!szerzodes) return hiba(sz("szerzodes.hiba.nem_tied"));
   if (szerzodes.allapot !== "tervezet") {
-    return hiba("A véglegesített szerződés szövege nem változtatható.");
+    return hiba(sz("szerzodes.hiba.vegleges_nem_valtozik"));
   }
 
   const megvan = szerzodes.modulok.find((sor) => sor.kulcs === kulcs);
@@ -126,7 +136,9 @@ export async function modultValt(_elozo: Eredmeny, urlap: FormData): Promise<Ere
   revalidatePath(`/szerzodesek/${szerzodesId}`);
   return {
     allapot: "kesz",
-    uzenet: megvan ? `„${modul.cim}” kikapcsolva.` : `„${modul.cim}” bekapcsolva.`,
+    uzenet: sz(megvan ? "szerzodes.kesz.modul_ki" : "szerzodes.kesz.modul_be", {
+      cim: modul.cim,
+    }),
     hibak: [],
   };
 }
@@ -134,14 +146,15 @@ export async function modultValt(_elozo: Eredmeny, urlap: FormData): Promise<Ere
 /** A paraméterek mentése. Az üresen hagyott mező visszaáll alapértelmezésre. */
 export async function parametereketMenti(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const szerzodesId = szoveg(urlap.get("szerzodesId"));
 
   const szerzodes = await prisma.szerzodes.findFirst({
     where: { id: szerzodesId, jogviszony: { ingatlan: { tulajdonosId: berbeado.id } } },
   });
-  if (!szerzodes) return hiba("Ez a szerződés nem a tiéd.");
+  if (!szerzodes) return hiba(sz("szerzodes.hiba.nem_tied"));
   if (szerzodes.allapot !== "tervezet") {
-    return hiba("A véglegesített szerződés szövege nem változtatható.");
+    return hiba(sz("szerzodes.hiba.vegleges_nem_valtozik"));
   }
 
   const kelteHelye = szoveg(urlap.get("kelteHelye"));
@@ -170,7 +183,7 @@ export async function parametereketMenti(_elozo: Eredmeny, urlap: FormData): Pro
   ]);
 
   revalidatePath(`/szerzodesek/${szerzodesId}`);
-  return { allapot: "kesz", uzenet: "A beállítások mentve, a szöveg frissült.", hibak: [] };
+  return { allapot: "kesz", uzenet: sz("szerzodes.kesz.parameterek"), hibak: [] };
 }
 
 /**
@@ -179,25 +192,23 @@ export async function parametereketMenti(_elozo: Eredmeny, urlap: FormData): Pro
  */
 export async function szerzodestVeglegesit(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, u } = await szovegek();
   const szerzodesId = szoveg(urlap.get("szerzodesId"));
 
   const betoltott = await szerzodesBemenet(szerzodesId, berbeado.id);
-  if (!betoltott) return hiba("Ez a szerződés nem a tiéd.");
-  if (betoltott.allapot !== "tervezet") return hiba("Ez a szerződés már véglegesített.");
+  if (!betoltott) return hiba(sz("szerzodes.hiba.nem_tied"));
+  if (betoltott.allapot !== "tervezet") return hiba(sz("szerzodes.hiba.mar_vegleges"));
 
   // A személyazonosság nyugtázása nélkül nem véglegesítünk. Ez nem igazolás:
   // az alkalmazás nem tudja ellenőrizni, ki kicsoda, ezért a felek nézik meg
   // egymás okmányát, és a bérbeadó ezt itt nyugtázza.
   if (szoveg(urlap.get("azonossagEllenorizve")) !== "igen") {
-    return hiba(
-      "Előbb nyugtázd, hogy megnéztétek egymás fényképes igazolványát.",
-      ["azonossagEllenorizve"],
-    );
+    return hiba(sz("szerzodes.hiba.nyugtazas"), [], "azonossagEllenorizve");
   }
 
   const hianyok = hianyzoAdatok(betoltott.bemenet);
   if (hianyok.length > 0 && szoveg(urlap.get("megis")) !== "igen") {
-    return hiba("Hiányzó adatok. Pótold őket, vagy véglegesítsd így.", hianyok);
+    return hiba(sz("szerzodes.hiba.hianyok"), hianyok.map(u));
   }
 
   await prisma.szerzodes.update({
@@ -213,7 +224,7 @@ export async function szerzodestVeglegesit(_elozo: Eredmeny, urlap: FormData): P
   revalidatePath("/szerzodesek");
   return {
     allapot: "kesz",
-    uzenet: "A szerződés véglegesítve. A szövege innentől nem változik.",
+    uzenet: sz("szerzodes.kesz.veglegesitve"),
     hibak: [],
   };
 }
@@ -221,12 +232,13 @@ export async function szerzodestVeglegesit(_elozo: Eredmeny, urlap: FormData): P
 /** Véglegesítés visszavonása, amíg nem írták alá. */
 export async function veglegesitestVisszavon(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const szerzodesId = szoveg(urlap.get("szerzodesId"));
 
   const szerzodes = await prisma.szerzodes.findFirst({
     where: { id: szerzodesId, jogviszony: { ingatlan: { tulajdonosId: berbeado.id } } },
   });
-  if (!szerzodes) return hiba("Ez a szerződés nem a tiéd.");
+  if (!szerzodes) return hiba(sz("szerzodes.hiba.nem_tied"));
 
   await prisma.szerzodes.update({
     where: { id: szerzodesId },
@@ -235,5 +247,5 @@ export async function veglegesitestVisszavon(_elozo: Eredmeny, urlap: FormData):
 
   revalidatePath(`/szerzodesek/${szerzodesId}`);
   revalidatePath("/szerzodesek");
-  return { allapot: "kesz", uzenet: "Visszaállt tervezetre, újra szerkeszthető.", hibak: [] };
+  return { allapot: "kesz", uzenet: sz("szerzodes.kesz.visszaallt"), hibak: [] };
 }

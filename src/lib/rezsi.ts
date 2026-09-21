@@ -1,3 +1,4 @@
+import { uzenet, type Uzenet } from "@/domain/nyelv";
 import { prisma } from "@/lib/db";
 import {
   elszamolastKeszit,
@@ -11,7 +12,7 @@ export type Osszeallitas = {
   osszegFt: number;
   napok: number;
   /** Amit nem tudtunk elszámolni, és miért. A bérbeadónak ez is információ. */
-  kihagyott: string[];
+  kihagyott: Uzenet[];
 };
 
 /**
@@ -40,7 +41,7 @@ export async function elszamolastOsszeallit(
   });
   if (!jogviszony) return { tetelek: [], osszegFt: 0, napok: 0, kihagyott: [] };
 
-  const kihagyott: string[] = [];
+  const kihagyott: Uzenet[] = [];
   const meroorak: ElszamolasBemenet["meroorak"] = [];
 
   // Mérőórát csak akkor olvasunk, ha a jogviszony tényleges fogyasztás szerint
@@ -54,15 +55,13 @@ export async function elszamolastOsszeallit(
     const zaro = utolsoAllas(meroora.oraallasok, idoszakVege);
 
     if (!nyito || !zaro || nyito.id === zaro.id) {
-      kihagyott.push(
-        `${megnevezes}: az időszak elejéhez és végéhez is kell egy-egy óraállás.`,
-      );
+      kihagyott.push(uzenet("rezsi.kihagyott.oraallas", { nev: merooraUzenet(meroora.tipus, meroora.almero) }));
       continue;
     }
 
     const dijszabas = ervenyesDijszabas(meroora.dijszabasok, idoszakVege);
     if (!dijszabas) {
-      kihagyott.push(`${megnevezes}: nincs erre az időszakra érvényes díjszabás.`);
+      kihagyott.push(uzenet("rezsi.kihagyott.dijszabas", { nev: merooraUzenet(meroora.tipus, meroora.almero) }));
       continue;
     }
 
@@ -96,6 +95,16 @@ export async function elszamolastOsszeallit(
 function utolsoAllas<T extends { datum: Date }>(allasok: T[], napig: Date): T | null {
   const jeloltek = allasok.filter((allas) => allas.datum.getTime() <= napig.getTime());
   return jeloltek[jeloltek.length - 1] ?? null;
+}
+
+/**
+ * A mérőóra neve a felületre, fordíthatóan. A jegyzőkönyv és az elszámolás a
+ * `merooraNeve`-t használja: azok kiadott okiratok, és magyarul maradnak.
+ */
+export function merooraUzenet(tipus: string, almero: boolean): Uzenet {
+  const ismert = ["villany", "viz", "gaz", "futes"].includes(tipus);
+  const nev = ismert ? uzenet(`meroora.${tipus}`) : uzenet("nyers", { szoveg: tipus });
+  return almero ? uzenet("meroora.almero", { nev }) : nev;
 }
 
 export function merooraNeve(tipus: string, almero: boolean): string {

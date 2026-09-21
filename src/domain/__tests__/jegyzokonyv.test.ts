@@ -78,22 +78,26 @@ describe("hianyzoTetelek", () => {
 
   it("óraállás nélkül figyelmeztet, mert nincs miből elszámolni", () => {
     const hianyok = hianyzoTetelek(bemenet({ tetelek: [TETELEK[2]] }));
-    expect(hianyok.join(" ")).toContain("Nincs egyetlen mérőóraállás sem");
+    expect(hianyok.map((sor) => sor.kulcs)).toContain("hiany.jegyzokonyv.nincs_meroora");
   });
 
   it("a kitöltetlen óraállást nevén nevezi", () => {
     const hianyok = hianyzoTetelek(
       bemenet({ tetelek: [{ fajta: "meroora", megnevezes: "Villany", ertek: "" }, TETELEK[2]] }),
     );
-    expect(hianyok.join(" ")).toContain("Villany: nincs kitöltve az óraállás.");
+    expect(hianyok).toContainEqual({
+      kulcs: "hiany.jegyzokonyv.oraallas",
+      adatok: { megnevezes: "Villany" },
+    });
   });
 
   it("hiányzó kulcssor és üres állapotleírás is hiány", () => {
     const hianyok = hianyzoTetelek(
       bemenet({ tetelek: [TETELEK[0]], allapotLeiras: "  " }),
     );
-    expect(hianyok.join(" ")).toContain("hány kulcs került át");
-    expect(hianyok.join(" ")).toContain("állapotának leírása üres");
+    const kulcsok = hianyok.map((sor) => sor.kulcs);
+    expect(kulcsok).toContain("hiany.jegyzokonyv.nincs_kulcs");
+    expect(kulcsok).toContain("hiany.jegyzokonyv.allapot");
   });
 });
 

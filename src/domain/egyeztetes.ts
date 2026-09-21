@@ -137,29 +137,29 @@ export const KET_OLDAL_NAP_ELTERES = 3;
 export function ablakotEllenoriz(nyers: {
   korabbiAblakNap: unknown;
   kesobbiAblakNap: unknown;
-}): { ablak: { korabbiAblakNap: number; kesobbiAblakNap: number } | null; hibak: string[] } {
-  const hibak: string[] = [];
+}): { ablak: { korabbiAblakNap: number; kesobbiAblakNap: number } | null; hibak: Uzenet[] } {
+  const hibak: Uzenet[] = [];
 
-  const napot = (ertek: unknown, megnevezes: string): number | null => {
+  const napot = (ertek: unknown, mezo: Uzenet): number | null => {
     const szoveg = String(ertek ?? "").trim().replace(/\s/g, "");
     if (szoveg === "") {
-      hibak.push(`${megnevezes}: adj meg egy napszámot.`);
+      hibak.push(uzenet("beallitasok.hiba.nap_kell", { mezo }));
       return null;
     }
     if (!/^\d+$/.test(szoveg)) {
-      hibak.push(`${megnevezes}: csak egész napszám adható meg.`);
+      hibak.push(uzenet("beallitasok.hiba.egesz_nap", { mezo }));
       return null;
     }
     const szam = Number(szoveg);
     if (szam > ABLAK_MAX_NAP) {
-      hibak.push(`${megnevezes}: legfeljebb ${ABLAK_MAX_NAP} nap adható meg.`);
+      hibak.push(uzenet("beallitasok.hiba.max_nap", { mezo, max: ABLAK_MAX_NAP }));
       return null;
     }
     return szam;
   };
 
-  const korabbiAblakNap = napot(nyers.korabbiAblakNap, "Esedékesség előtt");
-  const kesobbiAblakNap = napot(nyers.kesobbiAblakNap, "Esedékesség után");
+  const korabbiAblakNap = napot(nyers.korabbiAblakNap, uzenet("beallitasok.ablak_elotte"));
+  const kesobbiAblakNap = napot(nyers.kesobbiAblakNap, uzenet("beallitasok.ablak_utana"));
 
   if (korabbiAblakNap === null || kesobbiAblakNap === null) {
     return { ablak: null, hibak };
