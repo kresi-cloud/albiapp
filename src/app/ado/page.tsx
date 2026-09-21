@@ -38,7 +38,8 @@ export default async function Ado({
     <div className="grid gap-8">
       <section>
         <h1 className="text-2xl font-semibold tracking-tight">
-          {sz("ado.cim", { ev })}
+          {/* Az évszám nem mennyiség: számként a szövegező ezresre tagolná („2,026”). */}
+          {sz("ado.cim", { ev: String(ev) })}
         </h1>
         <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("ado.bevezeto")}</p>
         <div className="mt-3 flex flex-wrap gap-2 text-sm">
