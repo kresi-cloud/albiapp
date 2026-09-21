@@ -55,41 +55,57 @@ export type BerloAdat = {
  * A szerződéshez kellő adatok. A bérbeadó napi használatához ezek nem kellenek,
  * ezért lenyitható: aki csak a befizetéseket nézi, ne lássa tele az oldalt.
  */
-export function BerloAdatok({ berlo }: { berlo: BerloAdat }) {
+export type AdatCimkek = {
+  cim: string;
+  hianyzik: string;
+  megvan: string;
+  forras: string;
+  mezo: Record<
+    "nev" | "email" | "szuletesiHely" | "szuletesiIdo" | "anyjaNeve" | "igazolvanySzam" | "telefon" | "lakcim",
+    string
+  >;
+  gomb: string;
+  folyamatban: string;
+};
+
+export function BerloAdatok({ berlo, cimkek }: { berlo: BerloAdat; cimkek: AdatCimkek }) {
   const [allapot, kuldes, folyamatban] = useActionState(berloAdataitMenti, KEZDETI);
 
   return (
     <details className="mt-3">
       <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
-        Szerződéshez szükséges adatok
-        {berlo.hianyzik > 0 ? ` — még ${berlo.hianyzik} hiányzik` : " — megvannak"}
+        {cimkek.cim}
+        {berlo.hianyzik > 0 ? ` — ${cimkek.hianyzik}` : ` — ${cimkek.megvan}`}
       </summary>
 
       {/*
         A forrás megmutatása nem formaság: ha a bérlő maga adta meg, az az
         érvényes, és a bérbeadó tudja, hogy nem a saját gépelését látja.
       */}
-      <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
-        {berlo.forrasa === "berlo"
-          ? "Ezeket a bérlő adta meg magáról."
-          : berlo.forrasa === "berbeado"
-            ? "Ezeket te írtad be. Ha a bérlő belép, felülírhatja a sajátjával."
-            : "Még senki nem adta meg. A bérlő belépés után maga is kitöltheti."}
-      </p>
+      <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">{cimkek.forras}</p>
 
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
         <input type="hidden" name="jogviszonyBerloId" value={berlo.id} />
-        <Mezo nev="nev" cimke="Név" ertek={berlo.nev} />
-        <Mezo nev="email" cimke="E-mail" ertek={berlo.email} tipus="email" />
-        <Mezo nev="szuletesiHely" cimke="Születési hely" ertek={berlo.szuletesiHely} />
-        <Mezo nev="szuletesiIdo" cimke="Születési idő" ertek={berlo.szuletesiIdo} tipus="date" />
-        <Mezo nev="anyjaNeve" cimke="Anyja neve" ertek={berlo.anyjaNeve} />
-        <Mezo nev="igazolvanySzam" cimke="Igazolványszám" ertek={berlo.igazolvanySzam} />
-        <Mezo nev="telefon" cimke="Telefonszám" ertek={berlo.telefon} tipus="tel" />
+        <Mezo nev="nev" cimke={cimkek.mezo.nev} ertek={berlo.nev} />
+        <Mezo nev="email" cimke={cimkek.mezo.email} ertek={berlo.email} tipus="email" />
+        <Mezo nev="szuletesiHely" cimke={cimkek.mezo.szuletesiHely} ertek={berlo.szuletesiHely} />
+        <Mezo
+          nev="szuletesiIdo"
+          cimke={cimkek.mezo.szuletesiIdo}
+          ertek={berlo.szuletesiIdo}
+          tipus="date"
+        />
+        <Mezo nev="anyjaNeve" cimke={cimkek.mezo.anyjaNeve} ertek={berlo.anyjaNeve} />
+        <Mezo
+          nev="igazolvanySzam"
+          cimke={cimkek.mezo.igazolvanySzam}
+          ertek={berlo.igazolvanySzam}
+        />
+        <Mezo nev="telefon" cimke={cimkek.mezo.telefon} ertek={berlo.telefon} tipus="tel" />
         <div className="sm:col-span-2 grid gap-3">
-          <Mezo nev="lakcim" cimke="Állandó lakcím" ertek={berlo.lakcim} />
+          <Mezo nev="lakcim" cimke={cimkek.mezo.lakcim} ertek={berlo.lakcim} />
           <button type="submit" disabled={folyamatban} className={GOMB}>
-            {folyamatban ? "Mentem…" : "Adatok mentése"}
+            {folyamatban ? cimkek.folyamatban : cimkek.gomb}
           </button>
           <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
         </div>
@@ -98,21 +114,27 @@ export function BerloAdatok({ berlo }: { berlo: BerloAdat }) {
   );
 }
 
-export function BerloHozzaadas({ jogviszonyId }: { jogviszonyId: string }) {
+export function BerloHozzaadas({
+  jogviszonyId,
+  cimkek,
+}: {
+  jogviszonyId: string;
+  cimkek: { nyito: string; nev: string; email: string; gomb: string; folyamatban: string };
+}) {
   const [allapot, kuldes, folyamatban] = useActionState(berlotHozzaad, KEZDETI);
 
   return (
     <details className="mt-3">
       <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
-        További bérlő hozzáadása
+        {cimkek.nyito}
       </summary>
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
         <input type="hidden" name="jogviszonyId" value={jogviszonyId} />
-        <Mezo nev="nev" cimke="Név" ertek="" />
-        <Mezo nev="email" cimke="E-mail" ertek="" tipus="email" />
+        <Mezo nev="nev" cimke={cimkek.nev} ertek="" />
+        <Mezo nev="email" cimke={cimkek.email} ertek="" tipus="email" />
         <div className="sm:col-span-2 grid gap-3">
           <button type="submit" disabled={folyamatban} className={GOMB}>
-            {folyamatban ? "Hozzáadom…" : "Hozzáadás"}
+            {folyamatban ? cimkek.folyamatban : cimkek.gomb}
           </button>
           <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
         </div>
@@ -121,7 +143,15 @@ export function BerloHozzaadas({ jogviszonyId }: { jogviszonyId: string }) {
   );
 }
 
-export function BerloTorles({ jogviszonyBerloId, nev }: { jogviszonyBerloId: string; nev: string }) {
+export function BerloTorles({
+  jogviszonyBerloId,
+  cimke,
+  folyamatbanCimke,
+}: {
+  jogviszonyBerloId: string;
+  cimke: string;
+  folyamatbanCimke: string;
+}) {
   const [allapot, kuldes, folyamatban] = useActionState(berlotTorol, KEZDETI);
 
   return (
@@ -132,7 +162,7 @@ export function BerloTorles({ jogviszonyBerloId, nev }: { jogviszonyBerloId: str
         disabled={folyamatban}
         className="justify-self-start text-xs text-stone-500 underline underline-offset-2 hover:text-rose-700 disabled:opacity-60 dark:text-stone-400"
       >
-        {folyamatban ? "Leveszem…" : `${nev} levétele a jogviszonyról`}
+        {folyamatban ? folyamatbanCimke : cimke}
       </button>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
     </form>

@@ -30,13 +30,13 @@ export function Hibakartya({
   hiba,
   szerep,
   ma,
-  nyelv = "hu",
+  nyelv,
   berlemenyCimke,
 }: {
   hiba: HibaNezet;
   szerep: "berbeado" | "berlo";
   ma: Date;
-  nyelv?: Nyelv;
+  nyelv: Nyelv;
   berlemenyCimke?: string;
 }) {
   const { sz, u } = szovegekNyelvvel(nyelv);

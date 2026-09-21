@@ -21,7 +21,7 @@ const KULCS: Record<Allapot, string> = {
   hianyzik: "egyeztetes.hianyzik_cimke",
 };
 
-export function Allapotjelzo({ allapot, nyelv = "hu" }: { allapot: Allapot; nyelv?: Nyelv }) {
+export function Allapotjelzo({ allapot, nyelv }: { allapot: Allapot; nyelv: Nyelv }) {
   const { sz } = szovegekNyelvvel(nyelv);
 
   return (

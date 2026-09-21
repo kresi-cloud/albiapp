@@ -16,6 +16,8 @@
  *    megérkezett, nem az, amit előírtunk.
  */
 
+import { uzenet, type Uzenet } from "./nyelv";
+
 export const SZJA_KULCS = 0.15;
 export const KOLTSEGHANYAD = 0.1;
 /** Épület értékcsökkenési leírási kulcsa évente. */
@@ -27,7 +29,7 @@ export type BeerkezettTetel = {
   datum: Date;
   osszegFt: number;
   fajta: BevetelFajta;
-  megnevezes: string;
+  megnevezes: Uzenet;
   /**
    * Igaz, ha a tétel fogyasztás szerint mért, továbbhárított közüzemi díj.
    * Ilyenkor nem bevétel. Átalánynál hamis.
@@ -38,7 +40,7 @@ export type BeerkezettTetel = {
 export type BevetelSor = BeerkezettTetel & {
   bevetelFt: number;
   nemBevetelFt: number;
-  indoklas: string;
+  indoklas: Uzenet;
 };
 
 /**
@@ -67,8 +69,7 @@ export function bevetelketBesorol(tetelek: BeerkezettTetel[]): BevetelSor[] {
         ...tetel,
         bevetelFt: 0,
         nemBevetelFt: tetel.osszegFt,
-        indoklas:
-          "Fogyasztás szerint mért, továbbhárított közüzemi díj, ezért nem bevétel.",
+        indoklas: uzenet("ado.indok.mert"),
       };
     }
     if (tetel.fajta === "rezsi") {
@@ -76,8 +77,7 @@ export function bevetelketBesorol(tetelek: BeerkezettTetel[]): BevetelSor[] {
         ...tetel,
         bevetelFt: tetel.osszegFt,
         nemBevetelFt: 0,
-        indoklas:
-          "Átalányban fizetett rezsi: nincs mögötte tényleges fogyasztás szerinti arányosítás, ezért bevétel.",
+        indoklas: uzenet("ado.indok.atalany"),
       };
     }
     if (tetel.fajta === "kozos_koltseg") {
@@ -85,15 +85,14 @@ export function bevetelketBesorol(tetelek: BeerkezettTetel[]): BevetelSor[] {
         ...tetel,
         bevetelFt: tetel.osszegFt,
         nemBevetelFt: 0,
-        indoklas:
-          "A bérlőtől kapott közös költség bevétel; ha te fizeted a társasháznak, költségként leírható.",
+        indoklas: uzenet("ado.indok.kozos_koltseg"),
       };
     }
     return {
       ...tetel,
       bevetelFt: tetel.osszegFt,
       nemBevetelFt: 0,
-      indoklas: "Bérleti díjként befolyt összeg.",
+      indoklas: uzenet("ado.indok.berleti_dij"),
     };
   });
 }
@@ -111,7 +110,7 @@ export function ertekcsokkenes(
   return Math.round((beszerzesiArFt * ERTEKCSOKKENES_KULCS * berbeadottNapok) / evNapjai);
 }
 
-export type KoltsegSor = { megnevezes: string; osszegFt: number };
+export type KoltsegSor = { megnevezes: Uzenet; osszegFt: number };
 
 export type Osszesito = {
   bevetelFt: number;

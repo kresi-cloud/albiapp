@@ -6,7 +6,23 @@ import { GOMB, MEZO } from "@/components/urlap";
 
 const KEZDETI: RegisztracioEredmeny = { allapot: "ures", uzenet: "", hibak: [], nev: "" };
 
-export function MeghivoUrlap({ token, email }: { token: string; email: string }) {
+export function MeghivoUrlap({
+  token,
+  email,
+  cimkek,
+}: {
+  token: string;
+  email: string;
+  cimkek: {
+    email: string;
+    emailSugo: string;
+    nev: string;
+    jelszo: string;
+    jelszoUjra: string;
+    gomb: string;
+    folyamatban: string;
+  };
+}) {
   const [allapot, kuldes, folyamatban] = useActionState(meghivotElfogad, KEZDETI);
 
   return (
@@ -17,19 +33,17 @@ export function MeghivoUrlap({ token, email }: { token: string; email: string })
       <input type="hidden" name="token" value={token} />
 
       <label className="grid gap-1 text-sm">
-        <span className="font-medium">E-mail-cím</span>
+        <span className="font-medium">{cimkek.email}</span>
         <input
           value={email}
           readOnly
           className="rounded border border-stone-200 bg-stone-100 px-3 py-2 text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400"
         />
-        <span className="text-xs text-stone-500 dark:text-stone-400">
-          Erre a címre szól a meghívó, ezért nem írható át.
-        </span>
+        <span className="text-xs text-stone-500 dark:text-stone-400">{cimkek.emailSugo}</span>
       </label>
 
       <label className="grid gap-1 text-sm">
-        <span className="font-medium">Neved</span>
+        <span className="font-medium">{cimkek.nev}</span>
         <input
           id="nev"
           name="nev"
@@ -42,7 +56,7 @@ export function MeghivoUrlap({ token, email }: { token: string; email: string })
       </label>
 
       <label className="grid gap-1 text-sm">
-        <span className="font-medium">Jelszó</span>
+        <span className="font-medium">{cimkek.jelszo}</span>
         <input
           id="jelszo"
           name="jelszo"
@@ -54,7 +68,7 @@ export function MeghivoUrlap({ token, email }: { token: string; email: string })
       </label>
 
       <label className="grid gap-1 text-sm">
-        <span className="font-medium">Jelszó még egyszer</span>
+        <span className="font-medium">{cimkek.jelszoUjra}</span>
         <input
           id="jelszoUjra"
           name="jelszoUjra"
@@ -70,7 +84,7 @@ export function MeghivoUrlap({ token, email }: { token: string; email: string })
         disabled={folyamatban}
         className={GOMB}
       >
-        {folyamatban ? "Fiók készítése…" : "Fiók készítése"}
+        {folyamatban ? cimkek.folyamatban : cimkek.gomb}
       </button>
 
       {allapot.allapot !== "ures" ? (

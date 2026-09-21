@@ -3,12 +3,14 @@ import { notFound } from "next/navigation";
 import { MODULOK } from "@/domain/szerzodes-modulok";
 import { hianyzoAdatok, szakaszok, zaradekSorok } from "@/domain/szerzodes-keszites";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 import { szerzodesBemenet } from "@/lib/szerzodes";
 import {
   ModulValto,
   ParameterUrlap,
   VeglegesitesUrlap,
   VisszavonasUrlap,
+  type ModulCimkek,
   type ParameterNezet,
 } from "./Urlapok";
 
@@ -25,6 +27,7 @@ export default async function SzerzodesOldal({
 }) {
   const { id } = await params;
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, u } = await szovegek();
 
   const betoltott = await szerzodesBemenet(id, berbeado.id);
   if (!betoltott) notFound();
@@ -54,24 +57,41 @@ export default async function SzerzodesOldal({
 
   const kesz = szakaszok(bemenet);
 
+  const modulCimkek: ModulCimkek = {
+    kotelezo: sz("szerzodes.kotelezo_jelzes"),
+    benneVan: sz("szerzodes.benne_van"),
+    nincsBenne: sz("szerzodes.nincs_benne"),
+    benneVanJelzes: sz("szerzodes.benne_van_jelzes"),
+    nincsBenneJelzes: sz("szerzodes.nincs_benne_jelzes"),
+    ellenjegyzes: {
+      nincs: sz("szerzodes.ellenjegyzes.nincs"),
+      folyamatban: sz("szerzodes.ellenjegyzes.folyamatban"),
+      ellenjegyzett: sz("szerzodes.ellenjegyzes.ellenjegyzett"),
+    },
+  };
+
   return (
     <div className="grid gap-6">
       <section>
         <Link href="/dokumentumok" className="text-sm underline underline-offset-2">
-          ← Dokumentumok
+          {sz("szerzodes.vissza")}
         </Link>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight">{megnevezes}</h1>
         <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-          {szerkesztheto
-            ? "Tervezet. A szöveg minden mentés után újraépül a modulokból."
-            : "Véglegesítve. A szöveg be van fagyasztva, egy későbbi modulfrissítés sem írja át."}
+          {sz(szerkesztheto ? "szerzodes.tervezet_sugo" : "szerzodes.vegleges_sugo")}
         </p>
       </section>
 
       <section className="rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-        A modulok ügyvédi ellenjegyzése még nincs meg, ezért ez egyelőre tervezet:
-        használat előtt nézesd át ügyvéddel. Az ellenjegyzett modulok megjelölve
-        fognak megjelenni.
+        {sz("szerzodes.ellenjegyzes_figyelmeztetes")}
+      </section>
+
+      {/*
+        A szerződés szövege magyarul érvényes, tehát magyarul is marad. Ezt a lap
+        kimondja, különben az angol felületen a magyar pontok hibának látszanak.
+      */}
+      <section className="text-sm text-stone-600 dark:text-stone-400">
+        {sz("szerzodes.magyar_szoveg")}
       </section>
 
       {/*
@@ -79,26 +99,30 @@ export default async function SzerzodesOldal({
         előtt fontosabb, mint bármelyik másik figyelmeztetés a lapon.
       */}
       <section className="rounded border border-stone-300 bg-stone-50 p-3 text-sm dark:border-stone-700 dark:bg-stone-900">
-        <h2 className="font-medium">Szerződés előtt: igazoljátok a személyazonosságot</h2>
+        <h2 className="font-medium">{sz("szerzodes.azonossag_cim")}</h2>
         <p className="mt-1 text-stone-600 dark:text-stone-400">
-          Az alkalmazás nem ellenőrzi, hogy ki kicsoda: amit a felek megadtak, az a saját
-          állításuk. Aláírás előtt nézzétek meg egymás fényképes igazolványát személyesen,
-          és vessétek össze a szerződésben álló adatokkal.
+          {sz("szerzodes.azonossag_sugo")}
         </p>
       </section>
 
       {hianyok.length > 0 ? (
         <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-          <h2 className="font-medium">Ezek még hiányoznak</h2>
+          <h2 className="font-medium">{sz("szerzodes.hianyok_cim")}</h2>
           <ul className="mt-2 list-disc pl-5 text-sm text-stone-600 dark:text-stone-400">
             {hianyok.map((sor) => (
-              <li key={sor}>{sor}</li>
+              <li key={`${sor.kulcs}:${u(sor)}`}>{u(sor)}</li>
             ))}
           </ul>
           <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
-            A bérlők adatai a <Link href="/berlok" className="underline underline-offset-2">Bérlők</Link> lapon,
-            a tieid a <Link href="/beallitasok" className="underline underline-offset-2">Beállítások</Link> lapon
-            tölthetők ki.
+            {sz("szerzodes.hianyok_hol")}
+          </p>
+          <p className="mt-1 flex flex-wrap gap-4 text-sm">
+            <Link href="/berlok" className="underline underline-offset-2">
+              {sz("nav.berlok")}
+            </Link>
+            <Link href="/beallitasok" className="underline underline-offset-2">
+              {sz("nav.beallitasok")}
+            </Link>
           </p>
         </section>
       ) : null}
@@ -110,10 +134,9 @@ export default async function SzerzodesOldal({
         választani kell. Nem tűnnek el: a nyitósor kiírja, hányan vannak.
       */}
       <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-        <h2 className="font-medium">Amiről dönteni kell</h2>
+        <h2 className="font-medium">{sz("szerzodes.dontes_cim")}</h2>
         <p className="mb-2 mt-1 text-sm text-stone-600 dark:text-stone-400">
-          Minden modul mellett ott van, miért van rá szükség: nem vagy jogász,
-          és amit nem értesz, azt nem tudod eldönteni.
+          {sz("szerzodes.dontes_sugo")}
         </p>
         <ul>
           {valaszthato.map((modul) => (
@@ -129,6 +152,7 @@ export default async function SzerzodesOldal({
                 miert: modul.miert,
                 ellenjegyzes: modul.ellenjegyzes,
               }}
+              cimkek={modulCimkek}
             />
           ))}
         </ul>
@@ -136,7 +160,7 @@ export default async function SzerzodesOldal({
 
       <details className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
         <summary className="cursor-pointer font-medium">
-          Minden szerződésben benne van · {kotelezoek.length} pont
+          {sz("szerzodes.kotelezoek_nyito", { db: kotelezoek.length })}
         </summary>
         <ul className="mt-2">
           {kotelezoek.map((modul) => (
@@ -152,6 +176,7 @@ export default async function SzerzodesOldal({
                 miert: modul.miert,
                 ellenjegyzes: modul.ellenjegyzes,
               }}
+              cimkek={modulCimkek}
             />
           ))}
         </ul>
@@ -159,16 +184,21 @@ export default async function SzerzodesOldal({
 
       {szerkesztheto ? (
         <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-          <h2 className="font-medium">Beállítások</h2>
+          <h2 className="font-medium">{sz("szerzodes.beallitasok_cim")}</h2>
           <p className="mb-3 text-sm text-stone-600 dark:text-stone-400">
-            Csak azt kérdezzük, ami a bekapcsolt modulokhoz kell. Ami üresen
-            marad, az az alapértelmezéssel kerül a szövegbe.
+            {sz("szerzodes.beallitasok_sugo")}
           </p>
           <ParameterUrlap
             szerzodesId={id}
             parameterek={parameterek}
             kelteHelye={bemenet.kelteHelye ?? ""}
             kelte={napSzoveg(bemenet.kelte)}
+            cimkek={{
+              kelteHelye: sz("szerzodes.kelt_helye"),
+              kelte: sz("szerzodes.kelt_napja"),
+              gomb: sz("szerzodes.mentes"),
+              folyamatban: sz("szerzodes.mentem"),
+            }}
           />
         </section>
       ) : null}
@@ -186,14 +216,14 @@ export default async function SzerzodesOldal({
         className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
       >
         <summary className="cursor-pointer font-medium">
-          A szerződés szövege · {kesz.length} szakasz
+          {sz("szerzodes.szoveg_nyito", { db: kesz.length })}
         </summary>
         <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
           <a
             href={`/szerzodesek/${id}/letoltes`}
             className="text-sm underline underline-offset-2"
           >
-            Letöltés szövegként
+            {sz("szerzodes.letoltes")}
           </a>
         </div>
 
@@ -223,7 +253,25 @@ export default async function SzerzodesOldal({
       </details>
 
       <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-        {szerkesztheto ? <VeglegesitesUrlap szerzodesId={id} /> : <VisszavonasUrlap szerzodesId={id} />}
+        {szerkesztheto ? (
+          <VeglegesitesUrlap
+            szerzodesId={id}
+            cimkek={{
+              nyugtazas: sz("szerzodes.nyugtazas"),
+              gomb: sz("szerzodes.veglegesites"),
+              megis: sz("szerzodes.veglegesites_megis"),
+              folyamatban: sz("szerzodes.veglegesitem"),
+            }}
+          />
+        ) : (
+          <VisszavonasUrlap
+            szerzodesId={id}
+            cimkek={{
+              gomb: sz("szerzodes.vissza_tervezetre"),
+              folyamatban: sz("szerzodes.visszaallitom"),
+            }}
+          />
+        )}
       </section>
     </div>
   );

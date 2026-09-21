@@ -28,35 +28,48 @@ function Mezo({ nev, cimke, ertek, tipus = "text" }: { nev: string; cimke: strin
   );
 }
 
-export function BerbeadoiAdatok({ adatok }: { adatok: Adatok }) {
+export type AdatCimkek = {
+  cim: string;
+  sugo: string;
+  mezo: Record<keyof Adatok, string>;
+  gomb: string;
+  folyamatban: string;
+};
+
+export function BerbeadoiAdatok({ adatok, cimkek }: { adatok: Adatok; cimkek: AdatCimkek }) {
   const [allapot, kuldes, folyamatban] = useActionState(berbeadoiAdatokatMent, KEZDETI);
 
   return (
     <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-      <h2 className="font-semibold">A te adataid a szerződéshez</h2>
-      <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-        Ezek a szerződésbe és az igazolásokba kerülnek. A belépéshez egyik sem
-        kell, és naplóba sem írjuk őket. A telefonszámodat a bérlő a
-        hibabejelentésnél látja: veszélyhelyzetben az alkalmazás nem csörög.
-      </p>
+      <h2 className="font-semibold">{cimkek.cim}</h2>
+      <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">{cimkek.sugo}</p>
 
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
-        <Mezo nev="szuletesiHely" cimke="Születési hely" ertek={adatok.szuletesiHely} />
-        <Mezo nev="szuletesiIdo" cimke="Születési idő" ertek={adatok.szuletesiIdo} tipus="date" />
-        <Mezo nev="anyjaNeve" cimke="Anyja neve" ertek={adatok.anyjaNeve} />
-        <Mezo nev="igazolvanySzam" cimke="Igazolványszám" ertek={adatok.igazolvanySzam} />
-        <Mezo nev="adoazonosito" cimke="Adóazonosító jel" ertek={adatok.adoazonosito} />
-        <Mezo nev="telefon" cimke="Telefonszám" ertek={adatok.telefon} tipus="tel" />
-        <Mezo nev="bank" cimke="Bank neve" ertek={adatok.bank} />
+        <Mezo nev="szuletesiHely" cimke={cimkek.mezo.szuletesiHely} ertek={adatok.szuletesiHely} />
+        <Mezo
+          nev="szuletesiIdo"
+          cimke={cimkek.mezo.szuletesiIdo}
+          ertek={adatok.szuletesiIdo}
+          tipus="date"
+        />
+        <Mezo nev="anyjaNeve" cimke={cimkek.mezo.anyjaNeve} ertek={adatok.anyjaNeve} />
+        <Mezo
+          nev="igazolvanySzam"
+          cimke={cimkek.mezo.igazolvanySzam}
+          ertek={adatok.igazolvanySzam}
+        />
+        <Mezo nev="adoazonosito" cimke={cimkek.mezo.adoazonosito} ertek={adatok.adoazonosito} />
+        <Mezo nev="telefon" cimke={cimkek.mezo.telefon} ertek={adatok.telefon} tipus="tel" />
+        <Mezo nev="bank" cimke={cimkek.mezo.bank} ertek={adatok.bank} />
         <div className="grid gap-3 sm:col-span-2">
-          <Mezo nev="lakcim" cimke="Állandó lakcím" ertek={adatok.lakcim} />
-          <Mezo nev="bankszamla" cimke="Bankszámlaszám" ertek={adatok.bankszamla} />
+          <Mezo nev="lakcim" cimke={cimkek.mezo.lakcim} ertek={adatok.lakcim} />
+          <Mezo nev="bankszamla" cimke={cimkek.mezo.bankszamla} ertek={adatok.bankszamla} />
           <button
             type="submit"
             disabled={folyamatban}
             className={GOMB}
           >
-            {folyamatban ? "Mentem…" : "Mentés"}
+            {folyamatban ? cimkek.folyamatban : cimkek.gomb}
           </button>
           <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
         </div>

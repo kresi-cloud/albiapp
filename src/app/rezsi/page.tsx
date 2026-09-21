@@ -1,18 +1,13 @@
-import { datum, forint, szam } from "@/domain/penz";
+import { datumNyelven, forintNyelven, szamNyelven } from "@/domain/nyelv";
 import { ElszamolasTetelek } from "@/components/ElszamolasTetelek";
 import { nevsor } from "@/domain/szerzodes";
 import { prisma } from "@/lib/db";
-import { merooraNeve } from "@/lib/rezsi";
+import { merooraUzenet } from "@/lib/rezsi";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 import { ElszamolasUrlap, KiadasUrlap, OraallasUrlap } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
-
-const ELSZAMOLAS_MODJA: Record<string, string> = {
-  almero: "mérőóra szerint",
-  atalany: "átalánnyal",
-  kozos_koltsegben: "a közös költségben",
-};
 
 function napSzoveg(nap: Date): string {
   return nap.toISOString().slice(0, 10);
@@ -20,6 +15,10 @@ function napSzoveg(nap: Date): string {
 
 export default async function Rezsi() {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, u , nyelv } = await szovegek();
+  const ft = (osszegFt: number) => forintNyelven(osszegFt, nyelv);
+  const nap = (ertek: Date) => datumNyelven(ertek, nyelv);
+  const szamF = (ertek: number, tizedes?: number) => szamNyelven(ertek, nyelv, tizedes);
   const ma = new Date();
 
   const jogviszonyok = await prisma.jogviszony.findMany({
@@ -49,12 +48,8 @@ export default async function Rezsi() {
   return (
     <div className="grid gap-8">
       <section>
-        <h1 className="text-2xl font-semibold tracking-tight">Rezsi és elszámolás</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">
-          Az óraállásokból tételes elszámolás készül, a magyar sávos árazással: a
-          kedvezményes keretig kedvezményes áron, fölötte piaci áron. A kiadott
-          elszámolás előírt tételként megy tovább a befizetésekhez.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{sz("rezsi.cim")}</h1>
+        <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("rezsi.bevezeto")}</p>
       </section>
 
       {jogviszonyok.map((jogviszony) => (
@@ -64,18 +59,18 @@ export default async function Rezsi() {
               {jogviszony.ingatlan.megnevezes} · {nevsor(jogviszony.berlok.map((berlo) => berlo.nev))}
             </h2>
             <p className="text-sm text-stone-600 dark:text-stone-400">
-              Rezsi elszámolása {ELSZAMOLAS_MODJA[jogviszony.rezsiElszamolas] ?? jogviszony.rezsiElszamolas}
+              {sz("rezsi.mod", { mod: sz(`rezsi.mod.${jogviszony.rezsiElszamolas}`) })}
               {jogviszony.kozosKoltsegFt > 0
-                ? ` · közös költség ${forint(jogviszony.kozosKoltsegFt)} / hó`
+                ? ` · ${sz("rezsi.kozos_koltseg", { osszeg: ft(jogviszony.kozosKoltsegFt) })}`
                 : ""}
             </p>
           </div>
 
           <div className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-            <h3 className="font-medium">Mérőórák</h3>
+            <h3 className="font-medium">{sz("rezsi.meroorak")}</h3>
             {jogviszony.ingatlan.meroorak.length === 0 ? (
               <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-                Ehhez az ingatlanhoz nincs mérőóra felvéve.
+                {sz("rezsi.nincs_meroora")}
               </p>
             ) : (
               <ul className="mt-2 grid gap-4">
@@ -86,26 +81,38 @@ export default async function Rezsi() {
                     <li key={meroora.id} className="border-t border-stone-200 pt-3 first:border-0 first:pt-0 dark:border-stone-800">
                       <div className="flex flex-wrap items-baseline justify-between gap-2">
                         <span className="font-medium">
-                          {merooraNeve(meroora.tipus, meroora.almero)}
+                          {u(merooraUzenet(meroora.tipus, meroora.almero))}
                         </span>
                         <span className="text-sm text-stone-600 tabular-nums dark:text-stone-400">
                           {utolso
-                            ? `${utolso.ertek} ${meroora.mertekegyseg} · ${datum(utolso.datum)}`
-                            : "még nincs óraállás"}
+                            ? `${utolso.ertek} ${meroora.mertekegyseg} · ${nap(utolso.datum)}`
+                            : sz("rezsi.nincs_oraallas")}
                         </span>
                       </div>
                       <p className="text-xs text-stone-500 dark:text-stone-400">
                         {dijszabas
-                          ? `${szam(dijszabas.kedvezmenyesArFiller / 100)} Ft/${meroora.mertekegyseg} a kereten belül` +
+                          ? sz("rezsi.dijszabas", {
+                              ar: szamF(dijszabas.kedvezmenyesArFiller / 100),
+                              egyseg: meroora.mertekegyseg,
+                            }) +
                             (dijszabas.evesKeret
-                              ? `, ${szam(dijszabas.evesKeret)} ${meroora.mertekegyseg}/év keret, fölötte ${szam(dijszabas.piaciArFiller / 100)} Ft/${meroora.mertekegyseg}`
-                              : ", nincs sávhatár")
-                          : "nincs díjszabás felvéve"}
+                              ? sz("rezsi.dijszabas_keret", {
+                                  keret: szamF(dijszabas.evesKeret),
+                                  egyseg: meroora.mertekegyseg,
+                                  piaci: szamF(dijszabas.piaciArFiller / 100),
+                                })
+                              : sz("rezsi.dijszabas_nincs_savhatar"))
+                          : sz("rezsi.nincs_dijszabas")}
                       </p>
                       <OraallasUrlap
                         merooraId={meroora.id}
-                        mertekegyseg={meroora.mertekegyseg}
                         mai={napSzoveg(ma)}
+                        cimkek={{
+                          datum: sz("rezsi.oraallas.datum"),
+                          ertek: sz("rezsi.oraallas.ertek", { egyseg: meroora.mertekegyseg }),
+                          gomb: sz("rezsi.oraallas.gomb"),
+                          folyamatban: sz("rezsi.oraallas.folyamatban"),
+                        }}
                       />
                     </li>
                   );
@@ -115,11 +122,17 @@ export default async function Rezsi() {
           </div>
 
           <div className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-            <h3 className="font-medium">Új elszámolás</h3>
+            <h3 className="font-medium">{sz("rezsi.uj_elszamolas")}</h3>
             <ElszamolasUrlap
               jogviszonyId={jogviszony.id}
               kezdete={napSzoveg(honapElseje)}
               vege={napSzoveg(ma)}
+              cimkek={{
+                kezdete: sz("rezsi.elszamolas.kezdete"),
+                vege: sz("rezsi.elszamolas.vege"),
+                gomb: sz("rezsi.elszamolas.gomb"),
+                folyamatban: sz("rezsi.elszamolas.folyamatban"),
+              }}
             />
           </div>
 
@@ -130,18 +143,22 @@ export default async function Rezsi() {
             >
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <h3 className="font-medium">
-                  {datum(elszamolas.idoszakKezdete)} – {datum(elszamolas.idoszakVege)}
+                  {nap(elszamolas.idoszakKezdete)} – {nap(elszamolas.idoszakVege)}
                 </h3>
                 <span className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
-                  {elszamolas.allapot}
+                  {sz(`dokumentum.elszamolas.allapot.${elszamolas.allapot}`)}
                 </span>
               </div>
 
-              <ElszamolasTetelek tetelek={elszamolas.tetelek} osszegFt={elszamolas.osszegFt} />
+              <ElszamolasTetelek
+                tetelek={elszamolas.tetelek}
+                osszegFt={elszamolas.osszegFt}
+                nyelv={nyelv}
+              />
 
               {elszamolas.berloiUzenet ? (
                 <p className="mt-3 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-                  A bérlő vitatja: {elszamolas.berloiUzenet}
+                  {sz("rezsi.vitatja", { uzenet: elszamolas.berloiUzenet })}
                 </p>
               ) : null}
 
@@ -151,6 +168,11 @@ export default async function Rezsi() {
                   esedekesseg={napSzoveg(
                     new Date(ma.getTime() + 8 * 24 * 60 * 60 * 1000),
                   )}
+                  cimkek={{
+                    hatarido: sz("rezsi.kiadas.hatarido"),
+                    gomb: sz("rezsi.kiadas.gomb"),
+                    folyamatban: sz("rezsi.kiadas.folyamatban"),
+                  }}
                 />
               ) : null}
             </div>

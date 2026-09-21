@@ -10,8 +10,6 @@ import {
   type Dokumentum,
   type TarJogviszony,
 } from "@/domain/dokumentumtar";
-import { idoszakCimke } from "@/domain/igazolas";
-import { FAJTA_NEVE } from "@/domain/jegyzokonyv";
 import { nevsor } from "@/domain/szerzodes";
 
 const BETOLTES = {
@@ -46,7 +44,7 @@ function tarra(jogviszony: Betoltott, sajatBerloId?: string): TarJogviszony {
     })),
     jegyzokonyvek: jogviszony.jegyzokonyvek.map((jegyzokonyv) => ({
       id: jegyzokonyv.id,
-      fajtaNeve: FAJTA_NEVE[jegyzokonyv.fajta] ?? jegyzokonyv.fajta,
+      fajta: jegyzokonyv.fajta,
       idopont: jegyzokonyv.idopont,
       allapot: jegyzokonyv.allapot,
       veglegesitve: jegyzokonyv.veglegesitve,
@@ -57,7 +55,7 @@ function tarra(jogviszony: Betoltott, sajatBerloId?: string): TarJogviszony {
         berlo.igazolasok.map((igazolas) => ({
           id: igazolas.id,
           berloNev: berlo.nev,
-          idoszakCimke: idoszakCimke(igazolas.idoszak),
+          idoszak: igazolas.idoszak,
           osszegFt: igazolas.osszegFt,
           kiallitva: igazolas.kiallitva,
         })),

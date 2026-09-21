@@ -1,11 +1,14 @@
 import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
-import { forint } from "@/domain/penz";
+import { forintNyelven } from "@/domain/nyelv";
+import { szovegek } from "@/lib/nyelv";
 
 export const dynamic = "force-dynamic";
 
 export default async function Ingatlanok() {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz , nyelv } = await szovegek();
+  const ft = (osszegFt: number) => forintNyelven(osszegFt, nyelv);
 
   const ingatlanok = await prisma.ingatlan.findMany({
     where: { tulajdonosId: berbeado.id },
@@ -15,10 +18,10 @@ export default async function Ingatlanok() {
 
   return (
     <div className="grid gap-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Ingatlanok</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{sz("ingatlanok.cim")}</h1>
 
       {ingatlanok.length === 0 ? (
-        <p className="text-stone-600 dark:text-stone-400">Még nincs felvett ingatlan.</p>
+        <p className="text-stone-600 dark:text-stone-400">{sz("ingatlanok.nincs")}</p>
       ) : (
         <ul className="grid gap-3">
           {ingatlanok.map((ingatlan) => (
@@ -29,10 +32,19 @@ export default async function Ingatlanok() {
               <h2 className="font-semibold">{ingatlan.megnevezes}</h2>
               <p className="text-sm text-stone-600 dark:text-stone-400">{ingatlan.cim}</p>
               <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:grid-cols-4">
-                <Adat cimke="Alapterület" ertek={ingatlan.alapteruletM2 ? `${ingatlan.alapteruletM2} m²` : "—"} />
-                <Adat cimke="Közös költség" ertek={ingatlan.kozosKoltsegFt ? forint(ingatlan.kozosKoltsegFt) : "—"} />
-                <Adat cimke="Mérőóra" ertek={String(ingatlan.meroorak.length)} />
-                <Adat cimke="Jogviszony" ertek={String(ingatlan.jogviszonyok.length)} />
+                <Adat
+                  cimke={sz("ingatlanok.alapterulet")}
+                  ertek={ingatlan.alapteruletM2 ? `${ingatlan.alapteruletM2} m²` : "—"}
+                />
+                <Adat
+                  cimke={sz("ingatlanok.kozos_koltseg")}
+                  ertek={ingatlan.kozosKoltsegFt ? ft(ingatlan.kozosKoltsegFt) : "—"}
+                />
+                <Adat cimke={sz("ingatlanok.meroora")} ertek={String(ingatlan.meroorak.length)} />
+                <Adat
+                  cimke={sz("ingatlanok.jogviszony")}
+                  ertek={String(ingatlan.jogviszonyok.length)}
+                />
               </dl>
             </li>
           ))}

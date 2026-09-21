@@ -68,8 +68,17 @@ export async function tullogas(oldal) {
 
 /** A választott nyelvet visszaállítja magyarra, hogy a próbák ne fertőzzék egymást. */
 export async function magyarra(oldal) {
+  await nyelvre(oldal, "hu");
+}
+
+/** Átállítja a felületet angolra a nyelvváltóval, ahogy a felhasználó tenné. */
+export async function angolra(oldal) {
+  await nyelvre(oldal, "en");
+}
+
+async function nyelvre(oldal, nyelv) {
   await oldal.goto(`${ALAP}/`);
-  const valto = oldal.locator('form:has(button[name="nyelv"]) button[value="hu"]');
+  const valto = oldal.locator(`form:has(button[name="nyelv"]) button[value="${nyelv}"]`);
   if (await valto.count()) {
     await valto.first().click();
     await oldal.waitForLoadState("networkidle");

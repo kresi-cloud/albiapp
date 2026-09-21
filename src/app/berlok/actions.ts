@@ -58,16 +58,17 @@ export async function meghivotKeszit(
   urlap: FormData,
 ): Promise<MeghivoEredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const jogviszonyBerloId = szoveg(urlap.get("jogviszonyBerloId"));
 
   const berlo = await sajatBerlo(berbeado.id, jogviszonyBerloId);
   if (!berlo) {
-    return { allapot: "hiba", uzenet: "Ez a bérlő nem a te jogviszonyodhoz tartozik.", link: "" };
+    return { allapot: "hiba", uzenet: sz("berlok.hiba.nem_tied"), link: "" };
   }
 
   const email = emailtNormalizal(urlap.get("email") ?? berlo.email);
   if (!emailNekLatszik(email)) {
-    return { allapot: "hiba", uzenet: "Adj meg egy érvényes e-mail-címet.", link: "" };
+    return { allapot: "hiba", uzenet: sz("berlok.hiba.email"), link: "" };
   }
 
   const most = new Date();
@@ -96,7 +97,7 @@ export async function meghivotKeszit(
 
   return {
     allapot: "kesz",
-    uzenet: `Kész a meghívó ${email} címre. Küldd el neki, és két hétig érvényes.`,
+    uzenet: sz("berlok.kesz.meghivo", { email }),
     link: `${await alapcim()}/meghivo/${meghivo.token}`,
   };
 }
@@ -107,20 +108,21 @@ export async function meghivotKeszit(
  */
 export async function berlotHozzaad(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const jogviszonyId = szoveg(urlap.get("jogviszonyId"));
   const nev = szoveg(urlap.get("nev"));
   const email = emailtNormalizal(urlap.get("email"));
 
-  if (nev === "") return hiba("Add meg a bérlő nevét.");
+  if (nev === "") return hiba(sz("berlok.hiba.nev_kell"));
   if (email !== "" && !emailNekLatszik(email)) {
-    return hiba("Az e-mail-cím nem tűnik érvényesnek.");
+    return hiba(sz("berlok.hiba.email_gyanus"));
   }
 
   const jogviszony = await prisma.jogviszony.findFirst({
     where: { id: jogviszonyId, ingatlan: { tulajdonosId: berbeado.id } },
     include: { berlok: true },
   });
-  if (!jogviszony) return hiba("Ez a jogviszony nem a tiéd.");
+  if (!jogviszony) return hiba(sz("berlok.hiba.jogviszony_nem_tied"));
 
   await prisma.jogviszonyBerlo.create({
     data: {
@@ -136,7 +138,7 @@ export async function berlotHozzaad(_elozo: Eredmeny, urlap: FormData): Promise<
 
   return {
     allapot: "kesz",
-    uzenet: `${nev} hozzáadva. A bérleti díj továbbra is egy előírás: a bérlők egyetemlegesen felelnek érte.`,
+    uzenet: sz("berlok.kesz.hozzaadva", { nev }),
     hibak: [],
   };
 }
@@ -147,17 +149,18 @@ export async function berlotHozzaad(_elozo: Eredmeny, urlap: FormData): Promise<
  */
 export async function berloAdataitMenti(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const jogviszonyBerloId = szoveg(urlap.get("jogviszonyBerloId"));
 
   const berlo = await sajatBerlo(berbeado.id, jogviszonyBerloId);
-  if (!berlo) return hiba("Ez a bérlő nem a te jogviszonyodhoz tartozik.");
+  if (!berlo) return hiba(sz("berlok.hiba.nem_tied"));
 
   const nev = szoveg(urlap.get("nev"));
-  if (nev === "") return hiba("A név nem maradhat üresen.");
+  if (nev === "") return hiba(sz("berlok.hiba.nev_ures"));
 
   const email = emailtNormalizal(urlap.get("email"));
   if (email !== "" && !emailNekLatszik(email)) {
-    return hiba("Az e-mail-cím nem tűnik érvényesnek.");
+    return hiba(sz("berlok.hiba.email_gyanus"));
   }
 
   await prisma.jogviszonyBerlo.update({
@@ -180,22 +183,23 @@ export async function berloAdataitMenti(_elozo: Eredmeny, urlap: FormData): Prom
   revalidatePath("/berlok");
   revalidatePath("/szerzodesek");
 
-  return { allapot: "kesz", uzenet: "Az adatok mentve.", hibak: [] };
+  return { allapot: "kesz", uzenet: sz("berlok.kesz.adatok"), hibak: [] };
 }
 
 /** Bérlő levétele a jogviszonyról. A kiállított dokumentumokat nem érinti. */
 export async function berlotTorol(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const jogviszonyBerloId = szoveg(urlap.get("jogviszonyBerloId"));
 
   const berlo = await sajatBerlo(berbeado.id, jogviszonyBerloId);
-  if (!berlo) return hiba("Ez a bérlő nem a te jogviszonyodhoz tartozik.");
+  if (!berlo) return hiba(sz("berlok.hiba.nem_tied"));
 
   const darab = await prisma.jogviszonyBerlo.count({
     where: { jogviszonyId: berlo.jogviszonyId },
   });
   if (darab <= 1) {
-    return hiba("Az utolsó bérlőt nem veszem le: jogviszony bérlő nélkül nem értelmes.");
+    return hiba(sz("berlok.hiba.utolso_berlo"));
   }
 
   await prisma.jogviszonyBerlo.delete({ where: { id: berlo.id } });
@@ -203,7 +207,7 @@ export async function berlotTorol(_elozo: Eredmeny, urlap: FormData): Promise<Er
   revalidatePath("/berlok");
   revalidatePath("/szerzodesek");
 
-  return { allapot: "kesz", uzenet: `${berlo.nev} levéve a jogviszonyról.`, hibak: [] };
+  return { allapot: "kesz", uzenet: sz("berlok.kesz.torolve", { nev: berlo.nev }), hibak: [] };
 }
 
 export async function jogviszonytLezarAction(

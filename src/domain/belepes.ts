@@ -1,3 +1,5 @@
+import { uzenet, type Uzenet } from "./nyelv";
+
 /**
  * A belépés és a meghívó szabályai. Tiszta függvények: nincs bennük se titkosítás,
  * se adatbázis, hogy a szabályokat egyszerűen lehessen tesztelni és átírni.
@@ -22,18 +24,16 @@ export function emailNekLatszik(email: string): boolean {
 export function jelszotEllenoriz(
   jelszo: unknown,
   megerosites?: unknown,
-): string[] {
-  const hibak: string[] = [];
+): Uzenet[] {
+  const hibak: Uzenet[] = [];
   const szoveg = String(jelszo ?? "");
 
   if (szoveg.length < JELSZO_MIN_HOSSZ) {
-    hibak.push(`A jelszó legyen legalább ${JELSZO_MIN_HOSSZ} karakter.`);
+    hibak.push(uzenet("jelszo.hiba.rovid", { min: JELSZO_MIN_HOSSZ }));
   }
-  if (szoveg.trim() === "") {
-    hibak.push("A jelszó nem állhat csak szóközökből.");
-  }
+  if (szoveg.trim() === "") hibak.push(uzenet("jelszo.hiba.csak_szokoz"));
   if (megerosites !== undefined && szoveg !== String(megerosites ?? "")) {
-    hibak.push("A két jelszó nem egyezik.");
+    hibak.push(uzenet("jelszo.hiba.nem_egyezik"));
   }
   return hibak;
 }

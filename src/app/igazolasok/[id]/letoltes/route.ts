@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { belepettFelhasznalo } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const felhasznalo = await belepettFelhasznalo();
-  if (!felhasznalo) return new Response("Ehhez nincs jogosultságod.", { status: 403 });
+  const { sz } = await szovegek();
+  if (!felhasznalo) return new Response(sz("letoltes.nincs_jogosultsag"), { status: 403 });
 
   const { id } = await params;
   const igazolas = await prisma.igazolas.findFirst({
@@ -26,7 +28,7 @@ export async function GET(
           : { jogviszony: { ingatlan: { tulajdonosId: felhasznalo.id } } },
     },
   });
-  if (!igazolas) return new Response("Nincs ilyen igazolás.", { status: 404 });
+  if (!igazolas) return new Response(sz("letoltes.nincs_igazolas"), { status: 404 });
 
   return new Response(igazolas.szoveg, {
     headers: {
