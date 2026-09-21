@@ -41,6 +41,68 @@ const NYELVEK = [
   ["en", "angolul"],
 ];
 
+/**
+ * A leghosszabb összeg, amivel a lapnak még el kell férnie.
+ *
+ * A mérés eddig azon múlott, mekkora szám áll épp a példaadatban, és ezen a
+ * szerencsén át is csúszott egy valódi hiba: az áttekintő elmaradás-kártyája
+ * angolul, hétjegyű összegnél kilógott 360 képponton. Hatjegyűnél nem, és a
+ * seedben épp hatjegyű állt. Magyarul soha nem látszott, mert a magyar alak
+ * szóközökkel tagol, tehát sorba tud törni — az angol nem: a pénznevet nem
+ * törhető szóköz köti a számhoz, a számot az ezrestagoló vessző.
+ *
+ * Ezért a lapot a leghosszabb összeggel is megmérjük. Százmilliós elmaradás
+ * egy magánbérbeadónál nincs; pont ez a lényeg, hogy a kapu ne a példaadat
+ * nagyságrendjén múljon.
+ */
+const HOSSZU_OSSZEG = { hu: "123 456 789 Ft", en: "HUF\u00a0123,456,789" };
+
+/** Hány összeget írtunk át a futás során, és sikerült-e egyet is. */
+let hosszuOsszegDarab = 0;
+let hosszuOsszegCserelt = false;
+
+/**
+ * Amit összegnek tekintünk a lapon.
+ *
+ * Nem az `Osszeg` elemre szűrünk, hanem a szövegre: az összegek fele nem
+ * azon az elemen megy — a rezsi és az adóösszesítő például sima szövegként
+ * írja ki őket —, és épp azokon a lapokon nem venné észre semmi a bajt.
+ */
+const OSSZEG_MINTA = { hu: "\\d[\\d\\s]*\\sFt", en: "HUF\\s[\\d,]+" };
+
+/**
+ * Minden összeget kicserél a leghosszabbra, és megmondja, hányat talált.
+ *
+ * Szövegcsomó szinten dolgozik, mert az összeg sokszor egy mondat közepén
+ * áll. A találatokat előbb összegyűjti, és csak utána ír: a bejáró a
+ * módosítástól elveszítené a helyét.
+ */
+async function hosszuOsszegetIr(oldal, nyelv) {
+  const { darab, cserelt } = await oldal.evaluate(
+    ([ertek, mintaSzoveg]) => {
+      const minta = new RegExp(mintaSzoveg, "g");
+      const jaro = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      const talalatok = [];
+      let csomo;
+      while ((csomo = jaro.nextNode())) {
+        minta.lastIndex = 0;
+        if (minta.test(csomo.nodeValue)) talalatok.push(csomo);
+      }
+      let cserelt = false;
+      for (const talalat of talalatok) {
+        minta.lastIndex = 0;
+        talalat.nodeValue = talalat.nodeValue.replace(minta, ertek);
+        if (talalat.nodeValue.includes(ertek)) cserelt = true;
+      }
+      return { darab: talalatok.length, cserelt };
+    },
+    [HOSSZU_OSSZEG[nyelv], OSSZEG_MINTA[nyelv]],
+  );
+  hosszuOsszegDarab += darab;
+  if (cserelt) hosszuOsszegCserelt = true;
+  return darab;
+}
+
 const BERBEADOI = [
   "/",
   "/befizetesek",
@@ -84,7 +146,7 @@ const NYILVANOS = ["/belepes", "/jogi/adatkezeles", "/jogi/feltetelek"];
 const KEPERNYO = 844;
 const MAX_KEPERNYO = 8;
 
-async function vizsgal(oldal, utvonalak, cimke) {
+async function vizsgal(oldal, utvonalak, nyelv, cimke) {
   for (const utvonal of utvonalak) {
     const valasz = await oldal.goto(`${ALAP}${utvonal}`);
     // Előbb az, hogy a lap egyáltalán létezik. A hibalap rövid és keskeny,
@@ -119,6 +181,15 @@ async function vizsgal(oldal, utvonalak, cimke) {
       nyitva <= 1,
       `${utvonal} kinyitott szakaszokkal is elfér ${cimke} (túllógás: ${nyitva}px)`,
     );
+
+    const darab = await hosszuOsszegetIr(oldal, nyelv);
+    if (darab > 0) {
+      const hosszan = await tullogas(oldal);
+      all(
+        hosszan <= 1,
+        `${utvonal} a leghosszabb összeggel is elfér ${cimke} (${darab} összeg, túllógás: ${hosszan}px)`,
+      );
+    }
   }
 }
 
@@ -225,30 +296,36 @@ export async function futtat(oldal) {
   for (const [nyelv, cimke] of NYELVEK) {
     await oldal.goto(`${ALAP}/belepes`);
     await nyelvre(oldal, nyelv);
-    await vizsgal(oldal, NYILVANOS, cimke);
+    await vizsgal(oldal, NYILVANOS, nyelv, cimke);
   }
 
   await belep(oldal, "berbeado@pelda.hu");
   for (const [nyelv, cimke] of NYELVEK) {
     await oldal.goto(`${ALAP}/`);
     await nyelvre(oldal, nyelv);
-    await vizsgal(oldal, BERBEADOI, cimke);
+    await vizsgal(oldal, BERBEADOI, nyelv, cimke);
 
     const szerzodes = await dokumentumUtja(oldal, "/szerzodesek/");
     all(szerzodes !== null, `van szerződéslap, amin a hossz mérhető (${cimke})`);
-    if (szerzodes) await vizsgal(oldal, [szerzodes], cimke);
+    if (szerzodes) await vizsgal(oldal, [szerzodes], nyelv, cimke);
 
     const jegyzokonyv = await dokumentumUtja(oldal, "/jegyzokonyvek/");
     all(jegyzokonyv !== null, `van jegyzőkönyvlap, amin a hossz mérhető (${cimke})`);
-    if (jegyzokonyv) await vizsgal(oldal, [jegyzokonyv], cimke);
+    if (jegyzokonyv) await vizsgal(oldal, [jegyzokonyv], nyelv, cimke);
   }
 
   await belep(oldal, "anna@pelda.hu");
   for (const [nyelv, cimke] of NYELVEK) {
     await oldal.goto(`${ALAP}/berlo`);
     await nyelvre(oldal, nyelv);
-    await vizsgal(oldal, BERLOI, cimke);
+    await vizsgal(oldal, BERLOI, nyelv, cimke);
   }
+
+  // A hosszú összeg önpróbája. Ha a `szam` osztály egyszer elfogy a
+  // felületről, ez a mérés némán nullát találna minden lapon, és a kapu
+  // ugyanúgy zöld maradna — vagyis megint a semmire mondana igent.
+  all(hosszuOsszegDarab > 0, `a hosszú összeg mérése talált összegeket (${hosszuOsszegDarab} db)`);
+  all(hosszuOsszegCserelt, "a hosszú összeg tényleg odakerült a lapra");
 
   // A nyelv választása sütiben él, tehát átmenne a következő próbára is.
   await oldal.goto(`${ALAP}/berlo`);

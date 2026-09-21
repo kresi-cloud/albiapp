@@ -98,7 +98,13 @@ function Osszegzo({
         van ? "border-gond-keret bg-gond-lap" : "border-rendben-keret bg-rendben-lap"
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
+      {/* Törhető sor, nem szorított: az összeg nem tud sorba törni (a
+          pénznemet nem törhető szóköz köti a számhoz, a számot az
+          ezrestagolás), tehát ha nem fér ki a címke mellé, a címkének kell
+          a következő sorba mennie. Angolul már hétjegyű összegnél idáig
+          jutunk — „HUF 1,214,000" 218 képpont a 294-ből —, magyarul nem, és
+          épp ez a baj: egy magyarul mért lapon ez soha nem látszik. */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-xs font-semibold tracking-wide text-halvany uppercase">
             {sz("attekinto.elmaradas")}

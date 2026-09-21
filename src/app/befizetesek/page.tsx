@@ -256,7 +256,7 @@ function Tetel({
       data-osszeg={sor.osszegFt}
       className="rounded-kartya border border-keret bg-felulet p-4"
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-sm font-medium text-halvany">
             {sor.idoszak ? honapNyelven(sor.idoszak, nyelv) : cimkek.nincsEloiras}

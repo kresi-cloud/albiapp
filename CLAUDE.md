@@ -509,3 +509,14 @@ lóg ki és előbb tör sorba. A csukott szakaszban ülő széles elem — egy
 legördülő, egy hosszú gombfelirat — pedig csukva nem is látszik, a felhasználó
 viszont ki fogja nyitni. A hosszt ezzel szemben csukva mérjük: az összecsukás
 a lap része, nem a próba kényelme.
+
+**És minden lapot a leghosszabb összeggel is megmér.** Enélkül a kapu azon
+múlik, mekkora szám áll épp a példaadatban, és ezen át is csúszott egy valódi
+hiba: az áttekintő elmaradás-kártyája angolul, hétjegyű összegnél kilógott.
+Hatjegyűnél nem, és a seedben épp hatjegyű állt. Magyarul soha nem látszott,
+mert a magyar alak szóközökkel tagol, tehát sorba tud törni — az angol nem: a
+pénznevet nem törhető szóköz köti a számhoz, a számot az ezrestagoló vessző.
+Ezért egy összeg mellett álló elem nem lehet `shrink-0` egy nem törhető soron:
+a sor törjön (`flex-wrap`), és a címke menjen a következő sorba. A mérés nem az
+`Osszeg` elemre szűr, hanem a szövegre, mert az összegek fele nem azon megy —
+a rezsi és az adóösszesítő sima szövegként írja ki őket.
