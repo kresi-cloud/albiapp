@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Mezo } from "@/components/megorzo";
 import { beallitasokatMent, type MentesEredmeny } from "./actions";
 import { GOMB, MEZO } from "@/components/urlap";
 
@@ -35,7 +36,7 @@ export function AblakUrlap({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1 text-sm">
           <span className="font-medium">Esedékesség előtt (nap)</span>
-          <input
+          <Mezo
             id="korabbiAblakNap"
             name="korabbiAblakNap"
             type="number"
@@ -45,12 +46,13 @@ export function AblakUrlap({
             defaultValue={korabbiAblakNap}
             className={`${MEZO} tabular-nums`}
             required
+            allapot={allapot.allapot}
           />
         </label>
 
         <label className="grid gap-1 text-sm">
           <span className="font-medium">Esedékesség után (nap)</span>
-          <input
+          <Mezo
             id="kesobbiAblakNap"
             name="kesobbiAblakNap"
             type="number"
@@ -60,6 +62,7 @@ export function AblakUrlap({
             defaultValue={kesobbiAblakNap}
             className={`${MEZO} tabular-nums`}
             required
+            allapot={allapot.allapot}
           />
         </label>
       </div>

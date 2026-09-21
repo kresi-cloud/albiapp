@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Mezo } from "@/components/megorzo";
 import { meghivotKeszit, type MeghivoEredmeny } from "./actions";
 import { GOMB, MEZO } from "@/components/urlap";
 
@@ -23,12 +24,13 @@ export function MeghivoGomb({
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">A bérlő e-mail-címe</span>
-        <input
+        <Mezo
           name="email"
           type="email"
           defaultValue={email}
           className={MEZO}
           required
+          allapot={allapot.allapot}
         />
       </label>
 

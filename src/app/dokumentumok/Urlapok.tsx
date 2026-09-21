@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Mezo, Valaszto } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import { forint } from "@/domain/penz";
 import { szerzodestKeszit, type Eredmeny as SzerzodesEredmeny } from "@/app/szerzodesek/actions";
@@ -75,22 +76,28 @@ export function UjIgazolas({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1 text-sm">
           <span className="font-medium">Tárgyhó</span>
-          <select name="idoszak" className={MEZO} defaultValue={idoszakok[0].idoszak}>
+          <Valaszto
+            name="idoszak"
+            className={MEZO}
+            defaultValue={idoszakok[0].idoszak}
+            allapot={allapot.allapot}
+          >
             {idoszakok.map((sor) => (
               <option key={sor.idoszak} value={sor.idoszak}>
                 {sor.cimke} · {forint(sor.osszegFt)} érkezett
               </option>
             ))}
-          </select>
+          </Valaszto>
         </label>
 
         <label className="grid gap-1 text-sm">
           <span className="font-medium">Ehhez a bérlőhöz igazolt összeg</span>
-          <input
+          <Mezo
             name="osszegFt"
             inputMode="numeric"
             placeholder="a teljes befolyt összeg"
             className={MEZO}
+            allapot={allapot.allapot}
           />
           <span className="text-xs text-stone-500 dark:text-stone-400">
             Üresen hagyva a hónapra beérkezett teljes összeget igazolom.
@@ -99,26 +106,32 @@ export function UjIgazolas({
 
         <label className="grid gap-1 text-sm sm:col-span-2">
           <span className="font-medium">Mihez kell</span>
-          <input
+          <Mezo
             name="cel"
             defaultValue="a lakhatási támogatáshoz"
             className={MEZO}
             required
+            allapot={allapot.allapot}
           />
         </label>
 
         <label className="grid gap-1 text-sm">
           <span className="font-medium">Teljesítés módja</span>
-          <select name="teljesitesModja" className={MEZO} defaultValue="atutalas">
+          <Valaszto
+            name="teljesitesModja"
+            className={MEZO}
+            defaultValue="atutalas"
+            allapot={allapot.allapot}
+          >
             <option value="atutalas">banki átutalás</option>
             <option value="keszpenz">készpénz</option>
             <option value="egyeb">egyéb</option>
-          </select>
+          </Valaszto>
         </label>
 
         <label className="grid gap-1 text-sm">
           <span className="font-medium">Kiállítás helye</span>
-          <input name="kiallitasHelye" className={MEZO} />
+          <Mezo name="kiallitasHelye" className={MEZO} allapot={allapot.allapot} />
         </label>
       </div>
 

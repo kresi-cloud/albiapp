@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Mezo, Szovegdoboz, Valaszto } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import {
   jegyzokonyvTetelt,
@@ -60,7 +61,13 @@ export function JegyzokonyvUrlap({
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">Az átadás-átvétel időpontja</span>
-        <input name="idopont" type="datetime-local" defaultValue={idopont} className={MEZO} />
+        <Mezo
+          name="idopont"
+          type="datetime-local"
+          defaultValue={idopont}
+          className={MEZO}
+          allapot={allapot.allapot}
+        />
       </label>
 
       {fajtak.map((fajta) => (
@@ -74,44 +81,53 @@ export function JegyzokonyvUrlap({
                 className="grid gap-2 border-t border-stone-200 pt-3 first:border-0 first:pt-0 dark:border-stone-800"
               >
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <input
+                  <Mezo
                     name={`megnevezes_${tetel.id}`}
                     defaultValue={tetel.megnevezes}
                     className={MEZO}
                     aria-label="Megnevezés"
+                    allapot={allapot.allapot}
                   />
-                  <input
+                  <Mezo
                     name={`ertek_${tetel.id}`}
                     defaultValue={tetel.ertek}
                     placeholder={ERTEK_SUGO[fajta]}
                     className={MEZO}
                     aria-label="Érték"
+                    allapot={allapot.allapot}
                   />
                 </div>
-                <input
+                <Mezo
                   name={`megjegyzes_${tetel.id}`}
                   defaultValue={tetel.megjegyzes}
                   placeholder="megjegyzés"
                   className={MEZO}
                   aria-label="Megjegyzés"
+                  allapot={allapot.allapot}
                 />
                 {fajta === "hiba" ? (
                   <div className="grid gap-2 sm:grid-cols-2">
                     <label className="grid gap-1 text-xs">
                       <span>Ki rendezi</span>
-                      <select name={`felelos_${tetel.id}`} defaultValue={tetel.felelos} className={MEZO}>
+                      <Valaszto
+                        name={`felelos_${tetel.id}`}
+                        defaultValue={tetel.felelos}
+                        className={MEZO}
+                        allapot={allapot.allapot}
+                      >
                         <option value="">nincs vállalás</option>
                         <option value="berbeado">a bérbeadó</option>
                         <option value="berlo">a bérlő</option>
-                      </select>
+                      </Valaszto>
                     </label>
                     <label className="grid gap-1 text-xs">
                       <span>Mikorra</span>
-                      <input
+                      <Mezo
                         name={`hatarido_${tetel.id}`}
                         type="date"
                         defaultValue={tetel.hatarido}
                         className={MEZO}
+                        allapot={allapot.allapot}
                       />
                     </label>
                   </div>
@@ -123,12 +139,24 @@ export function JegyzokonyvUrlap({
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">A bérlemény állapota</span>
-        <textarea name="allapotLeiras" defaultValue={allapotLeiras} rows={3} className={MEZO} />
+        <Szovegdoboz
+          name="allapotLeiras"
+          defaultValue={allapotLeiras}
+          rows={3}
+          className={MEZO}
+          allapot={allapot.allapot}
+        />
       </label>
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">Egyéb megjegyzés</span>
-        <textarea name="megjegyzes" defaultValue={megjegyzes} rows={2} className={MEZO} />
+        <Szovegdoboz
+          name="megjegyzes"
+          defaultValue={megjegyzes}
+          rows={2}
+          className={MEZO}
+          allapot={allapot.allapot}
+        />
       </label>
 
       <button type="submit" disabled={folyamatban} className={GOMB}>
@@ -145,14 +173,32 @@ export function UjTetel({ jegyzokonyvId }: { jegyzokonyvId: string }) {
   return (
     <form action={kuldes} className="grid gap-2 sm:grid-cols-3">
       <input type="hidden" name="jegyzokonyvId" value={jegyzokonyvId} />
-      <select name="fajta" defaultValue="hiba" className={MEZO} aria-label="Tétel fajtája">
+      <Valaszto
+        name="fajta"
+        defaultValue="hiba"
+        className={MEZO}
+        aria-label="Tétel fajtája"
+        allapot={allapot.allapot}
+      >
         <option value="hiba">hiba vagy hiányosság</option>
         <option value="meroora">mérőóra</option>
         <option value="kulcs">kulcs</option>
         <option value="dokumentum">átadott dokumentum</option>
-      </select>
-      <input name="megnevezes" placeholder="mit rögzítesz" className={MEZO} aria-label="Megnevezés" />
-      <input name="ertek" placeholder="érték, ha van" className={MEZO} aria-label="Érték" />
+      </Valaszto>
+      <Mezo
+        name="megnevezes"
+        placeholder="mit rögzítesz"
+        className={MEZO}
+        aria-label="Megnevezés"
+        allapot={allapot.allapot}
+      />
+      <Mezo
+        name="ertek"
+        placeholder="érték, ha van"
+        className={MEZO}
+        aria-label="Érték"
+        allapot={allapot.allapot}
+      />
       <div className="sm:col-span-3 grid gap-2">
         <button type="submit" disabled={folyamatban} className={GOMB}>
           {folyamatban ? "Hozzáadom…" : "Hozzáadás"}

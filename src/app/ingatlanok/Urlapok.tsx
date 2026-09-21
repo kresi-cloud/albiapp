@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Mezo as MegorzoMezo, Valaszto } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import { GOMB, MEZO } from "@/components/urlap";
 import { FIZETESI_NAP_MAX, REZSI_MODOK } from "@/domain/berlemeny";
@@ -11,7 +12,6 @@ const KEZDETI: Eredmeny = {
   uzenet: "",
   hibak: [],
   figyelmeztetesek: [],
-  ertekek: {},
 };
 
 export type IngatlanCimkek = {
@@ -132,18 +132,13 @@ export function JogviszonyUrlap({
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">{cimkek.ingatlan}</span>
-        <select
-          key={`ingatlanId-${allapot.uzenet}`}
-          name="ingatlanId"
-          defaultValue={allapot.ertekek.ingatlanId}
-          className={MEZO}
-        >
+        <Valaszto name="ingatlanId" className={MEZO} allapot={allapot.allapot}>
           {ingatlanok.map((ingatlan) => (
             <option key={ingatlan.id} value={ingatlan.id}>
               {ingatlan.megnevezes}
             </option>
           ))}
-        </select>
+        </Valaszto>
       </label>
 
       <div className="grid gap-3 sm:grid-cols-2">
@@ -190,18 +185,18 @@ export function JogviszonyUrlap({
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">{cimkek.rezsi}</span>
-        <select
-          key={`rezsiElszamolas-${allapot.uzenet}`}
+        <Valaszto
           name="rezsiElszamolas"
           className={MEZO}
-          defaultValue={allapot.ertekek.rezsiElszamolas || REZSI_MODOK[0]}
+          defaultValue={REZSI_MODOK[0]}
+          allapot={allapot.allapot}
         >
           {REZSI_MODOK.map((mod) => (
             <option key={mod} value={mod}>
               {cimkek.rezsiModok[mod]}
             </option>
           ))}
-        </select>
+        </Valaszto>
       </label>
 
       <Mezo
@@ -253,10 +248,9 @@ function Figyelmeztetesek({ cimke, sorok }: { cimke: string; sorok: string[] }) 
 }
 
 /**
- * Egy mező. Az értéke a legutóbbi beküldésből jön, nem üresen indul: egy
- * elutasított mentés után a bérbeadó ne gépelje újra az egész űrlapot. A
- * `key` azért kell, hogy a React tényleg átvegye az új kezdőértéket — a
- * `defaultValue` magától csak az első kirajzoláskor számít.
+ * Egy mező. A begépelt érték egy elutasított mentést is túlél, de ezt nem itt
+ * intézzük: a közös `megorzo` mező csinálja, ugyanúgy, mint az alkalmazás
+ * többi űrlapján. Itt ezen felül annyi van, hogy a hibás mező kerete piros.
  */
 function Mezo({
   nev,
@@ -280,19 +274,18 @@ function Mezo({
   allapot: Eredmeny;
 }) {
   const hibas = allapot.hibak.includes(nev);
-  const ertek = allapot.ertekek[nev] ?? alap ?? "";
 
   return (
     <label className="grid gap-1 text-sm">
       <span className="font-medium">{cimke}</span>
-      <input
-        key={`${nev}-${allapot.uzenet}`}
+      <MegorzoMezo
         type={tipus}
         name={nev}
-        defaultValue={ertek}
+        defaultValue={alap ?? ""}
         min={min}
         max={max}
         required={kotelezo}
+        allapot={allapot.allapot}
         className={`${MEZO} ${hibas ? "border-rose-400 dark:border-rose-700" : ""}`}
       />
       {sugo ? (

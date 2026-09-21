@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Mezo as MegorzoMezo, type UrlapAllapot } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import {
   berloAdataitMenti,
@@ -18,19 +19,27 @@ function Mezo({
   nev,
   cimke,
   ertek,
+  allapot,
   tipus = "text",
   sugo,
 }: {
   nev: string;
   cimke: string;
   ertek: string;
+  allapot: UrlapAllapot;
   tipus?: string;
   sugo?: string;
 }) {
   return (
     <label className="grid gap-1 text-sm">
       <span className="font-medium">{cimke}</span>
-      <input name={nev} type={tipus} defaultValue={ertek} className={MEZO} />
+      <MegorzoMezo
+        name={nev}
+        type={tipus}
+        defaultValue={ertek}
+        allapot={allapot}
+        className={MEZO}
+      />
       {sugo ? <span className="text-xs text-stone-500 dark:text-stone-400">{sugo}</span> : null}
     </label>
   );
@@ -79,15 +88,53 @@ export function BerloAdatok({ berlo }: { berlo: BerloAdat }) {
 
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
         <input type="hidden" name="jogviszonyBerloId" value={berlo.id} />
-        <Mezo nev="nev" cimke="Név" ertek={berlo.nev} />
-        <Mezo nev="email" cimke="E-mail" ertek={berlo.email} tipus="email" />
-        <Mezo nev="szuletesiHely" cimke="Születési hely" ertek={berlo.szuletesiHely} />
-        <Mezo nev="szuletesiIdo" cimke="Születési idő" ertek={berlo.szuletesiIdo} tipus="date" />
-        <Mezo nev="anyjaNeve" cimke="Anyja neve" ertek={berlo.anyjaNeve} />
-        <Mezo nev="igazolvanySzam" cimke="Igazolványszám" ertek={berlo.igazolvanySzam} />
-        <Mezo nev="telefon" cimke="Telefonszám" ertek={berlo.telefon} tipus="tel" />
+        <Mezo nev="nev" cimke="Név" ertek={berlo.nev} allapot={allapot.allapot} />
+        <Mezo
+          nev="email"
+          cimke="E-mail"
+          ertek={berlo.email}
+          tipus="email"
+          allapot={allapot.allapot}
+        />
+        <Mezo
+          nev="szuletesiHely"
+          cimke="Születési hely"
+          ertek={berlo.szuletesiHely}
+          allapot={allapot.allapot}
+        />
+        <Mezo
+          nev="szuletesiIdo"
+          cimke="Születési idő"
+          ertek={berlo.szuletesiIdo}
+          tipus="date"
+          allapot={allapot.allapot}
+        />
+        <Mezo
+          nev="anyjaNeve"
+          cimke="Anyja neve"
+          ertek={berlo.anyjaNeve}
+          allapot={allapot.allapot}
+        />
+        <Mezo
+          nev="igazolvanySzam"
+          cimke="Igazolványszám"
+          ertek={berlo.igazolvanySzam}
+          allapot={allapot.allapot}
+        />
+        <Mezo
+          nev="telefon"
+          cimke="Telefonszám"
+          ertek={berlo.telefon}
+          tipus="tel"
+          allapot={allapot.allapot}
+        />
         <div className="sm:col-span-2 grid gap-3">
-          <Mezo nev="lakcim" cimke="Állandó lakcím" ertek={berlo.lakcim} />
+          <Mezo
+            nev="lakcim"
+            cimke="Állandó lakcím"
+            ertek={berlo.lakcim}
+            allapot={allapot.allapot}
+          />
           <button type="submit" disabled={folyamatban} className={GOMB}>
             {folyamatban ? "Mentem…" : "Adatok mentése"}
           </button>
@@ -108,8 +155,8 @@ export function BerloHozzaadas({ jogviszonyId }: { jogviszonyId: string }) {
       </summary>
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
         <input type="hidden" name="jogviszonyId" value={jogviszonyId} />
-        <Mezo nev="nev" cimke="Név" ertek="" />
-        <Mezo nev="email" cimke="E-mail" ertek="" tipus="email" />
+        <Mezo nev="nev" cimke="Név" ertek="" allapot={allapot.allapot} />
+        <Mezo nev="email" cimke="E-mail" ertek="" tipus="email" allapot={allapot.allapot} />
         <div className="sm:col-span-2 grid gap-3">
           <button type="submit" disabled={folyamatban} className={GOMB}>
             {folyamatban ? "Hozzáadom…" : "Hozzáadás"}
@@ -168,7 +215,14 @@ export function JogviszonyLezaras({
       </summary>
       <form action={kuldes} className="mt-3 grid gap-3">
         <input type="hidden" name="jogviszonyId" value={jogviszonyId} />
-        <Mezo nev="vege" cimke={napCimke} ertek={maiNap} tipus="date" sugo={sugo} />
+        <Mezo
+          nev="vege"
+          cimke={napCimke}
+          ertek={maiNap}
+          tipus="date"
+          sugo={sugo}
+          allapot={allapot.allapot}
+        />
         <button type="submit" disabled={folyamatban} className={GOMB}>
           {folyamatban ? "…" : gombCimke}
         </button>
