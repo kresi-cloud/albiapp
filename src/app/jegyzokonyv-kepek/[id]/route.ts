@@ -1,6 +1,7 @@
 import { biztonsagosNev } from "@/domain/jegyzokonyv-kepek";
 import { kepTartalma } from "@/lib/jegyzokonyv-kepek";
 import { belepettFelhasznalo, szerepe } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 
 export const dynamic = "force-dynamic";
 
@@ -22,11 +23,12 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const felhasznalo = await belepettFelhasznalo();
-  if (!felhasznalo) return new Response("Ehhez nincs jogosultságod.", { status: 403 });
+  const { sz } = await szovegek();
+  if (!felhasznalo) return new Response(sz("letoltes.nincs_jogosultsag"), { status: 403 });
 
   const { id } = await params;
   const kep = await kepTartalma({ id: felhasznalo.id, szerep: szerepe(felhasznalo) }, id);
-  if (!kep) return new Response("Nincs ilyen kép.", { status: 404 });
+  if (!kep) return new Response(sz("letoltes.nincs_kep"), { status: 404 });
 
   return new Response(new Uint8Array(kep.tartalom), {
     headers: {

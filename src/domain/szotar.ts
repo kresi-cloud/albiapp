@@ -2268,6 +2268,7 @@ export const SZOTAR: Szotar = {
   },
 
   "letoltes.nincs_bizonylat": { hu: "Nincs ilyen bizonylat.", en: "No such receipt." },
+  "letoltes.nincs_kep": { hu: "Nincs ilyen kép.", en: "No such photo." },
   "dokumentumok.igazolas_cel_alap": {
     // Ez a szöveg a magyar igazolásba kerül, ezért angol felületen is magyar.
     hu: "a lakhatási támogatáshoz",
