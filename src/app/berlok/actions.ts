@@ -171,6 +171,9 @@ export async function berloAdataitMenti(_elozo: Eredmeny, urlap: FormData): Prom
       lakcim: szoveg(urlap.get("lakcim")) || null,
       igazolvanySzam: szoveg(urlap.get("igazolvanySzam")) || null,
       telefon: szoveg(urlap.get("telefon")) || null,
+      // Aki utoljára írta, az a forrás. A bérlő belépés után felülírhatja.
+      adatokForrasa: "berbeado",
+      adatokFrissitve: new Date(),
     },
   });
 

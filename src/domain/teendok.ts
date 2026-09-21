@@ -179,6 +179,35 @@ export function egyeztetesbolTeendok(
 }
 
 /** Ami még csak közeledik: a bérlő figyelmeztetése a következő utalásra. */
+/**
+ * Hiányzó személyes adatból teendő. Származtatott: eltűnik magától, amint
+ * kitöltötték, és nem tiltja el a felhasználót semmitől — csak a szerződés
+ * véglegesítésénél lesz kötelező, mert oda tényleg kell.
+ */
+export function hianyzoAdatokTeendoi(
+  hianyok: {
+    cimzett: "berbeado" | "berlo";
+    /** Kire vonatkozik; a bérbeadó több bérlő hiányát is láthatja. */
+    kulcsResz: string;
+    darab: number;
+    hivatkozas: string;
+  }[],
+  ma: Date,
+): Teendo[] {
+  return hianyok
+    .filter((hiany) => hiany.darab > 0)
+    .map((hiany) => ({
+      kulcs: `adathiany:${hiany.kulcsResz}`,
+      cimzett: hiany.cimzett,
+      tipus: "adathiany",
+      cim: uzenet("teendo.adathiany"),
+      leiras: uzenet("adatok.hianyzik", { darab: hiany.darab }),
+      // Nincs valódi határideje: ma esedékes, hogy látszódjon, de ne legyen lejárt.
+      esedekesseg: ma,
+      hivatkozas: hiany.hivatkozas,
+    }));
+}
+
 export function kozelgoBefizetesTeendok(
   eloirtTetelek: {
     id: string;

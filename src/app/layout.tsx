@@ -28,6 +28,7 @@ const BERLO_MENU = [
   { kulcs: "nav.hibabejelentes", utvonal: "/berlo/hibak" },
   { kulcs: "nav.dokumentumaim", utvonal: "/berlo/dokumentumok" },
   { kulcs: "nav.betekinto", utvonal: "/berlo/betekinto" },
+  { kulcs: "nav.adataim", utvonal: "/berlo/adatok" },
 ];
 
 export default async function RootLayout({

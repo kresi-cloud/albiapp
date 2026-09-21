@@ -37,7 +37,16 @@ export async function belep(
   if (!(await jelszoEgyezik(jelszo, felhasznalo.jelszoHash))) return elutasitas;
 
   await munkamenetetIndit(felhasznalo.id);
-  redirect(felhasznalo.szerep === "berlo" ? "/berlo" : "/");
+
+  // Első belépéskor egyszer elkérjük a saját adatait: a szerződéshez kellenek,
+  // és aláírás előtt kapkodva rosszabb megadni. Kihagyható, és a hiányra
+  // onnantól teendő emlékeztet — nem toljuk elé minden belépéskor.
+  const berlo = felhasznalo.szerep === "berlo";
+  if (felhasznalo.adatkeresLatta === null) {
+    redirect(berlo ? "/berlo/adatok?elso=1" : "/beallitasok?elso=1");
+  }
+
+  redirect(berlo ? "/berlo" : "/");
 }
 
 export async function kilep(): Promise<void> {

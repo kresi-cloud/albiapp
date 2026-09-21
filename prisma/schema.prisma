@@ -22,6 +22,11 @@ model Felhasznalo {
   jelszoHash String
   szerep     String // "berbeado" | "berlo"
   nyelv      String   @default("hu") // "hu" | "en" — a bérlői oldal kétnyelvű
+  /**
+   * Mikor mutattuk meg neki az adatkérést. Egyszer kérjük, nem minden
+   * belépéskor: a hiányra onnantól teendő emlékeztet.
+   */
+  adatkeresLatta DateTime?
   letrehozva DateTime @default(now())
 
   ingatlanok          Ingatlan[]
@@ -181,6 +186,13 @@ model JogviszonyBerlo {
   igazolvanySzam String?
   // Sürgős hibánál a bérbeadó ezen éri el; a szerződés kapcsolattartási pontja is ezt írja.
   telefon        String?
+  /**
+   * Ki adta meg az adatokat: "berlo" vagy "berbeado". A bérbeadó azért írhat
+   * ide, mert szerződést azelőtt is kell tudni készíteni, hogy a bérlő először
+   * belépne — de ha a bérlő megadja a sajátját, az övé az érvényes.
+   */
+  adatokForrasa  String?
+  adatokFrissitve DateTime?
   sorrend        Int       @default(0)
   letrehozva     DateTime  @default(now())
 

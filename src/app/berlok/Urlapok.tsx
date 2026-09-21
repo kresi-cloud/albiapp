@@ -46,6 +46,9 @@ export type BerloAdat = {
   lakcim: string;
   igazolvanySzam: string;
   telefon: string;
+  /** Ki adta meg: a bérlő maga, vagy a bérbeadó helyette. */
+  forrasa: "berlo" | "berbeado" | null;
+  hianyzik: number;
 };
 
 /**
@@ -59,7 +62,21 @@ export function BerloAdatok({ berlo }: { berlo: BerloAdat }) {
     <details className="mt-3">
       <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
         Szerződéshez szükséges adatok
+        {berlo.hianyzik > 0 ? ` — még ${berlo.hianyzik} hiányzik` : " — megvannak"}
       </summary>
+
+      {/*
+        A forrás megmutatása nem formaság: ha a bérlő maga adta meg, az az
+        érvényes, és a bérbeadó tudja, hogy nem a saját gépelését látja.
+      */}
+      <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
+        {berlo.forrasa === "berlo"
+          ? "Ezeket a bérlő adta meg magáról."
+          : berlo.forrasa === "berbeado"
+            ? "Ezeket te írtad be. Ha a bérlő belép, felülírhatja a sajátjával."
+            : "Még senki nem adta meg. A bérlő belépés után maga is kitöltheti."}
+      </p>
+
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
         <input type="hidden" name="jogviszonyBerloId" value={berlo.id} />
         <Mezo nev="nev" cimke="Név" ertek={berlo.nev} />

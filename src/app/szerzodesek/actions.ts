@@ -185,6 +185,16 @@ export async function szerzodestVeglegesit(_elozo: Eredmeny, urlap: FormData): P
   if (!betoltott) return hiba("Ez a szerződés nem a tiéd.");
   if (betoltott.allapot !== "tervezet") return hiba("Ez a szerződés már véglegesített.");
 
+  // A személyazonosság nyugtázása nélkül nem véglegesítünk. Ez nem igazolás:
+  // az alkalmazás nem tudja ellenőrizni, ki kicsoda, ezért a felek nézik meg
+  // egymás okmányát, és a bérbeadó ezt itt nyugtázza.
+  if (szoveg(urlap.get("azonossagEllenorizve")) !== "igen") {
+    return hiba(
+      "Előbb nyugtázd, hogy megnéztétek egymás fényképes igazolványát.",
+      ["azonossagEllenorizve"],
+    );
+  }
+
   const hianyok = hianyzoAdatok(betoltott.bemenet);
   if (hianyok.length > 0 && szoveg(urlap.get("megis")) !== "igen") {
     return hiba("Hiányzó adatok. Pótold őket, vagy véglegesítsd így.", hianyok);

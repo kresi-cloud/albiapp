@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   egyeztetesbolTeendok,
+  hianyzoAdatokTeendoi,
   kozelgoBefizetesTeendok,
   surgosseg,
   teendoketRendez,
@@ -143,5 +144,41 @@ describe("kozelgoBefizetesTeendok", () => {
       MA,
     );
     expect(teendok.map((teendo) => teendo.kulcs)).toEqual(["esedekes:kozeli:berlo"]);
+  });
+});
+
+describe("hianyzoAdatokTeendoi", () => {
+  it("csak a tényleges hiányból csinál teendőt", () => {
+    const teendok = hianyzoAdatokTeendoi(
+      [
+        { cimzett: "berbeado", kulcsResz: "berbeado:b-1", darab: 2, hivatkozas: "/beallitasok" },
+        { cimzett: "berbeado", kulcsResz: "berlo:jb-1", darab: 0, hivatkozas: "/berlok" },
+        { cimzett: "berlo", kulcsResz: "berlo-sajat:f-1", darab: 3, hivatkozas: "/berlo/adatok" },
+      ],
+      MA,
+    );
+
+    expect(teendok.map((teendo) => teendo.kulcs)).toEqual([
+      "adathiany:berbeado:b-1",
+      "adathiany:berlo-sajat:f-1",
+    ]);
+  });
+
+  it("a hiány darabszámát kulcsként adja tovább, nem kész mondatként", () => {
+    const [teendo] = hianyzoAdatokTeendoi(
+      [{ cimzett: "berlo", kulcsResz: "berlo-sajat:f-1", darab: 3, hivatkozas: "/berlo/adatok" }],
+      MA,
+    );
+
+    expect(teendo.leiras).toEqual({ kulcs: "adatok.hianyzik", adatok: { darab: 3 } });
+  });
+
+  it("mára esedékes, tehát nem látszik lejártnak", () => {
+    const [teendo] = hianyzoAdatokTeendoi(
+      [{ cimzett: "berlo", kulcsResz: "berlo-sajat:f-1", darab: 1, hivatkozas: "/berlo/adatok" }],
+      MA,
+    );
+
+    expect(surgosseg(teendo.esedekesseg, MA)).toBe("ma");
   });
 });

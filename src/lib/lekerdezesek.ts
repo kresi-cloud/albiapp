@@ -5,6 +5,8 @@ import {
   reszletezesbol,
 } from "@/lib/eloirasok";
 import { nyitottHibak } from "@/lib/hibabejelentes";
+import { berbeadoAdatai, berloSajatSorai } from "@/lib/szemelyes-adatok";
+import { BERLOHOZ_KELL, hianyzoMezok } from "@/domain/szemelyes-adatok";
 import { hibakbolTeendok } from "@/domain/hibabejelentes";
 import { uzenet, type Uzenet } from "@/domain/nyelv";
 import { nevsor } from "@/domain/szerzodes";
@@ -19,6 +21,7 @@ import {
 } from "@/domain/egyeztetes";
 import {
   egyeztetesbolTeendok,
+  hianyzoAdatokTeendoi,
   kozelgoBefizetesTeendok,
   surgosseg,
   teendoketRendez,
@@ -260,6 +263,7 @@ export async function teendok(
       ...nezetekbolTeendok(nezetek),
       ...(await kozelgok(nezetek, jogviszonyIdk, ma)),
       ...hibakbolTeendok(await nyitottHibak(jogviszonyIdk)),
+      ...hianyzoAdatokTeendoi(await berbeadoiAdathianyok(tulajdonosId), ma),
       ...(cimzett === "berbeado" ? await tarolt(tulajdonosId, "berbeado") : []),
     ]
       .filter((teendo) => teendo.cimzett === cimzett)
@@ -279,9 +283,74 @@ export async function berloTeendoi(
       ...nezetekbolTeendok(nezetek),
       ...(await kozelgok(nezetek, jogviszonyIdk, ma)),
       ...hibakbolTeendok(await nyitottHibak(jogviszonyIdk)),
+      ...hianyzoAdatokTeendoi(await berloiAdathianyok(berloId), ma),
       ...(await tarolt(berloId, "berlo")),
     ]
       .filter((teendo) => teendo.cimzett === "berlo")
       .map((teendo) => ({ ...teendo, surgosseg: surgosseg(teendo.esedekesseg, ma) })),
   );
+}
+
+/**
+ * A bérbeadó adathiányai: a sajátja, és minden bérlőé, akinek a szerződéshez
+ * kellő adatai hiányosak. A bérlőét azért látja, mert szerződést ő állít ki.
+ */
+async function berbeadoiAdathianyok(tulajdonosId: string) {
+  const [sajat, berlok] = await Promise.all([
+    berbeadoAdatai(tulajdonosId),
+    prisma.jogviszonyBerlo.findMany({
+      where: { jogviszony: { ingatlan: { tulajdonosId }, statusz: "elo" } },
+      include: { jogviszony: { include: { ingatlan: true } } },
+    }),
+  ]);
+
+  const hianyok = [
+    {
+      cimzett: "berbeado" as const,
+      kulcsResz: `berbeado:${tulajdonosId}`,
+      darab: sajat.allapot.hianyzo.length,
+      hivatkozas: "/beallitasok",
+    },
+  ];
+
+  for (const sor of berlok) {
+    hianyok.push({
+      cimzett: "berbeado" as const,
+      kulcsResz: `berlo:${sor.id}`,
+      darab: hianyzoMezok(
+        {
+          nev: sor.nev,
+          szuletesiHely: sor.szuletesiHely,
+          szuletesiIdo: sor.szuletesiIdo,
+          anyjaNeve: sor.anyjaNeve,
+          lakcim: sor.lakcim,
+          igazolvanySzam: sor.igazolvanySzam,
+        },
+        BERLOHOZ_KELL,
+      ).length,
+      hivatkozas: "/berlok",
+    });
+  }
+
+  return hianyok;
+}
+
+/** A bérlő csak a sajátjáról kap teendőt. */
+async function berloiAdathianyok(berloId: string) {
+  const sorok = await berloSajatSorai(berloId);
+  const legjobb = sorok.reduce(
+    (eddig, sor) => Math.min(eddig, sor.allapot.hianyzo.length),
+    Number.POSITIVE_INFINITY,
+  );
+
+  if (!Number.isFinite(legjobb)) return [];
+
+  return [
+    {
+      cimzett: "berlo" as const,
+      kulcsResz: `berlo-sajat:${berloId}`,
+      darab: legjobb,
+      hivatkozas: "/berlo/adatok",
+    },
+  ];
 }
