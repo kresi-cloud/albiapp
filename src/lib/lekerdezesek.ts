@@ -15,7 +15,7 @@ import {
   type EloirtTetel,
   type Egyeztetes,
   type EgyeztetesBeallitasok,
-  type Kivonattetel,
+  type BerbeadoiIgazolas,
 } from "@/domain/egyeztetes";
 import {
   egyeztetesbolTeendok,
@@ -37,8 +37,8 @@ export type JogviszonyNezet = {
     idoszak: string | null;
     osszegFt: number;
     esedekesseg: Date;
-    kivonatOsszegFt: number | null;
-    kivonatDatuma: Date | null;
+    berbeadoiOsszegFt: number | null;
+    berbeadoiDatuma: Date | null;
     igazolasOsszegFt: number | null;
     igazolasDatuma: Date | null;
     /** Miért ennyi, ha nem a teljes havi összeg. Töredékhónapnál van kitöltve. */
@@ -54,7 +54,7 @@ type BetoltottJogviszony = {
   ingatlan: { megnevezes: string; cim: string; tulajdonosId: string };
   eloirtTetelek: (EloirtTetel & { reszletezes: string | null })[];
   berloiIgazolasok: BerloiIgazolas[];
-  kivonattetelek: Kivonattetel[];
+  berbeadoiIgazolasok: BerbeadoiIgazolas[];
 };
 
 const BETOLTES = {
@@ -62,7 +62,7 @@ const BETOLTES = {
   berlok: { orderBy: { sorrend: "asc" } },
   eloirtTetelek: { orderBy: { esedekesseg: "asc" } },
   berloiIgazolasok: { orderBy: { utalasDatuma: "asc" } },
-  kivonattetelek: { orderBy: { konyvelesDatuma: "asc" } },
+  berbeadoiIgazolasok: { orderBy: { erkezesDatuma: "asc" } },
 } as const;
 
 /**
@@ -91,13 +91,15 @@ function nezetteAlakit(
   const eredmeny = egyeztet(
     jogviszony.eloirtTetelek,
     jogviszony.berloiIgazolasok,
-    jogviszony.kivonattetelek,
+    jogviszony.berbeadoiIgazolasok,
     ma,
     beallitasok,
   );
 
   const eloirasok = new Map(jogviszony.eloirtTetelek.map((tetel) => [tetel.id, tetel]));
-  const kivonatok = new Map(jogviszony.kivonattetelek.map((tetel) => [tetel.id, tetel]));
+  const berbeadoiak = new Map(
+    jogviszony.berbeadoiIgazolasok.map((tetel) => [tetel.id, tetel]),
+  );
   const igazolasok = new Map(jogviszony.berloiIgazolasok.map((tetel) => [tetel.id, tetel]));
 
   return {
@@ -108,15 +110,17 @@ function nezetteAlakit(
     berletiDijFt: jogviszony.berletiDijFt,
     egyeztetesek: eredmeny.map((sor) => {
       const eloiras = sor.eloirtTetelId ? eloirasok.get(sor.eloirtTetelId) : undefined;
-      const kivonat = sor.kivonattetelId ? kivonatok.get(sor.kivonattetelId) : undefined;
+      const berbeadoi = sor.berbeadoiIgazolasId
+        ? berbeadoiak.get(sor.berbeadoiIgazolasId)
+        : undefined;
       const igazolas = sor.berloiIgazolasId ? igazolasok.get(sor.berloiIgazolasId) : undefined;
       return {
         ...sor,
         idoszak: eloiras?.idoszak ?? null,
         osszegFt: eloiras?.osszegFt ?? 0,
-        esedekesseg: eloiras?.esedekesseg ?? kivonat?.konyvelesDatuma ?? ma,
-        kivonatOsszegFt: kivonat?.osszegFt ?? null,
-        kivonatDatuma: kivonat?.konyvelesDatuma ?? null,
+        esedekesseg: eloiras?.esedekesseg ?? berbeadoi?.erkezesDatuma ?? ma,
+        berbeadoiOsszegFt: berbeadoi?.megerkezett ? berbeadoi.osszegFt : null,
+        berbeadoiDatuma: berbeadoi?.megerkezett ? berbeadoi.erkezesDatuma : null,
         igazolasOsszegFt: igazolas?.osszegFt ?? null,
         igazolasDatuma: igazolas?.utalasDatuma ?? null,
         reszletezes: eloiras ? reszletezesbol(eloiras.reszletezes) : null,

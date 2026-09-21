@@ -9,7 +9,7 @@
  * Három dolog teszi használhatóvá:
  *
  *  - Az adat nem a bérlő bemondása. Abból jön, amit a mostani bérbeadó
- *    bankszámlakivonata igazol, tehát a másik fél saját adatából.
+ *    beérkezésről szóló saját rögzítése igazol, tehát a másik fél adatából.
  *  - Nem adunk pontszámot. Egy "8,4 pont a tízből" úgy néz ki, mintha mérés
  *    lenne, pedig csak súlyozás, amit mi találtunk ki. Tényeket mutatunk,
  *    és az olvasó ítél.

@@ -9,6 +9,7 @@ import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv } from "@/lib/nyelv";
 import { merooraNeve } from "@/lib/rezsi";
 import { ElbiralasUrlap, OraallasUrlap } from "@/app/rezsi/Urlapok";
+import { Utalas, UtalastVisszavon } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
 
@@ -167,6 +168,59 @@ export default async function BerloiNezet() {
                       {u(sor.reszletezes)}
                     </p>
                   ) : null}
+
+                  <dl className="mt-3 grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
+                    <div>
+                      <dt className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
+                        {sz("berlo.utalas.sajat")}
+                      </dt>
+                      <dd className="tabular-nums">
+                        {sor.igazolasOsszegFt !== null && sor.igazolasDatuma
+                          ? `${forintNyelven(sor.igazolasOsszegFt, nyelv)} · ${datumNyelven(sor.igazolasDatuma, nyelv)}`
+                          : "—"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
+                        {sz("berlo.utalas.berbeado")}
+                      </dt>
+                      <dd className="tabular-nums">
+                        {sor.berbeadoiOsszegFt !== null && sor.berbeadoiDatuma
+                          ? `${forintNyelven(sor.berbeadoiOsszegFt, nyelv)} · ${datumNyelven(sor.berbeadoiDatuma, nyelv)}`
+                          : sor.elteresOka === "nem_erkezett_meg"
+                            ? sz("berlo.utalas.nem_erkezett")
+                            : "—"}
+                      </dd>
+                    </div>
+                  </dl>
+
+                  {sor.bizonylatKell ? (
+                    <p className="mt-3 rounded border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200">
+                      {sz("berlo.utalas.bizonylat")}
+                    </p>
+                  ) : null}
+
+                  {sor.berloiIgazolasId ? (
+                    <UtalastVisszavon
+                      igazolasId={sor.berloiIgazolasId}
+                      cimke={sz("berlo.utalas.visszavon")}
+                    />
+                  ) : (
+                    <Utalas
+                      jogviszonyId={nezet.id}
+                      osszegFt={sor.osszegFt}
+                      esedekesseg={sor.esedekesseg.toISOString().slice(0, 10)}
+                      cimkek={{
+                        nyito: sz("berlo.utalas.nyito"),
+                        datum: sz("berlo.utalas.datum"),
+                        osszeg: sz("berlo.utalas.osszeg"),
+                        kozlemeny: sz("berlo.utalas.kozlemeny"),
+                        gomb: sz("berlo.utalas.gomb"),
+                        sugo: sz("berlo.utalas.sugo"),
+                        visszavon: sz("berlo.utalas.visszavon"),
+                      }}
+                    />
+                  )}
                 </li>
               ))}
           </ul>

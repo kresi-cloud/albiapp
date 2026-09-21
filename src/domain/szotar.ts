@@ -97,9 +97,23 @@ export const SZOTAR: Szotar = {
     hu: "{osszeg} forinttal több érkezett, mint az előírás.",
     en: "HUF {osszeg} more arrived than the amount due.",
   },
-  "egyeztetes.nincs_kivonattetel": {
-    hu: "A bérlő igazolta a befizetést, de a kivonaton nem találtam hozzá tételt.",
-    en: "The tenant confirmed the transfer, but no matching line was found on the bank statement.",
+  "egyeztetes.vitas_cimke": { hu: "vitás", en: "disputed" },
+  "egyeztetes.varakozik_cimke": { hu: "várakozik", en: "waiting" },
+  "egyeztetes.ket_oldal_elter": {
+    hu: "A két fél mást mond: a bérlő {berlo} forintot, a bérbeadó {berbeado} forintot rögzített.",
+    en: "The two sides differ: the tenant recorded HUF {berlo}, the landlord HUF {berbeado}.",
+  },
+  "egyeztetes.nem_erkezett_meg": {
+    hu: "A bérlő szerint elutalta, a bérbeadó szerint nem érkezett meg.",
+    en: "The tenant says it was transferred; the landlord says it never arrived.",
+  },
+  "egyeztetes.nincs_berbeadoi_igazolas": {
+    hu: "A bérlő megadta az utalását, a bérbeadó visszaigazolására vár.",
+    en: "The tenant recorded the transfer; waiting for the landlord to confirm it.",
+  },
+  "egyeztetes.nincs_berloi_igazolas": {
+    hu: "A bérbeadó rögzítette a beérkezést, a bérlő visszaigazolására vár.",
+    en: "The landlord recorded the arrival; waiting for the tenant to confirm it.",
   },
   "egyeztetes.hianyzik": {
     hu: "Az esedékesség letelt, és nem érkezett hozzá befizetés.",
@@ -141,9 +155,25 @@ export const SZOTAR: Szotar = {
     hu: "Beérkezett utalás, amihez nincs előírás",
     en: "A transfer arrived with no scheduled item",
   },
-  "teendo.elter.nincs_kivonattetel": {
-    hu: "A bérlő igazolta a befizetést, de a kivonaton nincs meg",
-    en: "The tenant confirmed the transfer, but it is missing from the statement",
+  "teendo.vitas.berbeado": {
+    hu: "Vitás befizetés: töltsd fel a fogadó oldali bizonylatot",
+    en: "Disputed payment: upload the receiving-side receipt",
+  },
+  "teendo.vitas.berlo": {
+    hu: "Vitás befizetés: töltsd fel az utalás bizonylatát",
+    en: "Disputed payment: upload the receipt of your transfer",
+  },
+  "teendo.vitas.nem_erkezett_meg": {
+    hu: "A bérbeadó szerint nem érkezett meg. Teljes bankszámlakivonat nem kell, csak ez az egy utalás.",
+    en: "The landlord says it never arrived. No full bank statement is needed, only this one transfer.",
+  },
+  "teendo.varakozik.berbeado": {
+    hu: "Igazold vissza, hogy megérkezett-e",
+    en: "Confirm whether it arrived",
+  },
+  "teendo.varakozik.berlo": {
+    hu: "Add meg, mikor és mennyit utaltál",
+    en: "Tell us when and how much you transferred",
   },
   "teendo.kozelgo": { hu: "Közeleg a fizetési határidő", en: "Payment deadline approaching" },
   "teendo.hiba.megerosites": {
@@ -461,6 +491,31 @@ export const SZOTAR: Szotar = {
   "berlo.befizetesek": { hu: "Befizetéseim · {berlemeny}", en: "My payments · {berlemeny}" },
   "berlo.esedekesseg": { hu: "Esedékesség: {nap}.", en: "Due: {nap}." },
   "berlo.osszesen": { hu: "Összesen", en: "Total" },
+  "berlo.utalas.nyito": { hu: "Elutaltam, rögzítem", en: "I have transferred it" },
+  "berlo.utalas.datum": { hu: "Mikor utaltad", en: "When you transferred it" },
+  "berlo.utalas.osszeg": { hu: "Mennyit utaltál (Ft)", en: "How much you transferred (HUF)" },
+  "berlo.utalas.kozlemeny": { hu: "Közlemény (ha volt)", en: "Reference (if any)" },
+  "berlo.utalas.gomb": { hu: "Rögzítem", en: "Record it" },
+  "berlo.utalas.sugo": {
+    hu:
+      "Csak ennyi kell. Bankszámlakivonatot nem kérünk, és nem is fogadunk el. Ha a bérbeadó " +
+      "adata mást mond, akkor kérjük be ennek az egy utalásnak a bizonylatát.",
+    en:
+      "This is all we need. We do not ask for, and do not accept, a bank statement. If the " +
+      "landlord's entry says something else, we then ask for the receipt of this one transfer.",
+  },
+  "berlo.utalas.visszavon": { hu: "Ezt elgépeltem", en: "I mistyped this" },
+  "berlo.utalas.sajat": { hu: "Amit te mondtál", en: "What you said" },
+  "berlo.utalas.berbeado": { hu: "Amit a bérbeadó mond", en: "What the landlord says" },
+  "berlo.utalas.nem_erkezett": { hu: "nem érkezett meg", en: "did not arrive" },
+  "berlo.utalas.bizonylat": {
+    hu:
+      "A két oldal nem egyezik. Ilyenkor van értelme az utalás bizonylatának: tőled a küldő " +
+      "oldali. Teljes bankszámlakivonat nem kell.",
+    en:
+      "The two sides do not match. This is where the receipt of the transfer matters: from you " +
+      "the sending side. No full bank statement is needed.",
+  },
 
   // --- Szerveroldali visszajelzések
   "valasz.lepj_be": { hu: "Lépj be.", en: "Please sign in." },
@@ -517,6 +572,24 @@ export const SZOTAR: Szotar = {
     hu: "Töredékhónap: {elso}–{utolso}. ({napok} nap a hónap {honapNapjai} napjából). A teljes havi összeg {teljes} Ft.",
     en: "Partial month: {elso}–{utolso} ({napok} of the month's {honapNapjai} days). The full monthly amount is {teljes} HUF.",
   },
+  "valasz.datum_kell": { hu: "Adj meg egy dátumot.", en: "Give a date." },
+  "valasz.osszeg_kell": {
+    hu: "Adj meg egy összeget egész forintban.",
+    en: "Give an amount in whole forints.",
+  },
+  "valasz.beerkezes_rogzitve": {
+    hu: "Rögzítettem a beérkezést. Ha a bérlő adata is ezt mondja, a tétel le van zárva.",
+    en: "The arrival is recorded. If the tenant's entry says the same, the item is settled.",
+  },
+  "valasz.nem_erkezett_rogzitve": {
+    hu: "Rögzítettem, hogy nem érkezett meg.",
+    en: "Recorded: it has not arrived.",
+  },
+  "valasz.utalas_rogzitve": {
+    hu: "Rögzítettem az utalásodat. Ha a bérbeadó adata is ezt mondja, a tétel le van zárva.",
+    en: "Your transfer is recorded. If the landlord's entry says the same, the item is settled.",
+  },
+  "valasz.visszavonva": { hu: "Visszavontam.", en: "Withdrawn." },
   "valasz.lezaras_datum_kell": {
     hu: "Add meg, melyik nappal zárul a jogviszony.",
     en: "Give the day the tenancy ends.",
@@ -547,8 +620,8 @@ export const SZOTAR: Szotar = {
   "nav.betekinto": { hu: "Betekintő", en: "Reference" },
   "betekinto.oldal.cim": { hu: "Betekintő a fizetési előzményemre", en: "A reference on my payment history" },
   "betekinto.oldal.bevezeto": {
-    hu: "Ha új lakást keresel, a leendő bérbeadó rendszerint nem tud semmit rólad. Ezzel a linkkel megmutathatod neki, hogyan fizettél eddig. Az adat nem a te bemondásod: a mostani bérbeadód bankszámlakivonatából jön, amit ez az alkalmazás párosított az előírásokkal.",
-    en: "When you look for a new flat, the prospective landlord knows nothing about you. This link lets you show how you have paid so far. It is not your own word: the data comes from your current landlord's bank statement, matched against the scheduled items by this app.",
+    hu: "Ha új lakást keresel, a leendő bérbeadó rendszerint nem tud semmit rólad. Ezzel a linkkel megmutathatod neki, hogyan fizettél eddig. Az adat nem a te bemondásod: a mostani bérbeadód saját rögzítéséből jön arról, mi érkezett meg, és azt az alkalmazás párosította az előírásokkal.",
+    en: "When you look for a new flat, the prospective landlord knows nothing about you. This link lets you show how you have paid so far. It is not your own word: the data comes from what your current landlord recorded as received, matched against the scheduled items by this app.",
   },
   "betekinto.oldal.mit_nem": {
     hu: "A link nem árulja el a bérbeadód nevét, a pontos címet, a lakótársaid nevét és semmilyen személyes adatot. Bármikor visszavonhatod, és magától is lejár.",
@@ -588,8 +661,8 @@ export const SZOTAR: Szotar = {
   "betekinto.nyilvanos.lezart": { hu: "A jogviszony már lezárult.", en: "The tenancy has ended." },
   "betekinto.nyilvanos.dij": { hu: "Havi bérleti díj: {dij}", en: "Monthly rent: {dij}" },
   "betekinto.nyilvanos.honnan": {
-    hu: "Ezek a számok a bérbeadó által feltöltött bankszámlakivonatból származnak, a kivonat sorait az alkalmazás párosította az előírt tételekkel. Nem a bérlő bejelentése.",
-    en: "These numbers come from the bank statement uploaded by the landlord; the app matched its lines against the scheduled items. They are not self-reported by the tenant.",
+    hu: "Ezek a számok abból származnak, amit a bérbeadó maga rögzített a beérkezett befizetésekről, és az alkalmazás párosította az előírt tételekkel. Nem a bérlő bejelentése.",
+    en: "These numbers come from what the landlord recorded as received, matched against the scheduled items by the app. They are not self-reported by the tenant.",
   },
   "betekinto.nyilvanos.nincs_pontszam": {
     hu: "Pontszámot szándékosan nem adunk. A súlyozás, amit mi találnánk ki, mérésnek látszana; ítélni az olvasó dolga.",

@@ -107,13 +107,51 @@ export function egyeztetesbolTeendok(
       continue;
     }
 
+    // A két fél adata nem fedi egymást: innen van értelme a bizonylatnak.
+    // Mindkét félnek teendő, mert mindkettőtől a saját oldali bizonylat kell.
+    if (egyeztetes.allapot === "vitas") {
+      for (const cimzett of ["berbeado", "berlo"] as const) {
+        teendok.push({
+          kulcs: `vitas:${azonosito}:${cimzett}`,
+          cimzett,
+          tipus: "befizetes_vitas",
+          cim: uzenet(`teendo.vitas.${cimzett}`),
+          leiras:
+            egyeztetes.elteresOka === "nem_erkezett_meg"
+              ? uzenet("teendo.vitas.nem_erkezett_meg")
+              : uzenet("teendo.elteres", { osszeg: egyeztetes.elteresFt }),
+          esedekesseg: egyeztetes.esedekesseg,
+          hivatkozas,
+        });
+      }
+      continue;
+    }
+
+    // Csak az egyik fél nyilatkozott: a másiknak van teendője. Ez még nem
+    // vita, és bizonylatot sem kérünk érte.
+    if (egyeztetes.allapot === "varakozik") {
+      const kire =
+        egyeztetes.elteresOka === "nincs_berbeadoi_igazolas" ? "berbeado" : "berlo";
+      teendok.push({
+        kulcs: `varakozik:${azonosito}:${kire}`,
+        cimzett: kire,
+        tipus: "befizetes_varakozik",
+        cim: uzenet(`teendo.varakozik.${kire}`),
+        leiras: uzenet("teendo.idoszak_osszeg", {
+          idoszak: egyeztetes.idoszak ?? "",
+          osszeg: egyeztetes.osszegFt,
+        }),
+        esedekesseg: egyeztetes.esedekesseg,
+        hivatkozas,
+      });
+      continue;
+    }
+
     if (egyeztetes.allapot === "elter") {
       const cim =
         egyeztetes.elteresOka === "nincs_eloiras"
           ? uzenet("teendo.elter.nincs_eloiras")
-          : egyeztetes.elteresOka === "nincs_kivonattetel"
-            ? uzenet("teendo.elter.nincs_kivonattetel")
-            : uzenet("teendo.elter.berbeado");
+          : uzenet("teendo.elter.berbeado");
       teendok.push({
         kulcs: `elter:${azonosito}:berbeado`,
         cimzett: "berbeado",

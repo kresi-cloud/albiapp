@@ -1,96 +1,137 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { kivonatotOlvas } from "@/domain/kivonat";
 import { prisma } from "@/lib/db";
+import { szovegek } from "@/lib/nyelv";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 
-export type FeltoltesEredmeny = {
+export type Eredmeny = {
   allapot: "ures" | "kesz" | "hiba";
   uzenet: string;
-  beolvasott: number;
-  kihagyott: number;
   hibak: string[];
 };
 
-export async function kivonatotFeltolt(
-  _elozo: FeltoltesEredmeny,
-  urlap: FormData,
-): Promise<FeltoltesEredmeny> {
-  const berbeado = await kotelezoSzerep("berbeado");
+function hiba(uzenet: string, hibak: string[] = []): Eredmeny {
+  return { allapot: "hiba", uzenet, hibak };
+}
 
-  const jogviszonyId = String(urlap.get("jogviszonyId") ?? "");
-  const fajl = urlap.get("kivonat");
+function szoveg(ertek: FormDataEntryValue | null): string {
+  return typeof ertek === "string" ? ertek.trim() : "";
+}
 
-  if (!(fajl instanceof File) || fajl.size === 0) {
-    return { allapot: "hiba", uzenet: "Válassz ki egy kivonatfájlt.", beolvasott: 0, kihagyott: 0, hibak: [] };
-  }
-  if (!jogviszonyId) {
-    return { allapot: "hiba", uzenet: "Válaszd ki, melyik jogviszonyhoz tartozik.", beolvasott: 0, kihagyott: 0, hibak: [] };
-  }
+/** Szabad szövegből egész forint. Szóköz és ezreselválasztó megengedett. */
+function forintot(nyers: string): number | null {
+  const tisztitott = nyers.replace(/[\s .]/g, "").replace(/Ft$/i, "");
+  if (!/^\d+$/.test(tisztitott)) return null;
+  return Number(tisztitott);
+}
 
-  const jogviszony = await prisma.jogviszony.findFirst({
-    where: { id: jogviszonyId, ingatlan: { tulajdonosId: berbeado.id } },
+function napot(nyers: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(nyers)) return null;
+  const nap = new Date(`${nyers}T00:00:00.000Z`);
+  return Number.isNaN(nap.getTime()) ? null : nap;
+}
+
+/** A jogviszony a bérbeadóé-e. Az űrlapból jövő azonosítóban nem bízunk. */
+async function sajatJogviszony(tulajdonosId: string, jogviszonyId: string) {
+  return prisma.jogviszony.findFirst({
+    where: { id: jogviszonyId, ingatlan: { tulajdonosId } },
+    select: { id: true },
   });
-  if (!jogviszony) {
-    return { allapot: "hiba", uzenet: "Ez a jogviszony nem a tiéd.", beolvasott: 0, kihagyott: 0, hibak: [] };
+}
+
+/**
+ * A bérbeadó megadja, mikor mennyi érkezett. Ez a saját oldala, nem a bérlőé:
+ * a két adat külön él, és ha egyeznek, a kérdés le van zárva bizonylat nélkül.
+ */
+export async function beerkezestRogzit(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+
+  const jogviszonyId = szoveg(urlap.get("jogviszonyId"));
+  if (!(await sajatJogviszony(berbeado.id, jogviszonyId))) {
+    return hiba(sz("valasz.nincs_jogosultsag"));
   }
 
-  const tartalom = await fajl.text();
-  const eredmeny = kivonatotOlvas(tartalom);
+  const nap = napot(szoveg(urlap.get("erkezesDatuma")));
+  if (!nap) return hiba(sz("valasz.datum_kell"), ["erkezesDatuma"]);
 
-  if (eredmeny.sorok.length === 0) {
-    return {
-      allapot: "hiba",
-      uzenet: "Egyetlen sort sem tudtam beolvasni a fájlból.",
-      beolvasott: 0,
-      kihagyott: eredmeny.hibak.length,
-      hibak: eredmeny.hibak.map((hiba) => `${hiba.sorszam}. sor: ${hiba.ok}`),
-    };
-  }
+  const osszegFt = forintot(szoveg(urlap.get("osszegFt")));
+  if (osszegFt === null || osszegFt <= 0) return hiba(sz("valasz.osszeg_kell"), ["osszegFt"]);
 
-  let beolvasott = 0;
-  let mar = 0;
-
-  for (const sor of eredmeny.sorok) {
-    // A bejövő pénz érdekel: a terhelések nem befizetések.
-    if (sor.osszegFt <= 0) continue;
-
-    const ujjlenyomat = `${berbeado.id}:${sor.ujjlenyomat}`;
-    const letezo = await prisma.kivonattetel.findUnique({
-      where: { sorUjjlenyomat: ujjlenyomat },
+  // Az előíráshoz kötés nem kötelező: a párosítás az időablak alapján megy.
+  // Az előírás azonosítója csak arra kell, hogy a korábbi tagadást leváltsa.
+  const eloirtTetelId = szoveg(urlap.get("eloirtTetelId")) || null;
+  if (eloirtTetelId) {
+    await prisma.berbeadoiIgazolas.deleteMany({
+      where: { eloirtTetelId, megerkezett: false, tulajdonosId: berbeado.id },
     });
-    if (letezo) {
-      mar++;
-      continue;
-    }
-
-    await prisma.kivonattetel.create({
-      data: {
-        tulajdonosId: berbeado.id,
-        jogviszonyId: jogviszony.id,
-        konyvelesDatuma: sor.konyvelesDatuma,
-        osszegFt: sor.osszegFt,
-        kozlemeny: sor.kozlemeny,
-        partnerNev: sor.partnerNev,
-        forrasFajl: fajl.name,
-        sorUjjlenyomat: ujjlenyomat,
-      },
-    });
-    beolvasott++;
   }
+
+  await prisma.berbeadoiIgazolas.create({
+    data: {
+      tulajdonosId: berbeado.id,
+      jogviszonyId,
+      megerkezett: true,
+      erkezesDatuma: nap,
+      osszegFt,
+      kozlemeny: szoveg(urlap.get("kozlemeny")) || null,
+    },
+  });
+
+  revalidatePath("/befizetesek");
+  revalidatePath("/ado");
+  revalidatePath("/");
+  return { allapot: "kesz", uzenet: sz("valasz.beerkezes_rogzitve"), hibak: [] };
+}
+
+/**
+ * A bérbeadó kimondja, hogy egy előírásra nem érkezett pénz. Enélkül egy
+ * elmaradt utalás örökké a másik fél adatára várna, holott a bérbeadó már
+ * megnézte. Ha a bérlő közben azt mondja, elutalta, ebből lesz a vita — és
+ * onnantól van értelme az adott utalás bizonylatának.
+ */
+export async function nemErkezettMeg(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+
+  const eloirtTetelId = szoveg(urlap.get("eloirtTetelId"));
+  const eloiras = await prisma.eloirtTetel.findFirst({
+    where: { id: eloirtTetelId, jogviszony: { ingatlan: { tulajdonosId: berbeado.id } } },
+    select: { id: true, jogviszonyId: true, esedekesseg: true },
+  });
+  if (!eloiras) return hiba(sz("valasz.nincs_jogosultsag"));
+
+  await prisma.berbeadoiIgazolas.upsert({
+    where: { eloirtTetelId: eloiras.id },
+    update: { megerkezett: false, osszegFt: 0, erkezesDatuma: eloiras.esedekesseg },
+    create: {
+      tulajdonosId: berbeado.id,
+      jogviszonyId: eloiras.jogviszonyId,
+      eloirtTetelId: eloiras.id,
+      megerkezett: false,
+      erkezesDatuma: eloiras.esedekesseg,
+      osszegFt: 0,
+    },
+  });
 
   revalidatePath("/befizetesek");
   revalidatePath("/");
+  return { allapot: "kesz", uzenet: sz("valasz.nem_erkezett_rogzitve"), hibak: [] };
+}
 
-  return {
-    allapot: "kesz",
-    uzenet:
-      beolvasott === 0
-        ? "Minden sor már benne volt, új tétel nem került be."
-        : `${beolvasott} új tétel került be a kivonatból.`,
-    beolvasott,
-    kihagyott: mar + eredmeny.hibak.length,
-    hibak: eredmeny.hibak.map((hiba) => `${hiba.sorszam}. sor: ${hiba.ok}`),
-  };
+/** Tévesen rögzített beérkezés visszavonása. A bérlő adatához nem nyúl. */
+export async function beerkezestTorol(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+
+  const eredmeny = await prisma.berbeadoiIgazolas.deleteMany({
+    where: { id: szoveg(urlap.get("igazolasId")), tulajdonosId: berbeado.id },
+  });
+  if (eredmeny.count === 0) return hiba(sz("valasz.nincs_jogosultsag"));
+
+  revalidatePath("/befizetesek");
+  revalidatePath("/ado");
+  revalidatePath("/");
+  return { allapot: "kesz", uzenet: sz("valasz.visszavonva"), hibak: [] };
 }

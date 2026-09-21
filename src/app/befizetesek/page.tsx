@@ -4,7 +4,7 @@ import { datum, forint } from "@/domain/penz";
 import { egyeztetesBeallitasok, jogviszonyNezetek } from "@/lib/lekerdezesek";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
-import { KivonatFeltoltes } from "./KivonatFeltoltes";
+import { Beerkezes, BeerkezestVisszavon, NemErkezett } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +21,14 @@ export default async function Befizetesek() {
         <h1 className="text-2xl font-semibold tracking-tight">Befizetések</h1>
         <p className="mt-1 text-stone-600 dark:text-stone-400">
           Három adat találkozik: mit kellett volna fizetni, mit mond a bérlő, és
-          mit mutat a kivonatod.
+          mit mondasz te. A két fél a saját oldalát adja meg, és ha a kettő
+          egyezik, a tétel le van zárva.
+        </p>
+        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+          Bizonylatot csak akkor kérünk, ha a két oldal nem egyezik, és akkor is
+          csak arról az egy utalásról: tőled a fogadó oldalit, a bérlőtől a
+          küldő oldalit. Teljes bankszámlakivonatot nem kérünk, és nem is
+          fogadunk el.
         </p>
         <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
           Párosítási ablak: az esedékesség előtt {beallitasok.korabbiAblakNap},
@@ -32,12 +39,6 @@ export default async function Befizetesek() {
         </p>
       </section>
 
-      <KivonatFeltoltes
-        jogviszonyok={nezetek.map((nezet) => ({
-          id: nezet.id,
-          cimke: `${nezet.ingatlanMegnevezes} — ${nezet.berlokNeve}`,
-        }))}
-      />
 
       {nezetek.map((nezet) => (
         <section key={nezet.id} className="grid gap-3">
@@ -56,7 +57,7 @@ export default async function Befizetesek() {
             <ul className="grid gap-2">
               {nezet.egyeztetesek.map((sor) => (
                 <li
-                  key={`${sor.eloirtTetelId ?? "nincs"}-${sor.kivonattetelId ?? "nincs"}`}
+                  key={`${sor.eloirtTetelId ?? "nincs"}-${sor.berbeadoiIgazolasId ?? "nincs"}`}
                   className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
                 >
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -82,7 +83,7 @@ export default async function Befizetesek() {
                       ertek={sor.eloirtTetelId ? `${forint(sor.osszegFt)} · ${datum(sor.esedekesseg)}` : "—"}
                     />
                     <Reszlet
-                      cimke="Bérlő által igazolt befizetés"
+                      cimke="Amit a bérlő mond"
                       ertek={
                         sor.igazolasOsszegFt !== null && sor.igazolasDatuma
                           ? `${forint(sor.igazolasOsszegFt)} · ${datum(sor.igazolasDatuma)}`
@@ -90,14 +91,47 @@ export default async function Befizetesek() {
                       }
                     />
                     <Reszlet
-                      cimke="A kivonaton"
+                      cimke="Ami hozzád megérkezett"
                       ertek={
-                        sor.kivonatOsszegFt !== null && sor.kivonatDatuma
-                          ? `${forint(sor.kivonatOsszegFt)} · ${datum(sor.kivonatDatuma)}`
-                          : "—"
+                        sor.berbeadoiOsszegFt !== null && sor.berbeadoiDatuma
+                          ? `${forint(sor.berbeadoiOsszegFt)} · ${datum(sor.berbeadoiDatuma)}`
+                          : sor.elteresOka === "nem_erkezett_meg"
+                            ? "nem érkezett meg"
+                            : "—"
                       }
                     />
                   </dl>
+
+                  {sor.bizonylatKell ? (
+                    <p className="mt-3 rounded border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200">
+                      A két oldal nem egyezik. Ilyenkor van értelme az utalás
+                      bizonylatának: tőled a fogadó oldali, a bérlőtől a küldő
+                      oldali. Teljes bankszámlakivonat nem kell.
+                    </p>
+                  ) : null}
+
+                  {sor.berbeadoiOsszegFt === null ? (
+                    <>
+                      <Beerkezes
+                        jogviszonyId={nezet.id}
+                        eloirtTetelId={sor.eloirtTetelId}
+                        osszegFt={sor.osszegFt}
+                        esedekesseg={napSzoveg(sor.esedekesseg)}
+                        cimkek={BEERKEZES_CIMKEK}
+                      />
+                      {sor.eloirtTetelId && sor.elteresOka !== "nem_erkezett_meg" ? (
+                        <NemErkezett
+                          eloirtTetelId={sor.eloirtTetelId}
+                          cimke="Megnéztem: nem érkezett meg"
+                        />
+                      ) : null}
+                    </>
+                  ) : sor.berbeadoiIgazolasId ? (
+                    <BeerkezestVisszavon
+                      igazolasId={sor.berbeadoiIgazolasId}
+                      cimke="Ezt tévedésből rögzítettem"
+                    />
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -106,6 +140,20 @@ export default async function Befizetesek() {
       ))}
     </div>
   );
+}
+
+const BEERKEZES_CIMKEK = {
+  nyito: "Megérkezett? Rögzítem",
+  datum: "Mikor érkezett",
+  osszeg: "Mennyi érkezett (Ft)",
+  kozlemeny: "Közlemény (ha van)",
+  gomb: "Rögzítem",
+  nem: "Megnéztem: nem érkezett meg",
+  visszavon: "Ezt tévedésből rögzítettem",
+};
+
+function napSzoveg(nap: Date): string {
+  return nap.toISOString().slice(0, 10);
 }
 
 function Reszlet({ cimke, ertek }: { cimke: string; ertek: string }) {

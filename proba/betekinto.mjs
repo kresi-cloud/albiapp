@@ -67,8 +67,8 @@ export async function futtat(oldal) {
     "a fizetési előzmény mondatai megjelennek",
   );
   all(
-    (await oldal.getByText(/bankszámlakivonatból származnak/).count()) > 0,
-    "kimondja, hogy az adat a bérbeadó kivonatából jön",
+    (await oldal.getByText(/a bérbeadó maga rögzített/).count()) > 0,
+    "kimondja, hogy az adat a bérbeadó saját rögzítéséből jön",
   );
   all(
     (await oldal.getByText(/Pontszámot szándékosan nem adunk/).count()) > 0,

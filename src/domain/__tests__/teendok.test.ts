@@ -64,6 +64,57 @@ describe("egyeztetesbolTeendok", () => {
     expect(teendok[0].cimzett).toBe("berbeado");
   });
 
+  it("a vitás tételből mindkét félnek teendő lesz, mert mindkettőtől bizonylat kell", () => {
+    const teendok = egyeztetesbolTeendok([
+      {
+        jogviszonyId: "jv-1",
+        eloirtTetelId: "e-1",
+        idoszak: "2026-09",
+        allapot: "vitas",
+        elteresOka: "ket_oldal_elter",
+        elteresFt: -5000,
+        osszegFt: 180000,
+        esedekesseg: new Date(Date.UTC(2026, 8, 5)),
+      },
+    ]);
+    expect(teendok.map((teendo) => teendo.cimzett).sort()).toEqual(["berbeado", "berlo"]);
+    expect(teendok.every((teendo) => teendo.tipus === "befizetes_vitas")).toBe(true);
+  });
+
+  it("a meg nem érkezett utalásnál a bérlő teendője kimondja, hogy kivonat nem kell", () => {
+    const teendok = egyeztetesbolTeendok([
+      {
+        jogviszonyId: "jv-1",
+        eloirtTetelId: "e-1",
+        idoszak: "2026-09",
+        allapot: "vitas",
+        elteresOka: "nem_erkezett_meg",
+        elteresFt: -180000,
+        osszegFt: 180000,
+        esedekesseg: new Date(Date.UTC(2026, 8, 5)),
+      },
+    ]);
+    const berloi = teendok.find((teendo) => teendo.cimzett === "berlo");
+    expect(berloi?.leiras?.kulcs).toBe("teendo.vitas.nem_erkezett_meg");
+  });
+
+  it("egyoldalú tételnél csak a hallgató félnek lesz teendője", () => {
+    const teendok = egyeztetesbolTeendok([
+      {
+        jogviszonyId: "jv-1",
+        eloirtTetelId: "e-1",
+        idoszak: "2026-09",
+        allapot: "varakozik",
+        elteresOka: "nincs_berbeadoi_igazolas",
+        elteresFt: 0,
+        osszegFt: 180000,
+        esedekesseg: new Date(Date.UTC(2026, 8, 5)),
+      },
+    ]);
+    expect(teendok).toHaveLength(1);
+    expect(teendok[0].cimzett).toBe("berbeado");
+  });
+
   it("az egyező befizetésből nem lesz teendő", () => {
     const teendok = egyeztetesbolTeendok([
       {

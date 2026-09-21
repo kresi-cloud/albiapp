@@ -20,7 +20,7 @@ egyértelműen jobbat.
   nyelvfüggetlen marad, és a tesztek kulcsra állítanak, nem prózára.
 - A dokumentáció és a kódon belüli magyarázat magyarul van.
 - A hibaüzenetek is a szótáron mennek át.
-- A kód azonosítói magyarul: `eloirtTetel`, `kivonattetel`, `egyeztetes`.
+- A kód azonosítói magyarul: `eloirtTetel`, `berbeadoiIgazolas`, `egyeztetes`.
   Az ok gyakorlati: ezeknek a szakkifejezéseknek nincs jó angol párjuk, és a
   félrefordítás a pénzügyi logikában hiba forrása.
 - Kivétel a keretrendszer által előírt nevek (`page.tsx`, `layout.tsx`).
@@ -37,19 +37,43 @@ egyértelműen jobbat.
 ## Az egyeztetés alapelve
 
 Az előírt tétel (`EloirtTetel`), a bérlő által igazolt befizetés
-(`BerloiIgazolas`) és a bankszámlakivonat sora (`Kivonattetel`) három külön adat,
-és egyik sem írja felül a másikat. Az `Egyeztetes` csak az összevetés eredménye.
-Aki ezt egyetlen "befizetve" jelölésre egyszerűsítené, azzal pont az
-eltéréskezelés veszne el, ami a termék lényege.
+(`BerloiIgazolas`) és a bérbeadó által igazolt beérkezés (`BerbeadoiIgazolas`)
+három külön adat, és egyik sem írja felül a másikat. Az `Egyeztetes` csak az
+összevetés eredménye. Aki ezt egyetlen "befizetve" jelölésre egyszerűsítené,
+azzal pont az eltéréskezelés veszne el, ami a termék lényege.
 
-A felületen ez a három szó szerepel, és a kódban is ezek az azonosítók:
-"előírt tétel", "bérlő által igazolt befizetés", és az állapotoknál
-"egyezik / eltér / hiányzik".
+**Mindkét fél a saját oldalát adja meg, és ha a kettő egyezik, a kérdés le van
+zárva: bizonylatot ilyenkor nem kérünk.** Teljes bankszámlakivonatot pedig soha:
+az a bérbeadó összes pénzmozgását megmutatná, a bérlőét pedig az övét, és ahhoz
+egyik félnek sincs köze. Az alkalmazás ezt ki is mondja a felületen, mert a
+bérlő különben joggal gondolná, hogy előbb-utóbb mégis kérni fogjuk.
+
+Ha a két oldal nem egyezik, onnantól van értelme a bizonylatnak — és akkor is
+csak annak az egy utalásnak a bizonylatáról, a bérlőtől a küldő, a bérbeadótól a
+fogadó oldaliról. Ezt a `bizonylatKell` mező mondja ki, nem a felület.
+
+Az állapotok ezért ötfélék, és a különbségük termékdöntés:
+
+- `egyezik` — mindkét fél ugyanazt mondja, és annyit, amennyi elő volt írva,
+- `elter` — mindkét fél ugyanazt mondja, de nem az előírt összeget; ez **nem
+  vita**, a felek egyetértenek abban, mi történt, ezért bizonylat sem kell,
+- `vitas` — a két fél adata nem fedi egymást; innen jön a bizonylatkérés,
+- `varakozik` — csak az egyik fél nyilatkozott, a másikra várunk,
+- `hianyzik` — egyik fél sem nyilatkozott, és az esedékesség elmúlt.
+
+A bérbeadó kétfélét mondhat: "ennyi érkezett ekkor", vagy egy előírásra azt,
+hogy "erre nem érkezett pénz". A tagadás nélkül egy elmaradt utalás örökké a
+másik fél adatára várna, holott a bérbeadó már megnézte.
 
 A párosítási időablak (hány nappal az esedékesség előtt és után kötünk egy
 befizetést az előíráshoz) bérbeadónként állítható, a `Beallitasok` táblában.
 Az összegtolerancia ezzel szemben szándékosan fix nulla: bármekkora eltérésnél
-egyeztetés indul.
+egyeztetés indul. A két fél dátuma közt viszont van tűrés
+(`KET_OLDAL_NAP_ELTERES`), mert a bérlő az indítás napját írja, a bérbeadó azt,
+amikor észrevette.
+
+Ami ezen felül beérkezik, de nincs hozzá előírás, azt nem tippeljük meg: külön
+listán megy a bérbeadóhoz.
 
 ## A havi előírások alapelve
 
@@ -91,7 +115,7 @@ tartozik emberi nyelvű részletezés; számot magyarázat nélkül nem küldün
 ## Az adóösszesítő alapelve
 
 Összesítő, nem bevallás; a felület is ezt mondja. A bevétel pénzforgalmi: a
-párosított kivonattételekből számol, nem az előírásokból.
+párosított, bérbeadó által igazolt beérkezésekből számol, nem az előírásokból.
 
 A fogyasztás szerint mért, továbbhárított közüzemi díj nem bevétel; az átalány
 igen. Vegyes elszámolásnál a befizetés a tételek arányában oszlik meg, és a
@@ -174,7 +198,7 @@ másik irányból: nem a bérbeadó kutat a bérlő után, hanem a bérlő ad ki
 egy igazolható előzményt, akkor és annak, akinek akarja.
 
 Három dolog teszi használhatóvá. Az adat nem a bérlő bemondása, hanem abból jön,
-amit a mostani bérbeadó bankszámlakivonata igazol. Pontszámot nem adunk: a
+amit a mostani bérbeadó a beérkezésről maga rögzített. Pontszámot nem adunk: a
 súlyozás, amit mi találnánk ki, mérésnek látszana, pedig nem az. És szűk: se
 bérbeadói név, se pontos cím (csak település), se személyes adat, se más bérlő —
 ha egy adat nem a fizetési fegyelemről szól, nincs ott helye.

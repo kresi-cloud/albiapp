@@ -24,16 +24,16 @@ model Felhasznalo {
   nyelv      String   @default("hu") // "hu" | "en" — a bérlői oldal kétnyelvű
   letrehozva DateTime @default(now())
 
-  ingatlanok        Ingatlan[]
-  berloJogviszonyai JogviszonyBerlo[] @relation("BerloJogviszonyai")
-  kivonattetelei    Kivonattetel[]
-  teendoi           Teendo[]
-  oraallasai        Oraallas[]
-  beallitasok       Beallitasok?
-  berbeadoiAdatok   BerbeadoiAdatok?
-  hibabejelentesei  Hibabejelentes[]  @relation("Hibabejelentesei")
-  hibaUzenetei      HibaUzenet[]      @relation("HibaUzenetei")
-  betekintoi        Betekinto[]       @relation("Betekintoi")
+  ingatlanok          Ingatlan[]
+  berloJogviszonyai   JogviszonyBerlo[]   @relation("BerloJogviszonyai")
+  berbeadoiIgazolasai BerbeadoiIgazolas[]
+  teendoi             Teendo[]
+  oraallasai          Oraallas[]
+  beallitasok         Beallitasok?
+  berbeadoiAdatok     BerbeadoiAdatok?
+  hibabejelentesei    Hibabejelentes[]    @relation("Hibabejelentesei")
+  hibaUzenetei        HibaUzenet[]        @relation("HibaUzenetei")
+  betekintoi          Betekinto[]         @relation("Betekintoi")
 }
 
 /// Bérbeadónkénti egyeztetési beállítások. Az összegtolerancia szándékosan nincs
@@ -140,18 +140,18 @@ model Jogviszony {
   statusz         String    @default("elo") // "elo" | "lezart"
   letrehozva      DateTime  @default(now())
 
-  ingatlan         Ingatlan          @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
-  berlok           JogviszonyBerlo[]
-  eloirtTetelek    EloirtTetel[]
-  berloiIgazolasok BerloiIgazolas[]
-  kivonattetelek   Kivonattetel[]
-  egyeztetesek     Egyeztetes[]
-  elszamolasok     Elszamolas[]
-  teendok          Teendo[]
-  szerzodesek      Szerzodes[]
-  jegyzokonyvek    Jegyzokonyv[]
-  hibabejelentesek Hibabejelentes[]
-  betekintok       Betekinto[]
+  ingatlan            Ingatlan            @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
+  berlok              JogviszonyBerlo[]
+  eloirtTetelek       EloirtTetel[]
+  berloiIgazolasok    BerloiIgazolas[]
+  berbeadoiIgazolasok BerbeadoiIgazolas[]
+  egyeztetesek        Egyeztetes[]
+  elszamolasok        Elszamolas[]
+  teendok             Teendo[]
+  szerzodesek         Szerzodes[]
+  jegyzokonyvek       Jegyzokonyv[]
+  hibabejelentesek    Hibabejelentes[]
+  betekintok          Betekinto[]
 
   @@index([ingatlanId])
 }
@@ -238,9 +238,10 @@ model EloirtTetel {
   reszletezes  String?
   letrehozva   DateTime @default(now())
 
-  jogviszony Jogviszony  @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
-  egyeztetes Egyeztetes?
-  elszamolas Elszamolas?
+  jogviszony          Jogviszony          @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  egyeztetes          Egyeztetes?
+  elszamolas          Elszamolas?
+  berbeadoiIgazolasok BerbeadoiIgazolas[]
 
   @@unique([jogviszonyId, tipus, idoszak])
   @@index([esedekesseg])
@@ -263,42 +264,47 @@ model BerloiIgazolas {
 }
 
 /// Amit a bankszámlakivonat mutat: egy sor a feltöltött kivonatból.
-model Kivonattetel {
-  id              String   @id @default(cuid())
-  tulajdonosId    String
-  jogviszonyId    String?
-  konyvelesDatuma DateTime
-  osszegFt        Int
-  kozlemeny       String?
-  partnerNev      String?
-  forrasFajl      String
-  sorUjjlenyomat  String   @unique // ugyanaz a kivonatsor kétszer ne kerüljön be
-  letrehozva      DateTime @default(now())
+model BerbeadoiIgazolas {
+  id            String   @id @default(cuid())
+  tulajdonosId  String
+  jogviszonyId  String
+  // Igaz: "ennyi érkezett ekkor". Hamis: "erre az előírásra nem érkezett pénz".
+  // A tagadás mindig egy előíráshoz tartozik, ezért van hozzá eloirtTetelId.
+  megerkezett   Boolean  @default(true)
+  eloirtTetelId String?
+  erkezesDatuma DateTime
+  osszegFt      Int      @default(0)
+  kozlemeny     String?
+  rogzitve      DateTime @default(now())
 
-  tulajdonos Felhasznalo @relation(fields: [tulajdonosId], references: [id], onDelete: Cascade)
-  jogviszony Jogviszony? @relation(fields: [jogviszonyId], references: [id])
-  egyeztetes Egyeztetes?
+  tulajdonos  Felhasznalo  @relation(fields: [tulajdonosId], references: [id], onDelete: Cascade)
+  jogviszony  Jogviszony   @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  eloirtTetel EloirtTetel? @relation(fields: [eloirtTetelId], references: [id], onDelete: Cascade)
+  egyeztetes  Egyeztetes?
 
-  @@index([tulajdonosId, konyvelesDatuma])
+  // Egy előírásra egy tagadás elég; a tagadást a beérkezés rögzítése váltja fel.
+  @@unique([eloirtTetelId])
+  @@index([tulajdonosId, erkezesDatuma])
+  @@index([jogviszonyId, erkezesDatuma])
 }
 
 /// A három adat összevetésének eredménye. Ez az, amit mindkét fél lát.
 model Egyeztetes {
-  id               String   @id @default(cuid())
-  jogviszonyId     String
-  eloirtTetelId    String?  @unique
-  berloiIgazolasId String?  @unique
-  kivonattetelId   String?  @unique
-  allapot          String // "egyezik" | "elter" | "hianyzik"
-  elteresOka       String? // "osszeg" | "datum" | "nincs_berloi_igazolas" | "nincs_kivonattetel" | "nincs_eloiras"
-  elteresFt        Int      @default(0)
-  keses            Int      @default(0) // naptári nap, negatív, ha korábban érkezett
-  frissitve        DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  jogviszonyId        String
+  eloirtTetelId       String?  @unique
+  berloiIgazolasId    String?  @unique
+  berbeadoiIgazolasId String?  @unique
+  allapot             String // "egyezik" | "elter" | "vitas" | "varakozik" | "hianyzik"
+  elteresOka          String? // "osszeg" | "ket_oldal_elter" | "nincs_berbeadoi_igazolas" | "nincs_berloi_igazolas" | "nincs_eloiras"
+  elteresFt           Int      @default(0)
+  keses               Int      @default(0) // naptári nap, negatív, ha korábban érkezett
+  frissitve           DateTime @updatedAt
 
-  jogviszony     Jogviszony      @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
-  eloirtTetel    EloirtTetel?    @relation(fields: [eloirtTetelId], references: [id])
-  berloiIgazolas BerloiIgazolas? @relation(fields: [berloiIgazolasId], references: [id])
-  kivonattetel   Kivonattetel?   @relation(fields: [kivonattetelId], references: [id])
+  jogviszony        Jogviszony         @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  eloirtTetel       EloirtTetel?       @relation(fields: [eloirtTetelId], references: [id])
+  berloiIgazolas    BerloiIgazolas?    @relation(fields: [berloiIgazolasId], references: [id])
+  berbeadoiIgazolas BerbeadoiIgazolas? @relation(fields: [berbeadoiIgazolasId], references: [id])
 
   @@index([jogviszonyId, allapot])
 }
@@ -556,17 +562,21 @@ model HibaUzenet {
  * döntése a saját adatáról, és onnan jön, amit a bérbeadó kivonata igazol.
  */
 model Betekinto {
-  id           String    @id @default(cuid())
-  jogviszonyId String
-  berloId      String
-  token        String    @unique
-  /** Mire kéri: "lakásbérléshez", "munkáltatónak". A bérlő írja be. */
-  cel          String
-  /** Az összegek megjelenjenek-e. Alapból nem: a tény elég, a díj magánügy. */
-  osszegetMutat Boolean  @default(false)
-  lejar        DateTime
-  visszavonva  DateTime?
-  letrehozva   DateTime  @default(now())
+  id            String    @id @default(cuid())
+  jogviszonyId  String
+  berloId       String
+  token         String    @unique
+  /**
+   * Mire kéri: "lakásbérléshez", "munkáltatónak". A bérlő írja be.
+   */
+  cel           String
+  /**
+   * Az összegek megjelenjenek-e. Alapból nem: a tény elég, a díj magánügy.
+   */
+  osszegetMutat Boolean   @default(false)
+  lejar         DateTime
+  visszavonva   DateTime?
+  letrehozva    DateTime  @default(now())
 
   jogviszony  Jogviszony           @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
   berlo       Felhasznalo          @relation("Betekintoi", fields: [berloId], references: [id], onDelete: Cascade)

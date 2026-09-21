@@ -153,7 +153,7 @@ export const MODULOK: ModulDef[] = [
     ellenjegyzes: "nincs",
     miert:
       "Mennyi, mikorra és hová. A közlemény formátuma azért fontos, mert ebből " +
-      "párosítja az alkalmazás a bankszámlakivonat sorait az előírt tételekhez.",
+      "párosítja az alkalmazás a két fél befizetési adatait az előírt tételekhez.",
     parameterek: [
       {
         kulcs: "dij_kozlemeny",
