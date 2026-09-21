@@ -776,6 +776,146 @@ export const SZOTAR: Szotar = {
   "berlok.lezarva": { hu: "Lezárva {nap} napjával", en: "Closed as of {nap}" },
   "berlok.ujranyit": { hu: "Mégis él", en: "Reopen" },
 
+  // --- Bérlemény és jogviszony felvitele
+  "berlemeny.hiba.megnevezes": {
+    hu: "Adj nevet a bérleménynek, hogy a listában felismerd.",
+    en: "Give the property a name so you can recognise it in the list.",
+  },
+  "berlemeny.hiba.cim": {
+    hu: "A cím kell: ez kerül a szerződésbe.",
+    en: "The address is required: it goes into the contract.",
+  },
+  "berlemeny.hiba.alapterulet": {
+    hu: "Az alapterület csak pozitív szám lehet.",
+    en: "The floor area must be a positive number.",
+  },
+  "berlemeny.hiba.negativ": {
+    hu: "Ez az összeg nem lehet negatív.",
+    en: "This amount cannot be negative.",
+  },
+  "berlemeny.figyelem.cim_alak": {
+    hu: "A cím nem a szokásos „1111 Budapest, Minta tér 2.\u201d alakban van. Elmentjük, de a bérlő megosztható betekintőjén így nem fog látszani, melyik településen van a bérlemény.",
+    en: "The address is not in the usual \u201c1111 Budapest, Minta tér 2.\u201d form. We will save it, but the town will not show on the tenant\u2019s shareable view.",
+  },
+  "berlemeny.figyelem.helyrajzi": {
+    hu: "Helyrajzi szám nélkül is mehet, de a bérleti szerződés a tulajdoni lap szerinti azonosítóval pontos. Később pótolható.",
+    en: "You can go on without the land registry number, but the contract is precise with it. You can add it later.",
+  },
+  "berlemeny.figyelem.energetikai": {
+    hu: "Az energetikai tanúsítvány azonosítója nélkül is mehet, de jogszabály szerint a bérbeadónak át kell adnia a tanúsítványt, és a szerződés erre hivatkozik.",
+    en: "You can go on without the energy certificate identifier, but the law requires the landlord to hand the certificate over, and the contract refers to it.",
+  },
+  "berlemeny.figyelem.beszerzes": {
+    hu: "Beszerzési ár és dátum nélkül a tételes adóelszámolásban nem tudunk értékcsökkenést számolni. Enélkül is működik minden más.",
+    en: "Without the purchase price and date we cannot calculate depreciation in the itemised tax method. Everything else works without it.",
+  },
+  "berlemeny.mentve": { hu: "A bérlemény elmentve.", en: "The property has been saved." },
+  "berlemeny.cim": { hu: "Bérlemények", en: "Properties" },
+  "berlemeny.ures": {
+    hu: "Még nincs felvett bérlemény. Kezdd ezzel: minden más ebből indul ki.",
+    en: "No property yet. Start here: everything else follows from it.",
+  },
+  "berlemeny.uj": { hu: "Új bérlemény", en: "New property" },
+  "berlemeny.mezo.megnevezes": { hu: "Név", en: "Name" },
+  "berlemeny.mezo.megnevezes_sugo": {
+    hu: "Neked szól, a listában ezt látod: „Ferencvárosi garzon\u201d.",
+    en: "For you: this is what you see in the list, e.g. \u201cStudio in the 9th\u201d.",
+  },
+  "berlemeny.mezo.cim": { hu: "Cím", en: "Address" },
+  "berlemeny.mezo.cim_sugo": {
+    hu: "A szerződésbe ez kerül. Írd a szokásos alakban: 1094 Budapest, Minta utca 3. 2/4",
+    en: "This goes into the contract. Use the usual form: 1094 Budapest, Minta utca 3. 2/4",
+  },
+  "berlemeny.mezo.alapterulet": { hu: "Alapterület (m²)", en: "Floor area (m²)" },
+  "berlemeny.mezo.helyrajzi": { hu: "Helyrajzi szám", en: "Land registry number" },
+  "berlemeny.mezo.energetikai": {
+    hu: "Energetikai tanúsítvány azonosítója",
+    en: "Energy certificate identifier",
+  },
+  "berlemeny.mezo.kozos_koltseg": { hu: "Közös költség (Ft / hó)", en: "Common charges (HUF / month)" },
+  "berlemeny.mezo.beszerzesi_ar": { hu: "Beszerzési ár (Ft)", en: "Purchase price (HUF)" },
+  "berlemeny.mezo.beszerzes_datuma": { hu: "Beszerzés dátuma", en: "Purchase date" },
+  "berlemeny.mezo.adozas_sugo": {
+    hu: "Csak az adóösszesítőhöz kell, az értékcsökkenéshez. Üresen is mehet.",
+    en: "Only needed for the tax summary, for depreciation. You can leave it empty.",
+  },
+  "berlemeny.gomb": { hu: "Bérlemény felvétele", en: "Add property" },
+  "jogviszony.uj": { hu: "Új jogviszony", en: "New tenancy" },
+  "jogviszony.uj_sugo": {
+    hu: "Ettől kezdve a bérleti díj, a közös költség és a rezsiátalány minden hónapra magától előírás lesz. Kézzel nem kell rögzítened.",
+    en: "From here the rent, common charges and utility flat rate become scheduled items every month, on their own. You do not record them by hand.",
+  },
+  "jogviszony.mezo.ingatlan": { hu: "Melyik bérleményre?", en: "Which property?" },
+  "jogviszony.mezo.kezdete": { hu: "A bérlet kezdete", en: "Tenancy starts" },
+  "jogviszony.mezo.dij": { hu: "Bérleti díj (Ft / hó)", en: "Rent (HUF / month)" },
+  "jogviszony.mezo.kozos_koltseg": {
+    hu: "Közös költség, amit a bérlő fizet (Ft / hó)",
+    en: "Common charges paid by the tenant (HUF / month)",
+  },
+  "jogviszony.mezo.kaucio": { hu: "Óvadék (Ft)", en: "Deposit (HUF)" },
+  "jogviszony.mezo.fizetesi_nap": {
+    hu: "A hónap hányadikára esedékes",
+    en: "Due on which day of the month",
+  },
+  "jogviszony.mezo.rezsi": { hu: "Hogyan megy a rezsi?", en: "How are utilities settled?" },
+  "jogviszony.rezsi.almero": {
+    hu: "Mérőóra szerint, elszámolással",
+    en: "By meter, with a settlement",
+  },
+  "jogviszony.rezsi.atalany": { hu: "Havi átalány", en: "Monthly flat rate" },
+  "jogviszony.rezsi.kozos_koltsegben": {
+    hu: "A közös költség tartalmazza",
+    en: "Included in the common charges",
+  },
+  "jogviszony.mezo.atalany": { hu: "Rezsiátalány (Ft / hó)", en: "Utility flat rate (HUF / month)" },
+  "jogviszony.mezo.berlo": { hu: "Az első bérlő neve", en: "First tenant\u2019s name" },
+  "jogviszony.mezo.berlo_email": {
+    hu: "A bérlő e-mail-címe (a meghívóhoz)",
+    en: "Tenant\u2019s email (for the invitation)",
+  },
+  "jogviszony.mezo.berlo_sugo": {
+    hu: "Lakótársat később a Bérlők lapon adhatsz hozzá. Egy jogviszonyban több bérlő is lehet, a bérleti díj attól még egy tétel marad.",
+    en: "You can add flatmates later on the Tenants page. A tenancy can have several tenants; the rent stays one item.",
+  },
+  "jogviszony.gomb": { hu: "Jogviszony indítása", en: "Start tenancy" },
+  "urlap.figyelem": { hu: "Amit érdemes tudni:", en: "Worth knowing:" },
+  "jogviszony.hiba.kezdete": {
+    hu: "Add meg, mikor kezdődik a bérlet.",
+    en: "Give the date the tenancy starts.",
+  },
+  "jogviszony.hiba.dij": {
+    hu: "A bérleti díj csak pozitív összeg lehet.",
+    en: "The rent must be a positive amount.",
+  },
+  "jogviszony.hiba.fizetesi_nap": {
+    hu: "A fizetési határidő a hónap 1. és {max}. napja közé essen: a hónap végi napok februárban elcsúsznának.",
+    en: "The payment due day must fall between the 1st and the {max}th: days at the end of the month would slip in February.",
+  },
+  "jogviszony.hiba.rezsi_mod": {
+    hu: "Válaszd ki, hogyan megy a rezsi.",
+    en: "Choose how utilities are settled.",
+  },
+  "jogviszony.hiba.atalany": {
+    hu: "Átalánynál add meg a havi összeget is, különben minden hónapra nulla forintot írnánk elő.",
+    en: "With a flat rate, give the monthly amount too, otherwise we would schedule zero every month.",
+  },
+  "jogviszony.hiba.berlo": {
+    hu: "Add meg legalább az első bérlő nevét.",
+    en: "Give at least the first tenant\u2019s name.",
+  },
+  "jogviszony.figyelem.jovobeli": {
+    hu: "A bérlet a jövőben kezdődik, ezért egyelőre egyetlen fizetnivaló sem lesz. Az első az első hónap esedékességekor jelenik meg.",
+    en: "The tenancy starts in the future, so there is nothing to pay yet. The first item appears when the first month falls due.",
+  },
+  "jogviszony.figyelem.visszamenoleg": {
+    hu: "A kezdettől a mai hónapig {honapok} hónapra rögtön előírás születik. Ez nem hiba: a korábbi hónapokat is egyeztetni kell.",
+    en: "Items will be created at once for {honapok} months, from the start date to this month. This is not an error: earlier months need reconciling too.",
+  },
+  "jogviszony.mentve": {
+    hu: "A jogviszony elindult. A bérlőt a Bérlők lapon hívhatod meg.",
+    en: "The tenancy has started. You can invite the tenant from the Tenants page.",
+  },
+
   // --- Hosszú listák összecsukása
   //
   // Egy-két év alatt száz fölötti tétel gyűlik össze. Amivel már nincs dolga
