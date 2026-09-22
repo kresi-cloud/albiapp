@@ -168,6 +168,7 @@ export async function berloAdataitMenti(_elozo: Eredmeny, urlap: FormData): Prom
       anyjaNeve: szoveg(urlap.get("anyjaNeve")) || null,
       lakcim: szoveg(urlap.get("lakcim")) || null,
       igazolvanySzam: szoveg(urlap.get("igazolvanySzam")) || null,
+      telefon: szoveg(urlap.get("telefon")) || null,
     },
   });
 

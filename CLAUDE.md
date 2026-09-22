@@ -113,6 +113,29 @@ A teendők többsége származtatott: a rendszer állapotából jön, és magát
 ha az oka megszűnik. A vállalt javítás viszont tárolt teendő (`Teendo`), mert azt
 valaki vállalta, és le is kell tudni zárni.
 
+## A hibabejelentés alapelve
+
+A bejelentés és az elhárítás két külön esemény, és egyik sem írja felül a másikat:
+a bérbeadó jelöli elhárítottnak, a bérlő erősíti meg, hogy tényleg rendben van.
+Ugyanaz a kétoldali elv, mint a befizetésnél. Amíg nincs megerősítés, a hiba
+nyitott, és teendő van belőle.
+
+A sürgősségből válaszhatáridő lesz. Ez nem jogszabályi határidő — magánszemélyek
+bérletére nincs ilyen —, hanem az alkalmazás alapértelmezése, és a felület ezt ki
+is mondja.
+
+A költségviselőre javaslatot teszünk a szerződés karbantartási pontja és a
+lakástörvény 13. §-a alapján, de a döntés a bérbeadóé, és amíg nem mondta ki, a
+`viseloFel` üres marad. Ha a bérlő nem tudja, mitől romlott el, nem tippelünk:
+ugyanúgy, ahogy a be nem sorolható befizetésnél sem.
+
+## A dokumentumtár alapelve
+
+Négy tábla, egy lista. A bérlő csak a kiadott okiratot látja és töltheti le:
+véglegesített szerződést és jegyzőkönyvet, kiadott elszámolást, neki kiállított
+igazolást. Tervezetet nem, mert az még változhat. Az igazolás névre szól, ezért a
+lakótárs igazolását a bérlő nem látja.
+
 ## Mit jelent, hogy kész
 
 - `npx eslint .`, `npm run typecheck`, `npm test` és `npm run build` zöld.

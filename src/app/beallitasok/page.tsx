@@ -39,6 +39,7 @@ export default async function Beallitasok() {
           lakcim: sajatAdatok?.lakcim ?? "",
           igazolvanySzam: sajatAdatok?.igazolvanySzam ?? "",
           adoazonosito: sajatAdatok?.adoazonosito ?? "",
+          telefon: sajatAdatok?.telefon ?? "",
           bankszamla: sajatAdatok?.bankszamla ?? "",
           bank: sajatAdatok?.bank ?? "",
         }}

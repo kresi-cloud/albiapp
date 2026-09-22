@@ -47,6 +47,7 @@ export type BerloAdat = {
   anyjaNeve: string;
   lakcim: string;
   igazolvanySzam: string;
+  telefon: string;
 };
 
 /**
@@ -69,6 +70,7 @@ export function BerloAdatok({ berlo }: { berlo: BerloAdat }) {
         <Mezo nev="szuletesiIdo" cimke="Születési idő" ertek={berlo.szuletesiIdo} tipus="date" />
         <Mezo nev="anyjaNeve" cimke="Anyja neve" ertek={berlo.anyjaNeve} />
         <Mezo nev="igazolvanySzam" cimke="Igazolványszám" ertek={berlo.igazolvanySzam} />
+        <Mezo nev="telefon" cimke="Telefonszám" ertek={berlo.telefon} tipus="tel" />
         <div className="sm:col-span-2 grid gap-3">
           <Mezo nev="lakcim" cimke="Állandó lakcím" ertek={berlo.lakcim} />
           <button type="submit" disabled={folyamatban} className={GOMB}>

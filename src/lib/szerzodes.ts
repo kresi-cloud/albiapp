@@ -51,6 +51,7 @@ export async function szerzodesBemenet(
         lakcim: adatok?.lakcim ?? null,
         igazolvanySzam: adatok?.igazolvanySzam ?? null,
         adoazonosito: adatok?.adoazonosito ?? null,
+        telefon: adatok?.telefon ?? null,
         bankszamla: adatok?.bankszamla ?? null,
         bank: adatok?.bank ?? null,
       },
@@ -62,6 +63,7 @@ export async function szerzodesBemenet(
         anyjaNeve: berlo.anyjaNeve,
         lakcim: berlo.lakcim,
         igazolvanySzam: berlo.igazolvanySzam,
+        telefon: berlo.telefon,
       })),
       ingatlan: {
         megnevezes: jogviszony.ingatlan.megnevezes,

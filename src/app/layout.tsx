@@ -15,12 +15,17 @@ const BERBEADO_MENU = [
   { cim: "Bérlők", utvonal: "/berlok" },
   { cim: "Befizetések", utvonal: "/befizetesek" },
   { cim: "Rezsi", utvonal: "/rezsi" },
+  { cim: "Hibák", utvonal: "/hibak" },
   { cim: "Dokumentumok", utvonal: "/dokumentumok" },
   { cim: "Adó", utvonal: "/ado" },
   { cim: "Beállítások", utvonal: "/beallitasok" },
 ];
 
-const BERLO_MENU = [{ cim: "Bérleményem", utvonal: "/berlo" }];
+const BERLO_MENU = [
+  { cim: "Bérleményem", utvonal: "/berlo" },
+  { cim: "Hibabejelentés", utvonal: "/berlo/hibak" },
+  { cim: "Dokumentumaim", utvonal: "/berlo/dokumentumok" },
+];
 
 export default async function RootLayout({
   children,

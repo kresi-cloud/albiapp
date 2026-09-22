@@ -110,6 +110,7 @@ export default async function Berlok() {
                         anyjaNeve: berlo.anyjaNeve ?? "",
                         lakcim: berlo.lakcim ?? "",
                         igazolvanySzam: berlo.igazolvanySzam ?? "",
+                        telefon: berlo.telefon ?? "",
                       }}
                     />
 

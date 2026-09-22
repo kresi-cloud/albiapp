@@ -16,6 +16,7 @@ export type Adatok = {
   lakcim: string;
   igazolvanySzam: string;
   adoazonosito: string;
+  telefon: string;
   bankszamla: string;
   bank: string;
 };
@@ -37,7 +38,8 @@ export function BerbeadoiAdatok({ adatok }: { adatok: Adatok }) {
       <h2 className="font-semibold">A te adataid a szerződéshez</h2>
       <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
         Ezek a szerződésbe és az igazolásokba kerülnek. A belépéshez egyik sem
-        kell, és naplóba sem írjuk őket.
+        kell, és naplóba sem írjuk őket. A telefonszámodat a bérlő a
+        hibabejelentésnél látja: veszélyhelyzetben az alkalmazás nem csörög.
       </p>
 
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -46,6 +48,7 @@ export function BerbeadoiAdatok({ adatok }: { adatok: Adatok }) {
         <Mezo nev="anyjaNeve" cimke="Anyja neve" ertek={adatok.anyjaNeve} />
         <Mezo nev="igazolvanySzam" cimke="Igazolványszám" ertek={adatok.igazolvanySzam} />
         <Mezo nev="adoazonosito" cimke="Adóazonosító jel" ertek={adatok.adoazonosito} />
+        <Mezo nev="telefon" cimke="Telefonszám" ertek={adatok.telefon} tipus="tel" />
         <Mezo nev="bank" cimke="Bank neve" ertek={adatok.bank} />
         <div className="grid gap-3 sm:col-span-2">
           <Mezo nev="lakcim" cimke="Állandó lakcím" ertek={adatok.lakcim} />
