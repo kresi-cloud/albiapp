@@ -227,7 +227,8 @@ export async function jogviszonytLezarAction(
   }
 
   const eredmeny = await jogviszonytLezar(berbeado.id, szoveg(urlap.get("jogviszonyId")), vege);
-  if (!eredmeny) return hiba(sz("valasz.nincs_jogosultsag"));
+  if (eredmeny.allapot === "nincs_jogosultsag") return hiba(sz("valasz.nincs_jogosultsag"));
+  if (eredmeny.allapot === "mar_lezart") return hiba(sz("valasz.mar_lezart"));
 
   revalidatePath("/berlok");
   revalidatePath("/befizetesek");

@@ -18,10 +18,10 @@ import { eloirasok } from "@/domain/eloirasok";
 import { jogviszonyAdatta as adatta } from "@/lib/eloirasok";
 import { prisma } from "@/lib/db";
 
-export type LezarasEredmeny = {
-  toroltEloirasok: number;
-  aranyositottEloirasok: number;
-};
+export type LezarasEredmeny =
+  | { allapot: "kesz"; toroltEloirasok: number; aranyositottEloirasok: number }
+  | { allapot: "nincs_jogosultsag" }
+  | { allapot: "mar_lezart" };
 
 function honapKulcs(nap: Date): string {
   return `${nap.getUTCFullYear()}-${String(nap.getUTCMonth() + 1).padStart(2, "0")}`;
@@ -31,12 +31,19 @@ export async function jogviszonytLezar(
   tulajdonosId: string,
   jogviszonyId: string,
   vege: Date,
-): Promise<LezarasEredmeny | null> {
+): Promise<LezarasEredmeny> {
   const jogviszony = await prisma.jogviszony.findFirst({
     where: { id: jogviszonyId, ingatlan: { tulajdonosId } },
     include: { eloirtTetelek: true },
   });
-  if (!jogviszony) return null;
+  if (!jogviszony) return { allapot: "nincs_jogosultsag" };
+
+  // A lezárás a nyitott jogviszony művelete. Lezártat újra lezárni azért nem
+  // lehet, mert a második lezárás korábbi véget is kaphatna: az már egyeztetett
+  // előírt tételeket törölne, és a záró hónapot újraarányosítaná. Aki a
+  // dátumot javítani akarja, előbb visszavonja a lezárást — az vissza is
+  // számolja, amit az első elvett —, és utána zár le újra.
+  if (jogviszony.statusz !== "elo") return { allapot: "mar_lezart" };
 
   const zaroHonap = honapKulcs(vege);
 
@@ -48,9 +55,13 @@ export async function jogviszonytLezar(
     });
   }
 
+  // A `lezarva` nem ugyanaz, mint a `vege`: az a kiköltözés napja, ez az, mikor
+  // került be az alkalmazásba. A kettő eltér, ha a bérbeadó utólag rögzíti a
+  // lezárást — és az értékelési ablaknak ez utóbbitól kell indulnia, mert a
+  // bérlő addig nem is látta, hogy a bérlet lezárult.
   await prisma.jogviszony.update({
     where: { id: jogviszonyId },
-    data: { statusz: "lezart", vege },
+    data: { statusz: "lezart", vege, lezarva: new Date() },
   });
 
   // A záró hónap arányosítása: a domain mondja meg, mennyi jár.
@@ -97,7 +108,11 @@ export async function jogviszonytLezar(
     aranyositott += 1;
   }
 
-  return { toroltEloirasok: torlendo.length, aranyositottEloirasok: aranyositott };
+  return {
+    allapot: "kesz",
+    toroltEloirasok: torlendo.length,
+    aranyositottEloirasok: aranyositott,
+  };
 }
 
 /**
@@ -118,7 +133,7 @@ export async function jogviszonytUjranyit(
 ): Promise<boolean> {
   const eredmeny = await prisma.jogviszony.updateMany({
     where: { id: jogviszonyId, ingatlan: { tulajdonosId }, statusz: "lezart" },
-    data: { statusz: "elo", vege: null },
+    data: { statusz: "elo", vege: null, lezarva: null },
   });
   if (eredmeny.count === 0) return false;
 
