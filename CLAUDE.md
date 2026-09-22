@@ -229,7 +229,15 @@ másik irányból: nem a bérbeadó kutat a bérlő után, hanem a bérlő ad ki
 egy igazolható előzményt, akkor és annak, akinek akarja.
 
 Három dolog teszi használhatóvá. Az adat nem a bérlő bemondása, hanem abból jön,
-amit a mostani bérbeadó a beérkezésről maga rögzített. Pontszámot nem adunk: a
+amit a mostani bérbeadó a beérkezésről maga rögzített: egy tétel akkor számít
+megérkezettnek, ha a **bérbeadó oldalán** van mögötte beérkezés. A bérlő saját
+bejelentése nem bizonyít semmit annak, aki ezt olvassa — épp ez adja a nézet
+súlyát —, ezért a vitás tétel sem számít teljesítettnek.
+
+A párosítást ugyanaz az `egyeztet` végzi, mint a befizetések lapon. A nézet nem
+olvashat külön tárolt egyeztetési eredményt: egy ilyen tábla volt a sémában, amibe
+soha semmi nem írt, és emiatt a betekintő minden hónapra azt mondta, hogy nem
+érkezett befizetés — miközben a lap hibátlanul nézett ki. A tábla kivezetve. Pontszámot nem adunk: a
 súlyozás, amit mi találnánk ki, mérésnek látszana, pedig nem az. És szűk: se
 bérbeadói név, se pontos cím (csak település), se személyes adat, se más bérlő —
 ha egy adat nem a fizetési fegyelemről szól, nincs ott helye.
@@ -245,6 +253,17 @@ Az adatkezelési tájékoztató és a felhasználási feltételek szövege
 elérhetővé teszi. Az üzemeltető adatai szögletes zárójellel kitöltendőként
 állnak benne: az adatkezelő megnevezése jogi nyilatkozat, nem találjuk ki a
 bérbeadó helyett. Élesítés előtt ezeket ki kell tölteni.
+
+## A példaadat
+
+A seed (`prisma/seed.ts`) minden időérzékeny dátuma a **mostani hónaphoz** igazodik,
+nem beégetett évszámhoz. Az előírások a mai naphoz képest generálódnak, tehát a
+beégetett példaadat hónapról hónapra jobban elcsúszik tőlük, amíg a demó azt nem
+mutatja, hogy a bérlő soha nem fizetett.
+
+Az előírásokat a seed ugyanazzal az `eloirasok` függvénnyel állítja elő, mint az
+alkalmazás. Kézzel beírt előírás megint el tudna csúszni attól, amit a rendszer
+magától generál.
 
 ## Mit jelent, hogy kész
 
