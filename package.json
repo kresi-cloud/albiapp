@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
-    "proba": "node proba/futtat.mjs"
+    "proba": "npm run db:seed && node proba/futtat.mjs"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.10.0",

@@ -36,6 +36,17 @@ function nap(elteres: number, napja = 1): Date {
 }
 
 /**
+ * A mai naphoz képest `napok` nappal korábbi nap.
+ *
+ * Ahol napokban mért ablak fut — ilyen az értékelés harminc napja —, a
+ * hónaphoz igazított dátum nem elég: a hónap 20-a hol tizenkét, hol
+ * harminchárom napja volt, és a példaadat állapota hónapról hónapra átbillenne.
+ */
+function napokkalEzelott(napok: number): Date {
+  return new Date(Date.UTC(EV, HONAP, MOST.getUTCDate()) - napok * 86400000);
+}
+
+/**
  * Példakép: egyszínű PNG, a helyszínen készült fénykép helyett.
  *
  * Fényképet nem tudunk kitalálni, és bemásolt fotót sem akarunk a repóba: ami
@@ -108,6 +119,8 @@ async function main() {
   await prisma.teendo.deleteMany();
   await prisma.berbeadoiIgazolas.deleteMany();
   await prisma.berloiIgazolas.deleteMany();
+  await prisma.ertekelesPont.deleteMany();
+  await prisma.ertekeles.deleteMany();
   await prisma.elofizetesJovahagyas.deleteMany();
   await prisma.elofizetes.deleteMany();
   await prisma.eloirtTetel.deleteMany();
@@ -136,6 +149,18 @@ async function main() {
   });
 
   // Tamásnak szándékosan nincs még fiókja: rajta próbálható ki a meghívó.
+
+  // Egy korábbi bérlő, aki már kiköltözött. Az ő lezárt jogviszonyán látszik a
+  // kölcsönös értékelés, és rajta az is, amiért vaknak csináltuk: ő már megírta
+  // a sajátját, a bérbeadó még nem, tehát a bérbeadó nem is látja az övét.
+  const berloEszter = await prisma.felhasznalo.create({
+    data: {
+      email: "eszter@pelda.hu",
+      nev: "Tóth Eszter",
+      jelszoHash,
+      szerep: "berlo",
+    },
+  });
 
   const ferencvaros = await prisma.ingatlan.create({
     data: {
@@ -168,6 +193,24 @@ async function main() {
       kozosKoltsegFt: 21000,
       meroorak: {
         create: [{ tipus: "villany", mertekegyseg: "kWh", gyariSzam: "E-552901", almero: false }],
+      },
+    },
+  });
+
+  // A harmadik lakás most üres: a bérlő a múlt hónapban költözött ki. Egy
+  // magánbérbeadónál ez a hétköznapi eset, és két dolgot mutat meg, amit egy
+  // csupa élő jogviszonyból álló példaadat nem tudna: az üres bérleményt és a
+  // frissen lezárt jogviszonyt, amin a kölcsönös értékelés fut.
+  const zuglo = await prisma.ingatlan.create({
+    data: {
+      tulajdonosId: berbeado.id,
+      megnevezes: "Zuglói kislakás",
+      cim: "1145 Budapest, Példa utca 7. 1/4.",
+      alapteruletM2: 38,
+      helyrajziSzam: "31954/6/A/4",
+      kozosKoltsegFt: 12000,
+      meroorak: {
+        create: [{ tipus: "villany", mertekegyseg: "kWh", gyariSzam: "E-770118", almero: false }],
       },
     },
   });
@@ -503,6 +546,74 @@ async function main() {
     (vissza) => tamasSorsa(vissza),
     KOZLEMENYEK,
   );
+
+
+  // A lezárt jogviszony: Eszter tavaly lakott a garzonban, és kiköltözött.
+  // Végigfizette, tehát a befizetések lapját nem terheli semmivel — az
+  // értékelés lapján viszont van mit mutatni.
+  const eszterJogviszony = await prisma.jogviszony.create({
+    data: {
+      ingatlanId: zuglo.id,
+      berlok: {
+        create: [
+          {
+            berloId: berloEszter.id,
+            nev: berloEszter.nev,
+            email: berloEszter.email,
+            szuletesiHely: "Pécs",
+            szuletesiIdo: new Date(Date.UTC(1996, 10, 2)),
+            anyjaNeve: "Példa Márta",
+            lakcim: "7621 Pécs, Minta utca 14.",
+            igazolvanySzam: "444444EE",
+            sorrend: 0,
+          },
+        ],
+      },
+      kezdete: nap(-13),
+      // Tizenkét napja költözött ki, tehát az értékelési ablak még nyitva van.
+      vege: napokkalEzelott(12),
+      statusz: "lezart",
+      berletiDijFt: 165000,
+      kozosKoltsegFt: 14000,
+      kaucioFt: 330000,
+      fizetesiNap: 5,
+      rezsiElszamolas: "almero",
+    },
+  });
+
+  const eszterTetelek = await eloirasokatKiir(eszterJogviszony.id, {
+    kezdete: eszterJogviszony.kezdete,
+    vege: eszterJogviszony.vege,
+    berletiDijFt: eszterJogviszony.berletiDijFt,
+    kozosKoltsegFt: eszterJogviszony.kozosKoltsegFt,
+    rezsiElszamolas: eszterJogviszony.rezsiElszamolas,
+    rezsiAtalanyFt: eszterJogviszony.rezsiAtalanyFt,
+    fizetesiNap: eszterJogviszony.fizetesiNap,
+  });
+
+  await befizeteseketKiir(eszterJogviszony.id, eszterTetelek, () => ({ fajta: "pontos" }), KOZLEMENYEK);
+
+  // Eszter már értékelt, a bérbeadó még nem. Ez a vak állapot: a bérbeadó
+  // lapján ott a teendő, de Eszter szövegéből egy betűt sem lát, amíg meg nem
+  // írja a sajátját. Ha rögtön látná, a sajátja arra adott válasz lenne.
+  const eszterErtekelese = await prisma.ertekeles.create({
+    data: {
+      jogviszonyId: eszterJogviszony.id,
+      szerzoId: berloEszter.id,
+      alanyId: berbeado.id,
+      irany: "berbeadorol",
+      szoveg:
+        "A csöpögő csapot két napon belül megcsinálta, és a kiköltözéskor az óvadékot egy héten belül visszakaptam, tételes elszámolással. Telefonon nem mindig érte el az ember, de üzenetre mindig válaszolt.",
+      pontok: {
+        create: [
+          { szempont: "hibakezeles", pont: 5 },
+          { szempont: "elerhetoseg", pont: 3 },
+          { szempont: "elszamolas", pont: 5 },
+        ],
+      },
+    },
+  });
+  void eszterErtekelese;
 
   // Egy kiadott és befizetett rezsielszámolás, hogy az adóösszesítőn látszódjon
   // a lényeg: a mért fogyasztás nem bevétel, a közös költség viszont igen.

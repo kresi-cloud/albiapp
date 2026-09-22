@@ -304,6 +304,53 @@ A teendők többsége származtatott: a rendszer állapotából jön, és magát
 ha az oka megszűnik. A vállalt javítás viszont tárolt teendő (`Teendo`), mert azt
 valaki vállalta, és le is kell tudni zárni.
 
+## A kölcsönös értékelés alapelve
+
+A bérlőszűrés legális megfelelője. Magánszemély bérbeadóként nincs jogszerű
+módja annak, hogy a leendő bérlőről előzményt kérjünk le: bérlői feketelista
+nincs, és nem is lehet. Ami marad, az a két félnek az egymásról tett saját
+állítása — tehát nem mérés, hanem vélemény, és a felület ezt ki is mondja.
+
+Két dolog dönti el, hogy ér-e valamit.
+
+**Mikor.** Csak a jogviszony lezárása után. Amíg a bérlet fut, az óvadék még a
+bérbeadónál van, a következő hibabejelentés még előtte: aki függ a másiktól, az
+nem a véleményét írja le.
+
+**Vakon.** Amíg mindkét fél meg nem írta a sajátját, egyik sem látja a másikét.
+Enélkül a második értékelés az elsőre adott válasz lenne, nem a bérletről
+szólna. Ezt a kiszolgáló tartja be, nem a felület: a másik szövegét nem is
+töltjük be, mert egy elrejtett, de betöltött szöveg ott állna a lap forrásában.
+A böngészős próba ezért a lap **teljes forrásában** keres, nem a látható
+szövegben.
+
+A felfedés két úton jön: mindkettő megvan, vagy letelt az ablak
+(`ABLAK_NAP`, 30 nap). Az ablak nélkül elég lenne hallgatni ahhoz, hogy a rólunk
+szóló értékelés eltűnjön. Felfedés után senki nem ír és nem módosít: amit a
+másik fél elolvasott, azt nem írjuk át — ugyanaz az elv, mint a `veglegesSzoveg`
+befagyasztásánál.
+
+A harminc nap oka ugyanaz, mint a beszélgetés kilencvenéé, csak rövidebb: az
+óvadék elszámolása és az utolsó rezsiszámla a kiköltözés utáni hetekben derül
+ki, ezek nélkül a bérlet felét nem lehetne értékelni. Fél év múlva viszont már
+senki nem emlékszik rá, mikor jött a szerelő.
+
+Az értékelés személyről szól, nem jogviszonyról: két lakótársnál a bérbeadónak
+két külön értékelése van ugyanazon a jogviszonyon, és a lakótárs nem felel a
+másikért. Fiók nélküli bérlőt nem lehet értékelni, és értékelni sem tud; a
+felület ezt kimondja.
+
+**Pontszámot nem vonunk össze.** Három szempont van irányonként, és az átlaguk
+mérésnek látszana: aki pontosan fizetett, de a lakást tönkretette, nem
+„közepes". A szempontok listája kódban él (`src/domain/ertekeles.ts`), nem az
+adatbázisban, ugyanazért, amiért a szerződésmodulok katalógusa.
+
+Amit az első kiadás **nem** csinál: az értékelést nem viszi ki a két fél közül.
+Hogy egy bérlő a róla szóló értékelést megmutathatja-e egy leendő bérbeadónak,
+az termékdöntés és adatvédelmi kérdés egyszerre, és a betekintő gépezete
+(saját hozzájárulás, visszavonható link) készen áll rá — de ezt a bérbeadónak
+kell eldöntenie, az ügyvédi átnézéssel együtt.
+
 ## A beszélgetés alapelve
 
 A bérlet hétköznapi ügye — mikor jön a kéményseprő, elviheti-e a szekrényt,
@@ -483,7 +530,11 @@ Rövid listát nem csukunk össze: három sor mögé kattintani rosszabb, mint
 elolvasni őket.
 
 A laphossz ezért kapu: a `proba/meret.mjs` minden lapon megméri, és nyolc
-telefonképernyőnél hosszabb lap megbukik. Ha egy lap átlépi, csoportosítani
+telefonképernyőnél hosszabb lap megbukik. A mérés friss példaadaton fut
+(`npm run proba` maga tölti be), mert a próbasor menet közben maga is termel
+adatot: az előfizetéspróba minden futáskor új előfizetést vesz fel, és abból
+havi előírás lesz. Kétszer egymás után, újratöltés nélkül futtatva a lapok
+nem a termék állapotát mutatnák, hanem a próbáét. Ha egy lap átlépi, csoportosítani
 vagy összecsukni kell, nem a korlátot emelni. A mérés önpróbával kezd —
 magassággal és szélességgel egyaránt —, mert ebben a projektben már két
 olyan próbaállítás volt, ami mindig igazat adott.

@@ -45,6 +45,8 @@ model Felhasznalo {
   beszelgetesei       BeszelgetesResztvevo[]
   kuldottUzenetei     BeszelgetesUzenet[]  @relation("UzenetSzerzoje")
   elofizetesNyilatkozatai ElofizetesJovahagyas[]
+  irtErtekelesei          Ertekeles[]            @relation("ErtekelesSzerzoje")
+  kapottErtekelesei       Ertekeles[]            @relation("ErtekelesAlanya")
 }
 
 /// Bérbeadónkénti egyeztetési beállítások. Az összegtolerancia szándékosan nincs
@@ -171,8 +173,57 @@ model Jogviszony {
   betekintok          Betekinto[]
   beszelgetesek       Beszelgetes[]
   elofizetesek        Elofizetes[]
+  ertekelesek         Ertekeles[]
 
   @@index([ingatlanId])
+}
+
+/// Kölcsönös, a másik fél elől rejtett értékelés a jogviszony végén.
+///
+/// Ez a bérlőszűrés legális megfelelője: bérlői feketelista nincs és nem is
+/// lehet, ami marad, az a két félnek az egymásról tett saját állítása. Nem
+/// mérés, hanem vélemény — a felület ezt ki is mondja.
+///
+/// Két dolog dönti el, hogy ér-e valamit. Csak a lezárás után írható, mert aki
+/// még függ a másiktól (nála az óvadék, előtte a következő hibabejelentés), az
+/// nem a véleményét írja le. És vakon: amíg mindkettő meg nem lett, egyik fél
+/// sem látja a másikét, különben a második az elsőre adott válasz lenne. A
+/// felfedés a domain dolga (`src/domain/ertekeles.ts`), nem tárolt mező: egy
+/// tárolt „felfedve" jelölést ütemezőnek kellene átbillentenie.
+model Ertekeles {
+  id           String   @id @default(cuid())
+  jogviszonyId String
+  szerzoId     String
+  alanyId      String
+  /// "berlorol" | "berbeadorol" — ebből következik, milyen szempontjai vannak.
+  irany        String
+  szoveg       String
+  letrehozva   DateTime @default(now())
+  modositva    DateTime @updatedAt
+
+  jogviszony Jogviszony      @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  szerzo     Felhasznalo     @relation("ErtekelesSzerzoje", fields: [szerzoId], references: [id], onDelete: Cascade)
+  alany      Felhasznalo     @relation("ErtekelesAlanya", fields: [alanyId], references: [id], onDelete: Cascade)
+  pontok     ErtekelesPont[]
+
+  /// Egy jogviszonyon egy fél a másikról egyszer nyilatkozik; a módosítás
+  /// ugyanezt a sort írja át, felfedésig.
+  @@unique([jogviszonyId, szerzoId, alanyId])
+  @@index([alanyId])
+}
+
+/// Egy szempont pontszáma. Külön sorban, mert a szempontok listája kódban él
+/// (ugyanazért, amiért a szerződésmodulok katalógusa): egy új szempont ne
+/// legyen adatbázis-migráció, és egy régi értékelés szempontja ne tűnjön el.
+model ErtekelesPont {
+  id          String @id @default(cuid())
+  ertekelesId String
+  szempont    String
+  pont        Int
+
+  ertekeles Ertekeles @relation(fields: [ertekelesId], references: [id], onDelete: Cascade)
+
+  @@unique([ertekelesId, szempont])
 }
 
 /// Vezetékes tv-, telefon- vagy internetelőfizetés a bérleményhez.
