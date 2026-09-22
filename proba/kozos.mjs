@@ -50,6 +50,13 @@ export async function kilep(oldal) {
     await tobb.first().click();
   }
   const kilepes = oldal.getByRole("button", { name: /Kilépés|Sign out/ });
+  // A „Több" panel tartalma a kattintás után jelenik meg. Aki rögtön ránéz,
+  // nullát talál, csendben kihagyja a kilépést, és a következő belépés a már
+  // belépett felhasználó lapjára fut — ott pedig nincs e-mail mező.
+  await kilepes
+    .first()
+    .waitFor({ state: "visible", timeout: 5000 })
+    .catch(() => {});
   if (await kilepes.count()) {
     await kilepes.first().click();
     await oldal.waitForLoadState("networkidle");
