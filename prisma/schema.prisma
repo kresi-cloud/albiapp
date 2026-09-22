@@ -45,17 +45,21 @@ model Beallitasok {
 }
 
 model Ingatlan {
-  id             String   @id @default(cuid())
-  tulajdonosId   String
-  megnevezes     String
-  cim            String
-  alapteruletM2  Int?
-  kozosKoltsegFt Int?
-  letrehozva     DateTime @default(now())
+  id              String    @id @default(cuid())
+  tulajdonosId    String
+  megnevezes      String
+  cim             String
+  alapteruletM2   Int?
+  kozosKoltsegFt  Int?
+  // Az értékcsökkenés alapja. Enélkül a tételes adóelszámolás hiányos.
+  beszerzesiArFt  Int?
+  beszerzesDatuma DateTime?
+  letrehozva      DateTime  @default(now())
 
   tulajdonos   Felhasznalo  @relation(fields: [tulajdonosId], references: [id], onDelete: Cascade)
   meroorak     Meroora[]
   jogviszonyok Jogviszony[]
+  koltsegek    Koltseg[]
 
   @@index([tulajdonosId])
 }
@@ -274,6 +278,23 @@ model ElszamolasTetel {
   meroora    Meroora?   @relation(fields: [merooraId], references: [id])
 
   @@index([elszamolasId])
+}
+
+/// A bérbeadás költségei a tételes adóelszámoláshoz. Az értékcsökkenést nem itt
+/// tároljuk: az az ingatlan beszerzési árából számolódik évről évre.
+model Koltseg {
+  id            String   @id @default(cuid())
+  ingatlanId    String
+  datum         DateTime
+  fajta         String // "felujitas" | "kozos_koltseg" | "biztositas" | "kozuzem" | "egyeb"
+  megnevezes    String
+  osszegFt      Int
+  szamlaUtvonal String?
+  letrehozva    DateTime @default(now())
+
+  ingatlan Ingatlan @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
+
+  @@index([ingatlanId, datum])
 }
 
 /// Minden modul ide termel. Ebből épül a kezdőlap kiemelt sávja és a naptár.

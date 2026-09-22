@@ -18,9 +18,11 @@ körönként frissülnek.
 - jelszavas belépés mindkét félnek, és bérlői meghívó linkkel,
 - óraállások mindkét oldalról, tételes rezsielszámolás a magyar sávos árazással,
 - a kiadott elszámolás előírt tételként megy tovább a befizetésekhez, a bérlő
-  pedig elfogadhatja vagy vitathatja.
+  pedig elfogadhatja vagy vitathatja,
+- éves adóösszesítő: mi bevétel, mi nem, mennyi a költség, és melyik
+  elszámolási móddal jársz jobban; táblázatba letölthető.
 
-Ami még nincs kész: elfelejtett jelszó, adóösszesítő, szerződéskészítő.
+Ami még nincs kész: elfelejtett jelszó, szerződéskészítő, hibabejelentés.
 
 ## Indítás
 
@@ -74,6 +76,20 @@ a bérlő össze tudja adni a sorokat, és ugyanazt kapja.
 Minden tétel mellé emberi nyelvű részletezés készül: melyik óraállástól meddig,
 hány nap, mennyi ment kedvezményes és mennyi piaci áron. Ez a különbség a
 "kapsz egy számot" és az "ellenőrizni tudod" között.
+
+## Adóösszesítő
+
+Összesítő, nem bevallás. A bevétel pénzforgalmi: az számít, ami az adott évben
+tényleg megérkezett, ezért a párosított kivonattételekből indul, nem az
+előírásokból.
+
+Két szabály adja a lényegét. A fogyasztás szerint mért, továbbhárított közüzemi
+díj nem a bérbeadó bevétele; az átalányban fizetett rezsi viszont az, mert nincs
+mögötte tényleges fogyasztás szerinti arányosítás. Az alkalmazás tudja, melyik
+jogviszony hogyan számol el, és egy vegyes elszámolást a tételek arányában oszt
+meg a két rész között. A másik: a 10%-os költséghányad és a tételes
+költségelszámolás közül az összesítő kiszámolja mindkettőt, az értékcsökkenéssel
+együtt, és megmondja, melyikkel jársz jobban.
 
 ## Felépítés
 
