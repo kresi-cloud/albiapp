@@ -1,0 +1,37 @@
+name: Ellenőrzés
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ellenorzes:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "file:./ci.db"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Függőségek telepítése
+        run: npm ci
+
+      - name: Prisma kliens generálása
+        run: npx prisma generate
+
+      - name: Formai ellenőrzés
+        run: npx eslint .
+
+      - name: Típusellenőrzés
+        run: npm run typecheck
+
+      - name: Tesztek
+        run: npm test
+
+      - name: Fordítás
+        run: npm run build
