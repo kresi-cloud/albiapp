@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Mezo, Valaszto } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import { beszerzestRogzit, koltsegetRogzit, type Eredmeny } from "./actions";
 import { MEZO, GOMB } from "@/components/urlap";
@@ -35,48 +36,57 @@ export function KoltsegUrlap({
       <div className="grid gap-2 sm:grid-cols-2">
         <label className="grid gap-1 text-xs">
           <span className="text-stone-500 dark:text-stone-400">{cimkek.ingatlan}</span>
-          <select name="ingatlanId" className={MEZO} required>
+          <Valaszto name="ingatlanId" className={MEZO} required allapot={allapot.allapot}>
             {ingatlanok.map((ingatlan) => (
               <option key={ingatlan.id} value={ingatlan.id}>
                 {ingatlan.megnevezes}
               </option>
             ))}
-          </select>
+          </Valaszto>
         </label>
         <label className="grid gap-1 text-xs">
           <span className="text-stone-500 dark:text-stone-400">{cimkek.fajta}</span>
-          <select name="fajta" className={MEZO} required>
+          <Valaszto name="fajta" className={MEZO} required allapot={allapot.allapot}>
             {fajtak.map((fajta) => (
               <option key={fajta.ertek} value={fajta.ertek}>
                 {fajta.cimke}
               </option>
             ))}
-          </select>
+          </Valaszto>
         </label>
         <label className="grid gap-1 text-xs">
           <span className="text-stone-500 dark:text-stone-400">{cimkek.datum}</span>
-          <input type="date" name="datum" defaultValue={mai} className={MEZO} required />
+          <Mezo
+            type="date"
+            name="datum"
+            defaultValue={mai}
+            className={MEZO}
+            required
+            allapot={allapot.allapot}
+          />
         </label>
         <label className="grid gap-1 text-xs">
           <span className="text-stone-500 dark:text-stone-400">{cimkek.osszeg}</span>
-          <input
+          <Mezo
             type="text"
             inputMode="numeric"
             name="osszegFt"
             placeholder={cimkek.osszegPelda}
             className={`${MEZO} tabular-nums`}
             required
+            allapot={allapot.allapot}
           />
         </label>
       </div>
       <label className="grid gap-1 text-xs">
         <span className="text-stone-500 dark:text-stone-400">{cimkek.megnevezes}</span>
-        <input
+        <Mezo
           type="text"
           name="megnevezes"
           placeholder={cimkek.megnevezesPelda}
           className={MEZO}
           required
+          allapot={allapot.allapot}
         />
       </label>
       <button type="submit" disabled={folyamatban} className={GOMB}>
@@ -112,7 +122,7 @@ export function BeszerzesUrlap({
       <div className="flex flex-wrap gap-2">
         <label className="grid gap-1 text-xs">
           <span className="text-stone-500 dark:text-stone-400">{cimkek.ar}</span>
-          <input
+          <Mezo
             type="text"
             inputMode="numeric"
             name="beszerzesiArFt"
@@ -120,15 +130,17 @@ export function BeszerzesUrlap({
             placeholder={cimkek.arPelda}
             className={`${MEZO} tabular-nums`}
             required
+            allapot={allapot.allapot}
           />
         </label>
         <label className="grid gap-1 text-xs">
           <span className="text-stone-500 dark:text-stone-400">{cimkek.nap}</span>
-          <input
+          <Mezo
             type="date"
             name="beszerzesDatuma"
             defaultValue={beszerzesDatuma ?? ""}
             className={MEZO}
+            allapot={allapot.allapot}
           />
         </label>
       </div>

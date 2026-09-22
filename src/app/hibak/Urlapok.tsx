@@ -1,6 +1,13 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
+import {
+  Mezo,
+  Szovegdoboz,
+  Valaszto,
+  Valasztogomb,
+  useMegorzottErtek,
+} from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import type { Nyelv } from "@/domain/nyelv";
 import { szovegekNyelvvel } from "@/domain/szotar";
@@ -16,7 +23,6 @@ import {
   VESZELYHELYZETI_TEENDOK,
   viseloNeve,
   type HibaAllapot,
-  type HibaSurgosseg,
   type Javaslat,
   type ViseloFel,
 } from "@/domain/hibabejelentes";
@@ -36,7 +42,10 @@ export function HibaBejelentes({
 }) {
   const { sz, u } = szovegekNyelvvel(nyelv);
   const [allapot, kuldes, folyamatban] = useActionState(hibatBejelent, KEZDETI);
-  const [surgosseg, setSurgosseg] = useState<HibaSurgosseg>("normal");
+  // A rádiógombok is megőrzik a választást elutasított beküldés után, és csak
+  // sikeres bejelentésnél állnak vissza az alapértelmezésre.
+  const [surgosseg, surgosseget] = useMegorzottErtek(allapot.allapot, "normal");
+  const [ok, okot] = useMegorzottErtek(allapot.allapot, "elhasznalodas");
 
   if (jogviszonyok.length === 0) return null;
 
@@ -47,56 +56,73 @@ export function HibaBejelentes({
       ) : (
         <label className="grid gap-1 text-sm">
           <span className="font-medium">{sz("hiba.urlap.berlemeny")}</span>
-          <select name="jogviszonyId" className={MEZO} defaultValue={jogviszonyok[0].id}>
+          <Valaszto
+            name="jogviszonyId"
+            className={MEZO}
+            defaultValue={jogviszonyok[0].id}
+            allapot={allapot.allapot}
+          >
             {jogviszonyok.map((jogviszony) => (
               <option key={jogviszony.id} value={jogviszony.id}>
                 {jogviszony.cimke}
               </option>
             ))}
-          </select>
+          </Valaszto>
         </label>
       )}
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">{sz("hiba.urlap.targy")}</span>
-        <input
+        <Mezo
           name="targy"
           className={MEZO}
           placeholder={sz("hiba.urlap.targy_pelda")}
           maxLength={120}
           required
+          allapot={allapot.allapot}
         />
       </label>
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">{sz("hiba.urlap.leiras")}</span>
-        <textarea
+        <Szovegdoboz
           name="leiras"
           className={MEZO}
           rows={3}
           placeholder={sz("hiba.urlap.leiras_pelda")}
           required
+          allapot={allapot.allapot}
         />
       </label>
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">{sz("hiba.urlap.terulet")}</span>
-        <select name="terulet" className={MEZO} defaultValue="berendezes">
+        <Valaszto
+          name="terulet"
+          className={MEZO}
+          defaultValue="berendezes"
+          allapot={allapot.allapot}
+        >
           {TERULETEK.map((terulet) => (
             <option key={terulet} value={terulet}>
               {u(teruletNeve(terulet))}
             </option>
           ))}
-        </select>
+        </Valaszto>
       </label>
 
       <fieldset className="grid gap-1 text-sm">
         <legend className="font-medium">{sz("hiba.urlap.ok")}</legend>
         <p className="text-stone-600 dark:text-stone-400">{sz("hiba.urlap.ok_sugo")}</p>
-        {OKOK.map((ok) => (
-          <label key={ok} className="flex items-center gap-2">
-            <input type="radio" name="ok" value={ok} defaultChecked={ok === "elhasznalodas"} />
-            <span>{u(okNeve(ok))}</span>
+        {OKOK.map((lehetoseg) => (
+          <label key={lehetoseg} className="flex items-center gap-2">
+            <Valasztogomb
+              name="ok"
+              value={lehetoseg}
+              jelolt={ok === lehetoseg}
+              onChange={() => okot(lehetoseg)}
+            />
+            <span>{u(okNeve(lehetoseg))}</span>
           </label>
         ))}
       </fieldset>
@@ -105,13 +131,12 @@ export function HibaBejelentes({
         <legend className="font-medium">{sz("hiba.urlap.surgosseg")}</legend>
         {SURGOSSEGEK.map((fokozat) => (
           <label key={fokozat} className="flex items-start gap-2">
-            <input
-              type="radio"
+            <Valasztogomb
               name="surgosseg"
               value={fokozat}
               className="mt-1"
-              checked={surgosseg === fokozat}
-              onChange={() => setSurgosseg(fokozat)}
+              jelolt={surgosseg === fokozat}
+              onChange={() => surgosseget(fokozat)}
             />
             <span>
               <span className="font-medium">{u(surgossegNeve(fokozat))}</span>
@@ -203,11 +228,12 @@ export function ViseloUrlap({
       <p className="text-sm text-stone-600 dark:text-stone-400">{u(javaslat.indoklas)}</p>
       <label className="grid gap-1 text-sm">
         <span className="sr-only">{sz("hiba.urlap.viselo")}</span>
-        <select
+        <Valaszto
           name="viseloFel"
           className={MEZO}
           defaultValue={jelenlegi ?? javaslat.fel ?? ""}
           aria-label={sz("hiba.urlap.viselo")}
+          allapot={allapot.allapot}
         >
           <option value="">{sz("hiba.urlap.viselo_nincs")}</option>
           {VISELOK.map((fel) => (
@@ -215,7 +241,7 @@ export function ViseloUrlap({
               {u(viseloNeve(fel))}
             </option>
           ))}
-        </select>
+        </Valaszto>
       </label>
       <button type="submit" disabled={folyamatban} className={`${HALVANY_GOMB} justify-self-start`}>
         {folyamatban ? sz("hiba.urlap.mentem") : sz("hiba.urlap.rogzitem")}
@@ -234,12 +260,13 @@ export function UzenetUrlap({ hibaId, nyelv = "hu" }: { hibaId: string; nyelv?: 
       <input type="hidden" name="hibaId" value={hibaId} />
       <label className="grid gap-1 text-sm">
         <span className="sr-only">{sz("hiba.urlap.uzenet")}</span>
-        <textarea
+        <Szovegdoboz
           name="szoveg"
           rows={2}
           className={MEZO}
           placeholder={sz("hiba.urlap.uzenet_pelda")}
           aria-label={sz("hiba.urlap.uzenet")}
+          allapot={allapot.allapot}
         />
       </label>
       <button type="submit" disabled={folyamatban} className={`${HALVANY_GOMB} justify-self-start`}>

@@ -19,44 +19,7 @@ export type Eredmeny = {
   hibak: string[];
   /** Amit elmentettünk, de szólunk róla. Üres, ha nincs ilyen. */
   figyelmeztetesek: string[];
-  /**
-   * A beküldött értékek, visszaadva az űrlapnak.
-   *
-   * Enélkül egy elutasított mentés kiüríti az egész űrlapot: a bérbeadó
-   * kitölt tíz mezőt, egyetlen hibát vét, és mindet újrakezdheti. Sikeres
-   * mentés után viszont üresen adjuk vissza, mert akkor új adat következik.
-   */
-  ertekek: Record<string, string>;
 };
-
-/** Amit visszaadunk az űrlapnak. Csak ismert mezők: nem tükrözünk vissza akármit. */
-function ertekeket(urlap: FormData, mezok: readonly string[]): Record<string, string> {
-  return Object.fromEntries(mezok.map((mezo) => [mezo, szoveg(urlap.get(mezo))]));
-}
-
-const INGATLAN_MEZOK = [
-  "megnevezes",
-  "cim",
-  "alapteruletM2",
-  "kozosKoltsegFt",
-  "helyrajziSzam",
-  "energetikaiAzonosito",
-  "beszerzesiArFt",
-  "beszerzesDatuma",
-] as const;
-
-const JOGVISZONY_MEZOK = [
-  "ingatlanId",
-  "kezdete",
-  "fizetesiNap",
-  "berletiDijFt",
-  "kozosKoltsegFt",
-  "kaucioFt",
-  "rezsiElszamolas",
-  "rezsiAtalanyFt",
-  "berloNeve",
-  "berloEmail",
-] as const;
 
 function szoveg(nyers: unknown): string {
   return String(nyers ?? "").trim();
@@ -102,7 +65,6 @@ export async function ingatlantFelvesz(
       uzenet: u(kifogasok[0].uzenet),
       hibak: kifogasok.map((kifogas) => kifogas.mezo),
       figyelmeztetesek: [],
-      ertekek: ertekeket(urlap, INGATLAN_MEZOK),
     };
   }
 
@@ -117,7 +79,6 @@ export async function ingatlantFelvesz(
     uzenet: sz("berlemeny.mentve"),
     hibak: [],
     figyelmeztetesek: ingatlanFigyelmeztetesei(bemenet).map(u),
-    ertekek: {},
   };
 }
 
@@ -147,7 +108,6 @@ export async function jogviszonytInditAction(
       uzenet: u(kifogasok[0].uzenet),
       hibak: kifogasok.map((kifogas) => kifogas.mezo),
       figyelmeztetesek: [],
-      ertekek: ertekeket(urlap, JOGVISZONY_MEZOK),
     };
   }
 
@@ -165,7 +125,6 @@ export async function jogviszonytInditAction(
       uzenet: sz("berlemeny.hiba.cim"),
       hibak: ["ingatlanId"],
       figyelmeztetesek: [],
-      ertekek: ertekeket(urlap, JOGVISZONY_MEZOK),
     };
   }
 
@@ -179,6 +138,5 @@ export async function jogviszonytInditAction(
     uzenet: sz("jogviszony.mentve"),
     hibak: [],
     figyelmeztetesek: jogviszonyFigyelmeztetesei(bemenet, ma).map(u),
-    ertekek: {},
   };
 }

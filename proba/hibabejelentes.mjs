@@ -43,6 +43,12 @@ export async function futtat(oldal) {
     (await oldal.getByText(/az alkalmazás nem csörög/).count()) > 0,
     "veszélyhelyzetnél a visszajelzés telefonálásra szólít",
   );
+  // A megőrzés másik fele: sikeres bejelentés után az űrlap tényleg kiürül,
+  // különben a következő hiba a előzőnek a szövegével indulna.
+  all(
+    (await urlap.locator('input[name="targy"]').inputValue()) === "",
+    "sikeres bejelentés után az űrlap kiürül",
+  );
   await oldal.reload();
   await mindetKinyit(oldal);
   all(

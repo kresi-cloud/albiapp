@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Mezo, Szovegdoboz } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import {
   elszamolastElbiral,
@@ -30,16 +31,24 @@ export function OraallasUrlap({
       <div className="flex flex-wrap gap-2">
         <label className="grid gap-1 text-xs">
           <span className="text-stone-500 dark:text-stone-400">{cimkek.datum}</span>
-          <input type="date" name="datum" defaultValue={mai} className={MEZO} required />
+          <Mezo
+            type="date"
+            name="datum"
+            defaultValue={mai}
+            className={MEZO}
+            required
+            allapot={allapot.allapot}
+          />
         </label>
         <label className="grid gap-1 text-xs">
           <span className="text-stone-500 dark:text-stone-400">{cimkek.ertek}</span>
-          <input
+          <Mezo
             type="text"
             inputMode="decimal"
             name="ertek"
             className={`${MEZO} tabular-nums`}
             required
+            allapot={allapot.allapot}
           />
         </label>
       </div>
@@ -70,11 +79,25 @@ export function ElszamolasUrlap({
       <div className="flex flex-wrap gap-2">
         <label className="grid gap-1 text-xs">
           <span className="text-stone-500 dark:text-stone-400">{cimkek.kezdete}</span>
-          <input type="date" name="kezdete" defaultValue={kezdete} className={MEZO} required />
+          <Mezo
+            type="date"
+            name="kezdete"
+            defaultValue={kezdete}
+            className={MEZO}
+            required
+            allapot={allapot.allapot}
+          />
         </label>
         <label className="grid gap-1 text-xs">
           <span className="text-stone-500 dark:text-stone-400">{cimkek.vege}</span>
-          <input type="date" name="vege" defaultValue={vege} className={MEZO} required />
+          <Mezo
+            type="date"
+            name="vege"
+            defaultValue={vege}
+            className={MEZO}
+            required
+            allapot={allapot.allapot}
+          />
         </label>
       </div>
       <button type="submit" disabled={folyamatban} className={GOMB}>
@@ -101,12 +124,13 @@ export function KiadasUrlap({
       <input type="hidden" name="elszamolasId" value={elszamolasId} />
       <label className="grid gap-1 text-xs">
         <span className="text-stone-500 dark:text-stone-400">{cimkek.hatarido}</span>
-        <input
+        <Mezo
           type="date"
           name="esedekesseg"
           defaultValue={esedekesseg}
           className={MEZO}
           required
+          allapot={allapot.allapot}
         />
       </label>
       <button type="submit" disabled={folyamatban} className={GOMB}>
@@ -131,7 +155,7 @@ export function ElbiralasUrlap({
       <input type="hidden" name="elszamolasId" value={elszamolasId} />
       <label className="grid gap-1 text-xs">
         <span className="text-stone-500 dark:text-stone-400">{cimkek.sugo}</span>
-        <textarea name="berloiUzenet" rows={2} className={MEZO} />
+        <Szovegdoboz name="berloiUzenet" rows={2} className={MEZO} allapot={allapot.allapot} />
       </label>
       <div className="flex flex-wrap gap-2">
         <button

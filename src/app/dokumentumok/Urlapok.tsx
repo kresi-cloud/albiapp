@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Mezo, Valaszto } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import { szerzodestKeszit, type Eredmeny as SzerzodesEredmeny } from "@/app/szerzodesek/actions";
 import { igazolastKiallit, jegyzokonyvetKeszit, type Eredmeny } from "./actions";
@@ -101,7 +102,12 @@ export function UjIgazolas({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1 text-sm">
           <span className="font-medium">{cimkek.idoszak}</span>
-          <select name="idoszak" className={MEZO} defaultValue={idoszakok[0].idoszak}>
+          <Valaszto
+            name="idoszak"
+            className={MEZO}
+            defaultValue={idoszakok[0].idoszak}
+            allapot={allapot.allapot}
+          >
             {idoszakok.map((sor) => (
               <option key={sor.idoszak} value={sor.idoszak}>
                 {cimkek.idoszakSor
@@ -109,16 +115,17 @@ export function UjIgazolas({
                   .replace("{osszeg}", sor.osszeg)}
               </option>
             ))}
-          </select>
+          </Valaszto>
         </label>
 
         <label className="grid gap-1 text-sm">
           <span className="font-medium">{cimkek.osszeg}</span>
-          <input
+          <Mezo
             name="osszegFt"
             inputMode="numeric"
             placeholder={cimkek.osszegPelda}
             className={MEZO}
+            allapot={allapot.allapot}
           />
           <span className="text-xs text-stone-500 dark:text-stone-400">{cimkek.osszegSugo}</span>
         </label>
@@ -129,21 +136,32 @@ export function UjIgazolas({
             A cél szövege a magyar igazolásba kerül, ezért az alapértéket is a
             szótár magyar sora adja, angol felületen is.
           */}
-          <input name="cel" defaultValue={cimkek.celAlap} className={MEZO} required />
+          <Mezo
+            name="cel"
+            defaultValue={cimkek.celAlap}
+            className={MEZO}
+            required
+            allapot={allapot.allapot}
+          />
         </label>
 
         <label className="grid gap-1 text-sm">
           <span className="font-medium">{cimkek.mod}</span>
-          <select name="teljesitesModja" className={MEZO} defaultValue="atutalas">
+          <Valaszto
+            name="teljesitesModja"
+            className={MEZO}
+            defaultValue="atutalas"
+            allapot={allapot.allapot}
+          >
             <option value="atutalas">{cimkek.modAtutalas}</option>
             <option value="keszpenz">{cimkek.modKeszpenz}</option>
             <option value="egyeb">{cimkek.modEgyeb}</option>
-          </select>
+          </Valaszto>
         </label>
 
         <label className="grid gap-1 text-sm">
           <span className="font-medium">{cimkek.hely}</span>
-          <input name="kiallitasHelye" className={MEZO} />
+          <Mezo name="kiallitasHelye" className={MEZO} allapot={allapot.allapot} />
         </label>
       </div>
 

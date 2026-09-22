@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Mezo, Valaszto } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import { ALAPERTELMEZETT_ELETTARTAM, ELETTARTAM_NAPOK } from "@/domain/betekinto";
 import type { Nyelv } from "@/domain/nyelv";
@@ -29,23 +30,24 @@ export function BetekintoUrlap({
       ) : (
         <label className="grid gap-1 text-sm">
           <span className="font-medium">{sz("betekinto.urlap.jogviszony")}</span>
-          <select name="jogviszonyId" className={MEZO}>
+          <Valaszto name="jogviszonyId" className={MEZO} allapot={allapot.allapot}>
             {jogviszonyok.map((jogviszony) => (
               <option key={jogviszony.id} value={jogviszony.id}>
                 {jogviszony.cimke}
               </option>
             ))}
-          </select>
+          </Valaszto>
         </label>
       )}
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">{sz("betekinto.urlap.cel")}</span>
-        <input
+        <Mezo
           name="cel"
           className={MEZO}
           placeholder={sz("betekinto.urlap.cel_pelda")}
           required
+          allapot={allapot.allapot}
         />
         <span className="text-xs text-stone-600 dark:text-stone-400">
           {sz("betekinto.urlap.cel_sugo")}
@@ -54,13 +56,18 @@ export function BetekintoUrlap({
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">{sz("betekinto.urlap.elettartam")}</span>
-        <select name="napok" className={MEZO} defaultValue={String(ALAPERTELMEZETT_ELETTARTAM)}>
+        <Valaszto
+          name="napok"
+          className={MEZO}
+          defaultValue={String(ALAPERTELMEZETT_ELETTARTAM)}
+          allapot={allapot.allapot}
+        >
           {ELETTARTAM_NAPOK.map((napok) => (
             <option key={napok} value={napok}>
               {sz("betekinto.urlap.nap", { napok })}
             </option>
           ))}
-        </select>
+        </Valaszto>
       </label>
 
       <label className="flex items-start gap-2 text-sm">

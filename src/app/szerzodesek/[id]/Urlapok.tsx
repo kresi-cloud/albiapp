@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Mezo, Valaszto } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import {
   modultValt,
@@ -114,11 +115,22 @@ export function ParameterUrlap({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1 text-sm">
           <span className="font-medium">{cimkek.kelteHelye}</span>
-          <input name="kelteHelye" defaultValue={kelteHelye} className={MEZO} />
+          <Mezo
+            name="kelteHelye"
+            defaultValue={kelteHelye}
+            className={MEZO}
+            allapot={allapot.allapot}
+          />
         </label>
         <label className="grid gap-1 text-sm">
           <span className="font-medium">{cimkek.kelte}</span>
-          <input name="kelte" type="date" defaultValue={kelte} className={MEZO} />
+          <Mezo
+            name="kelte"
+            type="date"
+            defaultValue={kelte}
+            className={MEZO}
+            allapot={allapot.allapot}
+          />
         </label>
       </div>
 
@@ -126,20 +138,26 @@ export function ParameterUrlap({
         <label key={parameter.kulcs} className="grid gap-1 text-sm">
           <span className="font-medium">{parameter.cimke}</span>
           {parameter.tipus === "valaszt" ? (
-            <select name={`p_${parameter.kulcs}`} defaultValue={parameter.ertek} className={MEZO}>
+            <Valaszto
+              name={`p_${parameter.kulcs}`}
+              defaultValue={parameter.ertek}
+              className={MEZO}
+              allapot={allapot.allapot}
+            >
               {(parameter.valaszthatok ?? []).map((lehetoseg) => (
                 <option key={lehetoseg.ertek} value={lehetoseg.ertek}>
                   {lehetoseg.cimke}
                 </option>
               ))}
-            </select>
+            </Valaszto>
           ) : (
-            <input
+            <Mezo
               name={`p_${parameter.kulcs}`}
               type={parameter.tipus === "datum" ? "date" : parameter.tipus === "szoveg" ? "text" : "number"}
               inputMode={parameter.tipus === "szoveg" ? undefined : "numeric"}
               defaultValue={parameter.ertek}
               className={MEZO}
+              allapot={allapot.allapot}
             />
           )}
           <span className="text-xs text-stone-500 dark:text-stone-400">

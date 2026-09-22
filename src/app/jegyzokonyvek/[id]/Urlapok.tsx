@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Mezo, Szovegdoboz, Valaszto } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import {
   jegyzokonyvTetelt,
@@ -67,7 +68,13 @@ export function JegyzokonyvUrlap({
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">{cimkek.idopont}</span>
-        <input name="idopont" type="datetime-local" defaultValue={idopont} className={MEZO} />
+        <Mezo
+          name="idopont"
+          type="datetime-local"
+          defaultValue={idopont}
+          className={MEZO}
+          allapot={allapot.allapot}
+        />
       </label>
 
       {fajtak.map((fajta) => (
@@ -81,44 +88,53 @@ export function JegyzokonyvUrlap({
                 className="grid gap-2 border-t border-stone-200 pt-3 first:border-0 first:pt-0 dark:border-stone-800"
               >
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <input
+                  <Mezo
                     name={`megnevezes_${tetel.id}`}
                     defaultValue={tetel.megnevezes}
                     className={MEZO}
                     aria-label={cimkek.megnevezes}
+                    allapot={allapot.allapot}
                   />
-                  <input
+                  <Mezo
                     name={`ertek_${tetel.id}`}
                     defaultValue={tetel.ertek}
                     placeholder={cimkek.ertekSugo[fajta]}
                     className={MEZO}
                     aria-label={cimkek.ertek}
+                    allapot={allapot.allapot}
                   />
                 </div>
-                <input
+                <Mezo
                   name={`megjegyzes_${tetel.id}`}
                   defaultValue={tetel.megjegyzes}
                   placeholder={cimkek.megjegyzesSugo}
                   className={MEZO}
                   aria-label={cimkek.megjegyzes}
+                  allapot={allapot.allapot}
                 />
                 {fajta === "hiba" ? (
                   <div className="grid gap-2 sm:grid-cols-2">
                     <label className="grid gap-1 text-xs">
                       <span>{cimkek.kiRendezi}</span>
-                      <select name={`felelos_${tetel.id}`} defaultValue={tetel.felelos} className={MEZO}>
+                      <Valaszto
+                        name={`felelos_${tetel.id}`}
+                        defaultValue={tetel.felelos}
+                        className={MEZO}
+                        allapot={allapot.allapot}
+                      >
                         <option value="">{cimkek.nincsVallalas}</option>
                         <option value="berbeado">{cimkek.felelosBerbeado}</option>
                         <option value="berlo">{cimkek.felelosBerlo}</option>
-                      </select>
+                      </Valaszto>
                     </label>
                     <label className="grid gap-1 text-xs">
                       <span>{cimkek.mikorra}</span>
-                      <input
+                      <Mezo
                         name={`hatarido_${tetel.id}`}
                         type="date"
                         defaultValue={tetel.hatarido}
                         className={MEZO}
+                        allapot={allapot.allapot}
                       />
                     </label>
                   </div>
@@ -130,12 +146,24 @@ export function JegyzokonyvUrlap({
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">{cimkek.allapotLeiras}</span>
-        <textarea name="allapotLeiras" defaultValue={allapotLeiras} rows={3} className={MEZO} />
+        <Szovegdoboz
+          name="allapotLeiras"
+          defaultValue={allapotLeiras}
+          rows={3}
+          className={MEZO}
+          allapot={allapot.allapot}
+        />
       </label>
 
       <label className="grid gap-1 text-sm">
         <span className="font-medium">{cimkek.egyebMegjegyzes}</span>
-        <textarea name="megjegyzes" defaultValue={megjegyzes} rows={2} className={MEZO} />
+        <Szovegdoboz
+          name="megjegyzes"
+          defaultValue={megjegyzes}
+          rows={2}
+          className={MEZO}
+          allapot={allapot.allapot}
+        />
       </label>
 
       <button type="submit" disabled={folyamatban} className={GOMB}>
@@ -170,23 +198,31 @@ export function UjTetel({
   return (
     <form action={kuldes} className="grid gap-2 sm:grid-cols-3">
       <input type="hidden" name="jegyzokonyvId" value={jegyzokonyvId} />
-      <select name="fajta" defaultValue="hiba" className={MEZO} aria-label={cimkek.fajta}>
+      <Valaszto
+        name="fajta"
+        defaultValue="hiba"
+        className={MEZO}
+        aria-label={cimkek.fajta}
+        allapot={allapot.allapot}
+      >
         <option value="hiba">{cimkek.fajtaHiba}</option>
         <option value="meroora">{cimkek.fajtaMeroora}</option>
         <option value="kulcs">{cimkek.fajtaKulcs}</option>
         <option value="dokumentum">{cimkek.fajtaDokumentum}</option>
-      </select>
-      <input
+      </Valaszto>
+      <Mezo
         name="megnevezes"
         placeholder={cimkek.megnevezesSugo}
         className={MEZO}
         aria-label={cimkek.megnevezes}
+        allapot={allapot.allapot}
       />
-      <input
+      <Mezo
         name="ertek"
         placeholder={cimkek.ertekSugo}
         className={MEZO}
         aria-label={cimkek.ertek}
+        allapot={allapot.allapot}
       />
       <div className="sm:col-span-3 grid gap-2">
         <button type="submit" disabled={folyamatban} className={GOMB}>

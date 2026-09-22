@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Mezo as MegorzoMezo, type UrlapAllapot } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import { GOMB, MEZO } from "@/components/urlap";
 import { utalastRogzit, utalastTorol, type Eredmeny } from "./actions";
@@ -21,17 +22,25 @@ function Mezo({
   nev,
   cimke,
   ertek,
+  allapot,
   tipus = "text",
 }: {
   nev: string;
   cimke: string;
   ertek: string;
+  allapot: UrlapAllapot;
   tipus?: string;
 }) {
   return (
     <label className="grid gap-1 text-sm">
       <span className="font-medium">{cimke}</span>
-      <input name={nev} type={tipus} defaultValue={ertek} className={MEZO} />
+      <MegorzoMezo
+        name={nev}
+        type={tipus}
+        defaultValue={ertek}
+        allapot={allapot}
+        className={MEZO}
+      />
     </label>
   );
 }
@@ -60,10 +69,21 @@ export function Utalas({
       </summary>
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
         <input type="hidden" name="jogviszonyId" value={jogviszonyId} />
-        <Mezo nev="utalasDatuma" cimke={cimkek.datum} ertek={esedekesseg} tipus="date" />
-        <Mezo nev="osszegFt" cimke={cimkek.osszeg} ertek={String(osszegFt)} />
+        <Mezo
+          nev="utalasDatuma"
+          cimke={cimkek.datum}
+          ertek={esedekesseg}
+          tipus="date"
+          allapot={allapot.allapot}
+        />
+        <Mezo
+          nev="osszegFt"
+          cimke={cimkek.osszeg}
+          ertek={String(osszegFt)}
+          allapot={allapot.allapot}
+        />
         <div className="grid gap-3 sm:col-span-2">
-          <Mezo nev="kozlemeny" cimke={cimkek.kozlemeny} ertek="" />
+          <Mezo nev="kozlemeny" cimke={cimkek.kozlemeny} ertek="" allapot={allapot.allapot} />
           <p className="text-xs text-stone-500 dark:text-stone-400">{cimkek.sugo}</p>
           <button type="submit" disabled={folyamatban} className={GOMB}>
             {folyamatban ? "…" : cimkek.gomb}

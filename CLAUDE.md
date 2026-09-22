@@ -285,12 +285,31 @@ magától generál.
 
 ## Az űrlapok alapelve
 
-Elutasított mentés nem viheti el a begépelt adatot. A kiszolgálói művelet
-visszaadja a beküldött értékeket (`ertekek`), és az űrlap azokkal rajzolódik
-újra; sikeres mentés után üresen, mert akkor új adat következik. Enélkül a
-React újrarajzoláskor kiüríti az űrlapot, vagyis egyetlen hibás mező miatt
-tízet kell újragépelni — és ez a hiba sem a típusellenőrzésen, sem a
-fordításon nem akad fenn, csak a böngészős próbán.
+Elutasított mentés nem viheti el a begépelt adatot. Egyetlen elgépelt
+igazolványszám miatt senki ne gépeljen újra húsz mezőt.
+
+A React a kiszolgálói művelet lefutása után visszaállítja az űrlapot. Ez a
+„beküldöm, aztán tiszta lappal jön a következő" esetre jó, elutasításkor
+viszont pont azt viszi el, amit meg kellene tartani. Ezért minden űrlapmező a
+`src/components/megorzo.tsx` közös mezőin megy át (`Mezo`, `Valaszto`,
+`Szovegdoboz`, `Valasztogomb`): ezek maguk tartják az értéküket, és csak akkor
+ejtik el, ha a művelet sikerrel zárult. Ehhez elég az `allapot`, ami minden
+űrlapban megvan; a kiszolgálói művelet nem ad vissza semmit az űrlapnak.
+
+Vezérelt mező sem elég önmagában. A visszaállítás az elemben ülő értéket
+írja át, a React viszont nem rajzol újra, mert az ő oldalán nem változott
+semmi — és a felhasználó a visszaállított értéket látja. Leglátványosabban a
+`<select>`-en és a rádiógombon. Ezért a közös mező kirajzolás után ránézik az
+elemre, és visszaírja, ami elcsúszott.
+
+Jelszó nem megy át ezen: az újragépelése két másodperc, a megőrzése viszont
+ott hagyná a mezőben olyankor is, amikor a felhasználó már rég továbblépett.
+Fájlmező sem, mert azt a böngésző nem engedi programból kitölteni.
+
+Ez a hiba sem a típusellenőrzésen, sem a fordításon nem akad fenn, és a
+kódot olvasva sem látszik: csak a böngészős próbán (`proba/urlap.mjs`), ami
+végigjátssza, hogy a kiszolgáló elutasít, és utána megnézi, megvan-e még
+minden mező — a szöveg, a dátum, a választó és a rádiógomb is.
 
 Kifogás és figyelmeztetés nem ugyanaz. Kifogás az, ami nélkül az adat
 értelmetlen vagy később hibát okoz: azt nem mentjük el. Figyelmeztetés az, ami
