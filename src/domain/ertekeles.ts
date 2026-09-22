@@ -74,6 +74,34 @@ export type Paros = {
   masike: ErtekelesAdat | null;
 };
 
+/**
+ * Egy páros összeállítása abból, ami a jogviszonyon áll.
+ *
+ * Mindkét irányban **két** dolog azonosít egy értékelést: ki írta, és kiről.
+ * A szerző egymagában nem elég, és ez nem elméleti: két fiókos lakótársnál a
+ * bérbeadó ugyanazon a jogviszonyon két értékelést ír, egyet-egyet a két
+ * bérlőről. Csak a szerzőre szűrve az egyik lakótárs lapjára a másikról szóló
+ * értékelés került, és a saját űrlapja is lezárult, mert a páros késznek
+ * látszott.
+ */
+export function parosaEnnek(
+  sorok: ErtekelesAdat[],
+  sajatId: string,
+  masikId: string | null,
+): Paros {
+  // Fiók nélküli bérlőnél nincs kit értékelni, és nincs ki értékeljen.
+  if (masikId === null) return { sajat: null, masike: null };
+
+  const egyike = (szerzoId: string, alanyId: string) =>
+    sorok.find((sor) => sor.szerzoId === szerzoId && sor.alanyId === alanyId) ??
+    null;
+
+  return {
+    sajat: egyike(sajatId, masikId),
+    masike: egyike(masikId, sajatId),
+  };
+}
+
 export type Allapot =
   /** A jogviszony még él: értékelni nincs mit. */
   | "nem_ideje"
@@ -112,7 +140,9 @@ export function felfedve(paros: Paros, vege: Date | null, ma: Date): boolean {
 export function allapota(paros: Paros, vege: Date | null, ma: Date): Allapot {
   if (vege === null || eltelt(vege, ma) < 0) return "nem_ideje";
   if (felfedve(paros, vege, ma)) {
-    return paros.sajat === null && paros.masike === null ? "elmaradt" : "lathato";
+    return paros.sajat === null && paros.masike === null
+      ? "elmaradt"
+      : "lathato";
   }
   return paros.sajat === null ? "irhato" : "varakozik";
 }
@@ -125,7 +155,11 @@ export function nezet(
   paros: Paros,
   vege: Date | null,
   ma: Date,
-): { allapot: Allapot; sajat: ErtekelesAdat | null; masike: ErtekelesAdat | null } {
+): {
+  allapot: Allapot;
+  sajat: ErtekelesAdat | null;
+  masike: ErtekelesAdat | null;
+} {
   const allapot = allapota(paros, vege, ma);
   return {
     allapot,
@@ -194,8 +228,13 @@ export function ellenoriz(bevitel: Bevitel): Kifogas[] {
  * tönkretette, nem „közepes" — két külön dolgot csinált. Aki a számot akarja,
  * összeadja; mi nem adjuk oda mérésnek látszó alakban.
  */
-export function pontja(ertekeles: ErtekelesAdat, szempont: string): number | null {
-  return ertekeles.pontok.find((sor) => sor.szempont === szempont)?.pont ?? null;
+export function pontja(
+  ertekeles: ErtekelesAdat,
+  szempont: string,
+): number | null {
+  return (
+    ertekeles.pontok.find((sor) => sor.szempont === szempont)?.pont ?? null
+  );
 }
 
 /** Az értékelés címkéje és magyarázata a szótárból, irány szerint. */
@@ -205,6 +244,15 @@ export function szempontNeve(irany: Irany, szempont: string): Uzenet {
 
 export function allapotMondata(allapot: Allapot): Uzenet {
   return uzenet(`ertekeles.allapot.${allapot}`);
+}
+
+/**
+ * A jelző rövid felirata. Külön a mondattól, mert a jelző pirula alakú, nem
+ * törik és nem zsugorodik — egy egész mondat benne 360 képponton kilógatja a
+ * kártyát. A magyarázat a kártya szövegében áll, ahol sorba tud törni.
+ */
+export function allapotJelzoje(allapot: Allapot): Uzenet {
+  return uzenet(`ertekeles.jelzo.${allapot}`);
 }
 
 /** Hány nap van még hátra az ablakból. Lezáratlan jogviszonynál null. */
@@ -257,7 +305,9 @@ export function ertekelesTeendoi(
       leiras: uzenet("teendo.ertekeles.leiras", {
         nap: hatralevoNap(adat.vege, ma) ?? 0,
       }),
-      esedekesseg: new Date((adat.vege as Date).getTime() + ABLAK_NAP * 86400000),
+      esedekesseg: new Date(
+        (adat.vege as Date).getTime() + ABLAK_NAP * 86400000,
+      ),
       hivatkozas: "/ertekelesek",
     }));
 }

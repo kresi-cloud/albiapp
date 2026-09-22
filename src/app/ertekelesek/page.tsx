@@ -5,15 +5,31 @@ import {
   hatralevoNap,
   pontja,
   szempontNeve,
+  allapotJelzoje,
   allapotMondata,
   type ErtekelesAdat,
   type Irany,
 } from "@/domain/ertekeles";
-import { datumNyelven, type Adatok, type Nyelv, type Uzenet } from "@/domain/nyelv";
-import { berbeadoErtekelesei, berloErtekelesei, type Nezet } from "@/lib/ertekeles";
+import {
+  datumNyelven,
+  type Adatok,
+  type Nyelv,
+  type Uzenet,
+} from "@/domain/nyelv";
+import {
+  berbeadoErtekelesei,
+  berloErtekelesei,
+  type Nezet,
+} from "@/lib/ertekeles";
 import { belepettFelhasznalo, szerepe } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
-import { Jelzo, Lapfej, Sugo, Ures, type Allapotszin } from "@/components/ui/alap";
+import {
+  Jelzo,
+  Lapfej,
+  Sugo,
+  Ures,
+  type Allapotszin,
+} from "@/components/ui/alap";
 import { ErtekelesUrlap } from "./Urlap";
 
 export const dynamic = "force-dynamic";
@@ -42,8 +58,12 @@ export default async function Ertekelesek() {
     <div className="grid gap-4">
       <Lapfej cim={sz("ertekeles.cim")} alcim={sz("ertekeles.alcim")} />
 
-      <Sugo cim={sz("ertekeles.sugo_cim")}>{sz("ertekeles.sugo", { nap: ABLAK_NAP })}</Sugo>
-      <Sugo cim={sz("ertekeles.nem_meres_cim")}>{sz("ertekeles.nem_meres")}</Sugo>
+      <Sugo cim={sz("ertekeles.sugo_cim")}>
+        {sz("ertekeles.sugo", { nap: ABLAK_NAP })}
+      </Sugo>
+      <Sugo cim={sz("ertekeles.nem_meres_cim")}>
+        {sz("ertekeles.nem_meres")}
+      </Sugo>
 
       {sorok.length === 0 ? <Ures>{sz("ertekeles.nincs")}</Ures> : null}
 
@@ -99,25 +119,39 @@ function Sor({
     <section className="rounded-kartya border border-keret bg-felulet p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <h2 className="font-display text-base font-bold tracking-tight">{sor.cimke}</h2>
+          <h2 className="font-display text-base font-bold tracking-tight">
+            {sor.cimke}
+          </h2>
           <p className="text-sm text-halvany">
             {sz("ertekeles.masik_fel", { nev: sor.masikFelNeve })}
           </p>
           {sor.vege ? (
             <p className="text-sm text-halvany">
-              {sz("ertekeles.lezarva_nap", { nap: datumNyelven(sor.vege, nyelv) })}
+              {sz("ertekeles.lezarva_nap", {
+                nap: datumNyelven(sor.vege, nyelv),
+              })}
             </p>
           ) : null}
         </div>
-        <Jelzo allapot={SZIN[sor.allapot]}>{u(allapotMondata(sor.allapot))}</Jelzo>
+        <Jelzo allapot={SZIN[sor.allapot]}>
+          {u(allapotJelzoje(sor.allapot))}
+        </Jelzo>
       </div>
 
+      <p className="mt-3 text-sm text-halvany">
+        {u(allapotMondata(sor.allapot))}
+      </p>
+
       {sor.masikFelId === null ? (
-        <p className="mt-3 text-sm text-halvany">{sz("ertekeles.nincs_fiok")}</p>
+        <p className="mt-3 text-sm text-halvany">
+          {sz("ertekeles.nincs_fiok")}
+        </p>
       ) : null}
 
       {hatra !== null && sor.irhato ? (
-        <p className="mt-3 text-sm text-halvany">{sz("ertekeles.hatralevo", { nap: hatra })}</p>
+        <p className="mt-3 text-sm text-halvany">
+          {sz("ertekeles.hatralevo", { nap: hatra })}
+        </p>
       ) : null}
 
       {sor.sajat ? (
@@ -150,7 +184,9 @@ function Sor({
           meglevoSzoveg={sor.sajat?.szoveg ?? ""}
           meglevoPontok={meglevoPontok}
           cimkek={{
-            cim: sor.sajat ? sz("ertekeles.urlap_modosit") : sz("ertekeles.urlap_cim"),
+            cim: sor.sajat
+              ? sz("ertekeles.urlap_modosit")
+              : sz("ertekeles.urlap_cim"),
             modosithato: sz("ertekeles.modosithato"),
             szovegCimke: sz("ertekeles.szoveg_cimke"),
             szovegSugo: sz("ertekeles.szoveg_sugo"),

@@ -176,6 +176,19 @@ async function main() {
     },
   });
 
+  // Eszter lakótársa, szintén saját fiókkal. Nélküle a példaadatban soha nem
+  // állt két fiókos bérlő egy jogviszonyon, és pont ez az az állapot, amiben
+  // a bérbeadónak ugyanarra a bérletre két külön értékelése van. Amíg ez
+  // hiányzott, a böngészős próba nem is találkozhatott vele.
+  const berloMarton = await prisma.felhasznalo.create({
+    data: {
+      email: "marton@pelda.hu",
+      nev: "Kiss Márton",
+      jelszoHash,
+      szerep: "berlo",
+    },
+  });
+
   const ferencvaros = await prisma.ingatlan.create({
     data: {
       tulajdonosId: berbeado.id,
@@ -672,6 +685,17 @@ async function main() {
             igazolvanySzam: "444444EE",
             sorrend: 0,
           },
+          {
+            berloId: berloMarton.id,
+            nev: berloMarton.nev,
+            email: berloMarton.email,
+            szuletesiHely: "Szeged",
+            szuletesiIdo: new Date(Date.UTC(1995, 3, 18)),
+            anyjaNeve: "Példa Ilona",
+            lakcim: "6722 Szeged, Minta tér 3.",
+            igazolvanySzam: "555555MM",
+            sorrend: 1,
+          },
         ],
       },
       kezdete: nap(-13),
@@ -724,6 +748,29 @@ async function main() {
     },
   });
   void eszterErtekelese;
+
+  // A bérbeadó a **lakótársról** írt, Eszterről még nem. Ez az az állapot,
+  // amiben a páros összeállítása elromolhat: csak a szerzőre szűrve ez az
+  // értékelés Eszter lapjára került volna, „Amit a bérbeadó írt" címmel, és
+  // Eszter saját űrlapja is lezárult volna, mert a páros késznek látszott.
+  const martonErtekelese = await prisma.ertekeles.create({
+    data: {
+      jogviszonyId: eszterJogviszony.id,
+      szerzoId: berbeado.id,
+      alanyId: berloMarton.id,
+      irany: "berlorol",
+      szoveg:
+        "Mártonnal a közös költség elszámolása körül volt némi huzavona, de a lakást rendben adta vissza, és a kiköltözés napját két héttel előre jelezte.",
+      pontok: {
+        create: [
+          { szempont: "fizetes", pont: 3 },
+          { szempont: "allapot", pont: 5 },
+          { szempont: "kommunikacio", pont: 4 },
+        ],
+      },
+    },
+  });
+  void martonErtekelese;
 
   // Egy kiadott és befizetett rezsielszámolás, hogy az adóösszesítőn látszódjon
   // a lényeg: a mért fogyasztás nem bevétel, a közös költség viszont igen.

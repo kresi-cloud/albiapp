@@ -9,6 +9,7 @@
 import {
   irhato,
   nezet,
+  parosaEnnek,
   type Allapot,
   type ErtekelesAdat,
   type Irany,
@@ -50,7 +51,10 @@ function adatta(sor: {
     alanyId: sor.alanyId,
     irany: sor.irany === "berbeadorol" ? "berbeadorol" : "berlorol",
     szoveg: sor.szoveg,
-    pontok: sor.pontok.map((pont) => ({ szempont: pont.szempont, pont: pont.pont })),
+    pontok: sor.pontok.map((pont) => ({
+      szempont: pont.szempont,
+      pont: pont.pont,
+    })),
     letrehozva: sor.letrehozva,
   };
 }
@@ -66,13 +70,10 @@ function nezette(
   sorok: Parameters<typeof adatta>[0][],
   ma: Date,
 ): Nezet {
-  const paros: Paros = {
-    sajat: sorok.filter((sor) => sor.szerzoId === sajatId).map(adatta)[0] ?? null,
-    masike:
-      masikId === null
-        ? null
-        : (sorok.filter((sor) => sor.szerzoId === masikId).map(adatta)[0] ?? null),
-  };
+  // A párosítás a domainé, és **mindkét** azonosítóra szűr: ki írta, és
+  // kiről. Két fiókos lakótársnál a bérbeadónak két értékelése van ezen az
+  // egy jogviszonyon, és a szerző egymagában nem választja szét őket.
+  const paros: Paros = parosaEnnek(sorok.map(adatta), sajatId, masikId);
   const lathato = nezet(paros, vege, ma);
 
   return {
@@ -91,7 +92,13 @@ function nezette(
 }
 
 const BETOLTES = {
-  ingatlan: { select: { megnevezes: true, tulajdonosId: true, tulajdonos: { select: { nev: true } } } },
+  ingatlan: {
+    select: {
+      megnevezes: true,
+      tulajdonosId: true,
+      tulajdonos: { select: { nev: true } },
+    },
+  },
   berlok: { select: { berloId: true, nev: true }, orderBy: { sorrend: "asc" } },
   ertekelesek: { include: PONTOKKAL },
 } as const;
@@ -101,7 +108,10 @@ const BETOLTES = {
  * az értékelés személyről szól, nem a jogviszonyról, és a lakótárs nem felel
  * a másikért.
  */
-export async function berbeadoErtekelesei(berbeadoId: string, ma: Date): Promise<Nezet[]> {
+export async function berbeadoErtekelesei(
+  berbeadoId: string,
+  ma: Date,
+): Promise<Nezet[]> {
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { ingatlan: { tulajdonosId: berbeadoId }, vege: { not: null } },
     include: BETOLTES,
@@ -118,10 +128,15 @@ export async function berbeadoErtekelesei(berbeadoId: string, ma: Date): Promise
         berlo.berloId,
         berlo.nev,
         "berlorol",
+        // Mindkét irányban a teljes páros kell: ki írta, és kiről. A
+        // lakótárs értékelése ugyanezen a jogviszonyon áll, és nem tartozik
+        // ide.
         jogviszony.ertekelesek.filter(
           (sor) =>
             (sor.szerzoId === berbeadoId && sor.alanyId === berlo.berloId) ||
-            (berlo.berloId !== null && sor.szerzoId === berlo.berloId),
+            (berlo.berloId !== null &&
+              sor.szerzoId === berlo.berloId &&
+              sor.alanyId === berbeadoId),
         ),
         ma,
       ),
@@ -130,7 +145,10 @@ export async function berbeadoErtekelesei(berbeadoId: string, ma: Date): Promise
 }
 
 /** A bérlő értékelései: minden lezárt jogviszonyára egy, a bérbeadóról. */
-export async function berloErtekelesei(berloId: string, ma: Date): Promise<Nezet[]> {
+export async function berloErtekelesei(
+  berloId: string,
+  ma: Date,
+): Promise<Nezet[]> {
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { berlok: { some: { berloId } }, vege: { not: null } },
     include: BETOLTES,
@@ -146,10 +164,14 @@ export async function berloErtekelesei(berloId: string, ma: Date): Promise<Nezet
       jogviszony.ingatlan.tulajdonosId,
       jogviszony.ingatlan.tulajdonos.nev,
       "berbeadorol",
+      // A bérbeadó ugyanezen a jogviszonyon a lakótársról is írhatott: az
+      // nem ennek a bérlőnek az értékelése, és be sem töltjük.
       jogviszony.ertekelesek.filter(
         (sor) =>
-          (sor.szerzoId === berloId && sor.alanyId === jogviszony.ingatlan.tulajdonosId) ||
-          sor.szerzoId === jogviszony.ingatlan.tulajdonosId,
+          (sor.szerzoId === berloId &&
+            sor.alanyId === jogviszony.ingatlan.tulajdonosId) ||
+          (sor.szerzoId === jogviszony.ingatlan.tulajdonosId &&
+            sor.alanyId === berloId),
       ),
       ma,
     ),
@@ -174,7 +196,10 @@ export async function ertekelesNezet(
       ? await berbeadoErtekelesei(felhasznaloId, ma)
       : await berloErtekelesei(felhasznaloId, ma);
   return (
-    lista.find((sor) => sor.jogviszonyId === jogviszonyId && sor.masikFelId === masikFelId) ?? null
+    lista.find(
+      (sor) =>
+        sor.jogviszonyId === jogviszonyId && sor.masikFelId === masikFelId,
+    ) ?? null
   );
 }
 
@@ -191,7 +216,9 @@ export async function ertekelestMent(
   pontok: Pont[],
 ): Promise<void> {
   const meglevo = await prisma.ertekeles.findUnique({
-    where: { jogviszonyId_szerzoId_alanyId: { jogviszonyId, szerzoId, alanyId } },
+    where: {
+      jogviszonyId_szerzoId_alanyId: { jogviszonyId, szerzoId, alanyId },
+    },
   });
 
   const ertekelesId = meglevo
@@ -212,7 +239,11 @@ export async function ertekelestMent(
   // nincs a listán, és annak a módosítás után nem szabad ott maradnia.
   await prisma.ertekelesPont.deleteMany({ where: { ertekelesId } });
   await prisma.ertekelesPont.createMany({
-    data: pontok.map((pont) => ({ ertekelesId, szempont: pont.szempont, pont: pont.pont })),
+    data: pontok.map((pont) => ({
+      ertekelesId,
+      szempont: pont.szempont,
+      pont: pont.pont,
+    })),
   });
 }
 
@@ -222,7 +253,13 @@ export async function ertekelesTeendoAdatai(
   szerep: "berbeado" | "berlo",
   ma: Date,
 ): Promise<
-  { jogviszonyId: string; masikFelId: string; cimke: string; vege: Date | null; paros: Paros }[]
+  {
+    jogviszonyId: string;
+    masikFelId: string;
+    cimke: string;
+    vege: Date | null;
+    paros: Paros;
+  }[]
 > {
   const lista =
     szerep === "berbeado"
@@ -230,7 +267,9 @@ export async function ertekelesTeendoAdatai(
       : await berloErtekelesei(felhasznaloId, ma);
 
   return lista
-    .filter((sor): sor is Nezet & { masikFelId: string } => sor.masikFelId !== null)
+    .filter(
+      (sor): sor is Nezet & { masikFelId: string } => sor.masikFelId !== null,
+    )
     .map((sor) => ({
       jogviszonyId: sor.jogviszonyId,
       masikFelId: sor.masikFelId,

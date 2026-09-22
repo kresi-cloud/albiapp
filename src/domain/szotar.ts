@@ -3291,6 +3291,14 @@ export const SZOTAR: Szotar = {
     en: "The window closed and neither side wrote a review.",
   },
 
+  // A jelző rövid felirata. A hozzá tartozó magyarázat az `allapot.*` kulcsokon
+  // van: egy mondat nem fér a pirulába, és az nem is törik.
+  "ertekeles.jelzo.nem_ideje": { hu: "Még fut", en: "Still running" },
+  "ertekeles.jelzo.irhato": { hu: "Rajtad a sor", en: "Your turn" },
+  "ertekeles.jelzo.varakozik": { hu: "Vár a másikra", en: "Waiting on them" },
+  "ertekeles.jelzo.lathato": { hu: "Felfedve", en: "Revealed" },
+  "ertekeles.jelzo.elmaradt": { hu: "Elmaradt", en: "Not written" },
+
   "ertekeles.sajat_cim": { hu: "Amit te írtál", en: "What you wrote" },
   "ertekeles.masike_cim": { hu: "Amit {nev} írt", en: "What {nev} wrote" },
   "ertekeles.urlap_cim": { hu: "Értékelés írása", en: "Write a review" },
