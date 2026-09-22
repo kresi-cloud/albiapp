@@ -208,9 +208,10 @@ function rendezettEloirasok(nezetek: JogviszonyNezet[]): Set<string> {
 async function tarolt(
   cimzettId: string,
   cimzett: "berbeado" | "berlo",
+  statusz: "nyitott" | "kesz" = "nyitott",
 ): Promise<Teendo[]> {
   const sorok = await prisma.teendo.findMany({
-    where: { cimzettId, statusz: "nyitott" },
+    where: { cimzettId, statusz },
     orderBy: { esedekesseg: "asc" },
   });
 
@@ -225,6 +226,18 @@ async function tarolt(
     hivatkozas: sor.hivatkozas ?? undefined,
     tarolt: true,
   }));
+}
+
+/**
+ * A lezárt tárolt teendők. Azért külön lekérdezés, és nem a lista egy szűrése,
+ * mert a nyitott teendő a lap tárgya, a lezárt pedig csak a visszavonás útja:
+ * a kezdőlap és a naptár ezt soha nem kéri el.
+ */
+export async function lezartTeendok(
+  cimzettId: string,
+  cimzett: "berbeado" | "berlo",
+): Promise<Teendo[]> {
+  return tarolt(cimzettId, cimzett, "kesz");
 }
 
 async function kozelgok(

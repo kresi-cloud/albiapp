@@ -304,6 +304,44 @@ A teendők többsége származtatott: a rendszer állapotából jön, és magát
 ha az oka megszűnik. A vállalt javítás viszont tárolt teendő (`Teendo`), mert azt
 valaki vállalta, és le is kell tudni zárni.
 
+## A teendők és a naptár alapelve
+
+A teendő nem tárolt igazság: a rendszer állapotából származik
+(`src/domain/teendok.ts`), és magától eltűnik, ha az oka megszűnik. Egy nyitott
+hibabejelentés, egy esedékes befizetés, egy hiányzó személyes adat mind teendőt
+ad, és egyiket sem kell lezárni — ha lezárhatóak lennének, a lezárás után is
+megmaradna a baj, csak már nem látszana.
+
+Két kivétel van, és mindkettő ugyanazért: valaki vállalta. A jegyzőkönyvben
+határidővel vállalt javítás és a kézzel felvett saját teendő tárolt
+(`Teendo` tábla), ezért lezárható — **és a lezárás visszavonható**, mert egy
+elkattintott „kész" különben csendben eltüntetné, amit valaki vállalt. Ugyanaz
+az elv, mint a jogviszony lezárásánál.
+
+A kézzel felvett teendő azért kell, mert a bérlet hétköznapja nem következik
+abból, amit az alkalmazás tud: a kéményseprő érkezése, a biztosítás évfordulója,
+a felmondási határidő előtti döntés sehonnan nem vezethető le. A kulcsa külön
+előtagot kap, hogy soha ne üsse ki a származtatottat.
+
+A naptár (`src/domain/naptar.ts`) nem a lista másik rendezése. A listából az
+derül ki, **mi** van hátra, a naptárból az, hogy **mikor** — és ehhez az üres
+nap is adat, amit egy lista nem tud megmutatni. Ezért van a nyitólapon a
+következő hét nap sávja, és ezért van a teendők lapján havi rács.
+
+Mindkettő ugyanabból a számításból jön, tehát nem tud elcsúszni egymástól. Egy
+naptárcellába egy jelzés fér, a legsürgetőbb, és ezt is a domain dönti el, nem a
+megjelenítés: két külön szabályból előbb-utóbb az lenne, hogy a lista pirosat
+mutat, a naptár nem.
+
+A hét hétfővel kezdődik mindkét nyelven, mert a magyar és a brit naptár is
+hétfős. A napnevek a `nyelv.ts`-ből jönnek, nem beégetett tömbből: pont ez az a
+hiba, amit a formátumkapu meg akar fogni.
+
+A lejárt teendő nem csúszik a mai napra. A ma esedékes és a két hete lejárt nem
+ugyanaz, és aki a mai cellában látná mindkettőt, azt hinné, ma keletkezett —
+ezért a hétsáv külön sorban mondja meg, hány lejárt tétel van, a havi rács pedig
+kiírja, ha a lejárt tétel nem ebben a hónapban van.
+
 ## A beszélgetés alapelve
 
 A bérlet hétköznapi ügye — mikor jön a kéményseprő, elviheti-e a szekrényt,

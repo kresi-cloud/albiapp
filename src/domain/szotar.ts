@@ -458,6 +458,72 @@ export const SZOTAR: Szotar = {
   "teendo.hiba.uj": { hu: "Új hibabejelentés: {targy}", en: "New fault report: {targy}" },
   "teendo.hiba.nyitott": { hu: "Nyitott hiba: {targy}", en: "Open fault: {targy}" },
   "teendo.hiba.allapotsor": { hu: "{surgosseg} · {allapot}", en: "{surgosseg} · {allapot}" },
+  "teendo.ujranyitas": { hu: "Mégis nyitott", en: "Reopen" },
+  "teendo.ujranyitom": { hu: "Nyitom…", en: "Reopening…" },
+
+  // --- Teendők lapja és naptár
+  "nav.teendok": { hu: "Teendők", en: "Tasks" },
+  "teendok.cim": { hu: "Teendők", en: "Tasks" },
+  "teendok.alcim": {
+    hu: "Ami hátravan, és hogy mikorra.",
+    en: "What is outstanding, and when it is due.",
+  },
+  "teendok.sugo.cim": { hu: "Honnan jönnek a teendők?", en: "Where do tasks come from?" },
+  "teendok.sugo.szarmaztatott": {
+    hu: "A legtöbb teendő magától keletkezik abból, ami az alkalmazásban történik: egy nyitott hibabejelentésből, egy esedékes befizetésből, egy hiányzó adatból. Ezeket nem kell lezárni: eltűnnek, amint az okuk megszűnik.",
+    en: "Most tasks appear on their own from what happens in the app: an open fault report, a payment falling due, a missing detail. There is nothing to close: they disappear as soon as the reason for them is gone.",
+  },
+  "teendok.sugo.sajat": {
+    hu: "A saját teendő más: azt te vetted fel, ezért le is kell zárni, és a lezárás vissza is vonható. A jegyzőkönyvben vállalt javítás is ilyen.",
+    en: "A task you add yourself is different: you created it, so you close it, and closing can be undone. A repair undertaken in the handover record works the same way.",
+  },
+  "teendok.most": { hu: "Most", en: "Now" },
+  "teendok.kesobb": { hu: "Később", en: "Later" },
+  "teendok.lezart": { hu: "Lezárt", en: "Closed" },
+  "teendok.uj": { hu: "Új teendő", en: "New task" },
+  "teendok.mind": { hu: "Mind", en: "All" },
+  "teendok.nap_ures": {
+    hu: "Erre a napra nincs teendő.",
+    en: "Nothing to do on this day.",
+  },
+  "teendok.urlap.cim": { hu: "Mi a teendő?", en: "What needs doing?" },
+  "teendok.urlap.cim_helyorzo": {
+    hu: "Kéményseprő, biztosítás, felmondási határidő…",
+    en: "Chimney sweep, insurance, notice deadline…",
+  },
+  "teendok.urlap.leiras": { hu: "Részletek", en: "Details" },
+  "teendok.urlap.leiras_sugo": {
+    hu: "Nem kötelező. Ide kerül, amit egy hónap múlva már nem fogsz fejből tudni.",
+    en: "Optional. This is for what you will not remember a month from now.",
+  },
+  "teendok.urlap.esedekesseg": { hu: "Mikorra", en: "Due" },
+  "teendok.urlap.berlemeny": { hu: "Melyik bérleményhez", en: "Which tenancy" },
+  "teendok.urlap.berlemeny_nelkul": {
+    hu: "Nem tartozik bérleményhez",
+    en: "Not tied to a tenancy",
+  },
+  "teendok.urlap.mentes": { hu: "Felveszem", en: "Add task" },
+  "teendok.urlap.mentes_folyamatban": { hu: "Mentem…", en: "Saving…" },
+  "naptar.elozo": { hu: "Előző hónap", en: "Previous month" },
+  "naptar.kovetkezo": { hu: "Következő hónap", en: "Next month" },
+  "naptar.lejart_mashonnan": {
+    hu: "Ezen a hónapon kívül még {darab} lejárt teendő van.",
+    en: "There are {darab} more overdue tasks outside this month.",
+  },
+  "naptar.nap_teendoi": {
+    hu: "{nap}. — {darab} teendő",
+    en: "Day {nap} — {darab} tasks",
+  },
+  "hetsav.cim": { hu: "A következő hét nap", en: "The next seven days" },
+  "hetsav.mind": { hu: "Minden teendő", en: "All tasks" },
+  "hetsav.lejart": {
+    hu: "{darab} lejárt teendő",
+    en: "{darab} overdue tasks",
+  },
+  "hetsav.szabad": {
+    hu: "A héten nincs határidő.",
+    en: "No deadlines this week.",
+  },
 
   // --- Hibabejelentés
   "hiba.terulet.epulet": {
@@ -2353,6 +2419,11 @@ export const SZOTAR: Szotar = {
   "teendo.hiba.lepj_be": { hu: "Lépj be.", en: "Please sign in." },
   "teendo.hiba.nem_tied": { hu: "Ez a teendő nem a tiéd.", en: "This task is not yours." },
   "teendo.kesz.lezarva": { hu: "Lezárva.", en: "Closed." },
+  "teendo.kesz.ujranyitva": { hu: "Újra nyitott.", en: "Reopened." },
+  "teendo.kesz.felveve": { hu: "Felvéve.", en: "Task added." },
+  "teendo.hiba.hianyos": { hu: "Hiányzó adat.", en: "Missing details." },
+  "teendo.hiba.cim": { hu: "Írd le, mi a teendő.", en: "Say what needs doing." },
+  "teendo.hiba.esedekesseg": { hu: "Adj meg határidőt.", en: "Give a due date." },
   "teendo.jegyzokonyvi_vallalas": {
     hu: "A jegyzőkönyvben {felelos} a rendezését.",
     en: "In the handover record, {felelos} to fix it.",

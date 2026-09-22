@@ -782,6 +782,49 @@ async function main() {
     ],
   });
 
+  // Saját teendők: a naptár és a hétsáv csak ezeken látszik igazán, mert a
+  // származtatott teendők mind a fizetési határidőre esnek, tehát egyetlen
+  // napra. A kéményseprő és a biztosítás évfordulója pont az a két ügy, amit
+  // egy magánbérbeadó máshol nem tart nyilván.
+  await prisma.teendo.createMany({
+    data: [
+      {
+        cimzettId: berbeado.id,
+        jogviszonyId: annaJogviszony.id,
+        tipus: "sajat",
+        cim: "Kéményseprő egyeztetése",
+        leiras: "A társasház a jövő héten hívja a kéményseprőt, Annával egyeztetni kell az időpontot.",
+        esedekesseg: nap(0, Math.min(28, MOST.getUTCDate() + 3)),
+        kulcs: "peldaadat:kemenysepro",
+      },
+      {
+        cimzettId: berbeado.id,
+        tipus: "sajat",
+        cim: "Lakásbiztosítás évfordulója",
+        leiras: "Érdemes összehasonlítani az ajánlatokat a megújítás előtt.",
+        esedekesseg: nap(1, 12),
+        kulcs: "peldaadat:biztositas",
+      },
+      {
+        cimzettId: berbeado.id,
+        tipus: "sajat",
+        cim: "Bojler vízkőtelenítése",
+        leiras: "Tavaly is ilyenkor volt esedékes.",
+        esedekesseg: nap(-1, 18),
+        statusz: "kesz",
+        kulcs: "peldaadat:bojler",
+      },
+      {
+        cimzettId: berloAnna.id,
+        jogviszonyId: annaJogviszony.id,
+        tipus: "sajat",
+        cim: "Postaláda kulcsát pótolni",
+        esedekesseg: nap(0, Math.min(28, MOST.getUTCDate() + 5)),
+        kulcs: "peldaadat:postalada",
+      },
+    ],
+  });
+
   console.log("Példaadat betöltve.");
   console.log(`Bérbeadó: ${berbeado.email} / ${PROBA_JELSZO}`);
   console.log(`Bérlő: ${berloAnna.email} / ${PROBA_JELSZO}`);

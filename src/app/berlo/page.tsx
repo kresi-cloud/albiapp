@@ -1,6 +1,9 @@
+import Link from "next/link";
 import { Allapotjelzo } from "@/components/Allapotjelzo";
 import { csoportositva } from "@/domain/egyeztetes";
+import { kovetkezoHet } from "@/domain/naptar";
 import { ElszamolasTetelek } from "@/components/ElszamolasTetelek";
+import { Hetsav } from "@/components/Hetsav";
 import { Teendolista } from "@/components/Teendolista";
 import { datumNyelven, forintNyelven, honapNyelven } from "@/domain/nyelv";
 import { szovegekNyelvvel } from "@/domain/szotar";
@@ -103,10 +106,46 @@ export default async function BerloiNezet() {
           .join(" · ")}
       />
 
+      {/* Ugyanaz a sáv, mint a bérbeadó áttekintőjén: a lista azt mondja meg,
+          mi van hátra, a sáv azt, hogy mikor. A bérlőnek ez a fontosabb, mert
+          az ő teendői jellemzően határidősek. */}
+      <Hetsav het={kovetkezoHet(sajatTeendok, ma)} nyelv={nyelv} utvonal="/berlo/teendok" />
+
       <section>
-        <Szakaszcim>{sz("berlo.teendok")}</Szakaszcim>
-        <Teendolista teendok={sajatTeendok} nyelv={nyelv} />
+        <Szakaszcim
+          mellette={
+            <Link
+              href="/berlo/teendok"
+              className="font-semibold text-kiemelt hover:underline"
+            >
+              {sz("hetsav.mind")}
+            </Link>
+          }
+        >
+          {sz("berlo.teendok")}
+        </Szakaszcim>
+        <Teendolista
+          teendok={sajatTeendok.filter((teendo) => teendo.surgosseg !== "kesobbi")}
+          nyelv={nyelv}
+        />
       </section>
+
+      {sajatTeendok.some((teendo) => teendo.surgosseg === "kesobbi") ? (
+        <details className="group">
+          <summary className={`${NYITO} font-bold`}>
+            <span className="font-display text-base">{sz("teendok.kesobb")}</span>
+            <span className="ml-2 text-sm font-medium text-halvany">
+              ({sajatTeendok.filter((teendo) => teendo.surgosseg === "kesobbi").length})
+            </span>
+          </summary>
+          <div className="mt-2">
+            <Teendolista
+              teendok={sajatTeendok.filter((teendo) => teendo.surgosseg === "kesobbi")}
+              nyelv={nyelv}
+            />
+          </div>
+        </details>
+      ) : null}
 
       {meroorasJogviszonyok.map((jogviszony) => (
         <section key={`orak-${jogviszony.id}`}>
