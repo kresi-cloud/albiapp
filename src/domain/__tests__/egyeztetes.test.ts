@@ -3,7 +3,9 @@ import {
   ABLAK_MAX_NAP,
   ablakotEllenoriz,
   ALAPERTELMEZETT_BEALLITASOK,
+  csoportositva,
   egyeztet,
+  varRank,
   KET_OLDAL_NAP_ELTERES,
   type BerbeadoiIgazolas,
   type BerloiIgazolas,
@@ -371,5 +373,78 @@ describe("ablakotEllenoriz", () => {
 
     expect(ablak).toBeNull();
     expect(hibak[0]).toContain(String(ABLAK_MAX_NAP));
+  });
+});
+
+describe("kire vár a tétel", () => {
+  const sor = (reszlet: Parameters<typeof varRank>[0]) => reszlet;
+
+  it("a vitás tétel mindkét félre vár", () => {
+    const vitas = sor({ allapot: "vitas", berloiIgazolasId: "b", berbeadoiIgazolasId: "t" });
+    expect(varRank(vitas, "berbeado")).toBe(true);
+    expect(varRank(vitas, "berlo")).toBe(true);
+  });
+
+  it("az egyező tétel egyik félre sem vár", () => {
+    const kesz = sor({ allapot: "egyezik", berloiIgazolasId: "b", berbeadoiIgazolasId: "t" });
+    expect(varRank(kesz, "berbeado")).toBe(false);
+    expect(varRank(kesz, "berlo")).toBe(false);
+  });
+
+  it("az eltérő összeg sem vár senkire: a felek egyetértenek", () => {
+    const elter = sor({ allapot: "elter", berloiIgazolasId: "b", berbeadoiIgazolasId: "t" });
+    expect(varRank(elter, "berbeado")).toBe(false);
+    expect(varRank(elter, "berlo")).toBe(false);
+  });
+
+  it("csak arra vár, aki még nem nyilatkozott", () => {
+    const berlore = sor({ allapot: "varakozik", berloiIgazolasId: null, berbeadoiIgazolasId: "t" });
+    expect(varRank(berlore, "berbeado")).toBe(false);
+    expect(varRank(berlore, "berlo")).toBe(true);
+
+    const berbeadora = sor({ allapot: "varakozik", berloiIgazolasId: "b", berbeadoiIgazolasId: null });
+    expect(varRank(berbeadora, "berbeado")).toBe(true);
+    expect(varRank(berbeadora, "berlo")).toBe(false);
+  });
+
+  it("a hiányzó tétel mindkét félre vár", () => {
+    const hianyzik = sor({ allapot: "hianyzik", berloiIgazolasId: null, berbeadoiIgazolasId: null });
+    expect(varRank(hianyzik, "berbeado")).toBe(true);
+    expect(varRank(hianyzik, "berlo")).toBe(true);
+  });
+
+  it("a tagadás is nyilatkozat: a bérbeadó letudta a magáét", () => {
+    // "Megnéztem, nem érkezett meg" — ettől a tétel nem tűnik el, de a
+    // bérbeadónak nincs vele több dolga, a bérlőnek viszont van.
+    const tagadott = sor({ allapot: "varakozik", berloiIgazolasId: null, berbeadoiIgazolasId: "t" });
+    expect(varRank(tagadott, "berbeado")).toBe(false);
+  });
+});
+
+describe("csoportosítás", () => {
+  const sorok = [
+    { allapot: "egyezik" as const, berloiIgazolasId: "b1", berbeadoiIgazolasId: "t1", jel: "regi-kesz" },
+    { allapot: "hianyzik" as const, berloiIgazolasId: null, berbeadoiIgazolasId: null, jel: "regi-nyitott" },
+    { allapot: "egyezik" as const, berloiIgazolasId: "b2", berbeadoiIgazolasId: "t2", jel: "uj-kesz" },
+    { allapot: "vitas" as const, berloiIgazolasId: "b3", berbeadoiIgazolasId: "t3", jel: "uj-vitas" },
+  ];
+
+  it("a soron lévők a legrégebbivel kezdenek", () => {
+    expect(csoportositva(sorok, "berbeado").soronVan.map((s) => s.jel)).toEqual([
+      "regi-nyitott",
+      "uj-vitas",
+    ]);
+  });
+
+  it("a rendezettek a legfrissebbel kezdenek", () => {
+    expect(csoportositva(sorok, "berbeado").rendezett.map((s) => s.jel)).toEqual([
+      "uj-kesz",
+      "regi-kesz",
+    ]);
+  });
+
+  it("egyetlen tétel sem vész el a két csoport közt", () => {
+    const { soronVan, rendezett } = csoportositva(sorok, "berlo");
+    expect(soronVan.length + rendezett.length).toBe(sorok.length);
   });
 });

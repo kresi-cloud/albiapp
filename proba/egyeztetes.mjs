@@ -10,7 +10,7 @@
  * a próbakör újrafuttatható maradjon.
  */
 
-import { ALAP, all, belep, kilep, magyarra } from "./kozos.mjs";
+import { ALAP, all, belep, kilep, magyarra, mindetKinyit } from "./kozos.mjs";
 
 /** Egy apró, valódi PNG: a bizonylat helyett ennyi is elég a próbához. */
 const KEP = Buffer.from(
@@ -52,13 +52,20 @@ const DIJ = "180 000 Ft";
 /**
  * A vizsgált hónap bérleti díjának sora. A teendőlista ugyanezt a hónapot és
  * összeget kiírja, ezért a befizetési kártyát arról ismerjük meg, hogy van
- * rajta állapotjelző és a két fél adata.
+ * rajta befizetéshez tartozó művelet vagy magyarázat.
+ *
+ * A szűrő szándékosan nem a hasábcímkékre (`Amit a bérlő mond`) megy. A
+ * rendezett tétel rövid sort kap, azon nincsenek hasábok — és a próba épp
+ * onnan indul, ahol az előző menet befejezte, vagyis rendezett tételről.
  */
 function sorA(oldal) {
   return oldal
     .locator("li", { hasText: IDOSZAK })
     .filter({ hasText: DIJ })
-    .filter({ hasText: /Amit a bérlő mond|Amit te mondtál/ })
+    .filter({
+      hasText:
+        /Amit a bérlő mond|Amit te mondtál|Megérkezett\? Rögzítem|Elutaltam, rögzítem|Ezt tévedésből rögzítettem|Ezt elgépeltem/,
+    })
     .first();
 }
 
@@ -69,6 +76,9 @@ async function kiurit(oldal, cimke) {
     await gomb.first().click();
     await oldal.waitForLoadState("networkidle");
     await oldal.reload();
+    // Az újratöltés a beszúrt stíluslapot is eldobja: nélküle a rendezett
+    // tételek megint csukva lennének.
+    await mindetKinyit(oldal);
   }
 }
 
@@ -77,6 +87,7 @@ export async function futtat(oldal) {
   await belep(oldal, "berbeado@pelda.hu");
   await magyarra(oldal);
   await oldal.goto(`${ALAP}/befizetesek`);
+  await mindetKinyit(oldal);
 
   const fooldal = await oldal.textContent("main");
   all(
@@ -94,6 +105,7 @@ export async function futtat(oldal) {
   await belep(oldal, "anna@pelda.hu");
   await magyarra(oldal);
   await oldal.goto(`${ALAP}/berlo`);
+  await mindetKinyit(oldal);
   await kiurit(oldal, "Ezt elgépeltem");
 
   const berloiSor = sorA(oldal);
@@ -110,6 +122,7 @@ export async function futtat(oldal) {
   all((await visszavon.count()) > 0, "a bérlő utalása rögzült, és visszavonható");
 
   await oldal.goto(`${ALAP}/berlo`);
+  await mindetKinyit(oldal);
   all(
     (await sorA(oldal).getByText("várakozik").count()) > 0,
     "egyoldalú adatnál a tétel a másik félre vár, nem vitás",
@@ -123,6 +136,7 @@ export async function futtat(oldal) {
   await belep(oldal, "berbeado@pelda.hu");
   await magyarra(oldal);
   await oldal.goto(`${ALAP}/befizetesek`);
+  await mindetKinyit(oldal);
   const berbeadoiSor = sorA(oldal);
   await berbeadoiSor.getByText("Megérkezett? Rögzítem").click();
   await berbeadoiSor.locator('input[name="osszegFt"]').fill("150000");
@@ -133,6 +147,7 @@ export async function futtat(oldal) {
     .waitFor({ timeout: 15000 });
 
   await oldal.goto(`${ALAP}/befizetesek`);
+  await mindetKinyit(oldal);
   const vitasSor = sorA(oldal);
   all((await vitasSor.getByText("vitás").count()) > 0, "eltérő adatnál a tétel vitás lesz");
   all(
@@ -160,6 +175,7 @@ export async function futtat(oldal) {
   await bizonylatot(oldal, vitasSor, "bérbeadó");
 
   await oldal.goto(`${ALAP}/befizetesek`);
+  await mindetKinyit(oldal);
   all(
     (await sorA(oldal).locator('[data-oldal="fogado"] a').count()) > 0,
     "a feltöltött bizonylat megjelenik a feltöltőnél",
@@ -169,6 +185,7 @@ export async function futtat(oldal) {
   await belep(oldal, "anna@pelda.hu");
   await magyarra(oldal);
   await oldal.goto(`${ALAP}/berlo`);
+  await mindetKinyit(oldal);
   const berloiVitas = sorA(oldal);
   all(
     (await berloiVitas.locator('[data-oldal="fogado"] a').count()) > 0,
@@ -188,6 +205,7 @@ export async function futtat(oldal) {
 
   await bizonylatot(oldal, berloiVitas, "bérlő");
   await oldal.goto(`${ALAP}/berlo`);
+  await mindetKinyit(oldal);
   all(
     (await sorA(oldal).locator('[data-oldal] a').count()) === 2,
     "mindkét oldal bizonylata látszik, ha mindkettő feltöltötte",
@@ -211,6 +229,7 @@ export async function futtat(oldal) {
   await oldal.getByText(/nem kérek bizonylatot/).first().waitFor({ timeout: 15000 });
 
   await oldal.goto(`${ALAP}/befizetesek`);
+  await mindetKinyit(oldal);
   const kikapcsolt = sorA(oldal);
   all(
     (await kikapcsolt.getByText("vitás").count()) > 0,
@@ -233,6 +252,7 @@ export async function futtat(oldal) {
 
   // --- Egyezésre hozva: a vita és a bizonylatkérés eltűnik
   await oldal.goto(`${ALAP}/befizetesek`);
+  await mindetKinyit(oldal);
   await kiurit(oldal, "Ezt tévedésből rögzítettem");
   const ujraSor = sorA(oldal);
   await ujraSor.getByText("Megérkezett? Rögzítem").click();
@@ -241,6 +261,7 @@ export async function futtat(oldal) {
   await ujraSor.getByText("Ezt tévedésből rögzítettem").first().waitFor({ timeout: 15000 });
 
   await oldal.goto(`${ALAP}/befizetesek`);
+  await mindetKinyit(oldal);
   const kesz = sorA(oldal);
   all((await kesz.getByText("egyezik").count()) > 0, "egyező adatnál a tétel lezárul");
   all(
@@ -262,6 +283,7 @@ export async function futtat(oldal) {
   await belep(oldal, "anna@pelda.hu");
   await magyarra(oldal);
   await oldal.goto(`${ALAP}/berlo`);
+  await mindetKinyit(oldal);
   const berloiKesz = sorA(oldal);
   if ((await berloiKesz.getByText("Törlöm").count()) > 0) {
     await berloiKesz.getByText("Törlöm").first().click();

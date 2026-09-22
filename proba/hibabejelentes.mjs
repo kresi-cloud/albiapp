@@ -6,7 +6,7 @@
  * a bérlő megerősítése.
  */
 
-import { ALAP, all, belep, magyarra } from "./kozos.mjs";
+import { ALAP, all, belep, magyarra, mindetKinyit } from "./kozos.mjs";
 
 export const nev = "Hibabejelentés és dokumentumtár";
 
@@ -14,6 +14,7 @@ export async function futtat(oldal) {
   await belep(oldal, "anna@pelda.hu");
   await magyarra(oldal);
   await oldal.goto(`${ALAP}/berlo/hibak`);
+  await mindetKinyit(oldal);
   all(
     (await oldal.getByText("Nem melegszik a fürdőszobai radiátor").count()) > 0,
     "a bérlő látja a korábbi nyitott bejelentését",
@@ -43,6 +44,7 @@ export async function futtat(oldal) {
     "veszélyhelyzetnél a visszajelzés telefonálásra szólít",
   );
   await oldal.reload();
+  await mindetKinyit(oldal);
   all(
     (await oldal.getByText("Ereszt a mosogató alatti szifon").count()) > 0,
     "az új bejelentés megjelenik a bérlő listáján",
@@ -74,6 +76,7 @@ export async function futtat(oldal) {
   );
 
   await oldal.goto(`${ALAP}/hibak`);
+  await mindetKinyit(oldal);
   const kartya = oldal.locator("li", { hasText: "Ereszt a mosogató alatti szifon" }).first();
   all((await kartya.getByRole("button", { name: "Átvettem" }).count()) > 0, "az átvétel léphető");
   all(
@@ -86,6 +89,7 @@ export async function futtat(oldal) {
   await oldal.waitForLoadState("networkidle");
 
   await oldal.goto(`${ALAP}/hibak`);
+  await mindetKinyit(oldal);
   await oldal
     .locator("li", { hasText: "Ereszt a mosogató alatti szifon" })
     .first()
@@ -100,6 +104,7 @@ export async function futtat(oldal) {
 
   for (const lepes of ["Átvettem", "Elhárítottam"]) {
     await oldal.goto(`${ALAP}/hibak`);
+  await mindetKinyit(oldal);
     await oldal
       .locator("li", { hasText: "Ereszt a mosogató alatti szifon" })
       .first()
@@ -109,6 +114,7 @@ export async function futtat(oldal) {
   }
 
   await oldal.goto(`${ALAP}/hibak`);
+  await mindetKinyit(oldal);
   all(
     (await oldal.getByText("Elhárítva, a bérlő megerősítésére vár").count()) > 0,
     "elhárítás után a bérlő megerősítésére vár",
@@ -130,6 +136,7 @@ export async function futtat(oldal) {
   );
 
   await oldal.goto(`${ALAP}/berlo/hibak`);
+  await mindetKinyit(oldal);
   const berloiKartya = oldal
     .locator("li", { hasText: "Ereszt a mosogató alatti szifon" })
     .first();
@@ -144,6 +151,7 @@ export async function futtat(oldal) {
   await berloiKartya.getByRole("button", { name: "Rendben van, lezárom" }).click();
   await oldal.waitForLoadState("networkidle");
   await oldal.goto(`${ALAP}/berlo/hibak`);
+  await mindetKinyit(oldal);
   all(
     (await oldal.getByText("Lezárt bejelentéseim").count()) > 0,
     "a megerősítés után a bejelentés lezárul",

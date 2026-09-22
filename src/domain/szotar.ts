@@ -776,6 +776,21 @@ export const SZOTAR: Szotar = {
   "berlok.lezarva": { hu: "Lezárva {nap} napjával", en: "Closed as of {nap}" },
   "berlok.ujranyit": { hu: "Mégis él", en: "Reopen" },
 
+  // --- Hosszú listák összecsukása
+  //
+  // Egy-két év alatt száz fölötti tétel gyűlik össze. Amivel már nincs dolga
+  // egyik félnek sem, az nem tűnik el, csak összecsukva áll, darabszámmal.
+  "lista.rendezett": { hu: "Rendezett tételek ({darab})", en: "Settled items ({darab})" },
+  "lista.rendezett_bizonylattal": {
+    hu: "Rendezett, de van hozzá feltöltött bizonylat ({darab})",
+    en: "Settled, but a receipt was uploaded ({darab})",
+  },
+  "lista.nincs_teendo": {
+    hu: "Ezzel a bérleménnyel most nincs dolgod.",
+    en: "Nothing needs you on this tenancy right now.",
+  },
+  "lista.korabbiak": { hu: "Korábbi hónapok ({darab})", en: "Earlier months ({darab})" },
+
   // --- Betekintő nézet
   "nav.betekinto": { hu: "Betekintő", en: "Shared view" },
   "betekinto.oldal.cim": { hu: "Betekintő a bérleményembe", en: "A window into my tenancy" },

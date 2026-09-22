@@ -30,6 +30,8 @@ export default async function SzerzodesOldal({
   if (!betoltott) notFound();
 
   const { bemenet, megnevezes, allapot, veglegesSzoveg } = betoltott;
+  const kotelezoek = MODULOK.filter((modul) => modul.kotelezo);
+  const valaszthato = MODULOK.filter((modul) => !modul.kotelezo);
   const szerkesztheto = allapot === "tervezet";
   const valasztott = new Set(bemenet.valasztottModulok);
   const hianyok = hianyzoAdatok(bemenet);
@@ -101,10 +103,20 @@ export default async function SzerzodesOldal({
         </section>
       ) : null}
 
+      {/*
+        A kötelező modulok külön állnak, összecsukva. Nincs rajtuk mit
+        eldönteni — minden szerződésben benne vannak —, viszont a "miért"
+        mondatukkal együtt ennyien elnyomják azt a tucatot, ahol tényleg
+        választani kell. Nem tűnnek el: a nyitósor kiírja, hányan vannak.
+      */}
       <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-        <h2 className="font-medium">Modulok</h2>
-        <ul className="mt-2">
-          {MODULOK.map((modul) => (
+        <h2 className="font-medium">Amiről dönteni kell</h2>
+        <p className="mb-2 mt-1 text-sm text-stone-600 dark:text-stone-400">
+          Minden modul mellett ott van, miért van rá szükség: nem vagy jogász,
+          és amit nem értesz, azt nem tudod eldönteni.
+        </p>
+        <ul>
+          {valaszthato.map((modul) => (
             <ModulValto
               key={modul.kulcs}
               szerzodesId={id}
@@ -113,7 +125,7 @@ export default async function SzerzodesOldal({
                 kulcs: modul.kulcs,
                 cim: modul.cim,
                 kotelezo: modul.kotelezo,
-                bekapcsolva: modul.kotelezo || valasztott.has(modul.kulcs),
+                bekapcsolva: valasztott.has(modul.kulcs),
                 miert: modul.miert,
                 ellenjegyzes: modul.ellenjegyzes,
               }}
@@ -121,6 +133,29 @@ export default async function SzerzodesOldal({
           ))}
         </ul>
       </section>
+
+      <details className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+        <summary className="cursor-pointer font-medium">
+          Minden szerződésben benne van · {kotelezoek.length} pont
+        </summary>
+        <ul className="mt-2">
+          {kotelezoek.map((modul) => (
+            <ModulValto
+              key={modul.kulcs}
+              szerzodesId={id}
+              szerkesztheto={szerkesztheto}
+              modul={{
+                kulcs: modul.kulcs,
+                cim: modul.cim,
+                kotelezo: modul.kotelezo,
+                bekapcsolva: true,
+                miert: modul.miert,
+                ellenjegyzes: modul.ellenjegyzes,
+              }}
+            />
+          ))}
+        </ul>
+      </details>
 
       {szerkesztheto ? (
         <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
@@ -138,9 +173,22 @@ export default async function SzerzodesOldal({
         </section>
       ) : null}
 
-      <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="font-medium">A szerződés szövege</h2>
+      {/*
+        A szerződés szövege húsz telefonképernyő. Ha nyitva áll, a modulok
+        átállítása és a véglegesítés is az aljára kerül, vagyis minden
+        próbálkozás után végig kell görgetni rajta. Összecsukva áll, de nem
+        rejtve: a nyitósor kiírja, hány szakaszból áll, és egy koppintásra
+        látszik. A véglegesített szöveg alapból nyitva van, mert azt olvasni
+        jön vissza az ember.
+      */}
+      <details
+        open={veglegesSzoveg !== null}
+        className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+      >
+        <summary className="cursor-pointer font-medium">
+          A szerződés szövege · {kesz.length} szakasz
+        </summary>
+        <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
           <a
             href={`/szerzodesek/${id}/letoltes`}
             className="text-sm underline underline-offset-2"
@@ -172,7 +220,7 @@ export default async function SzerzodesOldal({
             </pre>
           </div>
         )}
-      </section>
+      </details>
 
       <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
         {szerkesztheto ? <VeglegesitesUrlap szerzodesId={id} /> : <VisszavonasUrlap szerzodesId={id} />}

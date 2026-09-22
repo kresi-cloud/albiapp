@@ -416,3 +416,45 @@ export function egyeztet(
 
   return eredmeny;
 }
+
+export type Oldal = "berbeado" | "berlo";
+
+/**
+ * Vár-e még ez a tétel az adott félre.
+ *
+ * Ettől függ, hogy a befizetések lapján teljes kártyát kap-e, vagy a rendezett
+ * tételek közé kerül. Egy magánbérbeadónak egy-két év alatt száz fölötti
+ * tétele lesz; ha mind egyforma súllyal áll a lapon, telefonon percekig kell
+ * görgetni ahhoz az egy sorhoz, amivel tényleg dolga van.
+ *
+ * A vitás tétel mindkét félre vár: onnantól van értelme a bizonylatnak.
+ * Egyébként az a fél van soron, aki még nem nyilatkozott — az "erre nem
+ * érkezett pénz" is nyilatkozat, tehát azzal a bérbeadó letudta a magáét.
+ *
+ * Amit rendezettnek mond, az nem tűnik el, csak összecsukva áll: a lap
+ * kiírja, hány ilyen van, és egy kattintással mind látszik.
+ */
+export function varRank(
+  sor: Pick<Egyeztetes, "allapot" | "berloiIgazolasId" | "berbeadoiIgazolasId">,
+  oldal: Oldal,
+): boolean {
+  if (sor.allapot === "vitas") return true;
+  return oldal === "berbeado"
+    ? sor.berbeadoiIgazolasId === null
+    : sor.berloiIgazolasId === null;
+}
+
+/**
+ * Kettéosztja a tételeket aszerint, hogy kell-e még velük tenni valamit.
+ *
+ * A soron lévők a legrégebbivel kezdődnek, mert azzal van a legrégebben baj. A
+ * rendezettek fordítva, mert ott a legutóbbi hónap az érdekes.
+ */
+export function csoportositva<T extends Pick<Egyeztetes, "allapot" | "berloiIgazolasId" | "berbeadoiIgazolasId">>(
+  sorok: T[],
+  oldal: Oldal,
+): { soronVan: T[]; rendezett: T[] } {
+  const soronVan = sorok.filter((sor) => varRank(sor, oldal));
+  const rendezett = sorok.filter((sor) => !varRank(sor, oldal)).reverse();
+  return { soronVan, rendezett };
+}

@@ -75,3 +75,29 @@ export async function magyarra(oldal) {
     await oldal.waitForLoadState("networkidle");
   }
 }
+
+/**
+ * Láthatóvá teszi minden összecsukott szakasz tartalmát a lapon.
+ *
+ * A hosszú listák rendezett része alapból csukva áll, hogy a lap telefonon
+ * kezelhető maradjon. Az összecsukás megjelenítés, nem jogosultság: a működést
+ * próbáló menetek ezért mindent látnak, és úgy keresik a vezérlőket. Hogy a
+ * lap tényleg rövid-e csukva, azt a `meret` próba méri.
+ *
+ * Stíluslappal oldjuk meg, nem az `open` jelző átállításával. Azt a React a
+ * következő újrarajzoláskor visszaállítaná, mi megint kinyitnánk, és a lap
+ * soha nem nyugodna meg — a Playwright pedig csak nyugodt elemre kattint. A
+ * stíluslap ehhez képest kívül marad a React világán, és a kiszolgálói
+ * műveletek után is érvényben van.
+ */
+export async function mindetKinyit(oldal) {
+  await oldal.addStyleTag({
+    content: `
+      details:not([open])::details-content { content-visibility: visible !important; }
+      details:not([open]) > :not(summary) {
+        content-visibility: visible !important;
+        display: revert !important;
+      }
+    `,
+  });
+}

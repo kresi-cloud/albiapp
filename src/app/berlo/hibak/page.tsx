@@ -103,10 +103,13 @@ export default async function BerloiHibak() {
         )}
       </section>
 
+      {/* Ugyanaz, mint a bérbeadói oldalon: a lezártak csak gyűlnek. */}
       {lezartak.length > 0 ? (
-        <section>
-          <h2 className="mb-3 text-lg font-semibold">{sz("hiba.oldal.lezartak")}</h2>
-          <ul className="grid gap-3">
+        <details className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+          <summary className="cursor-pointer font-medium">
+            {sz("hiba.oldal.lezartak")} ({lezartak.length})
+          </summary>
+          <ul className="mt-3 grid gap-3">
             {lezartak.map((hiba) => (
               <Hibakartya
                 key={hiba.id}
@@ -118,7 +121,7 @@ export default async function BerloiHibak() {
               />
             ))}
           </ul>
-        </section>
+        </details>
       ) : null}
     </div>
   );
