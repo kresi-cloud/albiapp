@@ -72,6 +72,19 @@ export default async function SzerzodesOldal({
         fognak megjelenni.
       </section>
 
+      {/*
+        Személyazonosságot az alkalmazás nem igazol. Ezt kimondani a szerződés
+        előtt fontosabb, mint bármelyik másik figyelmeztetés a lapon.
+      */}
+      <section className="rounded border border-stone-300 bg-stone-50 p-3 text-sm dark:border-stone-700 dark:bg-stone-900">
+        <h2 className="font-medium">Szerződés előtt: igazoljátok a személyazonosságot</h2>
+        <p className="mt-1 text-stone-600 dark:text-stone-400">
+          Az alkalmazás nem ellenőrzi, hogy ki kicsoda: amit a felek megadtak, az a saját
+          állításuk. Aláírás előtt nézzétek meg egymás fényképes igazolványát személyesen,
+          és vessétek össze a szerződésben álló adatokkal.
+        </p>
+      </section>
+
       {hianyok.length > 0 ? (
         <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
           <h2 className="font-medium">Ezek még hiányoznak</h2>

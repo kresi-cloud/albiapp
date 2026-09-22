@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { ablakotEllenoriz } from "@/domain/egyeztetes";
 import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { adatkeresLatta } from "@/lib/szemelyes-adatok";
 
 export type MentesEredmeny = {
   allapot: "ures" | "kesz" | "hiba";
@@ -92,6 +93,9 @@ export async function berbeadoiAdatokatMent(
     update: adatok,
     create: { berbeadoId: berbeado.id, ...adatok },
   });
+
+  // A mentés egyben azt is jelenti, hogy az első belépéskori adatkérést látta.
+  await adatkeresLatta(berbeado.id);
 
   revalidatePath("/beallitasok");
   revalidatePath("/szerzodesek");

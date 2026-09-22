@@ -26,6 +26,7 @@ export const SZOTAR: Szotar = {
   "nav.berlemenyem": { hu: "Bérleményem", en: "My home" },
   "nav.hibabejelentes": { hu: "Hibabejelentés", en: "Report a fault" },
   "nav.dokumentumaim": { hu: "Dokumentumaim", en: "My documents" },
+  "nav.adataim": { hu: "Adataim", en: "My details" },
   "nav.kilepes": { hu: "Kilépés", en: "Sign out" },
   "nav.nyelv": { hu: "Nyelv", en: "Language" },
 
@@ -169,6 +170,116 @@ export const SZOTAR: Szotar = {
   "bizonylat.meret.kb": { hu: "{meret} kB", en: "{meret} kB" },
   "bizonylat.meret.mb": { hu: "{meret} MB", en: "{meret} MB" },
 
+  // --- Személyes adatok
+  // Mindkét fél a sajátját adja meg; a bérlőét eddig a bérbeadó gépelte be.
+  "adatok.cim": { hu: "A saját adataim", en: "My details" },
+  "adatok.berbeado_cim": { hu: "A bérbeadó adatai", en: "Landlord details" },
+  "adatok.berlo_cim": { hu: "A bérlő adatai", en: "Tenant details" },
+  "adatok.mezo.nev": { hu: "Teljes név", en: "Full name" },
+  "adatok.mezo.szuletesiHely": { hu: "Születési hely", en: "Place of birth" },
+  "adatok.mezo.szuletesiIdo": { hu: "Születési idő", en: "Date of birth" },
+  "adatok.mezo.anyjaNeve": { hu: "Anyja neve", en: "Mother's name" },
+  "adatok.mezo.lakcim": { hu: "Állandó lakcím", en: "Permanent address" },
+  "adatok.mezo.igazolvanySzam": {
+    hu: "Igazolvány száma",
+    en: "ID document number",
+  },
+  "adatok.mezo.bankszamla": { hu: "Bankszámlaszám", en: "Bank account number" },
+  "adatok.mezo.telefon": { hu: "Telefonszám", en: "Phone number" },
+  "adatok.gomb": { hu: "Mentem", en: "Save" },
+  "adatok.kesz": { hu: "Az adataid mentve.", en: "Your details are saved." },
+  "adatok.kesobb": { hu: "Most kihagyom", en: "Skip for now" },
+
+  "adatok.miert": {
+    hu:
+      "Ezek az adatok kizárólag a szerződéshez, a jegyzőkönyvhöz és az igazolásokhoz kellenek. " +
+      "Máshol nem használjuk őket, és naplóba nem kerülnek.",
+    en:
+      "These details are used only for the contract, the handover record and the certificates. " +
+      "They are used nowhere else, and never written to logs.",
+  },
+
+  "adatok.sajat_oldal": {
+    hu: "A sajátodat te adod meg, a másik fél az övét. Egyik fél sem ír a másik adatába.",
+    en: "You enter your own; the other party enters theirs. Neither side writes the other's details.",
+  },
+
+  "adatok.hianyzik": {
+    hu: "Még {darab} adat hiányzik a szerződéshez.",
+    en: "{darab} more details are needed for the contract.",
+  },
+
+  "adatok.keszultseg": {
+    hu: "{megvan} / {osszesen} adat megvan.",
+    en: "{megvan} of {osszesen} details filled in.",
+  },
+
+  "adatok.teljes": {
+    hu: "Minden adat megvan, ami a szerződéshez kell.",
+    en: "Everything needed for the contract is filled in.",
+  },
+
+  "adatok.elso_belepes": {
+    hu:
+      "Mielőtt belevágnál: töltsd ki a saját adataidat. A szerződéshez kellenek, " +
+      "és jobb most megadni, mint aláírás előtt kapkodni. Ki is hagyhatod, később is pótolható.",
+    en:
+      "Before you start: fill in your own details. The contract needs them, and it is easier " +
+      "now than in a rush before signing. You can skip this and come back later.",
+  },
+
+  "adatok.berlo_sugo": {
+    hu:
+      "A bérbeadó ezeket látja majd a szerződésen. Amit itt megadsz, az felülírja azt, " +
+      "amit ő korábban beírt helyetted.",
+    en:
+      "Your landlord will see these on the contract. What you enter here replaces anything " +
+      "they filled in on your behalf.",
+  },
+
+  "adatok.forras.berlo": { hu: "A bérlő adta meg", en: "Entered by the tenant" },
+  "adatok.forras.berbeado": { hu: "Te írtad be", en: "You entered this" },
+  "adatok.forras.nincs": { hu: "Még senki nem adta meg", en: "Not entered yet" },
+
+  "adatok.hiba.igazolvany": {
+    hu: "Ez nem tűnik igazolványszámnak. Nézd meg még egyszer.",
+    en: "This does not look like an ID number. Please check it.",
+  },
+  "adatok.hiba.adoazonosito": {
+    hu: "Az adóazonosító jel tíz számjegy.",
+    en: "The tax identification number is ten digits.",
+  },
+  "adatok.hiba.nincs_jogviszony": {
+    hu: "Nincs olyan jogviszonyod, amihez ez tartozna.",
+    en: "You have no tenancy this would belong to.",
+  },
+
+  // --- Személyazonosság a szerződés előtt
+  // Az alkalmazás nem igazol személyazonosságot, és ezt ki is mondja.
+  "azonossag.cim": { hu: "Szerződés előtt: igazoljátok a személyazonosságot", en: "Before signing: verify identity" },
+  "azonossag.szoveg": {
+    hu:
+      "Az alkalmazás nem ellenőrzi, hogy ki kicsoda: amit a felek megadtak, az a saját állításuk. " +
+      "Aláírás előtt nézzétek meg egymás fényképes igazolványát személyesen, és vessétek össze " +
+      "a szerződésben álló adatokkal.",
+    en:
+      "The app does not verify who anyone is: what each party entered is their own claim. " +
+      "Before signing, check each other's photo ID in person and compare it with the details " +
+      "printed on the contract.",
+  },
+  "azonossag.hianyos": {
+    hu: "A szerződés addig nem véglegesíthető, amíg mindkét fél adatai hiányosak.",
+    en: "The contract cannot be finalised while either party's details are incomplete.",
+  },
+  "azonossag.hianyos_berbeado": {
+    hu: "A te adataid hiányosak. Töltsd ki őket a Beállítások lapon.",
+    en: "Your own details are incomplete. Fill them in on the Settings page.",
+  },
+  "azonossag.hianyos_berlo": {
+    hu: "{nev} adatai hiányosak. Kérd meg, hogy töltse ki, vagy írd be te a Bérlők lapon.",
+    en: "{nev}'s details are incomplete. Ask them to fill them in, or enter them on the Tenants page.",
+  },
+
   // --- Teendők
   "teendo.lejart": { hu: "Lejárt", en: "Overdue" },
   "teendo.ma": { hu: "Ma", en: "Today" },
@@ -177,6 +288,10 @@ export const SZOTAR: Szotar = {
   "teendo.nincs": {
     hu: "A következő napokra nincs teendő.",
     en: "Nothing to do in the coming days.",
+  },
+  "teendo.adathiany": {
+    hu: "Hiányzó adat a szerződéshez",
+    en: "Details missing for the contract",
   },
   "teendo.megnezem": { hu: "Megnézem", en: "Open" },
   "teendo.kesz": { hu: "Kész", en: "Done" },

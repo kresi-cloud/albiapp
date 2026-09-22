@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { MeghivoGomb } from "./MeghivoGomb";
+import { BERLOHOZ_KELL, hianyzoMezok } from "@/domain/szemelyes-adatok";
 import {
   BerloAdatok,
   BerloHozzaadas,
@@ -125,6 +126,21 @@ export default async function Berlok() {
                         lakcim: berlo.lakcim ?? "",
                         igazolvanySzam: berlo.igazolvanySzam ?? "",
                         telefon: berlo.telefon ?? "",
+                        forrasa:
+                          berlo.adatokForrasa === "berlo" || berlo.adatokForrasa === "berbeado"
+                            ? berlo.adatokForrasa
+                            : null,
+                        hianyzik: hianyzoMezok(
+                          {
+                            nev: berlo.nev,
+                            szuletesiHely: berlo.szuletesiHely,
+                            szuletesiIdo: berlo.szuletesiIdo,
+                            anyjaNeve: berlo.anyjaNeve,
+                            lakcim: berlo.lakcim,
+                            igazolvanySzam: berlo.igazolvanySzam,
+                          },
+                          BERLOHOZ_KELL,
+                        ).length,
                       }}
                     />
 

@@ -152,12 +152,40 @@ export function ParameterUrlap({
 
 export function VeglegesitesUrlap({ szerzodesId }: { szerzodesId: string }) {
   const [allapot, kuldes, folyamatban] = useActionState(szerzodestVeglegesit, KEZDETI);
-  const hianyzik = allapot.allapot === "hiba" && allapot.hibak.length > 0;
+  // Csak az adathiány engedi a "mégis" gombot. A nyugtázás hiánya is hiba, de
+  // abból nem lehet felhatalmazás arra, hogy a hiányzó adatokat átugorjuk:
+  // különben egy kipipálatlan jelölőnégyzet csendben átvinné a figyelmeztetésen.
+  const hianyzik =
+    allapot.allapot === "hiba" &&
+    allapot.hibak.length > 0 &&
+    !allapot.hibak.includes("azonossagEllenorizve");
 
   return (
     <form action={kuldes} className="grid gap-3">
       <input type="hidden" name="szerzodesId" value={szerzodesId} />
       {hianyzik ? <input type="hidden" name="megis" value="igen" /> : null}
+
+      {/*
+        Az alkalmazás nem tud személyazonosságot igazolni, tehát nem is úgy
+        teszünk, mintha tudna. Amit tehetünk: aláírás előtt kimondjuk, és
+        megkérjük a bérbeadót, hogy nyugtázza, tényleg megnézték egymás
+        okmányát. Enélkül nem véglegesítünk.
+      */}
+      <label className="flex items-start gap-2 rounded border border-stone-300 p-3 text-sm dark:border-stone-700">
+        <input
+          id="azonossag-ellenorizve"
+          type="checkbox"
+          name="azonossagEllenorizve"
+          value="igen"
+          required
+          className="mt-0.5"
+        />
+        <span>
+          Megnéztük egymás fényképes igazolványát, és az abban álló adatok egyeznek
+          azzal, ami a szerződésben szerepel.
+        </span>
+      </label>
+
       <button type="submit" disabled={folyamatban} className={GOMB}>
         {folyamatban
           ? "Véglegesítem…"

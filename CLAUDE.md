@@ -163,6 +163,24 @@ A személyes adatok (születési adatok, anyja neve, igazolványszám, adóazono
 kizárólag a dokumentumok kiállításához kellenek. A bérbeadóé külön táblában van
 (`BerbeadoiAdatok`), hogy a belépési út ne is olvassa. Naplóba egyik sem kerül.
 
+**Mindkét fél a sajátját adja meg** (`src/domain/szemelyes-adatok.ts`). Korábban a
+bérlő adatait a bérbeadó gépelte be helyette: így a bérlő nem látta, mi áll róla a
+szerződésben, és egy elgépelt igazolványszámot nem vett észre az, aki tudta volna,
+hogy rossz. A bérbeadó továbbra is kitöltheti, mert szerződést azelőtt is kell tudni
+készíteni, hogy a bérlő először belépne — de `adatokForrasa` megmondja, melyik oldal
+írta, és a felület is kiírja.
+
+Az adatkérés az első belépés után egyszer jön elő (`adatkeresLatta`), és nem tiltja
+el a felhasználót semmitől: aki most kapott meghívót, ne azzal találkozzon először,
+hogy az anyja nevét kell begépelnie, mielőtt megnézhetné, mit kell fizetnie. A
+hiányra onnantól származtatott teendő emlékeztet.
+
+**Személyazonosságot az alkalmazás nem igazol, és ezt ki is mondja.** Amit a felek
+megadnak, az a saját állításuk. A szerződés véglegesítése ezért nyugtázáshoz kötött:
+a bérbeadónak meg kell erősítenie, hogy megnézték egymás fényképes igazolványát. Ez
+nem ellenőrzés, hanem annak a beismerése, hogy nem tudunk ellenőrizni — és pont ezért
+nem szabad elhagyni.
+
 ## A jegyzőkönyv és az igazolás alapelve
 
 Az átadás-átvételi jegyzőkönyv nem különálló papír: véglegesítéskor a rögzített
