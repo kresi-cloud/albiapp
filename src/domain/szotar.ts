@@ -163,6 +163,14 @@ export const SZOTAR: Szotar = {
     hu: "PDF-et vagy képet tudok fogadni (JPG, PNG, WEBP).",
     en: "I can accept a PDF or an image (JPG, PNG, WEBP).",
   },
+  "bizonylat.hiba.lakotarse": {
+    hu:
+      "Ehhez a tételhez a lakótársad töltött fel bizonylatot. Oldalanként egy " +
+      "bizonylat van, és a másét nem írjuk felül — kérd meg, hogy ő cserélje ki.",
+    en:
+      "Your flatmate uploaded the receipt for this item. There is one receipt per side, and we " +
+      "never overwrite someone else's — ask them to replace it.",
+  },
   "bizonylat.hiba.nincs_vita": {
     hu: "Ehhez a tételhez nem kérünk bizonylatot: a két fél adata egyezik.",
     en: "No receipt is needed for this item: the two sides match.",
@@ -2381,6 +2389,14 @@ export const SZOTAR: Szotar = {
   "teendo.vallalo.berlo": { hu: "a bérlő vállalta", en: "the tenant undertook" },
 
   // --- Bérlők műveletei
+  "berlok.hiba.mar_van_fiok": {
+    hu:
+      "Ennek a bérlőnek már van fiókja, ezért nem készítek új meghívót. Ha " +
+      "kicserélődött a bérlő, vedd le a régit a jogviszonyról, és add hozzá az újat.",
+    en:
+      "This tenant already has an account, so I will not create another invitation. If the " +
+      "tenant has changed, remove the old one from the tenancy and add the new one.",
+  },
   "berlok.hiba.nem_tied": {
     hu: "Ez a bérlő nem a te jogviszonyodhoz tartozik.",
     en: "This tenant does not belong to a tenancy of yours.",
