@@ -992,6 +992,14 @@ export const SZOTAR: Szotar = {
     hu: "Ehhez a bérleményhez nincs jogosultságod.",
     en: "You do not have access to this tenancy.",
   },
+  "valasz.mar_lezart": {
+    hu:
+      "Ez a jogviszony már le van zárva. Ha a dátumot javítanád, előbb vond vissza a lezárást, " +
+      "mert az a törölt előírásokat is visszaszámolja.",
+    en:
+      "This tenancy is already closed. To correct the date, undo the closing first — that also " +
+      "restores the charges it removed.",
+  },
   "valasz.lezarva": {
     hu: "Lezárva. {torolt} későbbi előírás törölve, {aranyositott} előírás arányosítva a kiköltözés napjáig.",
     en: "Closed. {torolt} later scheduled items removed, {aranyositott} pro-rated to the move-out day.",
@@ -1800,6 +1808,14 @@ export const SZOTAR: Szotar = {
     hu: "Erre a címre szól a meghívó, ezért nem írható át.",
     en: "The invitation is addressed here, so it cannot be changed.",
   },
+  "meghivo.megleve_fiok_sugo": {
+    hu:
+      "Ha ezzel az e-mail-címmel már van fiókod, a meglévő jelszavadat írd be: második fiók nem " +
+      "készül, és a meghívó a jelszavadat nem írja felül.",
+    en:
+      "If you already have an account with this email address, enter your existing password: no " +
+      "second account is created, and the invitation never overwrites it.",
+  },
   "meghivo.nev": { hu: "Neved", en: "Your name" },
   "meghivo.jelszo_ujra": { hu: "Jelszó még egyszer", en: "Password again" },
   "meghivo.gomb": { hu: "Fiók készítése", en: "Create account" },
@@ -2346,9 +2362,13 @@ export const SZOTAR: Szotar = {
     hu: "A fiók nem készült el.",
     en: "The account was not created.",
   },
-  "meghivo.letezo_fiok": {
-    hu: "Ezzel az e-mail-címmel már van fiókod, ezért a lakást hozzákötöttem. Lépj be a meglévő jelszavaddal.",
-    en: "You already have an account with this email address, so I linked the flat to it. Sign in with your existing password.",
+  "meghivo.hiba.megleve_jelszo": {
+    hu:
+      "A megadott jelszó nem jó. Ha ezzel az e-mail-címmel már van fiókod, a meglévő " +
+      "jelszavadat írd be — a meghívó nem állít be újat.",
+    en:
+      "That password is not right. If you already have an account with this email address, enter " +
+      "your existing password — the invitation does not set a new one.",
   },
   "teendo.hiba.lepj_be": { hu: "Lépj be.", en: "Please sign in." },
   "teendo.hiba.nem_tied": { hu: "Ez a teendő nem a tiéd.", en: "This task is not yours." },
