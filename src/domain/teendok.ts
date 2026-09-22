@@ -7,7 +7,7 @@
  */
 
 import type { Allapot, ElteresOka } from "./egyeztetes";
-import { uzenet, type Uzenet } from "./nyelv";
+import { honap, uzenet, type Uzenet } from "./nyelv";
 import { napKulonbseg } from "./penz";
 
 export type Surgosseg = "lejart" | "ma" | "kozeli" | "kesobbi";
@@ -86,7 +86,7 @@ export function egyeztetesbolTeendok(
         tipus: "befizetes_hianyzik",
         cim: uzenet("teendo.hianyzik.berlo"),
         leiras: uzenet("teendo.idoszak_osszeg", {
-          idoszak: egyeztetes.idoszak ?? "",
+          idoszak: honap(egyeztetes.idoszak ?? ""),
           osszeg: egyeztetes.osszegFt,
         }),
         esedekesseg: egyeztetes.esedekesseg,
@@ -98,7 +98,7 @@ export function egyeztetesbolTeendok(
         tipus: "befizetes_hianyzik",
         cim: uzenet("teendo.hianyzik.berbeado"),
         leiras: uzenet("teendo.idoszak_osszeg", {
-          idoszak: egyeztetes.idoszak ?? "",
+          idoszak: honap(egyeztetes.idoszak ?? ""),
           osszeg: egyeztetes.osszegFt,
         }),
         esedekesseg: egyeztetes.esedekesseg,
@@ -138,7 +138,7 @@ export function egyeztetesbolTeendok(
         tipus: "befizetes_varakozik",
         cim: uzenet(`teendo.varakozik.${kire}`),
         leiras: uzenet("teendo.idoszak_osszeg", {
-          idoszak: egyeztetes.idoszak ?? "",
+          idoszak: honap(egyeztetes.idoszak ?? ""),
           osszeg: egyeztetes.osszegFt,
         }),
         esedekesseg: egyeztetes.esedekesseg,
@@ -232,7 +232,7 @@ export function kozelgoBefizetesTeendok(
       tipus: "befizetes_esedekes",
       cim: uzenet("teendo.kozelgo"),
       leiras: uzenet("teendo.idoszak_osszeg", {
-        idoszak: tetel.idoszak,
+        idoszak: honap(tetel.idoszak),
         osszeg: tetel.osszegFt,
       }),
       esedekesseg: tetel.esedekesseg,

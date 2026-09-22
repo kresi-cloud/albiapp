@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { Uzenetsav } from "@/components/Uzenetsav";
-import { GOMB, MEZO } from "@/components/urlap";
+import { CIMKE, FAJLMEZO, GOMB, SUGOSZOVEG, VISSZAVONO_GOMB } from "@/components/urlap";
 import { ELFOGADOTT_TIPUSOK } from "@/domain/bizonylat";
 import { bizonylatotFeltolt, bizonylatotTorolAction, type Eredmeny } from "./actions";
 
@@ -54,8 +54,8 @@ export function Bizonylatok({
   const masik = meglevok.find((sor) => sor.oldal !== sajatOldal);
 
   return (
-    <div className="mt-3 rounded border border-stone-200 p-3 dark:border-stone-800">
-      <h4 className="text-sm font-medium">{cimkek.cim}</h4>
+    <div className="mt-3 rounded-kartya border border-keret bg-felulet-halk p-3">
+      <h4 className="text-sm font-semibold">{cimkek.cim}</h4>
 
       <dl className="mt-2 grid gap-2 text-sm sm:grid-cols-2">
         <Oldal
@@ -77,9 +77,7 @@ export function Bizonylatok({
       {kerheto ? (
         <Feltoltes eloirtTetelId={eloirtTetelId} cimkek={cimkek} />
       ) : (
-        <p className="mt-3 text-xs text-stone-500 dark:text-stone-400">
-          {cimkek.kikapcsolva}
-        </p>
+        <p className={`mt-3 ${SUGOSZOVEG}`}>{cimkek.kikapcsolva}</p>
       )}
     </div>
   );
@@ -102,25 +100,23 @@ function Oldal({
   // nyelvfüggő, az oldal viszont nem.
   return (
     <div data-oldal={oldal}>
-      <dt className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
-        {cimke}
-      </dt>
-      <dd>
+      <dt className="text-xs font-medium text-halvany">{cimke}</dt>
+      <dd className="mt-0.5">
         {sor ? (
           <>
             <a
               href={`/bizonylatok/${sor.id}`}
-              className="underline underline-offset-2"
+              className="font-semibold text-kiemelt hover:underline"
               rel="noopener"
             >
               {cimkek.letoltes}
             </a>{" "}
-            <span className="text-stone-500 dark:text-stone-400">
+            <span className="szam text-xs text-halvany">
               {sor.meret} · {sor.feltoltve}
             </span>
           </>
         ) : (
-          <span className="text-stone-500 dark:text-stone-400">
+          <span className="text-nagyon-halvany">
             {varunkRad ? cimkek.varunkRad : cimkek.nincs}
           </span>
         )}
@@ -141,16 +137,16 @@ function Feltoltes({
   return (
     <form action={kuldes} className="mt-3 grid gap-2">
       <input type="hidden" name="eloirtTetelId" value={eloirtTetelId} />
-      <label className="grid gap-1 text-sm">
-        <span className="font-medium">{cimkek.feltolt}</span>
+      <label className="grid gap-1">
+        <span className={CIMKE}>{cimkek.feltolt}</span>
         <input
           type="file"
           name="bizonylat"
           accept={ELFOGADOTT_TIPUSOK.join(",")}
-          className={MEZO}
+          className={FAJLMEZO}
         />
       </label>
-      <p className="text-xs text-stone-500 dark:text-stone-400">{cimkek.sugo}</p>
+      <p className={SUGOSZOVEG}>{cimkek.sugo}</p>
       <button type="submit" disabled={folyamatban} className={GOMB}>
         {folyamatban ? "…" : cimkek.gomb}
       </button>
@@ -163,13 +159,9 @@ function Torles({ bizonylatId, cimke }: { bizonylatId: string; cimke: string }) 
   const [allapot, kuldes, folyamatban] = useActionState(bizonylatotTorolAction, KEZDETI);
 
   return (
-    <form action={kuldes} className="mt-2 grid gap-2">
+    <form action={kuldes} className="mt-2 grid justify-items-start gap-2">
       <input type="hidden" name="bizonylatId" value={bizonylatId} />
-      <button
-        type="submit"
-        disabled={folyamatban}
-        className="justify-self-start text-xs text-stone-500 underline underline-offset-2 hover:text-rose-700 disabled:opacity-60 dark:text-stone-400"
-      >
+      <button type="submit" disabled={folyamatban} className={VISSZAVONO_GOMB}>
         {folyamatban ? "…" : cimke}
       </button>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />

@@ -92,7 +92,7 @@ export function SajatAdatok({
           <button
             type="submit"
             formAction={adatkerestKihagy}
-            className="text-sm text-stone-500 underline underline-offset-2 dark:text-stone-400"
+            className="text-sm text-nagyon-halvany underline underline-offset-2"
           >
             {cimkek.kesobb}
           </button>

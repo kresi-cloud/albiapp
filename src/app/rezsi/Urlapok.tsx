@@ -30,7 +30,7 @@ export function OraallasUrlap({
       <input type="hidden" name="merooraId" value={merooraId} />
       <div className="flex flex-wrap gap-2">
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">{cimkek.datum}</span>
+          <span className="text-nagyon-halvany">{cimkek.datum}</span>
           <Mezo
             type="date"
             name="datum"
@@ -41,7 +41,7 @@ export function OraallasUrlap({
           />
         </label>
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">{cimkek.ertek}</span>
+          <span className="text-nagyon-halvany">{cimkek.ertek}</span>
           <Mezo
             type="text"
             inputMode="decimal"
@@ -78,7 +78,7 @@ export function ElszamolasUrlap({
       <input type="hidden" name="jogviszonyId" value={jogviszonyId} />
       <div className="flex flex-wrap gap-2">
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">{cimkek.kezdete}</span>
+          <span className="text-nagyon-halvany">{cimkek.kezdete}</span>
           <Mezo
             type="date"
             name="kezdete"
@@ -89,7 +89,7 @@ export function ElszamolasUrlap({
           />
         </label>
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">{cimkek.vege}</span>
+          <span className="text-nagyon-halvany">{cimkek.vege}</span>
           <Mezo
             type="date"
             name="vege"
@@ -123,7 +123,7 @@ export function KiadasUrlap({
     <form action={kuldes} className="mt-3 grid gap-2">
       <input type="hidden" name="elszamolasId" value={elszamolasId} />
       <label className="grid gap-1 text-xs">
-        <span className="text-stone-500 dark:text-stone-400">{cimkek.hatarido}</span>
+        <span className="text-nagyon-halvany">{cimkek.hatarido}</span>
         <Mezo
           type="date"
           name="esedekesseg"
@@ -154,7 +154,7 @@ export function ElbiralasUrlap({
     <form action={kuldes} className="mt-3 grid gap-2">
       <input type="hidden" name="elszamolasId" value={elszamolasId} />
       <label className="grid gap-1 text-xs">
-        <span className="text-stone-500 dark:text-stone-400">{cimkek.sugo}</span>
+        <span className="text-nagyon-halvany">{cimkek.sugo}</span>
         <Szovegdoboz name="berloiUzenet" rows={2} className={MEZO} allapot={allapot.allapot} />
       </label>
       <div className="flex flex-wrap gap-2">
@@ -172,7 +172,7 @@ export function ElbiralasUrlap({
           name="dontes"
           value="vitatott"
           disabled={folyamatban}
-          className="justify-self-start rounded border border-stone-300 px-4 py-2 text-sm font-medium disabled:opacity-60 dark:border-stone-700"
+          className="justify-self-start rounded border border-keret-eros px-4 py-2 text-sm font-medium disabled:opacity-60"
         >
           {cimkek.vitat}
         </button>

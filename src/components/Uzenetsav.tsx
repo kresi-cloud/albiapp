@@ -12,15 +12,15 @@ export function Uzenetsav({
 
   return (
     <div
-      className={`rounded border p-3 text-sm ${
+      className={`rounded-lg border p-3 text-sm ${
         allapot === "hiba"
-          ? "border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200"
-          : "border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
+          ? "border-gond-keret bg-gond-lap text-gond"
+          : "border-rendben-keret bg-rendben-lap text-rendben"
       }`}
     >
-      <p>{uzenet}</p>
+      <p className="font-medium">{uzenet}</p>
       {hibak.length > 0 ? (
-        <ul className="mt-2 list-disc pl-5">
+        <ul className="mt-2 grid gap-1 pl-4 [&>li]:list-disc">
           {hibak.map((sor) => (
             <li key={sor}>{sor}</li>
           ))}

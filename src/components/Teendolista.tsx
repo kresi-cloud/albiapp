@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Surgosseg, TeendoSurgosseggel } from "@/domain/teendok";
 import { datumNyelven, type Nyelv } from "@/domain/nyelv";
 import { szovegekNyelvvel } from "@/domain/szotar";
+import { Jelzo, Ures, type Allapotszin } from "@/components/ui/alap";
+import { IkonNyil } from "@/components/ui/ikonok";
 import { TeendoLezaras } from "./TeendoLezaras";
 
 const CIMKE: Record<Surgosseg, string> = {
@@ -11,11 +13,28 @@ const CIMKE: Record<Surgosseg, string> = {
   kesobbi: "teendo.kesobbi",
 };
 
-const STILUS: Record<Surgosseg, string> = {
-  lejart: "border-rose-300 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/40",
-  ma: "border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/40",
-  kozeli: "border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-900",
-  kesobbi: "border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900",
+const SZIN: Record<Surgosseg, Allapotszin> = {
+  lejart: "gond",
+  ma: "figyelem",
+  kozeli: "semleges",
+  kesobbi: "semleges",
+};
+
+/**
+ * A sürgősség színe egy bal oldali sávon jelenik meg, nem a kártya teljes
+ * hátterén.
+ *
+ * Korábban az egész kártya rózsaszín lett, ha lejárt. Öt lejárt teendőnél ez
+ * öt rózsaszín téglalap egymás alatt: a szín így semmit nem emel ki, mert
+ * minden ki van emelve, és a szöveg is nehezebben olvasható rajta. Egy vékony
+ * sáv a szélen ugyanazt mondja el, és futólag végigpásztázva is látszik, hol
+ * kezdődik a sorban a sürgős rész.
+ */
+const SAV: Record<Surgosseg, string> = {
+  lejart: "bg-gond",
+  ma: "bg-figyelem",
+  kozeli: "bg-keret-eros",
+  kesobbi: "bg-keret",
 };
 
 export function Teendolista({
@@ -28,50 +47,76 @@ export function Teendolista({
   const { sz, u } = szovegekNyelvvel(nyelv);
 
   if (teendok.length === 0) {
-    return (
-      <p className="rounded-lg border border-stone-200 bg-white p-4 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400">
-        {sz("teendo.nincs")}
-      </p>
-    );
+    return <Ures>{sz("teendo.nincs")}</Ures>;
   }
 
   return (
     <ul className="grid gap-2">
-      {teendok.map((teendo) => (
-        <li
-          key={teendo.kulcs}
-          className={`rounded-lg border p-3 ${STILUS[teendo.surgosseg]}`}
-        >
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <span className="font-medium">{u(teendo.cim)}</span>
-            <span className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
-              {sz(CIMKE[teendo.surgosseg])} · {datumNyelven(teendo.esedekesseg, nyelv)}
-            </span>
-          </div>
-          {teendo.leiras ? (
-            <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
-              {u(teendo.leiras)}
-            </p>
-          ) : null}
-          <div className="flex flex-wrap items-baseline gap-4">
-            {teendo.hivatkozas ? (
+      {teendok.map((teendo) => {
+        const fej = (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              <Jelzo allapot={SZIN[teendo.surgosseg]}>{sz(CIMKE[teendo.surgosseg])}</Jelzo>
+              <span className="szam text-xs text-halvany">
+                {datumNyelven(teendo.esedekesseg, nyelv)}
+              </span>
+            </div>
+            <p className="mt-1.5 leading-snug font-semibold text-pretty">{u(teendo.cim)}</p>
+            {teendo.leiras ? (
+              <p className="szam mt-0.5 text-sm text-halvany">{u(teendo.leiras)}</p>
+            ) : null}
+          </>
+        );
+
+        // Ahol csak megnézni lehet valamit, ott az egész kártya visz oda: egy
+        // telefonon a sarokba tett hivatkozás akkora célpont, amit el kell
+        // találni, a kártya viszont nem. Ahol lezárható a teendő, ott marad a
+        // külön hivatkozás, mert gomb nem állhat hivatkozáson belül.
+        const egeszenHivatkozas = Boolean(teendo.hivatkozas) && !teendo.tarolt;
+
+        return (
+          <li
+            key={teendo.kulcs}
+            className="flex overflow-hidden rounded-kartya border border-keret bg-felulet"
+          >
+            <div className={`w-1 shrink-0 ${SAV[teendo.surgosseg]}`} aria-hidden="true" />
+            {egeszenHivatkozas ? (
               <Link
-                href={teendo.hivatkozas}
-                className="mt-2 inline-block text-sm text-blue-700 underline underline-offset-2 dark:text-blue-400"
+                href={teendo.hivatkozas as string}
+                className="group flex min-w-0 flex-1 items-center gap-3 p-3 transition-colors hover:bg-felulet-halk"
               >
-                {sz("teendo.megnezem")}
+                <span className="min-w-0 flex-1">{fej}</span>
+                <IkonNyil
+                  meret={18}
+                  osztaly="shrink-0 text-nagyon-halvany transition-transform group-hover:translate-x-0.5"
+                />
               </Link>
-            ) : null}
-            {teendo.tarolt ? (
-              <TeendoLezaras
-                kulcs={teendo.kulcs}
-                cimke={sz("teendo.kesz")}
-                folyamatbanCimke={sz("teendo.lezarom")}
-              />
-            ) : null}
-          </div>
-        </li>
-      ))}
+            ) : (
+              <div className="min-w-0 flex-1 p-3">
+                {fej}
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  {teendo.hivatkozas ? (
+                    <Link
+                      href={teendo.hivatkozas}
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-kiemelt hover:underline"
+                    >
+                      {sz("teendo.megnezem")}
+                      <IkonNyil meret={14} />
+                    </Link>
+                  ) : null}
+                  {teendo.tarolt ? (
+                    <TeendoLezaras
+                      kulcs={teendo.kulcs}
+                      cimke={sz("teendo.kesz")}
+                      folyamatbanCimke={sz("teendo.lezarom")}
+                    />
+                  ) : null}
+                </div>
+              </div>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }

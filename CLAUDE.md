@@ -484,8 +484,57 @@ elolvasni őket.
 
 A laphossz ezért kapu: a `proba/meret.mjs` minden lapon megméri, és nyolc
 telefonképernyőnél hosszabb lap megbukik. Ha egy lap átlépi, csoportosítani
-vagy összecsukni kell, nem a korlátot emelni. A mérés önpróbával kezd, mert
-ebben a projektben már két olyan próbaállítás volt, ami mindig igazat adott.
+vagy összecsukni kell, nem a korlátot emelni. A mérés önpróbával kezd —
+magassággal és szélességgel egyaránt —, mert ebben a projektben már két
+olyan próbaállítás volt, ami mindig igazat adott.
+
+## Az arculat alapelve
+
+A színeket jelentés szerint nevezzük el, nem árnyalat szerint, és a nevek a
+`src/app/globals.css`-ben élnek: `lap`, `felulet`, `felulet-halk`, `keret`,
+`keret-eros`, `szoveg`, `halvany`, `nagyon-halvany`, valamint `rendben`,
+`figyelem`, `gond` a három állapotszín és az `albi-*` márkaskála. A lapok
+`bg-felulet`-et és `border-keret`-et írnak, **`dark:` páros nélkül**: a sötét
+mód értéke ugyanott, a világos mellett áll, és magától követi. A korábbi
+`border-stone-200 dark:border-stone-800` alak két bajt okozott — a két mód
+külön csúszott el, és egy színcsere húsz fájl átírása lett volna, vagyis soha
+nem történt meg.
+
+Az öt egyeztetési állapot három színre képződik le, és a leképezés
+termékdöntés (`src/components/Allapotjelzo.tsx`): az `elter` nem piros, mert
+ott a két fél egyetért; a `varakozik` semleges, mert még csak az egyik fél
+nyilatkozott. Pirosat az kap, ahol tenni kell valamit.
+
+A közös elemek a `src/components/ui/alap.tsx`-ben és a
+`src/components/urlap.ts`-ben vannak (kártya, gomb, jelző, összeg, lapfej,
+súgó, mezőosztályok). Új lap ne tervezzen saját kártya- és gombstílust. A gomb
+súlya döntés: egy lapon egy elsődleges gomb van, az a művelet, amiért a lap
+létezik, minden más másodlagos vagy halk. Kattintható elem legalább 44 képpont
+magas, a mező betűmérete telefonon legalább 16 képpont — kisebbnél az iPhone
+Safari ráközelít a lapra.
+
+Telefonon a navigáció alul van (`src/components/ui/Fulsav.tsx`): négy gyakran
+használt hely, plusz egy „Több”. A fejlécben álló kilenc szöveglink 360
+képponton öt sorba tört, és a képernyő felső negyedét elvette minden lapon. A
+kilépés is a „Több” alá került, ezért a böngészős próba `kilep()` függvénye
+előbb kinyitja azt.
+
+A négy hely: áttekintő, befizetés, rezsi, üzenetek. A dokumentumtár a „Több”
+alatt van, mert azt akkor nyitja meg valaki, amikor éppen kell egy papír — az
+üzenetekbe viszont a másik fél ír, és az elmaradt válasz drágább, mint egy
+kattintással messzebb került szerződés. Ez a felosztás dönti el, mi fér az
+alsó sávba; nagyobb kijelzőn úgyis mind kifér a fejlécbe.
+
+A hosszú magyarázat nem áll kinyitva a lap tetején: `Sugo` elemben, egy sorban
+áll, és aki kíváncsi rá, kinyitja. Az elv, amit kimond, nem tűnhet el — a
+bérlő különben joggal hinné, hogy előbb-utóbb mégis kérünk bankszámlakivonatot.
+
+A böngészős próbák ne a képernyőn látható szövegre szűrjenek ott, ahol a
+megjelenés változhat: a befizetési kártyán `data-idoszak` és `data-osszeg`
+van, a bizonylatblokkon `data-oldal`. A nyelvváltásra pedig nem a
+`networkidle`-re várunk, hanem a `lang` attribútumra (`nyelvre()` a
+`proba/kozos.mjs`-ben): a kiszolgálói művelet válasza később jön, mint ahogy a
+hálózat elcsendesedik, és a következő `goto` elvágja.
 
 ## Mit jelent, hogy kész
 
@@ -522,3 +571,21 @@ tiltott alakot: egy kapu, ami mindenre igent mond, rosszabb a semminél.
 A böngészős próbák a `proba` mappában vannak, és 360 képpont széles ablakban
 futnak. A `proba/meret.mjs` minden oldalon azt nézi, kilóg-e valami
 vízszintesen; ez a hiba nagy kijelzőn soha nem látszik.
+
+**Mindkét nyelven mér, és a kinyitott szakaszokat is megnézi.** Csak magyarul
+mérve a felület fele őrizetlen marad: az angol felirat hosszabb, tehát előbb
+lóg ki és előbb tör sorba. A csukott szakaszban ülő széles elem — egy
+legördülő, egy hosszú gombfelirat — pedig csukva nem is látszik, a felhasználó
+viszont ki fogja nyitni. A hosszt ezzel szemben csukva mérjük: az összecsukás
+a lap része, nem a próba kényelme.
+
+**És minden lapot a leghosszabb összeggel is megmér.** Enélkül a kapu azon
+múlik, mekkora szám áll épp a példaadatban, és ezen át is csúszott egy valódi
+hiba: az áttekintő elmaradás-kártyája angolul, hétjegyű összegnél kilógott.
+Hatjegyűnél nem, és a seedben épp hatjegyű állt. Magyarul soha nem látszott,
+mert a magyar alak szóközökkel tagol, tehát sorba tud törni — az angol nem: a
+pénznevet nem törhető szóköz köti a számhoz, a számot az ezrestagoló vessző.
+Ezért egy összeg mellett álló elem nem lehet `shrink-0` egy nem törhető soron:
+a sor törjön (`flex-wrap`), és a címke menjen a következő sorba. A mérés nem az
+`Osszeg` elemre szűr, hanem a szövegre, mert az összegek fele nem azon megy —
+a rezsi és az adóösszesítő sima szövegként írja ki őket.

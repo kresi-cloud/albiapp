@@ -1,15 +1,16 @@
 import { Teendolista } from "@/components/Teendolista";
+import { GombHivatkozas, Jelzo, Osszeg, Szakaszcim, Lapfej } from "@/components/ui/alap";
+import { IkonNyil } from "@/components/ui/ikonok";
 import { jogviszonyNezetek, teendok } from "@/lib/lekerdezesek";
 import { kotelezoSzerep } from "@/lib/munkamenet";
-import { szovegek } from "@/lib/nyelv";
 import { forintNyelven } from "@/domain/nyelv";
+import { szovegek } from "@/lib/nyelv";
 
 export const dynamic = "force-dynamic";
 
 export default async function Attekinto() {
   const berbeado = await kotelezoSzerep("berbeado");
-  const { sz , nyelv } = await szovegek();
-  const ft = (osszegFt: number) => forintNyelven(osszegFt, nyelv);
+  const { nyelv, sz } = await szovegek();
 
   const ma = new Date();
   const [sajatTeendok, nezetek] = await Promise.all([
@@ -21,52 +22,115 @@ export default async function Attekinto() {
   const kesobbiek = sajatTeendok.filter((teendo) => teendo.surgosseg === "kesobbi");
 
   const osszesEgyeztetes = nezetek.flatMap((nezet) => nezet.egyeztetesek);
-  const elmaradasFt = osszesEgyeztetes
-    .filter((sor) => sor.allapot !== "egyezik" && sor.elteresFt < 0)
+  const rendezetlen = osszesEgyeztetes.filter((sor) => sor.allapot !== "egyezik");
+  const elmaradasFt = rendezetlen
+    .filter((sor) => sor.elteresFt < 0)
     .reduce((osszeg, sor) => osszeg + Math.abs(sor.elteresFt), 0);
 
   return (
-    <div className="grid gap-8">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("attekinto.cim")}</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">
-          {sz("attekinto.udvozles", { nev: berbeado.nev })}
-        </p>
-      </section>
+    <div className="grid gap-6">
+      <Lapfej
+        cim={sz("attekinto.koszones", { nev: berbeado.nev })}
+        alcim={sz("attekinto.alcim")}
+      />
 
-      <section className="grid gap-3 sm:grid-cols-3">
-        <Osszegzo cimke={sz("attekinto.jogviszony")} ertek={String(nezetek.length)} />
-        <Osszegzo
-          cimke={sz("attekinto.rendezetlen")}
-          ertek={String(osszesEgyeztetes.filter((sor) => sor.allapot !== "egyezik").length)}
-        />
-        <Osszegzo cimke={sz("attekinto.elmaradas")} ertek={ft(elmaradasFt)} />
-      </section>
+      {/*
+        Egy szám elöl, nem három egyforma doboz.
+
+        Korábban három egyforma kártya állt itt egymás alatt — jogviszony,
+        rendezetlen tétel, elmaradás —, és telefonon mind a három a képernyő
+        felét elvitte, mielőtt bármelyik teendő látszott volna. Holott a három
+        közül egy az, amire a bérbeadó kíváncsi: mennyi pénz hiányzik. A másik
+        kettő azt mondja meg, mekkora halmazból jön, tehát alá való, apróbb
+        betűvel — és a kártya egyben hivatkozás is oda, ahol tenni lehet vele
+        valamit.
+      */}
+      <Osszegzo
+        elmaradasFt={elmaradasFt}
+        rendezetlenDarab={rendezetlen.length}
+        jogviszonyDarab={nezetek.length}
+        nyelv={nyelv}
+        sz={sz}
+      />
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">{sz("attekinto.kozeli")}</h2>
+        <Szakaszcim>{sz("attekinto.most")}</Szakaszcim>
         <Teendolista teendok={kozeliek} nyelv={nyelv} />
       </section>
 
       {kesobbiek.length > 0 ? (
-        <section>
-          <h2 className="mb-3 text-lg font-semibold text-stone-600 dark:text-stone-400">
-            {sz("attekinto.kesobbi")}
-          </h2>
-          <Teendolista teendok={kesobbiek} nyelv={nyelv} />
-        </section>
+        <details className="group">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-base font-bold tracking-tight">
+            <span className="font-display">{sz("attekinto.kesobb")}</span>
+            <span className="text-sm font-medium text-halvany">({kesobbiek.length})</span>
+            <IkonNyil
+              meret={16}
+              osztaly="text-nagyon-halvany rotate-90 transition-transform group-open:-rotate-90"
+            />
+          </summary>
+          <div className="mt-2">
+            <Teendolista teendok={kesobbiek} nyelv={nyelv} />
+          </div>
+        </details>
       ) : null}
     </div>
   );
 }
 
-function Osszegzo({ cimke, ertek }: { cimke: string; ertek: string }) {
+function Osszegzo({
+  elmaradasFt,
+  rendezetlenDarab,
+  jogviszonyDarab,
+  nyelv,
+  sz,
+}: {
+  elmaradasFt: number;
+  rendezetlenDarab: number;
+  jogviszonyDarab: number;
+  nyelv: Parameters<typeof forintNyelven>[1];
+  sz: (kulcs: string, adatok?: Record<string, string | number>) => string;
+}) {
+  const van = elmaradasFt > 0;
+
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-      <div className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
-        {cimke}
+    <section
+      className={`rounded-kartya border p-4 ${
+        van ? "border-gond-keret bg-gond-lap" : "border-rendben-keret bg-rendben-lap"
+      }`}
+    >
+      {/* Törhető sor, nem szorított: az összeg nem tud sorba törni (a
+          pénznemet nem törhető szóköz köti a számhoz, a számot az
+          ezrestagolás), tehát ha nem fér ki a címke mellé, a címkének kell
+          a következő sorba mennie. Angolul már hétjegyű összegnél idáig
+          jutunk — „HUF 1,214,000" 218 képpont a 294-ből —, magyarul nem, és
+          épp ez a baj: egy magyarul mért lapon ez soha nem látszik. */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-xs font-semibold tracking-wide text-halvany uppercase">
+            {sz("attekinto.elmaradas")}
+          </div>
+          <div className="mt-1">
+            <Osszeg
+              ertek={forintNyelven(elmaradasFt, nyelv)}
+              meret="nagy"
+              szin={van ? "gond" : "rendben"}
+            />
+          </div>
+        </div>
+        <Jelzo allapot={van ? "gond" : "rendben"}>
+          {sz("attekinto.rendezetlen")}: {rendezetlenDarab}
+        </Jelzo>
       </div>
-      <div className="mt-1 text-xl font-semibold tabular-nums">{ertek}</div>
-    </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <span className="text-sm text-halvany">
+          {sz("attekinto.jogviszony")}: {jogviszonyDarab}
+        </span>
+        <GombHivatkozas href="/befizetesek" suly="masodlagos" osztaly="ml-auto min-h-10">
+          {sz("befizetesek.cim")}
+          <IkonNyil meret={14} />
+        </GombHivatkozas>
+      </div>
+    </section>
   );
 }

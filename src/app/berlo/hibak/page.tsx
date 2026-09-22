@@ -6,6 +6,7 @@ import { berbeadoElerhetosege, berloHibai } from "@/lib/hibabejelentes";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv } from "@/lib/nyelv";
 import { HibaBejelentes } from "@/app/hibak/Urlapok";
+import { Lapfej, NYITO, Sugo, Szakaszcim } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -37,14 +38,15 @@ export default async function BerloiHibak() {
 
   return (
     <div className="grid gap-8">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("hiba.oldal.cim")}</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("hiba.oldal.bevezeto")}</p>
-      </section>
+      <Lapfej cim={sz("hiba.oldal.cim")} />
+
+      <Sugo cim={sz("hiba.oldal.sugo_cim")}>
+        <p>{sz("hiba.oldal.bevezeto")}</p>
+      </Sugo>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">{sz("hiba.oldal.uj")}</h2>
-        <div className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+        <Szakaszcim>{sz("hiba.oldal.uj")}</Szakaszcim>
+        <div className="rounded-kartya border border-keret bg-felulet p-4">
           <HibaBejelentes
             nyelv={nyelv}
             jogviszonyok={jogviszonyok.map((jogviszony) => ({
@@ -56,20 +58,20 @@ export default async function BerloiHibak() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">{sz("hiba.oldal.elerhetoseg")}</h2>
+        <Szakaszcim>{sz("hiba.oldal.elerhetoseg")}</Szakaszcim>
         <ul className="grid gap-2">
           {elerhetosegek.map(({ jogviszony, berbeado }) => (
             <li
               key={jogviszony.id}
-              className="rounded-lg border border-stone-200 bg-white p-4 text-sm dark:border-stone-800 dark:bg-stone-900"
+              className="rounded-kartya border border-keret bg-felulet p-4 text-sm"
             >
               <p className="font-medium">{jogviszony.ingatlan.megnevezes}</p>
-              <p className="mt-1 text-stone-600 dark:text-stone-400">
+              <p className="mt-1 text-halvany">
                 {berbeado?.nev ?? sz("hiba.kartya.berbeado")} · {berbeado?.email ?? ""}
                 {berbeado?.telefon ? ` · ${berbeado.telefon}` : ""}
               </p>
               {berbeado && !berbeado.telefon ? (
-                <p className="mt-1 text-stone-600 dark:text-stone-400">
+                <p className="mt-1 text-halvany">
                   {sz("hiba.oldal.nincs_telefon")}
                 </p>
               ) : null}
@@ -79,12 +81,10 @@ export default async function BerloiHibak() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">
-          {sz("hiba.oldal.nyitottak")}
-          {nyitottak.length > 0 ? ` (${nyitottak.length})` : ""}
-        </h2>
+        <Szakaszcim>{sz("hiba.oldal.nyitottak")}
+          {nyitottak.length > 0 ? ` (${nyitottak.length})` : ""}</Szakaszcim>
         {nyitottak.length === 0 ? (
-          <p className="rounded-lg border border-stone-200 bg-white p-4 text-sm text-stone-600 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-400">
+          <p className="rounded-kartya border border-keret bg-felulet p-4 text-sm text-halvany">
             {sz("hiba.oldal.nincs_nyitott")}
           </p>
         ) : (
@@ -105,8 +105,8 @@ export default async function BerloiHibak() {
 
       {/* Ugyanaz, mint a bérbeadói oldalon: a lezártak csak gyűlnek. */}
       {lezartak.length > 0 ? (
-        <details className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-          <summary className="cursor-pointer font-medium">
+        <details className="rounded-kartya border border-keret bg-felulet p-4">
+          <summary className={NYITO}>
             {sz("hiba.oldal.lezartak")} ({lezartak.length})
           </summary>
           <ul className="mt-3 grid gap-3">

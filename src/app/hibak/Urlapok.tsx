@@ -113,7 +113,7 @@ export function HibaBejelentes({
 
       <fieldset className="grid gap-1 text-sm">
         <legend className="font-medium">{sz("hiba.urlap.ok")}</legend>
-        <p className="text-stone-600 dark:text-stone-400">{sz("hiba.urlap.ok_sugo")}</p>
+        <p className="text-halvany">{sz("hiba.urlap.ok_sugo")}</p>
         {OKOK.map((lehetoseg) => (
           <label key={lehetoseg} className="flex items-center gap-2">
             <Valasztogomb
@@ -140,7 +140,7 @@ export function HibaBejelentes({
             />
             <span>
               <span className="font-medium">{u(surgossegNeve(fokozat))}</span>
-              <span className="block text-stone-600 dark:text-stone-400">
+              <span className="block text-halvany">
                 {u(surgossegLeirasa(fokozat))}
               </span>
             </span>
@@ -149,7 +149,7 @@ export function HibaBejelentes({
       </fieldset>
 
       {surgosseg === "veszhelyzet" ? (
-        <div className="rounded border border-rose-300 bg-rose-50 p-3 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200">
+        <div className="rounded border border-gond-keret bg-gond-lap p-3 text-sm text-gond">
           <p className="font-medium">{sz("hiba.urlap.veszely_cim")}</p>
           <ul className="mt-1 list-disc pl-5">
             {VESZELYHELYZETI_TEENDOK.map((sor) => (
@@ -221,11 +221,11 @@ export function ViseloUrlap({
   return (
     <form
       action={kuldes}
-      className="mt-3 grid gap-2 border-t border-stone-200 pt-3 dark:border-stone-800"
+      className="mt-3 grid gap-2 border-t border-keret pt-3"
     >
       <input type="hidden" name="hibaId" value={hibaId} />
       <p className="text-sm font-medium">{sz("hiba.urlap.viselo")}</p>
-      <p className="text-sm text-stone-600 dark:text-stone-400">{u(javaslat.indoklas)}</p>
+      <p className="text-sm text-halvany">{u(javaslat.indoklas)}</p>
       <label className="grid gap-1 text-sm">
         <span className="sr-only">{sz("hiba.urlap.viselo")}</span>
         <Valaszto

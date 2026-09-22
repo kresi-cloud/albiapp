@@ -50,8 +50,8 @@ export function MeghivoGomb({
         <div
           className={`rounded border p-3 text-sm ${
             allapot.allapot === "hiba"
-              ? "border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200"
-              : "border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
+              ? "border-gond-keret bg-gond-lap text-gond"
+              : "border-rendben-keret bg-rendben-lap text-rendben"
           }`}
         >
           <p>{allapot.uzenet}</p>
@@ -60,7 +60,7 @@ export function MeghivoGomb({
               readOnly
               value={allapot.link}
               onFocus={(esemeny) => esemeny.currentTarget.select()}
-              className="mt-2 w-full rounded border border-stone-300 bg-white px-2 py-1 text-xs dark:border-stone-700 dark:bg-stone-950 dark:text-stone-200"
+              className="mt-2 w-full rounded border border-keret-eros bg-felulet px-2 py-1 text-xs"
             />
           ) : null}
         </div>

@@ -9,11 +9,12 @@ import { igazolhatoIdoszakok } from "@/lib/igazolas";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { UjIgazolas, UjJegyzokonyv, UjSzerzodes } from "./Urlapok";
+import { Lapfej, Szakaszcim } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
 const DOBOZ =
-  "rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900";
+  "rounded-kartya border border-keret bg-felulet p-4";
 
 export default async function Dokumentumok() {
   const berbeado = await kotelezoSzerep("berbeado");
@@ -48,13 +49,10 @@ export default async function Dokumentumok() {
 
   return (
     <div className="grid gap-8">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("dokumentumok.cim")}</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("dokumentumok.bevezeto")}</p>
-      </section>
+      <Lapfej cim={sz("dokumentumok.cim")} alcim={sz("dokumentumok.bevezeto")} />
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">{sz("dokumentumok.tar_cim")}</h2>
+        <Szakaszcim>{sz("dokumentumok.tar_cim")}</Szakaszcim>
         <Dokumentumlista
           dokumentumok={tar}
           uresUzenet={sz("dokumentumok.tar_ures")}
@@ -69,7 +67,7 @@ export default async function Dokumentumok() {
           <section key={jogviszony.id} className="grid gap-3">
             <div>
               <h2 className="font-semibold">{jogviszony.ingatlan.megnevezes}</h2>
-              <p className="text-sm text-stone-600 dark:text-stone-400">
+              <p className="text-sm text-halvany">
                 {jogviszony.berlok.length === 0
                   ? sz("dokumentumok.nincs_berlo")
                   : nevsor(jogviszony.berlok.map((berlo) => berlo.nev))}{" "}
@@ -80,7 +78,7 @@ export default async function Dokumentumok() {
             <div className={DOBOZ}>
               <h3 className="font-medium">{sz("dokumentumok.szerzodes_cim")}</h3>
               {jogviszony.szerzodesek.length === 0 ? (
-                <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+                <p className="mt-1 text-sm text-halvany">
                   {sz("dokumentumok.nincs_szerzodes")}
                 </p>
               ) : (
@@ -93,7 +91,7 @@ export default async function Dokumentumok() {
                       >
                         {szerzodes.megnevezes}
                       </Link>
-                      <span className="text-stone-600 dark:text-stone-400">
+                      <span className="text-halvany">
                         {szerzodes.allapot === "veglegesitve" && szerzodes.veglegesitve
                           ? sz("dokumentum.veglegesitve_nap", { nap: nap(szerzodes.veglegesitve) })
                           : sz("dokumentum.tervezet")}
@@ -111,7 +109,7 @@ export default async function Dokumentumok() {
 
             <div className={DOBOZ}>
               <h3 className="font-medium">{sz("dokumentumok.jegyzokonyv_cim")}</h3>
-              <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+              <p className="mt-1 text-sm text-halvany">
                 {sz("dokumentumok.jegyzokonyv_sugo")}
               </p>
               {jogviszony.jegyzokonyvek.length > 0 ? (
@@ -125,7 +123,7 @@ export default async function Dokumentumok() {
                         {sz(`jegyzokonyv.fajta.${jegyzokonyv.fajta}`)} ·{" "}
                         {nap(jegyzokonyv.idopont)}
                       </Link>
-                      <span className="text-stone-600 dark:text-stone-400">
+                      <span className="text-halvany">
                         {jegyzokonyv.allapot === "veglegesitve"
                           ? sz("dokumentum.veglegesitve")
                           : sz("dokumentum.tervezet")}
@@ -152,14 +150,14 @@ export default async function Dokumentumok() {
 
             <div className={DOBOZ}>
               <h3 className="font-medium">{sz("dokumentumok.igazolas_cim")}</h3>
-              <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+              <p className="mt-1 text-sm text-halvany">
                 {sz("dokumentumok.igazolas_sugo")}
               </p>
 
               {jogviszony.berlok.map((berlo) => (
                 <div
                   key={berlo.id}
-                  className="mt-4 border-t border-stone-200 pt-3 first:border-0 dark:border-stone-800"
+                  className="mt-4 border-t border-keret pt-3 first:border-0"
                 >
                   {berlo.igazolasok.length > 0 ? (
                     <ul className="grid gap-1 text-sm">
@@ -172,7 +170,7 @@ export default async function Dokumentumok() {
                             {berlo.nev} · {idoszakCimke(igazolas.idoszak)} ·{" "}
                             {ft(igazolas.osszegFt)}
                           </a>
-                          <span className="text-stone-600 dark:text-stone-400">
+                          <span className="text-halvany">
                             {sz("dokumentum.kiallitva_nap", { nap: nap(igazolas.kiallitva) })}
                           </span>
                         </li>

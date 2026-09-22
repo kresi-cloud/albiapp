@@ -5,6 +5,7 @@ import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { MeghivoGomb } from "./MeghivoGomb";
 import { BERLOHOZ_KELL, hianyzoMezok } from "@/domain/szemelyes-adatok";
+import { Lapfej, Sugo } from "@/components/ui/alap";
 import {
   BerloAdatok,
   BerloHozzaadas,
@@ -44,19 +45,20 @@ export default async function Berlok() {
 
   return (
     <div className="grid gap-6">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("berlok.cim")}</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("berlok.bevezeto")}</p>
-      </section>
+      <Lapfej cim={sz("berlok.cim")} />
+
+      <Sugo cim={sz("berlok.sugo_cim")}>
+        <p>{sz("berlok.bevezeto")}</p>
+      </Sugo>
 
       <ul className="grid gap-4">
         {jogviszonyok.map((jogviszony) => (
           <li
             key={jogviszony.id}
-            className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+            className="rounded-kartya border border-keret bg-felulet p-4"
           >
             <h2 className="font-semibold">{jogviszony.ingatlan.megnevezes}</h2>
-            <p className="text-sm text-stone-600 dark:text-stone-400">
+            <p className="text-sm text-halvany">
               {sz("berlok.dij_sor", {
                 osszeg: ft(jogviszony.berletiDijFt),
                 nap: jogviszony.fizetesiNap,
@@ -67,7 +69,7 @@ export default async function Berlok() {
                 : sz("berlok.tobb_berlo", { darab: jogviszony.berlok.length })}
             </p>
             {jogviszony.statusz === "lezart" ? (
-              <p className="mt-1 text-sm font-medium text-stone-700 dark:text-stone-300">
+              <p className="mt-1 text-sm font-medium text-szoveg">
                 {sz("berlok.lezarva", { nap: nap(jogviszony.vege ?? most) })}
               </p>
             ) : null}
@@ -92,15 +94,15 @@ export default async function Berlok() {
                 return (
                   <li
                     key={berlo.id}
-                    className="border-t border-stone-200 pt-3 first:border-0 first:pt-0 dark:border-stone-800"
+                    className="border-t border-keret pt-3 first:border-0 first:pt-0"
                   >
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                       <h3 className="font-medium">{berlo.nev}</h3>
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                           berlo.berloId
-                            ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200"
-                            : "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200"
+                            ? "bg-rendben-lap text-rendben"
+                            : "bg-figyelem-lap text-figyelem"
                         }`}
                       >
                         {berlo.berloId ? sz("berlok.van_fiok") : sz("berlok.nincs_fiok")}
@@ -108,13 +110,13 @@ export default async function Berlok() {
                     </div>
 
                     {berlo.berloId ? (
-                      <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+                      <p className="mt-1 text-sm text-halvany">
                         {sz("berlok.belepett", { email: berlo.berlo?.email ?? "" })}
                       </p>
                     ) : (
                       <>
                         {eloMeghivo ? (
-                          <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+                          <p className="mt-1 text-sm text-halvany">
                             {sz("berlok.elo_meghivo", {
                               email: eloMeghivo.email,
                               nap: nap(eloMeghivo.lejar),

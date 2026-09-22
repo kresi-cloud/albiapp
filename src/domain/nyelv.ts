@@ -36,7 +36,14 @@ export function nyelvet(nyers: string | null | undefined): Nyelv {
  */
 export type Adatok = Record<string, string | number | Date | Uzenet | Honap>;
 
-/** Egy „ÉÉÉÉ-HH” alakú időszak, hónapnévvé formázva a behelyettesítéskor. */
+/**
+ * Egy „ÉÉÉÉ-HH” alakú időszak, hónapnévvé formázva a behelyettesítéskor.
+ *
+ * Nem sima szöveg, mert akkor a gépi alak kerülne a mondatba: a teendők listája
+ * így írta ki, hogy „2026-09 időszak, 240 000 Ft”. A domain viszont nem tudhat
+ * a nyelvről, ezért csak megjelöli, hogy ez egy hónap, a kiírást pedig ugyanúgy
+ * a szövegező végzi, mint a számokét.
+ */
 export type Honap = { honap: string };
 
 export function honap(idoszak: string): Honap {

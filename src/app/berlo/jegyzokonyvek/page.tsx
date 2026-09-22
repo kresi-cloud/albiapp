@@ -5,6 +5,7 @@ import { Album } from "@/app/jegyzokonyv-kepek/Album";
 import { berloJegyzokonyvei } from "@/lib/jegyzokonyv-kepek";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv } from "@/lib/nyelv";
+import { Lapfej } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -24,27 +25,24 @@ export default async function BerloiJegyzokonyvek() {
 
   return (
     <div className="grid gap-6">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("kep.oldal.cim")}</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("kep.oldal.bevezeto")}</p>
-      </section>
+      <Lapfej cim={sz("kep.oldal.cim")} alcim={sz("kep.oldal.bevezeto")} />
 
       {jegyzokonyvek.length === 0 ? (
-        <p className="text-sm text-stone-600 dark:text-stone-400">{sz("kep.oldal.ures")}</p>
+        <p className="text-sm text-halvany">{sz("kep.oldal.ures")}</p>
       ) : (
         jegyzokonyvek.map((jegyzokonyv) => (
           <section
             key={jegyzokonyv.id}
-            className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+            className="rounded-kartya border border-keret bg-felulet p-4"
           >
             <h2 className="font-medium">
               {FAJTA_NEVE[jegyzokonyv.fajta] ?? jegyzokonyv.fajta} · {jegyzokonyv.ingatlan}
             </h2>
-            <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+            <p className="mt-1 text-sm text-halvany">
               {datumNyelven(jegyzokonyv.idopont, nyelv)}
             </p>
             {jegyzokonyv.allapot === "tervezet" ? (
-              <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+              <p className="mt-2 text-sm text-halvany">
                 {sz("kep.oldal.tervezet")}
               </p>
             ) : null}

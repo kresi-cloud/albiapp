@@ -14,7 +14,7 @@ const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "" };
 function Hibasav({ allapot }: { allapot: Eredmeny }) {
   if (allapot.allapot !== "hiba" || !allapot.uzenet) return null;
   return (
-    <p className="rounded border border-rose-300 bg-rose-50 p-2 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200">
+    <p className="rounded border border-gond-keret bg-gond-lap p-2 text-sm text-gond">
       {allapot.uzenet}
     </p>
   );
@@ -110,24 +110,24 @@ function EgyTarsasag({
   const [allapot, kuldes, folyamatban] = useActionState(beszelgetestInditAction, KEZDETI);
 
   return (
-    <details className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+    <details className="rounded-kartya border border-keret bg-felulet p-4">
       <summary className="cursor-pointer font-medium">
         {cimkek.nyito}
         {mutassukABerlemenyt ? (
-          <span className="font-normal text-stone-600 dark:text-stone-400">
+          <span className="font-normal text-halvany">
             {" · "}
             {tarsasag.ingatlanNev}
           </span>
         ) : null}
       </summary>
-      <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">{cimkek.sugo}</p>
+      <p className="mt-2 text-sm text-halvany">{cimkek.sugo}</p>
 
       <form action={kuldes} className="mt-3 grid gap-3">
         <input type="hidden" name="jogviszonyId" value={tarsasag.jogviszonyId} />
 
         <fieldset className="grid gap-1 text-sm">
           <legend className="font-medium">{cimkek.cimzettek}</legend>
-          <p className="text-xs text-stone-500 dark:text-stone-400">{cimkek.csoportSugo}</p>
+          <p className="text-xs text-nagyon-halvany">{cimkek.csoportSugo}</p>
           {tarsasag.tagok.map((tag) => (
             <label key={tag.felhasznaloId} className="flex items-center gap-2">
               <input type="checkbox" name="cimzett" value={tag.felhasznaloId} />
@@ -169,7 +169,7 @@ export function UjBeszelgetes({
   const van = tarsasagok.filter((tarsasag) => tarsasag.tagok.length > 0);
 
   if (van.length === 0) {
-    return <p className="text-sm text-stone-600 dark:text-stone-400">{cimkek.nincsTars}</p>;
+    return <p className="text-sm text-halvany">{cimkek.nincsTars}</p>;
   }
 
   return (

@@ -16,9 +16,9 @@ import type { HibaNezet } from "@/lib/hibabejelentes";
 import { AllapotLepesek, UzenetUrlap, ViseloUrlap } from "@/app/hibak/Urlapok";
 
 const SURGOSSEG_STILUS: Record<string, string> = {
-  veszhelyzet: "bg-rose-100 text-rose-900 dark:bg-rose-950 dark:text-rose-200",
-  surgos: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-  normal: "bg-stone-100 text-stone-700 dark:bg-stone-800 dark:text-stone-300",
+  veszhelyzet: "bg-gond-lap text-gond",
+  surgos: "bg-figyelem-lap text-figyelem",
+  normal: "bg-felulet-halk text-szoveg",
 };
 
 /**
@@ -48,7 +48,7 @@ export function Hibakartya({
   return (
     <li
       id={hiba.id}
-      className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+      className="rounded-kartya border border-keret bg-felulet p-4"
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="font-medium">{hiba.targy}</h3>
@@ -59,14 +59,14 @@ export function Hibakartya({
         </span>
       </div>
 
-      <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+      <p className="mt-1 text-sm text-halvany">
         {berlemenyCimke ? `${berlemenyCimke} · ` : ""}
         {u(allapotNeve(hiba.allapot))} ·{" "}
         {sz("hiba.kartya.bejelentve", { nap: datumNyelven(hiba.bejelentve, nyelv) })}
         {nyitott(hiba.allapot) ? (
           <>
             {" · "}
-            <span className={varakozas.lejart ? "text-rose-700 dark:text-rose-400" : ""}>
+            <span className={varakozas.lejart ? "text-gond" : ""}>
               {sz("hiba.kartya.hatarido", { nap: datumNyelven(hatarido, nyelv) })}
               {varakozas.lejart ? sz("hiba.kartya.lejart") : ""}
             </span>
@@ -76,32 +76,32 @@ export function Hibakartya({
 
       <p className="mt-2 text-sm">{hiba.leiras}</p>
 
-      <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+      <p className="mt-2 text-sm text-halvany">
         {u(teruletNeve(hiba.terulet))} · {u(okNeve(hiba.ok))} ·{" "}
         {sz("hiba.kartya.bejelento", { nev: hiba.bejelentoNev })}
       </p>
 
       {hiba.viseloFel ? (
-        <p className="mt-2 rounded border border-stone-200 bg-stone-50 p-2 text-sm dark:border-stone-800 dark:bg-stone-950">
+        <p className="mt-2 rounded-kartya border border-keret bg-felulet-halk p-2 text-sm">
           {sz("hiba.kartya.viselo", { fel: viseloNeve(hiba.viseloFel) })}
         </p>
       ) : szerep === "berlo" ? (
-        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+        <p className="mt-2 text-sm text-halvany">
           {sz("hiba.kartya.nincs_viselo", { indoklas: javaslat.indoklas })}
         </p>
       ) : null}
 
       {hiba.uzenetek.length > 0 ? (
-        <ul className="mt-3 grid gap-2 border-t border-stone-200 pt-3 dark:border-stone-800">
+        <ul className="mt-3 grid gap-2 border-t border-keret pt-3">
           {hiba.uzenetek.map((uzenet) => (
             <li key={uzenet.id} className="text-sm">
               <span className="font-medium">
                 {uzenet.sajat ? sz("hiba.kartya.te") : uzenet.szerzoNev}
               </span>
-              <span className="ml-2 text-xs text-stone-500 dark:text-stone-400">
+              <span className="ml-2 text-xs text-nagyon-halvany">
                 {datumNyelven(uzenet.letrehozva, nyelv)}
               </span>
-              <p className="text-stone-700 dark:text-stone-300">{uzenet.szoveg}</p>
+              <p className="text-szoveg">{uzenet.szoveg}</p>
             </li>
           ))}
         </ul>

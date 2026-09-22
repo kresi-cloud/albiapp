@@ -2,6 +2,7 @@ import { hianyzoParok, osszesit, type KepAllapot } from "@/domain/jegyzokonyv-ke
 import type { KepNezet } from "@/lib/jegyzokonyv-kepek";
 import { szovegek } from "@/lib/nyelv";
 import { KepElbiralas, KepFeltoltes, KepTorles } from "./Urlapok";
+import { NYITO } from "@/components/ui/alap";
 
 /**
  * A jegyzőkönyv fényképalbuma, ugyanaz a bérbeadónál és a bérlőnél.
@@ -13,9 +14,9 @@ import { KepElbiralas, KepFeltoltes, KepTorles } from "./Urlapok";
  */
 
 const KERET: Record<KepAllapot, string> = {
-  egyoldalu: "border-amber-300 dark:border-amber-900",
-  megerositve: "border-emerald-300 dark:border-emerald-900",
-  vitatott: "border-rose-300 dark:border-rose-900",
+  egyoldalu: "border-figyelem-keret",
+  megerositve: "border-rendben-keret",
+  vitatott: "border-gond-keret",
 };
 
 export async function Album({
@@ -66,7 +67,7 @@ export async function Album({
 
     return (
       <li
-        className={`grid gap-2 rounded border p-2 ${KERET[kep.allapot]} bg-white dark:bg-stone-900`}
+        className={`grid gap-2 rounded border p-2 ${KERET[kep.allapot]} bg-felulet`}
       >
         {/*
           Sima <img>, nem a keretrendszer képkomponense: a kép a saját
@@ -81,19 +82,19 @@ export async function Album({
           className="aspect-square w-full rounded object-cover"
         />
         <p className="text-sm font-medium">{kep.megnevezes}</p>
-        <p className="text-xs text-stone-600 dark:text-stone-400">
+        <p className="text-xs text-halvany">
           {sz(`kep.keszitette.${kep.feltoltoSzerep}`)} {u({ kulcs: `kep.allapot.${kep.allapot}` })}
         </p>
 
         {kep.kifogas ? (
-          <p className="rounded bg-rose-50 p-2 text-xs text-rose-900 dark:bg-rose-950/40 dark:text-rose-200">
+          <p className="rounded bg-gond-lap p-2 text-xs text-gond">
             {kep.kifogas}
           </p>
         ) : null}
 
         {parja ? (
           <details>
-            <summary className="cursor-pointer text-xs text-stone-600 underline underline-offset-2 dark:text-stone-400">
+            <summary className={NYITO}>
               {sz("kep.par_cim")}
             </summary>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -115,13 +116,13 @@ export async function Album({
   return (
     <section>
       <h2 className="text-base font-semibold">{sz("kep.cim")}</h2>
-      <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">{sz("kep.sugo")}</p>
+      <p className="mt-1 text-sm text-halvany">{sz("kep.sugo")}</p>
       {fajta === "visszaadas" ? (
-        <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">{sz("kep.sugo.zaro")}</p>
+        <p className="mt-1 text-sm text-halvany">{sz("kep.sugo.zaro")}</p>
       ) : null}
 
       {kepek.length === 0 ? (
-        <p className="mt-3 text-sm text-stone-600 dark:text-stone-400">{sz("kep.nincs")}</p>
+        <p className="mt-3 text-sm text-halvany">{sz("kep.nincs")}</p>
       ) : (
         <p className="mt-3 text-sm">{sz("kep.osszesites", { ...osszesites })}</p>
       )}
@@ -136,7 +137,7 @@ export async function Album({
 
       {rendezett.length > 0 ? (
         <details className="mt-3">
-          <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
+          <summary className={NYITO}>
             {sz("lista.korabbiak", { darab: rendezett.length })}
           </summary>
           <ul className="mt-3 grid grid-cols-2 gap-3">
@@ -148,7 +149,7 @@ export async function Album({
       ) : null}
 
       {hianyzo.length > 0 && !lezart ? (
-        <div className="mt-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+        <div className="mt-4 rounded border border-figyelem-keret bg-figyelem-lap p-3 text-sm text-figyelem">
           <p>{sz("kep.par_hianyzik", { darab: hianyzo.length })}</p>
           <ul className="mt-2 grid gap-2">
             {hianyzo.map((kep) => (
@@ -167,7 +168,7 @@ export async function Album({
       ) : null}
 
       {lezart ? (
-        <p className="mt-3 text-sm text-stone-600 dark:text-stone-400">{sz("kep.lezart")}</p>
+        <p className="mt-3 text-sm text-halvany">{sz("kep.lezart")}</p>
       ) : (
         <KepFeltoltes jegyzokonyvId={jegyzokonyvId} tetelek={tetelek} cimkek={feltoltesCimkek} />
       )}

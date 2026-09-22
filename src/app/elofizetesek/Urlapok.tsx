@@ -19,8 +19,8 @@ function Uzenet({ allapot }: { allapot: Eredmeny }) {
     <p
       className={`rounded border p-2 text-sm ${
         hiba
-          ? "border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200"
-          : "border-emerald-300 bg-emerald-50 text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
+          ? "border-gond-keret bg-gond-lap text-gond"
+          : "border-rendben-keret bg-rendben-lap text-rendben"
       }`}
     >
       {allapot.uzenet}
@@ -67,11 +67,11 @@ export function UjElofizetes({
   const [allapot, kuldes, folyamatban] = useActionState(elofizetestFelveszAction, KEZDETI);
 
   return (
-    <details className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+    <details className="rounded-kartya border border-keret bg-felulet p-4">
       <summary className="cursor-pointer font-medium">
         {cimkek.nyito}
         {mutassukABerlemenyt ? (
-          <span className="font-normal text-stone-600 dark:text-stone-400">
+          <span className="font-normal text-halvany">
             {" · "}
             {ingatlanNev}
           </span>
@@ -95,7 +95,7 @@ export function UjElofizetes({
         <label className="grid gap-1 text-sm">
           <span className="font-medium">{cimkek.megnevezes}</span>
           <Mezo name="megnevezes" className={MEZO} allapot={allapot.allapot} required />
-          <span className="text-xs text-stone-500 dark:text-stone-400">{cimkek.megnevezesSugo}</span>
+          <span className="text-xs text-nagyon-halvany">{cimkek.megnevezesSugo}</span>
         </label>
 
         <label className="grid gap-1 text-sm">

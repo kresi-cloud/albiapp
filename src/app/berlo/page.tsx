@@ -2,7 +2,7 @@ import { Allapotjelzo } from "@/components/Allapotjelzo";
 import { csoportositva } from "@/domain/egyeztetes";
 import { ElszamolasTetelek } from "@/components/ElszamolasTetelek";
 import { Teendolista } from "@/components/Teendolista";
-import { datumNyelven, forintNyelven } from "@/domain/nyelv";
+import { datumNyelven, forintNyelven, honapNyelven } from "@/domain/nyelv";
 import { szovegekNyelvvel } from "@/domain/szotar";
 import { prisma } from "@/lib/db";
 import { berloNezetei, berloTeendoi } from "@/lib/lekerdezesek";
@@ -13,6 +13,7 @@ import { ElbiralasUrlap, OraallasUrlap } from "@/app/rezsi/Urlapok";
 import { meretSzoveg } from "@/domain/bizonylat";
 import { bizonylatokTetelekhez } from "@/lib/bizonylat";
 import { Bizonylatok } from "@/app/bizonylatok/Urlapok";
+import { Lapfej, NYITO, Szakaszcim } from "@/components/ui/alap";
 import { Utalas, UtalastVisszavon } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -88,42 +89,39 @@ export default async function BerloiNezet() {
   if (nezetek.length === 0) {
     return (
       <div className="grid gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("nav.berlemenyem")}</h1>
-        <p className="text-stone-600 dark:text-stone-400">{sz("berlo.nincs_berlemeny")}</p>
+        <Lapfej cim={sz("nav.berlemenyem")} alcim={sz("berlo.nincs_berlemeny")} />
       </div>
     );
   }
 
   return (
-    <div className="grid gap-8">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {sz("berlo.udvozles", { nev: berlo.nev })}
-        </h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">
-          {nezetek.map((nezet) => `${nezet.ingatlanMegnevezes}, ${nezet.ingatlanCim}`).join(" · ")}
-        </p>
-      </section>
+    <div className="grid gap-6">
+      <Lapfej
+        cim={sz("berlo.udvozles", { nev: berlo.nev })}
+        alcim={nezetek
+          .map((nezet) => `${nezet.ingatlanMegnevezes}, ${nezet.ingatlanCim}`)
+          .join(" · ")}
+      />
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">{sz("berlo.teendok")}</h2>
+        <Szakaszcim>{sz("berlo.teendok")}</Szakaszcim>
         <Teendolista teendok={sajatTeendok} nyelv={nyelv} />
       </section>
 
       {meroorasJogviszonyok.map((jogviszony) => (
         <section key={`orak-${jogviszony.id}`}>
-          <h2 className="mb-3 text-lg font-semibold">{sz("berlo.oraallas")}</h2>
+          <Szakaszcim>{sz("berlo.oraallas")}</Szakaszcim>
           <ul className="grid gap-3">
             {jogviszony.ingatlan.meroorak.map((meroora) => (
               <li
                 key={meroora.id}
-                className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+                className="rounded-kartya border border-keret bg-felulet p-4"
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-medium">
                     {u(merooraUzenet(meroora.tipus, meroora.almero))}
                   </span>
-                  <span className="text-sm tabular-nums text-stone-600 dark:text-stone-400">
+                  <span className="text-sm tabular-nums text-halvany">
                     {meroora.oraallasok[0]
                       ? sz("berlo.oraallas.legutobb", {
                           ertek: meroora.oraallasok[0].ertek,
@@ -152,14 +150,14 @@ export default async function BerloiNezet() {
       {jogviszonyok.flatMap((jogviszony) =>
         jogviszony.elszamolasok.map((elszamolas) => (
           <section key={elszamolas.id}>
-            <h2 className="mb-3 text-lg font-semibold">
+            <Szakaszcim>
               {sz("berlo.elszamolas", {
                 tol: datumNyelven(elszamolas.idoszakKezdete, nyelv),
                 ig: datumNyelven(elszamolas.idoszakVege, nyelv),
               })}
-            </h2>
-            <div className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-              <p className="text-sm text-stone-600 dark:text-stone-400">
+            </Szakaszcim>
+            <div className="rounded-kartya border border-keret bg-felulet p-4">
+              <p className="text-sm text-halvany">
                 {elszamolas.allapot === "kiadva"
                   ? sz("berlo.elszamolas.kiadva")
                   : elszamolas.allapot === "elfogadva"
@@ -172,7 +170,7 @@ export default async function BerloiNezet() {
                 nyelv={nyelv}
               />
               {elszamolas.berloiUzenet ? (
-                <p className="mt-3 text-sm text-stone-600 dark:text-stone-400">
+                <p className="mt-3 text-sm text-halvany">
                   {sz("berlo.elszamolas.uzeneted", { szoveg: elszamolas.berloiUzenet })}
                 </p>
               ) : null}
@@ -204,12 +202,12 @@ export default async function BerloiNezet() {
 
         return (
           <section key={nezet.id}>
-            <h2 className="mb-3 text-lg font-semibold">
+            <Szakaszcim>
               {sz("berlo.befizetesek", { berlemeny: nezet.ingatlanMegnevezes })}
-            </h2>
+            </Szakaszcim>
 
             {soronVan.length === 0 && tetelek.length > 0 ? (
-              <p className="mb-3 rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200">
+              <p className="mb-3 rounded-lg border border-rendben-keret bg-rendben-lap p-3 text-sm text-rendben">
                 {sz("lista.nincs_teendo")}
               </p>
             ) : null}
@@ -219,8 +217,8 @@ export default async function BerloiNezet() {
             ) : null}
 
             {bizonylatos.length > 0 ? (
-              <details className="mt-3 rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
-                <summary className="cursor-pointer p-3 text-sm font-medium">
+              <details className="mt-3 rounded-kartya border border-keret bg-felulet">
+                <summary className={`${NYITO} px-3`}>
                   {sz("lista.rendezett_bizonylattal", { darab: bizonylatos.length })}
                 </summary>
                 <ul className="grid gap-2 p-3 pt-0">{bizonylatos.map(Tetel)}</ul>
@@ -228,8 +226,8 @@ export default async function BerloiNezet() {
             ) : null}
 
             {csendes.length > 0 ? (
-              <details className="mt-3 rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
-                <summary className="cursor-pointer p-3 text-sm font-medium">
+              <details className="mt-3 rounded-kartya border border-keret bg-felulet">
+                <summary className={`${NYITO} px-3`}>
                   {sz("lista.rendezett", { darab: csendes.length })}
                 </summary>
                 <ul className="grid gap-2 p-3 pt-0">{csendes.map(Tetel)}</ul>
@@ -242,29 +240,32 @@ export default async function BerloiNezet() {
           return (
                     <li
                       key={sor.eloirtTetelId ?? ""}
-                      className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+                      data-idoszak={sor.idoszak ?? ""}
+                      data-osszeg={sor.osszegFt}
+                      className="rounded-kartya border border-keret bg-felulet p-4"
                     >
                       <div className="flex flex-wrap items-baseline justify-between gap-2">
                         <span className="font-medium">
-                          {sor.idoszak} · {forintNyelven(sor.osszegFt, nyelv)}
+                          {sor.idoszak ? `${honapNyelven(sor.idoszak, nyelv)} · ` : ""}
+                          {forintNyelven(sor.osszegFt, nyelv)}
                         </span>
                         <Allapotjelzo allapot={sor.allapot} nyelv={nyelv} />
                       </div>
-                      <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+                      <p className="mt-1 text-sm text-halvany">
                         {sz("berlo.esedekesseg", {
                           nap: datumNyelven(sor.esedekesseg, nyelv),
                         })}{" "}
                         {u(sor.magyarazat)}
                       </p>
                       {sor.reszletezes ? (
-                        <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+                        <p className="mt-1 text-sm text-nagyon-halvany">
                           {u(sor.reszletezes)}
                         </p>
                       ) : null}
 
                       <dl className="mt-3 grid grid-cols-1 gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
                         <div>
-                          <dt className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
+                          <dt className="text-xs uppercase tracking-wide text-nagyon-halvany">
                             {sz("berlo.utalas.sajat")}
                           </dt>
                           <dd className="tabular-nums">
@@ -274,7 +275,7 @@ export default async function BerloiNezet() {
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
+                          <dt className="text-xs uppercase tracking-wide text-nagyon-halvany">
                             {sz("berlo.utalas.berbeado")}
                           </dt>
                           <dd className="tabular-nums">
@@ -288,7 +289,7 @@ export default async function BerloiNezet() {
                       </dl>
 
                       {sor.bizonylatKell ? (
-                        <p className="mt-3 rounded border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950 dark:text-rose-200">
+                        <p className="mt-3 rounded border border-gond-keret bg-gond-lap p-3 text-sm text-gond">
                           {sz("berlo.utalas.bizonylat")}
                         </p>
                       ) : null}

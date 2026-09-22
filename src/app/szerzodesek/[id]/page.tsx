@@ -11,6 +11,7 @@ import {
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { szerzodesBemenet } from "@/lib/szerzodes";
+import { NYITO } from "@/components/ui/alap";
 import {
   ModulValto,
   ParameterUrlap,
@@ -87,7 +88,7 @@ export default async function SzerzodesOldal({
           {sz("szerzodes.vissza")}
         </Link>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight">{megnevezes}</h1>
-        <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+        <p className="mt-1 text-sm text-halvany">
           {sz(szerkesztheto ? "szerzodes.tervezet_sugo" : "szerzodes.vegleges_sugo")}
         </p>
         {/*
@@ -95,7 +96,7 @@ export default async function SzerzodesOldal({
           szerződéshez tartozik, és hogy a többi pont változatlanul hatályban marad.
         */}
         {zaradek ? (
-          <p className="mt-2 rounded border border-stone-300 bg-stone-50 p-3 text-sm dark:border-stone-700 dark:bg-stone-900">
+          <p className="mt-2 rounded border border-keret-eros bg-felulet-halk p-3 text-sm">
             {bemenet.alap
               ? sz("szerzodes.zaradek_alapja", { nev: bemenet.alap.megnevezes })
               : sz("szerzodes.zaradek_sugo")}
@@ -103,7 +104,7 @@ export default async function SzerzodesOldal({
         ) : null}
       </section>
 
-      <section className="rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+      <section className="rounded border border-figyelem-keret bg-figyelem-lap p-3 text-sm text-figyelem">
         {sz("szerzodes.ellenjegyzes_figyelmeztetes")}
       </section>
 
@@ -111,7 +112,7 @@ export default async function SzerzodesOldal({
         A szerződés szövege magyarul érvényes, tehát magyarul is marad. Ezt a lap
         kimondja, különben az angol felületen a magyar pontok hibának látszanak.
       */}
-      <section className="text-sm text-stone-600 dark:text-stone-400">
+      <section className="text-sm text-halvany">
         {sz("szerzodes.magyar_szoveg")}
       </section>
 
@@ -119,22 +120,22 @@ export default async function SzerzodesOldal({
         Személyazonosságot az alkalmazás nem igazol. Ezt kimondani a szerződés
         előtt fontosabb, mint bármelyik másik figyelmeztetés a lapon.
       */}
-      <section className="rounded border border-stone-300 bg-stone-50 p-3 text-sm dark:border-stone-700 dark:bg-stone-900">
+      <section className="rounded border border-keret-eros bg-felulet-halk p-3 text-sm">
         <h2 className="font-medium">{sz("szerzodes.azonossag_cim")}</h2>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">
+        <p className="mt-1 text-halvany">
           {sz("szerzodes.azonossag_sugo")}
         </p>
       </section>
 
       {hianyok.length > 0 ? (
-        <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+        <section className="rounded-kartya border border-keret bg-felulet p-4">
           <h2 className="font-medium">{sz("szerzodes.hianyok_cim")}</h2>
-          <ul className="mt-2 list-disc pl-5 text-sm text-stone-600 dark:text-stone-400">
+          <ul className="mt-2 list-disc pl-5 text-sm text-halvany">
             {hianyok.map((sor) => (
               <li key={`${sor.kulcs}:${u(sor)}`}>{u(sor)}</li>
             ))}
           </ul>
-          <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+          <p className="mt-2 text-sm text-halvany">
             {sz("szerzodes.hianyok_hol")}
           </p>
           <p className="mt-1 flex flex-wrap gap-4 text-sm">
@@ -154,9 +155,9 @@ export default async function SzerzodesOldal({
         mondatukkal együtt ennyien elnyomják azt a tucatot, ahol tényleg
         választani kell. Nem tűnnek el: a nyitósor kiírja, hányan vannak.
       */}
-      <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+      <section className="rounded-kartya border border-keret bg-felulet p-4">
         <h2 className="font-medium">{sz("szerzodes.dontes_cim")}</h2>
-        <p className="mb-2 mt-1 text-sm text-stone-600 dark:text-stone-400">
+        <p className="mb-2 mt-1 text-sm text-halvany">
           {sz("szerzodes.dontes_sugo")}
         </p>
         <ul>
@@ -179,8 +180,8 @@ export default async function SzerzodesOldal({
         </ul>
       </section>
 
-      <details className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-        <summary className="cursor-pointer font-medium">
+      <details className="rounded-kartya border border-keret bg-felulet p-4">
+        <summary className={NYITO}>
           {sz("szerzodes.kotelezoek_nyito", { db: kotelezoek.length })}
         </summary>
         <ul className="mt-2">
@@ -204,9 +205,9 @@ export default async function SzerzodesOldal({
       </details>
 
       {szerkesztheto ? (
-        <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+        <section className="rounded-kartya border border-keret bg-felulet p-4">
           <h2 className="font-medium">{sz("szerzodes.beallitasok_cim")}</h2>
-          <p className="mb-3 text-sm text-stone-600 dark:text-stone-400">
+          <p className="mb-3 text-sm text-halvany">
             {sz("szerzodes.beallitasok_sugo")}
           </p>
           <ParameterUrlap
@@ -234,9 +235,9 @@ export default async function SzerzodesOldal({
       */}
       <details
         open={veglegesSzoveg !== null}
-        className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+        className="rounded-kartya border border-keret bg-felulet p-4"
       >
-        <summary className="cursor-pointer font-medium">
+        <summary className={NYITO}>
           {sz("szerzodes.szoveg_nyito", { db: kesz.length })}
         </summary>
         <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
@@ -260,7 +261,7 @@ export default async function SzerzodesOldal({
               bérbeadó csak a véglegesítés után látná, mit ír alá.
             */}
             {zaradek ? (
-              <p className="text-stone-700 dark:text-stone-300">{zaradekBevezeto(bemenet)}</p>
+              <p className="text-szoveg">{zaradekBevezeto(bemenet)}</p>
             ) : null}
             {kesz.map((szakasz) => (
               <article key={szakasz.kulcs}>
@@ -268,23 +269,21 @@ export default async function SzerzodesOldal({
                   {szakasz.sorszam}. {szakasz.cim}
                 </h3>
                 {szakasz.bekezdesek.map((bekezdes, index) => (
-                  <p key={index} className="mt-1 text-stone-700 dark:text-stone-300">
+                  <p key={index} className="mt-1 text-szoveg">
                     {bekezdes}
                   </p>
                 ))}
               </article>
             ))}
-            {zaradek ? (
-              <p className="text-stone-700 dark:text-stone-300">{ZARADEK_ZARO}</p>
-            ) : null}
-            <pre className="whitespace-pre-wrap border-t border-stone-200 pt-4 text-stone-700 dark:border-stone-800 dark:text-stone-300">
+            {zaradek ? <p className="text-szoveg">{ZARADEK_ZARO}</p> : null}
+            <pre className="whitespace-pre-wrap border-t border-keret pt-4 text-szoveg">
               {alairasSorok(bemenet).join("\n")}
             </pre>
           </div>
         )}
       </details>
 
-      <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+      <section className="rounded-kartya border border-keret bg-felulet p-4">
         {szerkesztheto ? (
           <VeglegesitesUrlap
             szerzodesId={id}

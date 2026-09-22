@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import type { Nyelv } from "@/domain/nyelv";
 import { szovegekNyelvvel } from "@/domain/szotar";
 import { belep, type BelepesEredmeny } from "./actions";
-import { GOMB, MEZO } from "@/components/urlap";
+import { CIMKE, GOMB, MEZO } from "@/components/urlap";
 
 const KEZDETI: BelepesEredmeny = { allapot: "ures", uzenet: "", email: "" };
 
@@ -15,10 +15,10 @@ export function BelepesUrlap({ nyelv = "hu" }: { nyelv?: Nyelv }) {
   return (
     <form
       action={kuldes}
-      className="grid gap-3 rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+      className="grid gap-4 rounded-kartya border border-keret bg-felulet p-5"
     >
-      <label className="grid gap-1 text-sm">
-        <span className="font-medium">{sz("belepes.email")}</span>
+      <label className="grid gap-1.5">
+        <span className={CIMKE}>{sz("belepes.email")}</span>
         <input
           id="email"
           name="email"
@@ -31,8 +31,8 @@ export function BelepesUrlap({ nyelv = "hu" }: { nyelv?: Nyelv }) {
         />
       </label>
 
-      <label className="grid gap-1 text-sm">
-        <span className="font-medium">{sz("belepes.jelszo")}</span>
+      <label className="grid gap-1.5">
+        <span className={CIMKE}>{sz("belepes.jelszo")}</span>
         <input
           id="jelszo"
           name="jelszo"
@@ -43,16 +43,13 @@ export function BelepesUrlap({ nyelv = "hu" }: { nyelv?: Nyelv }) {
         />
       </label>
 
-      <button
-        type="submit"
-        disabled={folyamatban}
-        className={GOMB}
-      >
+      {/* A lap egyetlen művelete, ezért teljes szélességben áll. */}
+      <button type="submit" disabled={folyamatban} className={`${GOMB} w-full`}>
         {folyamatban ? sz("belepes.folyamatban") : sz("belepes.gomb")}
       </button>
 
       {allapot.allapot === "hiba" ? (
-        <p className="rounded border border-rose-300 bg-rose-50 p-3 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200">
+        <p className="rounded-lg border border-gond-keret bg-gond-lap p-3 text-sm font-medium text-gond">
           {allapot.uzenet}
         </p>
       ) : null}

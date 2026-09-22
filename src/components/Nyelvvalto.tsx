@@ -4,10 +4,17 @@ import { nyelvetValt } from "@/app/nyelv/actions";
 /**
  * Nyelvváltó a fejlécben. Külön gomb nyelvenként, nem legördülő: két nyelvnél a
  * legördülő két kattintás, a gomb egy, és látszik, melyik az aktív.
+ *
+ * A két gomb egy közös keretben áll, mint egy kapcsoló: így egy elemnek
+ * látszik, nem két különálló apró gombnak, és az is világos, hogy a kettő
+ * egymás alternatívája.
  */
 export function Nyelvvalto({ nyelv, cimke }: { nyelv: Nyelv; cimke: string }) {
   return (
-    <form action={nyelvetValt} className="flex items-center gap-1">
+    <form
+      action={nyelvetValt}
+      className="flex items-center gap-0.5 rounded-kartya border border-keret bg-felulet-halk p-0.5"
+    >
       <span className="sr-only">{cimke}</span>
       {NYELVEK.map((valaszthato) => (
         <button
@@ -16,10 +23,10 @@ export function Nyelvvalto({ nyelv, cimke }: { nyelv: Nyelv; cimke: string }) {
           name="nyelv"
           value={valaszthato}
           aria-current={valaszthato === nyelv ? "true" : undefined}
-          className={`rounded px-1.5 py-0.5 text-xs font-medium uppercase ${
+          className={`rounded-[0.3rem] px-2 py-1 text-xs font-semibold uppercase transition-colors ${
             valaszthato === nyelv
-              ? "bg-stone-200 text-stone-900 dark:bg-stone-700 dark:text-stone-100"
-              : "text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100"
+              ? "bg-felulet text-szoveg shadow-xs"
+              : "text-halvany hover:text-szoveg"
           }`}
           title={NYELV_NEVE[valaszthato]}
         >

@@ -5,6 +5,7 @@ import { datumIdovelNyelven } from "@/domain/nyelv";
 import { beszelgetesei, tarsasagai } from "@/lib/beszelgetes";
 import { belepettFelhasznalo, szerepe } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
+import { Lapfej, NYITO, Sugo, Ures } from "@/components/ui/alap";
 import { UjBeszelgetes } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -37,9 +38,11 @@ export default async function Beszelgetesek() {
 
   return (
     <div className="grid gap-6">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("beszelgetes.cim")}</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("beszelgetes.bevezeto")}</p>
+      <section className="grid gap-3">
+        <Lapfej cim={sz("beszelgetes.cim")} />
+        <Sugo cim={sz("beszelgetes.sugo_cim")}>
+          <p>{sz("beszelgetes.bevezeto")}</p>
+        </Sugo>
       </section>
 
       <UjBeszelgetes
@@ -65,7 +68,7 @@ export default async function Beszelgetesek() {
       />
 
       {szalak.length === 0 ? (
-        <p className="text-sm text-stone-600 dark:text-stone-400">{sz("beszelgetes.nincs")}</p>
+        <Ures>{sz("beszelgetes.nincs")}</Ures>
       ) : null}
 
       {nyitottak.length > 0 ? (
@@ -74,16 +77,16 @@ export default async function Beszelgetesek() {
             <li key={szal.id}>
               <Link
                 href={`/beszelgetesek/${szal.id}`}
-                className="block rounded-lg border border-stone-200 bg-white p-3 hover:border-stone-300 dark:border-stone-800 dark:bg-stone-900 dark:hover:border-stone-700"
+                className="block rounded-kartya border border-keret bg-felulet p-3 hover:border-keret-eros"
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-x-3">
                   <span className="font-medium">{szal.nev}</span>
-                  <span className="text-xs text-stone-500 dark:text-stone-400">
+                  <span className="text-xs text-nagyon-halvany">
                     {datumIdovelNyelven(szal.utolsoUzenet, nyelv)}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">{szal.elonezet}</p>
-                <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                <p className="mt-1 text-sm text-halvany">{szal.elonezet}</p>
+                <p className="mt-1 text-xs text-nagyon-halvany">
                   {szal.ingatlanNev} · {u({ kulcs: `beszelgetes.fajta.${szal.fajta}` })} ·{" "}
                   {sz("beszelgetes.darab", { darab: szal.darab })}
                 </p>
@@ -99,7 +102,7 @@ export default async function Beszelgetesek() {
       */}
       {archivaltak.length > 0 ? (
         <details>
-          <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
+          <summary className={NYITO}>
             {sz("beszelgetes.archivaltak", { darab: archivaltak.length })}
           </summary>
           <ul className="mt-3 grid gap-2">
@@ -107,10 +110,10 @@ export default async function Beszelgetesek() {
               <li key={szal.id}>
                 <Link
                   href={`/beszelgetesek/${szal.id}`}
-                  className="block rounded-lg border border-stone-200 bg-stone-50 p-3 dark:border-stone-800 dark:bg-stone-950"
+                  className="block rounded-kartya border border-keret bg-felulet-halk p-3"
                 >
                   <span className="font-medium">{szal.nev}</span>
-                  <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+                  <p className="mt-1 text-xs text-nagyon-halvany">
                     {szal.ingatlanNev} · {sz("beszelgetes.archivalt")}
                   </p>
                 </Link>

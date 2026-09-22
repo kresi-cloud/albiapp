@@ -58,11 +58,11 @@ export function ModulValto({
   const [allapot, kuldes, folyamatban] = useActionState(modultValt, KEZDETI);
 
   return (
-    <li className="border-t border-stone-200 py-3 first:border-0 first:pt-0 dark:border-stone-800">
+    <li className="border-t border-keret py-3 first:border-0 first:pt-0">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-medium">{modul.cim}</span>
         {modul.kotelezo ? (
-          <span className="text-xs text-stone-500 dark:text-stone-400">{cimkek.kotelezo}</span>
+          <span className="text-xs text-nagyon-halvany">{cimkek.kotelezo}</span>
         ) : szerkesztheto ? (
           <form action={kuldes}>
             <input type="hidden" name="szerzodesId" value={szerzodesId} />
@@ -72,21 +72,21 @@ export function ModulValto({
               disabled={folyamatban}
               className={`rounded-full px-3 py-1 text-xs font-medium disabled:opacity-60 ${
                 modul.bekapcsolva
-                  ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-200"
-                  : "bg-stone-200 text-stone-700 dark:bg-stone-800 dark:text-stone-300"
+                  ? "bg-rendben-lap text-rendben"
+                  : "bg-felulet-halk text-szoveg"
               }`}
             >
               {modul.bekapcsolva ? cimkek.benneVan : cimkek.nincsBenne}
             </button>
           </form>
         ) : (
-          <span className="text-xs text-stone-500 dark:text-stone-400">
+          <span className="text-xs text-nagyon-halvany">
             {modul.bekapcsolva ? cimkek.benneVanJelzes : cimkek.nincsBenneJelzes}
           </span>
         )}
       </div>
-      <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">{modul.miert}</p>
-      <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+      <p className="mt-1 text-sm text-halvany">{modul.miert}</p>
+      <p className="mt-1 text-xs text-nagyon-halvany">
         {cimkek.ellenjegyzes[modul.ellenjegyzes]}
       </p>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
@@ -161,7 +161,7 @@ export function ParameterUrlap({
               allapot={allapot.allapot}
             />
           )}
-          <span className="text-xs text-stone-500 dark:text-stone-400">
+          <span className="text-xs text-nagyon-halvany">
             {parameter.modulCim}
             {parameter.sugo ? ` · ${parameter.sugo}` : ""}
           </span>
@@ -205,7 +205,7 @@ export function VeglegesitesUrlap({
         megkérjük a bérbeadót, hogy nyugtázza, tényleg megnézték egymás
         okmányát. Enélkül nem véglegesítünk.
       */}
-      <label className="flex items-start gap-2 rounded border border-stone-300 p-3 text-sm dark:border-stone-700">
+      <label className="flex items-start gap-2 rounded border border-keret-eros p-3 text-sm">
         <input
           id="azonossag-ellenorizve"
           type="checkbox"
@@ -242,9 +242,9 @@ export function ZaradekUrlap({
   const [, kuldes, folyamatban] = useActionState(zaradekotKeszit, KEZDETI);
 
   return (
-    <form action={kuldes} className="mt-3 grid gap-2 border-t border-stone-200 pt-3 dark:border-stone-800">
+    <form action={kuldes} className="mt-3 grid gap-2 border-t border-keret pt-3">
       <input type="hidden" name="szerzodesId" value={szerzodesId} />
-      <p className="text-sm text-stone-600 dark:text-stone-400">{cimkek.sugo}</p>
+      <p className="text-sm text-halvany">{cimkek.sugo}</p>
       <button type="submit" disabled={folyamatban} className={`${GOMB} justify-self-start`}>
         {folyamatban ? cimkek.folyamatban : cimkek.gomb}
       </button>
@@ -267,7 +267,7 @@ export function VisszavonasUrlap({
       <button
         type="submit"
         disabled={folyamatban}
-        className="justify-self-start text-sm text-stone-600 underline underline-offset-2 disabled:opacity-60 dark:text-stone-400"
+        className="justify-self-start text-sm text-halvany underline underline-offset-2 disabled:opacity-60"
       >
         {folyamatban ? cimkek.folyamatban : cimkek.gomb}
       </button>

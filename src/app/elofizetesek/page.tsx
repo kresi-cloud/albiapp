@@ -9,6 +9,7 @@ import {
 } from "@/lib/elofizetes";
 import { belepettFelhasznalo, szerepe } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
+import { Lapfej, NYITO, Sugo, Ures } from "@/components/ui/alap";
 import { MegszuntetesUrlap, NyilatkozatUrlap, UjElofizetes } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -45,11 +46,11 @@ export default async function Elofizetesek() {
 
   return (
     <div className="grid gap-6">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">{sz("elofizetes.cim")}</h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">
-          {berbeado ? sz("elofizetes.bevezeto") : sz("elofizetes.berlo.bevezeto")}
-        </p>
+      <section className="grid gap-3">
+        <Lapfej cim={sz("elofizetes.cim")} />
+        <Sugo cim={sz("elofizetes.sugo_cim")}>
+          <p>{berbeado ? sz("elofizetes.bevezeto") : sz("elofizetes.berlo.bevezeto")}</p>
+        </Sugo>
       </section>
 
       {berbeado ? (
@@ -88,7 +89,7 @@ export default async function Elofizetesek() {
       ) : null}
 
       {elofizetesek.length === 0 ? (
-        <p className="text-sm text-stone-600 dark:text-stone-400">{sz("elofizetes.nincs")}</p>
+        <Ures>{sz("elofizetes.nincs")}</Ures>
       ) : null}
 
       {nyitott.length > 0 ? (
@@ -110,7 +111,7 @@ export default async function Elofizetesek() {
 
       {rendezett.length > 0 ? (
         <details>
-          <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
+          <summary className={NYITO}>
             {sz("elofizetes.rendezettek", { darab: rendezett.length })}
           </summary>
           <ul className="mt-3 grid gap-3">
@@ -155,15 +156,15 @@ function Kartya({
   const sajat = adat.nyilatkozatok.find((nyilatkozat) => nyilatkozat.berloId === sajatId);
 
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+    <div className="rounded-kartya border border-keret bg-felulet p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-medium">{adat.megnevezes}</span>
-        <span className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
+        <span className="text-xs uppercase tracking-wide text-nagyon-halvany">
           {sz(`elofizetes.allapot.${sor.allapot}`)}
         </span>
       </div>
 
-      <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+      <p className="mt-1 text-sm text-halvany">
         {sz(`elofizetes.fajta.${adat.fajta}`)}
         {adat.szolgaltato ? ` · ${adat.szolgaltato}` : ""} · {sor.ingatlanNev}
       </p>
@@ -175,14 +176,14 @@ function Kartya({
           : ""}
       </p>
 
-      <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">
+      <p className="mt-1 text-xs text-nagyon-halvany">
         {adat.vege
           ? sz("elofizetes.idoszak_zart", { kezdete: nap(adat.kezdete), vege: nap(adat.vege) })
           : sz("elofizetes.idoszak", { kezdete: nap(adat.kezdete) })}
       </p>
 
       {/* Mi lesz ebből pénzben: a bérbeadó ne találgassa, a bérlő ne lepődjön meg. */}
-      <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+      <p className="mt-2 text-sm text-halvany">
         {adat.elofizeto === "berlo"
           ? sz("elofizetes.berlo_fizeti_kozvetlenul")
           : sor.allapot === "jovahagyva"
@@ -193,18 +194,18 @@ function Kartya({
       {figyelmeztetesek(adat).map((figyelmeztetes) => (
         <p
           key={figyelmeztetes.kulcs}
-          className="mt-2 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
+          className="mt-2 rounded-lg border border-figyelem-keret bg-figyelem-lap p-2 text-sm text-figyelem"
         >
           {u(figyelmeztetes)}
         </p>
       ))}
 
       {sor.berlok.length === 0 ? (
-        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+        <p className="mt-2 text-sm text-halvany">
           {sz("elofizetes.nincs_fiokos_berlo")}
         </p>
       ) : sor.varRank.length > 0 ? (
-        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+        <p className="mt-2 text-sm text-halvany">
           {sz("elofizetes.varunk_rad", {
             nevek: sor.varRank.map((berlo) => berlo.nev).join(", "),
           })}
@@ -217,7 +218,7 @@ function Kartya({
         .map((kifogas) => (
           <p
             key={kifogas.berloId}
-            className="mt-2 rounded border border-rose-300 bg-rose-50 p-2 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200"
+            className="mt-2 rounded border border-gond-keret bg-gond-lap p-2 text-sm text-gond"
           >
             {sz("elofizetes.masik_kifogasa", {
               nev: kifogas.nev,
@@ -228,7 +229,7 @@ function Kartya({
 
       {berbeado ? (
         adat.vege ? (
-          <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+          <p className="mt-2 text-sm text-halvany">
             {sz("elofizetes.megszunt", { vege: nap(adat.vege) })}
           </p>
         ) : (
@@ -241,7 +242,7 @@ function Kartya({
           />
         )
       ) : sajat ? (
-        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+        <p className="mt-2 text-sm text-halvany">
           {sajat.allapot === "kifogasolt"
             ? sz("elofizetes.sajat_nyilatkozat.kifogasolt", { indoklas: sajat.indoklas ?? "" })
             : sz("elofizetes.sajat_nyilatkozat.jovahagyva")}

@@ -12,6 +12,7 @@ import {
   type Eredmeny,
 } from "./actions";
 import { MEZO, GOMB, APRO_GOMB } from "@/components/urlap";
+import { NYITO } from "@/components/ui/alap";
 
 const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
 
@@ -40,7 +41,7 @@ function Mezo({
         allapot={allapot}
         className={MEZO}
       />
-      {sugo ? <span className="text-xs text-stone-500 dark:text-stone-400">{sugo}</span> : null}
+      {sugo ? <span className="text-xs text-nagyon-halvany">{sugo}</span> : null}
     </label>
   );
 }
@@ -82,7 +83,7 @@ export function BerloAdatok({ berlo, cimkek }: { berlo: BerloAdat; cimkek: AdatC
 
   return (
     <details className="mt-3">
-      <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
+      <summary className={NYITO}>
         {cimkek.cim}
         {berlo.hianyzik > 0 ? ` — ${cimkek.hianyzik}` : ` — ${cimkek.megvan}`}
       </summary>
@@ -91,7 +92,7 @@ export function BerloAdatok({ berlo, cimkek }: { berlo: BerloAdat; cimkek: AdatC
         A forrás megmutatása nem formaság: ha a bérlő maga adta meg, az az
         érvényes, és a bérbeadó tudja, hogy nem a saját gépelését látja.
       */}
-      <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">{cimkek.forras}</p>
+      <p className="mt-2 text-xs text-nagyon-halvany">{cimkek.forras}</p>
 
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
         <input type="hidden" name="jogviszonyBerloId" value={berlo.id} />
@@ -163,7 +164,7 @@ export function BerloHozzaadas({
 
   return (
     <details className="mt-3">
-      <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
+      <summary className={NYITO}>
         {cimkek.nyito}
       </summary>
       <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -198,7 +199,7 @@ export function BerloTorles({
       <button
         type="submit"
         disabled={folyamatban}
-        className="justify-self-start text-xs text-stone-500 underline underline-offset-2 hover:text-rose-700 disabled:opacity-60 dark:text-stone-400"
+        className="justify-self-start text-xs text-nagyon-halvany underline underline-offset-2 hover:text-gond disabled:opacity-60"
       >
         {folyamatban ? folyamatbanCimke : cimke}
       </button>
@@ -231,7 +232,7 @@ export function JogviszonyLezaras({
 
   return (
     <details className="mt-3">
-      <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
+      <summary className={NYITO}>
         {cimke}
       </summary>
       <form action={kuldes} className="mt-3 grid gap-3">

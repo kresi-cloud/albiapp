@@ -1,1 +1,148 @@
 @import "tailwindcss";
+
+/**
+ * Az alkalmazás arculata egy helyen.
+ *
+ * Miért így: eddig minden lap maga írta ki a színeit, és mindegyikhez kellett
+ * egy `dark:` páros is — `border-keret`. Ez két
+ * dolgot rontott el. Egyrészt a két mód külön csúszott el: aki csak a világosat
+ * nézte, észre sem vette, ha a sötétben olvashatatlan lett valami. Másrészt egy
+ * színcsere húsz fájl átírása lett volna, vagyis soha nem történt meg.
+ *
+ * Itt ehelyett jelentés szerint nevezzük el a színeket (lap, felület, keret,
+ * halvány szöveg), a világos és a sötét értékük pedig egymás mellett áll. A
+ * lapok `bg-felulet`-et és `border-keret`-et írnak, `dark:` nélkül, és a mód
+ * váltása magától megtörténik. Ugyanez a szabály a jelentéses állapotszínekre:
+ * a „rendben”, a „figyelem” és a „gond” fogalom, nem pedig zöld, sárga, piros.
+ */
+
+@theme inline {
+  /* A márka színe. Mély, nyugodt zöldeskék: pénzhez és bizalomhoz illik, és
+     nem ütközik a hibát jelző pirossal. A hazai mezőny generikus kékjeitől
+     szándékosan tér el. */
+  --color-albi-50: #f1f8f6;
+  --color-albi-100: #dceeea;
+  --color-albi-200: #badcd4;
+  --color-albi-300: #8bc2b7;
+  --color-albi-400: #55a294;
+  --color-albi-500: #348778;
+  --color-albi-600: #256b5f;
+  --color-albi-700: #1e564d;
+  --color-albi-800: #1a453f;
+  --color-albi-900: #143633;
+  --color-albi-950: #0a201e;
+
+  /* Felületek és szövegek. Mindegyik magától vált sötét módban. */
+  --color-lap: var(--felulet-lap);
+  --color-felulet: var(--felulet-elso);
+  --color-felulet-halk: var(--felulet-masodik);
+  --color-keret: var(--vonal-keret);
+  --color-keret-eros: var(--vonal-eros);
+  --color-szoveg: var(--betu-fo);
+  --color-halvany: var(--betu-halvany);
+  --color-nagyon-halvany: var(--betu-nagyon-halvany);
+
+  /* A kiemelt (aktív) elem színe: a fülsáv aktuális füle, a menü nyitott
+     sora. A márkaskála önmagában nem elég hozzá, mert sötét módban a 700-as
+     zöld olvashatatlan — a jelentés viszont ugyanaz, ezért kap nevet. */
+  --color-kiemelt: var(--jel-kiemelt);
+  --color-kiemelt-lap: var(--jel-kiemelt-lap);
+
+  /* Állapotszínek jelentés szerint. A párosítás nyelve: ami egyezik, az
+     rendben; ami még nem derült ki, az figyelem; ahol a két fél mást mond,
+     ott gond van. */
+  --color-rendben: var(--allapot-rendben);
+  --color-rendben-lap: var(--allapot-rendben-lap);
+  --color-rendben-keret: var(--allapot-rendben-keret);
+  --color-figyelem: var(--allapot-figyelem);
+  --color-figyelem-lap: var(--allapot-figyelem-lap);
+  --color-figyelem-keret: var(--allapot-figyelem-keret);
+  --color-gond: var(--allapot-gond);
+  --color-gond-lap: var(--allapot-gond-lap);
+  --color-gond-keret: var(--allapot-gond-keret);
+
+  --font-sans: var(--betutipus-szoveg), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--betutipus-cim), var(--betutipus-szoveg), ui-sans-serif,
+    system-ui, sans-serif;
+
+  --radius-kartya: 0.875rem;
+}
+
+:root {
+  --felulet-lap: #f8f6f3;
+  --felulet-elso: #ffffff;
+  --felulet-masodik: #f2efeb;
+  --vonal-keret: #e6e1da;
+  --vonal-eros: #d2cbc1;
+  --betu-fo: #1c1917;
+  --betu-halvany: #6b625a;
+  --betu-nagyon-halvany: #8e857c;
+
+  --allapot-rendben: #10715c;
+  --allapot-rendben-lap: #e9f6f1;
+  --allapot-rendben-keret: #b6e0d2;
+  --allapot-figyelem: #96601a;
+  --allapot-figyelem-lap: #fdf3e4;
+  --allapot-figyelem-keret: #efd5a8;
+  --allapot-gond: #b02a37;
+  --allapot-gond-lap: #fdeeee;
+  --allapot-gond-keret: #f3c4c4;
+
+  --jel-kiemelt: #1e564d;
+  --jel-kiemelt-lap: #f1f8f6;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --felulet-lap: #0e0e0d;
+    --felulet-elso: #1a1917;
+    --felulet-masodik: #242220;
+    --vonal-keret: #302d2a;
+    --vonal-eros: #45413c;
+    --betu-fo: #f5f2ef;
+    --betu-halvany: #a8a09a;
+    --betu-nagyon-halvany: #877f79;
+
+    --allapot-rendben: #63c9ae;
+    --allapot-rendben-lap: #0d2b25;
+    --allapot-rendben-keret: #1d5045;
+    --allapot-figyelem: #e0ad63;
+    --allapot-figyelem-lap: #2d2212;
+    --allapot-figyelem-keret: #574121;
+    --allapot-gond: #f0908f;
+    --allapot-gond-lap: #331718;
+    --allapot-gond-keret: #5e2a2c;
+
+    --jel-kiemelt: #8bc2b7;
+    --jel-kiemelt-lap: #142623;
+
+    color-scheme: dark;
+  }
+}
+
+body {
+  background-color: var(--felulet-lap);
+  color: var(--betu-fo);
+}
+
+/* Az összeg mindig összeolvasható legyen egymás alatt: a számjegyek azonos
+   szélességűek, és az ezres csoportok nem ugrálnak soronként. */
+.szam {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* A telefonok alsó csúszkája alatt is maradjon hely a fülsávnak. */
+.also-sav-helye {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+}
+
+/* A billentyűzetes használat legyen látható, az egeres kattintás után viszont
+   ne maradjon ott a keret. */
+:focus-visible {
+  outline: 2px solid var(--allapot-rendben);
+  outline-offset: 2px;
+  border-radius: 0.375rem;
+}

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { BeszerzesUrlap, KoltsegUrlap } from "./Urlapok";
+import { Lapfej, NYITO, Sugo, Szakaszcim } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
@@ -36,21 +37,22 @@ export default async function Ado({
 
   return (
     <div className="grid gap-8">
-      <section>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {/* Az évszám nem mennyiség: számként a szövegező ezresre tagolná („2,026”). */}
-          {sz("ado.cim", { ev: String(ev) })}
-        </h1>
-        <p className="mt-1 text-stone-600 dark:text-stone-400">{sz("ado.bevezeto")}</p>
-        <div className="mt-3 flex flex-wrap gap-2 text-sm">
+      <section className="grid gap-3">
+        {/* Az évszám szövegként megy át: számként a formázó ezres
+            elválasztót tenne bele, és a cím „Tax summary · 2,026" lenne. */}
+        <Lapfej cim={sz("ado.cim", { ev: String(ev) })} />
+        <div className="flex flex-wrap gap-2 text-sm">
           {evek.map((evszam) => (
             <Link
               key={evszam}
               href={`/ado?ev=${evszam}`}
-              className={`rounded border px-3 py-1 ${
+              // A választott év a márkaszínt kapja, nem fordított feketét: az
+              // sötét módban külön párost kívánna, és épp az a baj, amit a
+              // jelentés szerinti nevekkel kiváltottunk.
+              className={`inline-flex min-h-9 items-center rounded-lg border px-3 ${
                 evszam === ev
-                  ? "border-stone-900 bg-stone-900 text-white dark:border-stone-100 dark:bg-stone-100 dark:text-stone-900"
-                  : "border-stone-300 dark:border-stone-700"
+                  ? "border-transparent bg-albi-700 font-semibold text-white"
+                  : "border-keret-eros hover:bg-felulet-halk"
               }`}
             >
               {evszam}
@@ -58,12 +60,16 @@ export default async function Ado({
           ))}
           <a
             href={`/ado/letoltes?ev=${ev}`}
-            className="rounded border border-stone-300 px-3 py-1 underline-offset-2 hover:underline dark:border-stone-700"
+            className="rounded border border-keret-eros px-3 py-1 underline-offset-2 hover:underline"
           >
             {sz("ado.letoltes")}
           </a>
         </div>
       </section>
+
+      <Sugo cim={sz("ado.sugo_cim")}>
+        <p>{sz("ado.bevezeto")}</p>
+      </Sugo>
 
       <section className="grid gap-3 sm:grid-cols-3">
         <Szamlap cimke={sz("ado.bevetel")} ertek={ft(osszesito.bevetelFt)} />
@@ -75,7 +81,7 @@ export default async function Ado({
         <Szamlap cimke={sz("ado.koltseg")} ertek={ft(osszesito.tetelesKoltsegFt)} />
       </section>
 
-      <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+      <section className="rounded-kartya border border-keret bg-felulet p-4">
         <h2 className="font-semibold">{sz("ado.melyik_mod")}</h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <Mod
@@ -101,7 +107,7 @@ export default async function Ado({
             adoCimke={sz("ado.szja")}
           />
         </div>
-        <p className="mt-3 text-sm text-stone-600 dark:text-stone-400">
+        <p className="mt-3 text-sm text-halvany">
           {osszesito.megtakaritasFt === 0
             ? sz("ado.egyforma")
             : sz("ado.megtakaritas", {
@@ -113,9 +119,9 @@ export default async function Ado({
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">{sz("ado.befolyt")}</h2>
+        <Szakaszcim>{sz("ado.befolyt")}</Szakaszcim>
         {osszesites.bevetelSorok.length === 0 ? (
-          <p className="text-sm text-stone-600 dark:text-stone-400">
+          <p className="text-sm text-halvany">
             {sz("ado.nincs_bevetel")}
           </p>
         ) : (
@@ -123,7 +129,7 @@ export default async function Ado({
             {osszesites.bevetelSorok.map((sor, sorszam) => (
               <li
                 key={`${sor.datum.toISOString()}-${sorszam}`}
-                className="rounded-lg border border-stone-200 bg-white p-3 text-sm dark:border-stone-800 dark:bg-stone-900"
+                className="rounded-kartya border border-keret bg-felulet p-3 text-sm"
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-medium">
@@ -131,7 +137,7 @@ export default async function Ado({
                   </span>
                   <span className="tabular-nums">
                     {sor.nemBevetelFt > 0 ? (
-                      <span className="text-stone-500 dark:text-stone-400">
+                      <span className="text-nagyon-halvany">
                         {ft(sor.nemBevetelFt)} · {sz("ado.nem_bevetel_jelzes")}
                       </span>
                     ) : (
@@ -139,7 +145,7 @@ export default async function Ado({
                     )}
                   </span>
                 </div>
-                <p className="mt-1 text-stone-600 dark:text-stone-400">{u(sor.indoklas)}</p>
+                <p className="mt-1 text-halvany">{u(sor.indoklas)}</p>
               </li>
             ))}
           </Lista>
@@ -148,12 +154,12 @@ export default async function Ado({
 
       {osszesites.besorolatlan.length > 0 ? (
         <section>
-          <h2 className="mb-3 text-lg font-semibold">{sz("ado.besorolatlan")}</h2>
+          <Szakaszcim>{sz("ado.besorolatlan")}</Szakaszcim>
           <ul className="grid gap-2">
             {osszesites.besorolatlan.map((sor, sorszam) => (
               <li
                 key={`${sor.datum.toISOString()}-${sorszam}`}
-                className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
+                className="rounded-lg border border-figyelem-keret bg-figyelem-lap p-3 text-sm text-figyelem"
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-medium">{nap(sor.datum)}</span>
@@ -167,9 +173,9 @@ export default async function Ado({
       ) : null}
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">{sz("ado.koltsegek")}</h2>
+        <Szakaszcim>{sz("ado.koltsegek")}</Szakaszcim>
         {osszesites.koltsegSorok.length === 0 ? (
-          <p className="text-sm text-stone-600 dark:text-stone-400">
+          <p className="text-sm text-halvany">
             {sz("ado.nincs_koltseg")}
           </p>
         ) : (
@@ -177,7 +183,7 @@ export default async function Ado({
             {osszesites.koltsegSorok.map((sor, sorszam) => (
               <li
                 key={`${sor.megnevezes}-${sorszam}`}
-                className="rounded-lg border border-stone-200 bg-white p-3 text-sm dark:border-stone-800 dark:bg-stone-900"
+                className="rounded-kartya border border-keret bg-felulet p-3 text-sm"
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-medium">
@@ -186,7 +192,7 @@ export default async function Ado({
                   </span>
                   <span className="tabular-nums">{ft(sor.osszegFt)}</span>
                 </div>
-                <p className="mt-1 text-stone-600 dark:text-stone-400">
+                <p className="mt-1 text-halvany">
                   {sor.ingatlan} · {sz(`ado.fajta.${sor.fajta}`)}
                 </p>
               </li>
@@ -196,9 +202,9 @@ export default async function Ado({
       </section>
 
       {ingatlanok.length > 0 ? (
-        <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+        <section className="rounded-kartya border border-keret bg-felulet p-4">
           <h2 className="font-semibold">{sz("ado.uj_koltseg")}</h2>
-          <p className="mb-3 text-sm text-stone-600 dark:text-stone-400">
+          <p className="mb-3 text-sm text-halvany">
             {sz("ado.uj_koltseg_sugo")}
           </p>
           <KoltsegUrlap
@@ -227,19 +233,19 @@ export default async function Ado({
       ) : null}
 
       <section>
-        <h2 className="mb-3 text-lg font-semibold">{sz("ado.ertekcsokkenes")}</h2>
-        <p className="mb-3 text-sm text-stone-600 dark:text-stone-400">
+        <Szakaszcim>{sz("ado.ertekcsokkenes")}</Szakaszcim>
+        <p className="mb-3 text-sm text-halvany">
           {sz("ado.ertekcsokkenes_sugo")}
         </p>
         <ul className="grid gap-3">
           {ingatlanok.map((ingatlan) => (
             <li
               key={ingatlan.id}
-              className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
+              className="rounded-kartya border border-keret bg-felulet p-4"
             >
               <div className="flex flex-wrap items-baseline justify-between gap-2">
                 <span className="font-medium">{ingatlan.megnevezes}</span>
-                <span className="text-sm tabular-nums text-stone-600 dark:text-stone-400">
+                <span className="text-sm tabular-nums text-halvany">
                   {ingatlan.beszerzesiArFt
                     ? ft(ingatlan.beszerzesiArFt)
                     : sz("ado.nincs_megadva")}
@@ -266,20 +272,20 @@ export default async function Ado({
         </ul>
       </section>
 
-      <p className="text-sm text-stone-500 dark:text-stone-400">{sz("ado.lablec")}</p>
+      <p className="text-sm text-nagyon-halvany">{sz("ado.lablec")}</p>
     </div>
   );
 }
 
 function Szamlap({ cimke, ertek, alcim }: { cimke: string; ertek: string; alcim?: string }) {
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
-      <div className="text-xs uppercase tracking-wide text-stone-500 dark:text-stone-400">
+    <div className="rounded-kartya border border-keret bg-felulet p-4">
+      <div className="text-xs uppercase tracking-wide text-nagyon-halvany">
         {cimke}
       </div>
       <div className="mt-1 text-xl font-semibold tabular-nums">{ertek}</div>
       {alcim ? (
-        <div className="mt-1 text-xs text-stone-500 dark:text-stone-400">{alcim}</div>
+        <div className="mt-1 text-xs text-nagyon-halvany">{alcim}</div>
       ) : null}
     </div>
   );
@@ -309,29 +315,29 @@ function Mod({
     <div
       className={`rounded-lg border p-3 ${
         ajanlott
-          ? "border-emerald-400 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950/30"
-          : "border-stone-200 dark:border-stone-800"
+          ? "border-rendben-keret bg-rendben-lap"
+          : "border-keret"
       }`}
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="font-medium">{cim}</span>
         {ajanlott ? (
-          <span className="rounded-full bg-emerald-200 px-2 py-0.5 text-xs font-medium text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100">
+          <span className="rounded-full bg-rendben-lap px-2 py-0.5 text-xs font-medium text-rendben">
             {ajanlottCimke}
           </span>
         ) : null}
       </div>
       <dl className="mt-2 grid grid-cols-2 gap-2 text-sm">
         <div>
-          <dt className="text-xs text-stone-500 dark:text-stone-400">{adoalapCimke}</dt>
+          <dt className="text-xs text-nagyon-halvany">{adoalapCimke}</dt>
           <dd className="tabular-nums">{adoalap}</dd>
         </div>
         <div>
-          <dt className="text-xs text-stone-500 dark:text-stone-400">{adoCimke}</dt>
+          <dt className="text-xs text-nagyon-halvany">{adoCimke}</dt>
           <dd className="font-semibold tabular-nums">{ado}</dd>
         </div>
       </dl>
-      <p className="mt-2 text-xs text-stone-600 dark:text-stone-400">{magyarazat}</p>
+      <p className="mt-2 text-xs text-halvany">{magyarazat}</p>
     </div>
   );
 }
@@ -358,8 +364,8 @@ function Lista({
   if (darab <= HOSSZU_LISTA) return lista;
 
   return (
-    <details className="rounded-lg border border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900">
-      <summary className="cursor-pointer p-3 text-sm font-medium">{cimke}</summary>
+    <details className="rounded-kartya border border-keret bg-felulet">
+      <summary className={`${NYITO} px-3`}>{cimke}</summary>
       <div className="p-3 pt-0">{lista}</div>
     </details>
   );

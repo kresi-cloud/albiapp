@@ -5,6 +5,7 @@ import { datumIdovelNyelven } from "@/domain/nyelv";
 import { beszelgetes } from "@/lib/beszelgetes";
 import { belepettFelhasznalo, szerepe } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
+import { NYITO } from "@/components/ui/alap";
 import { Valasz } from "../Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -54,11 +55,11 @@ export default async function Beszelgetes({
       <li
         className={`max-w-[85%] rounded-lg border p-3 ${
           sajat
-            ? "justify-self-end border-emerald-200 bg-emerald-50 dark:border-emerald-900 dark:bg-emerald-950/40"
-            : "justify-self-start border-stone-200 bg-white dark:border-stone-800 dark:bg-stone-900"
+            ? "justify-self-end border-rendben-keret bg-rendben-lap"
+            : "justify-self-start border-keret bg-felulet"
         }`}
       >
-        <p className="text-xs text-stone-500 dark:text-stone-400">
+        <p className="text-xs text-nagyon-halvany">
           {sajat ? sz("beszelgetes.en") : uzenet.szerzoNev} ·{" "}
           {datumIdovelNyelven(uzenet.kuldve, nyelv)}
         </p>
@@ -79,7 +80,7 @@ export default async function Beszelgetes({
 
       <section>
         <h1 className="text-xl font-semibold tracking-tight">{fej.nev}</h1>
-        <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+        <p className="mt-1 text-sm text-halvany">
           {fej.ingatlanNev} · {u({ kulcs: `beszelgetes.fajta.${fej.fajta}` })} ·{" "}
           {fej.resztvevok.map((tag) => tag.nev).join(", ")}
         </p>
@@ -87,8 +88,8 @@ export default async function Beszelgetes({
           <p
             className={`mt-2 rounded border p-2 text-sm ${
               fej.archivalt
-                ? "border-stone-300 bg-stone-100 text-stone-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300"
-                : "border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200"
+                ? "border-keret-eros bg-felulet-halk text-szoveg"
+                : "border-figyelem-keret bg-figyelem-lap text-figyelem"
             }`}
           >
             {u(nyitvatartas)}
@@ -98,7 +99,7 @@ export default async function Beszelgetes({
 
       {regiek.length > 0 ? (
         <details>
-          <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
+          <summary className={NYITO}>
             {sz("beszelgetes.korabbi_uzenetek", { darab: regiek.length })}
           </summary>
           <ul className="mt-3 grid gap-2">
@@ -116,7 +117,7 @@ export default async function Beszelgetes({
       </ul>
 
       {fej.archivalt ? (
-        <p className="text-sm text-stone-600 dark:text-stone-400">
+        <p className="text-sm text-halvany">
           {sz("beszelgetes.archivalt_nem_irhato")}
         </p>
       ) : (
