@@ -10,7 +10,34 @@
  * a próbakör újrafuttatható maradjon.
  */
 
-import { ALAP, all, belep, magyarra } from "./kozos.mjs";
+import { ALAP, all, belep, kilep, magyarra } from "./kozos.mjs";
+
+/** Egy apró, valódi PNG: a bizonylat helyett ennyi is elég a próbához. */
+const KEP = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+  "base64",
+);
+
+/**
+ * Feltölt egy bizonylatot a megadott sorhoz, előbb kitakarítva a korábbit.
+ * Azt is ellenőrzi, hogy a saját oldalt tőlünk várja a felület.
+ */
+async function bizonylatot(oldalObjektum, sor, cimke) {
+  const torles = sor.getByText("Törlöm");
+  if ((await torles.count()) > 0) {
+    await torles.first().click();
+    await oldalObjektum.waitForLoadState("networkidle");
+  }
+  all(
+    (await sor.getByText("Ezt tőled várjuk").count()) > 0,
+    `${cimke}: a felület a saját oldali bizonylatot tőle várja`,
+  );
+  await sor
+    .locator('input[type="file"]')
+    .setInputFiles({ name: "bizonylat.png", mimeType: "image/png", buffer: KEP });
+  await sor.getByRole("button", { name: "Feltöltöm" }).click();
+  await sor.getByText("Törlöm").first().waitFor({ timeout: 15000 });
+}
 
 export const nev = "Kétoldali befizetés-egyeztetés";
 
@@ -121,7 +148,91 @@ export async function futtat(oldal) {
     "a bérlő adata megmarad: a bérbeadó rögzítése nem írta felül",
   );
 
+  // --- Bizonylat: csak itt kérjük, és mindkét fél a saját oldalit adja
+  all(
+    (await vitasSor.getByText("Bizonylat ehhez az utaláshoz").count()) > 0,
+    "vitás tételnél megjelenik a bizonylatblokk",
+  );
+  all(
+    (await vitasSor.getByText(/Teljes bankszámlakivonatot nem kérünk, és nem is fogadunk el/).count()) > 0,
+    "a feltöltő űrlap is kimondja, hogy kivonatot nem fogadunk el",
+  );
+  await bizonylatot(oldal, vitasSor, "bérbeadó");
+
+  await oldal.goto(`${ALAP}/befizetesek`);
+  all(
+    (await sorA(oldal).locator('[data-oldal="fogado"] a').count()) > 0,
+    "a feltöltött bizonylat megjelenik a feltöltőnél",
+  );
+
+  // --- A bérlő látja a bérbeadóét, és feltölti a sajátját
+  await belep(oldal, "anna@pelda.hu");
+  await magyarra(oldal);
+  await oldal.goto(`${ALAP}/berlo`);
+  const berloiVitas = sorA(oldal);
+  all(
+    (await berloiVitas.locator('[data-oldal="fogado"] a').count()) > 0,
+    "a bérlő látja a bérbeadó bizonylatát",
+  );
+
+  const hivatkozas = await berloiVitas
+    .locator('[data-oldal="fogado"] a')
+    .first()
+    .getAttribute("href");
+  const letoltes = await oldal.request.get(`${ALAP}${hivatkozas}`);
+  all(letoltes.status() === 200, "a bizonylat letölthető annak, akinek köze van hozzá");
+  all(
+    (letoltes.headers()["content-disposition"] ?? "").includes("bizonylat-fogado.png"),
+    "a letöltés nem a feltöltött fájlnevet adja vissza",
+  );
+
+  await bizonylatot(oldal, berloiVitas, "bérlő");
+  await oldal.goto(`${ALAP}/berlo`);
+  all(
+    (await sorA(oldal).locator('[data-oldal] a').count()) === 2,
+    "mindkét oldal bizonylata látszik, ha mindkettő feltöltötte",
+  );
+
+  // Belépés nélkül a bizonylat nem érhető el, akkor sem, ha valaki ismeri a
+  // hivatkozást: a jogosultság a jogviszonyból jön, nem az azonosítóból.
+  await kilep(oldal);
+  const idegen = await oldal.request.get(`${ALAP}${hivatkozas}`);
+  all(idegen.status() === 403, "belépés nélkül a bizonylat nem tölthető le");
+
+  await belep(oldal, "berbeado@pelda.hu");
+  await magyarra(oldal);
+
+  // --- A bizonylatkérés kapcsolható: a bérbeadó dönti el
+  await oldal.goto(`${ALAP}/beallitasok`);
+  const kapcsolo = oldal.locator('input[name="bizonylatKeres"]');
+  all((await kapcsolo.isChecked()) === true, "a bizonylatkérés alapból be van kapcsolva");
+  await kapcsolo.uncheck();
+  await oldal.getByRole("button", { name: "Mentés" }).first().click();
+  await oldal.getByText(/nem kérek bizonylatot/).first().waitFor({ timeout: 15000 });
+
+  await oldal.goto(`${ALAP}/befizetesek`);
+  const kikapcsolt = sorA(oldal);
+  all(
+    (await kikapcsolt.getByText("vitás").count()) > 0,
+    "kikapcsolt bizonylatkérésnél a tétel vitás marad",
+  );
+  all(
+    (await kikapcsolt.locator('input[type="file"]').count()) === 0,
+    "kikapcsolva nem kérünk új bizonylatot",
+  );
+  all(
+    (await kikapcsolt.locator('[data-oldal] a').count()) === 2,
+    "a már feltöltött bizonylatok a kikapcsolástól nem tűnnek el",
+  );
+
+  // Vissza, hogy a próba a talált állapotot hagyja maga után.
+  await oldal.goto(`${ALAP}/beallitasok`);
+  await oldal.locator('input[name="bizonylatKeres"]').check();
+  await oldal.getByRole("button", { name: "Mentés" }).first().click();
+  await oldal.getByText(/bizonylatot kérek mindkét féltől/).first().waitFor({ timeout: 15000 });
+
   // --- Egyezésre hozva: a vita és a bizonylatkérés eltűnik
+  await oldal.goto(`${ALAP}/befizetesek`);
   await kiurit(oldal, "Ezt tévedésből rögzítettem");
   const ujraSor = sorA(oldal);
   await ujraSor.getByText("Megérkezett? Rögzítem").click();
@@ -136,4 +247,24 @@ export async function futtat(oldal) {
     (await kesz.getByText(/A két oldal nem egyezik/).count()) === 0,
     "egyezésnél nem kérünk bizonylatot",
   );
+  all(
+    (await kesz.locator('input[type="file"]').count()) === 0,
+    "egyezésnél új bizonylatot sem kérünk",
+  );
+  all(
+    (await kesz.locator('[data-oldal] a').count()) === 2,
+    "a korábban feltöltött bizonylatok a rendezés után is megmaradnak",
+  );
+
+  // --- A próba elpakol maga után: a saját bizonylatát mindenki törölheti
+  await kesz.getByText("Törlöm").first().click();
+  await oldal.waitForLoadState("networkidle");
+  await belep(oldal, "anna@pelda.hu");
+  await magyarra(oldal);
+  await oldal.goto(`${ALAP}/berlo`);
+  const berloiKesz = sorA(oldal);
+  if ((await berloiKesz.getByText("Törlöm").count()) > 0) {
+    await berloiKesz.getByText("Törlöm").first().click();
+    await oldal.waitForLoadState("networkidle");
+  }
 }

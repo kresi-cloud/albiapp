@@ -27,6 +27,7 @@ model Felhasznalo {
   ingatlanok          Ingatlan[]
   berloJogviszonyai   JogviszonyBerlo[]   @relation("BerloJogviszonyai")
   berbeadoiIgazolasai BerbeadoiIgazolas[]
+  bizonylatai         Bizonylat[]
   teendoi             Teendo[]
   oraallasai          Oraallas[]
   beallitasok         Beallitasok?
@@ -43,6 +44,9 @@ model Beallitasok {
   berbeadoId      String   @unique
   korabbiAblakNap Int      @default(10) // ennyi nappal az esedékesség előtt már elfogadjuk
   kesobbiAblakNap Int      @default(25) // ennyi nappal utána még ehhez az előíráshoz kötjük
+  // Kérjünk-e bizonylatot, ha a két fél adata nem egyezik. A bérbeadó dönti el;
+  // a már feltöltött bizonylatot a kikapcsolás nem rejti el.
+  bizonylatKeres  Boolean  @default(true)
   frissitve       DateTime @updatedAt
 
   berbeado Felhasznalo @relation(fields: [berbeadoId], references: [id], onDelete: Cascade)
@@ -242,6 +246,7 @@ model EloirtTetel {
   egyeztetes          Egyeztetes?
   elszamolas          Elszamolas?
   berbeadoiIgazolasok BerbeadoiIgazolas[]
+  bizonylatok         Bizonylat[]
 
   @@unique([jogviszonyId, tipus, idoszak])
   @@index([esedekesseg])
@@ -289,6 +294,29 @@ model BerbeadoiIgazolas {
 }
 
 /// A három adat összevetésének eredménye. Ez az, amit mindkét fél lát.
+/**
+ * Bizonylat a vitás befizetéshez. Csak akkor keletkezik, ha a két fél adata nem
+ * fedi egymást: egyetlen utalás küldő vagy fogadó oldali igazolása, nem kivonat.
+ * Oldalanként egy, mert egy utalásnak egy bizonylata van.
+ */
+model Bizonylat {
+  id            String   @id @default(cuid())
+  eloirtTetelId String
+  oldal         String // "kuldo" (bérlő) | "fogado" (bérbeadó)
+  feltoltoId    String
+  fajlNev       String
+  mimeTipus     String
+  meretBajt     Int
+  tartalom      Bytes
+  feltoltve     DateTime @default(now())
+
+  eloirtTetel EloirtTetel @relation(fields: [eloirtTetelId], references: [id], onDelete: Cascade)
+  feltolto    Felhasznalo @relation(fields: [feltoltoId], references: [id], onDelete: Cascade)
+
+  @@unique([eloirtTetelId, oldal])
+  @@index([eloirtTetelId])
+}
+
 model Egyeztetes {
   id                  String   @id @default(cuid())
   jogviszonyId        String

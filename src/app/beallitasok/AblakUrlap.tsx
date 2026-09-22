@@ -9,10 +9,12 @@ const KEZDETI: MentesEredmeny = { allapot: "ures", uzenet: "", hibak: [] };
 export function AblakUrlap({
   korabbiAblakNap,
   kesobbiAblakNap,
+  bizonylatKeres,
   maxNap,
 }: {
   korabbiAblakNap: number;
   kesobbiAblakNap: number;
+  bizonylatKeres: boolean;
   maxNap: number;
 }) {
   const [allapot, kuldes, folyamatban] = useActionState(beallitasokatMent, KEZDETI);
@@ -59,6 +61,29 @@ export function AblakUrlap({
             className={`${MEZO} tabular-nums`}
             required
           />
+        </label>
+      </div>
+
+      <div className="border-t border-stone-200 pt-3 dark:border-stone-800">
+        <h2 className="font-semibold">Bizonylat vitás befizetésnél</h2>
+        <p className="text-sm text-stone-600 dark:text-stone-400">
+          Ha a te adatod és a bérlőé nem fedi egymást, kérhetjük mindkettőtöktől
+          annak az egy utalásnak a bizonylatát: tőled a fogadó oldalit, a
+          bérlőtől a küldő oldalit. Teljes bankszámlakivonatot soha nem kérünk,
+          és nem is fogadunk el. Ha ezt nem szeretnéd, kapcsold ki: a vita
+          attól még látszik, csak papírt nem kérünk hozzá. A már feltöltött
+          bizonylatok a kikapcsolástól nem tűnnek el.
+        </p>
+
+        <label className="mt-3 flex items-start gap-2 text-sm">
+          <input
+            id="bizonylatKeres"
+            name="bizonylatKeres"
+            type="checkbox"
+            defaultChecked={bizonylatKeres}
+            className="mt-0.5"
+          />
+          <span className="font-medium">Kérjünk bizonylatot vitás tételnél</span>
         </label>
       </div>
 

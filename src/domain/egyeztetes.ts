@@ -104,12 +104,19 @@ export type EgyeztetesBeallitasok = {
    * tesztek ki tudják próbálni a másik viselkedést is.
    */
   toleranciaFt: number;
+  /**
+   * Kérjünk-e bizonylatot, ha a két fél adata nem egyezik. A bérbeadó dönti el:
+   * van, aki a bérlőjétől nem akar papírt kérni. A vita ettől még vita marad,
+   * csak nem kérünk hozzá semmit.
+   */
+  bizonylatKeres: boolean;
 };
 
 export const ALAPERTELMEZETT_BEALLITASOK: EgyeztetesBeallitasok = {
   korabbiAblakNap: 10,
   kesobbiAblakNap: 25,
   toleranciaFt: 0,
+  bizonylatKeres: true,
 };
 
 /** Ennél hosszabb ablaknak nincs értelme: átcsúszna a szomszédos hónapokra. */
@@ -292,7 +299,7 @@ export function egyeztet(
           elteresOka: "ket_oldal_elter",
           elteresFt: berbeadoiJelolt.tetel.osszegFt - berloiJelolt.tetel.osszegFt,
           keses,
-          bizonylatKell: true,
+          bizonylatKell: beallitasok.bizonylatKeres,
           magyarazat: uzenet("egyeztetes.ket_oldal_elter", {
             berlo: berloiJelolt.tetel.osszegFt,
             berbeado: berbeadoiJelolt.tetel.osszegFt,
@@ -338,7 +345,7 @@ export function egyeztet(
           elteresOka: "nem_erkezett_meg",
           elteresFt: -eloiras.osszegFt,
           keses,
-          bizonylatKell: true,
+          bizonylatKell: beallitasok.bizonylatKeres,
           magyarazat: uzenet("egyeztetes.nem_erkezett_meg"),
         });
         continue;

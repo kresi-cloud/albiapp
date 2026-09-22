@@ -52,6 +52,19 @@ Ha a két oldal nem egyezik, onnantól van értelme a bizonylatnak — és akkor
 csak annak az egy utalásnak a bizonylatáról, a bérlőtől a küldő, a bérbeadótól a
 fogadó oldaliról. Ezt a `bizonylatKell` mező mondja ki, nem a felület.
 
+A bizonylatkérés viszont a bérbeadó döntése (`Beallitasok.bizonylatKeres`, alapból
+bekapcsolva): van, aki a bérlőjétől nem akar papírt kérni. Kikapcsolva a tétel
+vitás marad, csak nem kérünk hozzá semmit. Amit már feltöltöttek, azt a
+kikapcsolás nem rejti el, és a rendezés sem: egy kapcsoló ne tüntesse el csendben
+a másik fél fájlját. Törölni mindenki a sajátját tudja.
+
+Melyik oldal bizonylatát ki adja fel, az a szerepből következik
+(`oldalaEnnek`), nem az űrlapból: a bérlőnek küldő oldali bizonylata van, a
+bérbeadónak fogadó oldali. Bizonylatot csak vitás előíráshoz fogadunk el, és ezt
+a kiszolgálón ellenőrizzük — enélkül az ígéretből, hogy csak vitánál kérünk,
+semmi nem maradna. A feltöltött fájlt letöltésként adjuk vissza, a feltöltött
+fájlnév nélkül: nem futtatunk idegen tartalmat a saját címünkön.
+
 Az állapotok ezért ötfélék, és a különbségük termékdöntés:
 
 - `egyezik` — mindkét fél ugyanazt mondja, és annyit, amennyi elő volt írva,
