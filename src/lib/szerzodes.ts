@@ -16,6 +16,7 @@ export async function szerzodesBemenet(
   megnevezes: string;
   allapot: string;
   veglegesSzoveg: string | null;
+  veglegesSzovegEn: string | null;
   fajta: string;
   alapSzerzodesId: string | null;
 } | null> {
@@ -75,6 +76,7 @@ export async function szerzodesBemenet(
     megnevezes: szerzodes.megnevezes,
     allapot: szerzodes.allapot,
     veglegesSzoveg: szerzodes.veglegesSzoveg,
+    veglegesSzovegEn: szerzodes.veglegesSzovegEn,
     fajta: szerzodes.fajta,
     alapSzerzodesId: szerzodes.alapSzerzodesId,
     bemenet: {

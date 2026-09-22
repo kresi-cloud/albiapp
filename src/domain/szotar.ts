@@ -704,6 +704,10 @@ export const SZOTAR: Szotar = {
   },
   "dokumentum.lista.megnyitom": { hu: "Megnyitom", en: "Open" },
   "dokumentum.lista.letoltom": { hu: "Letöltöm", en: "Download" },
+  "dokumentum.lista.forditas": {
+    hu: "Angol fordítás",
+    en: "English translation",
+  },
   "dokumentum.lista.tervezet_jelzes": {
     hu: "Tervezet, a bérlő még nem látja.",
     en: "Draft, not visible to the tenant yet.",
@@ -2015,6 +2019,31 @@ export const SZOTAR: Szotar = {
     en: "The contract text · {db} sections",
   },
   "szerzodes.letoltes": { hu: "Letöltés szövegként", en: "Download as text" },
+  "szerzodes.letoltes_angolul": {
+    hu: "Angol fordítás letöltése",
+    en: "Download the English translation",
+  },
+  "szerzodes.forditas_cim": { hu: "Angol fordítás", en: "English translation" },
+  "szerzodes.forditas_sugo": {
+    hu:
+      "Tájékoztató fordítás a külföldi bérlőnek. Aláírni a magyar szöveget kell, " +
+      "és eltérés esetén is a magyar az irányadó — ezt a fordítás maga is kimondja, " +
+      "nem csak ez a lap. Véglegesítéskor a fordítás is befagy a magyar mellé.",
+    en:
+      "An informative translation for a tenant who does not read Hungarian. The Hungarian " +
+      "text is the one that gets signed, and it prevails in case of any difference — the " +
+      "translation itself says so, not just this page. On finalisation the translation is " +
+      "frozen alongside the Hungarian text.",
+  },
+  "szerzodes.forditas_nincs_meg": {
+    hu:
+      "Ez a szerződés még az angol fordítás előtt lett véglegesítve, ezért nincs hozzá " +
+      "befagyasztott fordítás. Újat nem készítünk: az már nem ahhoz a szöveghez készülne.",
+    en:
+      "This contract was finalised before the English translation existed, so there is no " +
+      "frozen translation for it. We do not generate a new one: it would no longer belong " +
+      "to that text.",
+  },
 
   // --- Szerződés űrlapok
   "szerzodes.kotelezo_jelzes": { hu: "kötelező", en: "mandatory" },
@@ -2507,6 +2536,10 @@ export const SZOTAR: Szotar = {
   "letoltes.nincs_vegleges_szerzodes": {
     hu: "Nincs ilyen véglegesített szerződés.",
     en: "No such finalised contract.",
+  },
+  "letoltes.nincs_forditas": {
+    hu: "Ehhez a szerződéshez nincs angol fordítás.",
+    en: "There is no English translation for this contract.",
   },
   "letoltes.nincs_jegyzokonyv": { hu: "Nincs ilyen jegyzőkönyv.", en: "No such record." },
   "letoltes.nincs_vegleges_jegyzokonyv": {

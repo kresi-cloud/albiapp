@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { MODULOK } from "@/domain/szerzodes-modulok";
 import {
   hianyzoAdatok,
+  okiratSzovege,
   szakaszok,
   alairasSorok,
   zaradekBevezeto,
@@ -40,7 +41,13 @@ export default async function SzerzodesOldal({
   const betoltott = await szerzodesBemenet(id, berbeado.id);
   if (!betoltott) notFound();
 
-  const { bemenet, megnevezes, allapot, veglegesSzoveg, fajta } = betoltott;
+  const { bemenet, megnevezes, allapot, veglegesSzoveg, veglegesSzovegEn, fajta } = betoltott;
+  // Véglegesítés után a befagyasztott fordítás, tervezetnél a mostani
+  // modulszövegekből készült. Ami a fordítás előtt lett véglegesítve, ahhoz
+  // nincs és nem is lesz: egy most készült fordítás már nem ahhoz a szöveghez
+  // tartozna.
+  const forditas =
+    allapot === "veglegesitve" ? veglegesSzovegEn : okiratSzovege(bemenet, "en");
   // A záradék nem egy második teljes szerződés: kötelező pontja nincs, és
   // amit a felek már aláírtak, azt nem írjuk le újra.
   const zaradek = fajta === "zaradek";
@@ -280,6 +287,35 @@ export default async function SzerzodesOldal({
               {alairasSorok(bemenet).join("\n")}
             </pre>
           </div>
+        )}
+      </details>
+
+      {/*
+        A fordítás külön szakasz, összecsukva. Nem a magyar szöveg mellé tesszük,
+        mert nem az a szerződés: aki ide nyit be, az kifejezetten a tájékoztató
+        példányt keresi. A tervezetnél a mostani modulszövegekből készül, a
+        véglegesítettnél a befagyasztott példány jön — ugyanaz a szabály, mint a
+        magyarnál.
+      */}
+      <details className="rounded-kartya border border-keret bg-felulet p-4">
+        <summary className={NYITO}>{sz("szerzodes.forditas_cim")}</summary>
+        <p className="mt-3 text-sm text-halvany">{sz("szerzodes.forditas_sugo")}</p>
+        {forditas ? (
+          <>
+            <div className="mt-3">
+              <a
+                href={`/szerzodesek/${id}/letoltes?nyelv=en`}
+                className="text-sm underline underline-offset-2"
+              >
+                {sz("szerzodes.letoltes_angolul")}
+              </a>
+            </div>
+            <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-sm leading-relaxed">
+              {forditas}
+            </pre>
+          </>
+        ) : (
+          <p className="mt-3 text-sm text-szoveg">{sz("szerzodes.forditas_nincs_meg")}</p>
         )}
       </details>
 
