@@ -1,4 +1,4 @@
-import { datum, forint } from "@/domain/penz";
+import { datum, forint, szam } from "@/domain/penz";
 import { ElszamolasTetelek } from "@/components/ElszamolasTetelek";
 import { nevsor } from "@/domain/szerzodes";
 import { prisma } from "@/lib/db";
@@ -96,9 +96,9 @@ export default async function Rezsi() {
                       </div>
                       <p className="text-xs text-stone-500 dark:text-stone-400">
                         {dijszabas
-                          ? `${(dijszabas.kedvezmenyesArFiller / 100).toLocaleString("hu-HU")} Ft/${meroora.mertekegyseg} a kereten belül` +
+                          ? `${szam(dijszabas.kedvezmenyesArFiller / 100)} Ft/${meroora.mertekegyseg} a kereten belül` +
                             (dijszabas.evesKeret
-                              ? `, ${dijszabas.evesKeret.toLocaleString("hu-HU")} ${meroora.mertekegyseg}/év keret, fölötte ${(dijszabas.piaciArFiller / 100).toLocaleString("hu-HU")} Ft/${meroora.mertekegyseg}`
+                              ? `, ${szam(dijszabas.evesKeret)} ${meroora.mertekegyseg}/év keret, fölötte ${szam(dijszabas.piaciArFiller / 100)} Ft/${meroora.mertekegyseg}`
                               : ", nincs sávhatár")
                           : "nincs díjszabás felvéve"}
                       </p>

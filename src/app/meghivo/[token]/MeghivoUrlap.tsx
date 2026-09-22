@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { meghivotElfogad, type RegisztracioEredmeny } from "./actions";
+import { GOMB, MEZO } from "@/components/urlap";
 
 const KEZDETI: RegisztracioEredmeny = { allapot: "ures", uzenet: "", hibak: [], nev: "" };
 
@@ -35,7 +36,7 @@ export function MeghivoUrlap({ token, email }: { token: string; email: string })
           autoComplete="name"
           key={allapot.nev}
           defaultValue={allapot.nev}
-          className="rounded border border-stone-300 bg-white px-3 py-2 dark:border-stone-700 dark:bg-stone-950"
+          className={MEZO}
           required
         />
       </label>
@@ -47,7 +48,7 @@ export function MeghivoUrlap({ token, email }: { token: string; email: string })
           name="jelszo"
           type="password"
           autoComplete="new-password"
-          className="rounded border border-stone-300 bg-white px-3 py-2 dark:border-stone-700 dark:bg-stone-950"
+          className={MEZO}
           required
         />
       </label>
@@ -59,7 +60,7 @@ export function MeghivoUrlap({ token, email }: { token: string; email: string })
           name="jelszoUjra"
           type="password"
           autoComplete="new-password"
-          className="rounded border border-stone-300 bg-white px-3 py-2 dark:border-stone-700 dark:bg-stone-950"
+          className={MEZO}
           required
         />
       </label>
@@ -67,7 +68,7 @@ export function MeghivoUrlap({ token, email }: { token: string; email: string })
       <button
         type="submit"
         disabled={folyamatban}
-        className="justify-self-start rounded bg-stone-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-stone-100 dark:text-stone-900"
+        className={GOMB}
       >
         {folyamatban ? "Fiók készítése…" : "Fiók készítése"}
       </button>

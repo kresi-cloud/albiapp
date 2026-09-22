@@ -1,15 +1,24 @@
-/** Pénz és dátum: az egész alkalmazás egész forintban számol. */
+/**
+ * Pénz és dátum: az egész alkalmazás egész forintban számol.
+ *
+ * A formázás maga a `nyelv` modulban van, mert az a nyelvet is ismeri; itt a
+ * magyar alak rövidítései állnak, azoknak a helyeknek, ahol nincs nyelv a kézben
+ * (szerződés, elszámolás szövege, bérbeadói felület).
+ */
+
+import { datumNyelven, forintNyelven, szamNyelven } from "./nyelv";
 
 export function forint(osszegFt: number): string {
-  return new Intl.NumberFormat("hu-HU", {
-    style: "currency",
-    currency: "HUF",
-    maximumFractionDigits: 0,
-  }).format(osszegFt);
+  return forintNyelven(osszegFt, "hu");
 }
 
 export function datum(ertek: Date): string {
-  return new Intl.DateTimeFormat("hu-HU", { dateStyle: "medium" }).format(ertek);
+  return datumNyelven(ertek, "hu");
+}
+
+/** Ezres tagolású szám magyarul, közönséges szóközzel. */
+export function szam(ertek: number, tizedes = 2): string {
+  return szamNyelven(ertek, "hu", tizedes);
 }
 
 /**

@@ -53,6 +53,7 @@ Két környezeti változó kell: `DATABASE_URL` és `MUNKAMENET_TITOK`. Az utób
 | `npx eslint .` | formai ellenőrzés |
 | `npm run build` | éles fordítás |
 | `npm run db:seed` | példaadat betöltése |
+| `npm run proba` | böngészős próbák 360 képpontos ablakban |
 
 ## Belépés
 
@@ -188,3 +189,30 @@ magyar marad: az aláírt szerződés és a kiállított igazolás magyarul érv
 Az adatkezelési tájékoztató és a felhasználási feltételek a lábléc két
 hivatkozása mögött vannak, mindkét nyelven. Az üzemeltető adatait élesítés
 előtt ki kell tölteni: a szövegben `[kitöltendő]` jelöli a helyüket.
+
+## Minőségi kapuk
+
+A megállapodásaink egy részét nem elég leírni, mert olyasmiről szólnak, amit sem
+a típusellenőrzés, sem a fordítás nem lát. Ezek a `src/__tests__` mappában
+kapuként is meg vannak írva; a kapuk a forráskódot olvassák:
+
+| Kapu | Mit őriz |
+| --- | --- |
+| `retegek` | a domain nem nyúl Next.js-hez, Prismához, adatbázishoz |
+| `kiszolgalo-muveletek` | a `"use server"` fájlok csak async függvényt exportálnak |
+| `naplo` | nincs konzolra írás, tehát személyes adat sem kerülhet a naplóba |
+| `formatum` | számot és dátumot csak a `domain/nyelv.ts` formáz |
+| `teszteltseg` | minden domain modult importál legalább egy teszt |
+
+Mindegyik kapu első tesztje azt próbálja ki, hogy a kapu tényleg elutasítja a
+tiltott alakot.
+
+A böngészős próbák a `proba` mappában vannak, és egy 360 képpont széles ablakban
+futnak végig: telefonméret, hibabejelentés, kétnyelvűség, letöltési
+jogosultságok. Futtatás: indítsd a kiszolgálót (`npm run build && npm run
+start`), majd `npm run proba`. A `proba/meret.mjs` minden oldalon azt nézi,
+kilóg-e valami vízszintesen — ez a hiba nagy kijelzőn soha nem látszik, telefonon
+viszont azonnal.
+
+A `Ellenőrzés` munkafolyamat mindkettőt lefuttatja minden pull requestre: egy
+gyors menetet (lint, típus, teszt, fordítás, `npm audit`) és egy böngészőset.

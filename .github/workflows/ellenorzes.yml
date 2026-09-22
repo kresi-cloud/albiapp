@@ -36,3 +36,56 @@ jobs:
 
       - name: Fordítás
         run: npm run build
+
+      # Csak a futtatáshoz kellő csomagokra és csak kritikus szintre. A megmaradt
+      # "high" találatok a Next.js-be csomagolt postcss-ből jönnek; azokat csak a
+      # támogatott Next-vonal elhagyásával lehetne lezárni, és egy olyan kapu,
+      # amit nem lehet teljesíteni, nem kapu, hanem zaj.
+      - name: Függőségek biztonsági átnézése
+        run: npm audit --omit=dev --audit-level=critical
+
+  bongeszo:
+    name: Böngészős próba
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "file:./ci.db"
+      MUNKAMENET_TITOK: "ellenorzeshez-hasznalt-titok"
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Függőségek telepítése
+        run: npm ci
+
+      - name: Böngésző telepítése
+        run: npx playwright install --with-deps chromium
+
+      - name: Adatbázis és példaadat
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+          npm run db:seed
+
+      - name: Fordítás
+        run: npm run build
+
+      - name: Kiszolgáló indítása
+        run: |
+          npm run start &
+          npx wait-on -t 60000 http://localhost:3000/belepes
+
+      - name: Próbák futtatása
+        run: npm run proba
+
+      - name: Képernyőkép bukás esetén
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: proba-hiba
+          path: proba/kepek/
+          if-no-files-found: ignore

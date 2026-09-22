@@ -163,6 +163,31 @@ bérbeadó helyett. Élesítés előtt ezeket ki kell tölteni.
 - Telefonon is használható 360 képpont széles kijelzőtől.
 - Magyar formátumok: dátum, forint, ezres elválasztás.
 - Személyes adat nem kerül naplóba.
-- Új szerveroldali művelet után a böngészős próba is lefut. A `"use server"`
-  fájl szabályait (csak async függvényt exportálhat) sem a típusellenőrzés, sem
-  a fordítás nem fogja meg, csak a futtatás.
+- Új szerveroldali művelet után a böngészős próba is lefut (`npm run proba`). A
+  `"use server"` fájl szabályait (csak async függvényt exportálhat) sem a
+  típusellenőrzés, sem a fordítás nem fogja meg, csak a futtatás.
+
+## A minőségi kapuk
+
+A fenti lista nagyobb része a `src/__tests__` mappában kapuként is meg van írva,
+mert a megállapodás, amit csak ember tart be, előbb-utóbb elkopik. A kapuk a
+forráskódot olvassák, nem futtatják:
+
+- `retegek`: a domain nem importál Next.js-t, Prismát, adatbázist, és a
+  megjelenítés nem kerüli meg a libet.
+- `kiszolgalo-muveletek`: a `"use server"` fájlok csak async függvényt
+  exportálnak.
+- `naplo`: a forrásban nincs konzolra írás, tehát személyes adat sem kerülhet
+  oda. Ha egyszer tényleg kell naplózás, egy erre való modul szűrje a mezőket, és
+  a kapu azt az egy helyet engedje át.
+- `formatum`: számot és dátumot egyedül a `domain/nyelv.ts` formáz. Így nem
+  csúszik el a magyar alak oldalanként, és nem marad beégetett `hu-HU` az angol
+  felületen.
+- `teszteltseg`: minden domain modult importál legalább egy teszt.
+
+Mindegyik kapu első tesztje azt próbálja ki, hogy a kapu tényleg elutasítja a
+tiltott alakot: egy kapu, ami mindenre igent mond, rosszabb a semminél.
+
+A böngészős próbák a `proba` mappában vannak, és 360 képpont széles ablakban
+futnak. A `proba/meret.mjs` minden oldalon azt nézi, kilóg-e valami
+vízszintesen; ez a hiba nagy kijelzőn soha nem látszik.

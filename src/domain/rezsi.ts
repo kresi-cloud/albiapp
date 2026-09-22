@@ -11,7 +11,7 @@
  *  - az éves keret az elszámolt napokra arányosítva jár, nem egészben.
  */
 
-import { napKulonbseg } from "./penz";
+import { napKulonbseg, szam } from "./penz";
 
 export type Dijszabas = {
   kedvezmenyesArFiller: number;
@@ -53,12 +53,12 @@ export function alapdijResz(alapdijFt: number, napok: number): number {
   return Math.round((alapdijFt * 12 * napok) / EV_NAPJAI);
 }
 
-function egesz(szam: number): string {
-  return new Intl.NumberFormat("hu-HU", { maximumFractionDigits: 2 }).format(szam);
+function egesz(ertek: number): string {
+  return szam(ertek);
 }
 
 function forintSzoveg(osszegFt: number): string {
-  return `${new Intl.NumberFormat("hu-HU").format(osszegFt)} Ft`;
+  return `${szam(osszegFt, 3)} Ft`;
 }
 
 function arSzoveg(arFiller: number): string {

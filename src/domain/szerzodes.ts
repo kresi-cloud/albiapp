@@ -14,6 +14,8 @@
  * a szerződésben más bérleti díj, mint a befizetés-egyeztetésben.
  */
 
+import { szam } from "./penz";
+
 export type ParameterTipus = "szoveg" | "szam" | "penz" | "datum" | "valaszt";
 
 export type ParameterDef = {
@@ -175,8 +177,8 @@ export function simaSzokoz(szoveg: string): string {
   return szoveg.replace(/[\u00a0\u202f]/g, " ");
 }
 
-export function tagolt(szam: number): string {
-  return simaSzokoz(new Intl.NumberFormat("hu-HU", { maximumFractionDigits: 0 }).format(szam));
+export function tagolt(ertek: number): string {
+  return szam(ertek, 0);
 }
 
 /** Forint szerződéses alakban: "150 000 Ft, azaz százötvenezer forint". */

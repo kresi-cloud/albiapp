@@ -1,4 +1,4 @@
-import { forintNyelven, helyszin, type Nyelv } from "@/domain/nyelv";
+import { forintNyelven, szamNyelven, type Nyelv } from "@/domain/nyelv";
 import { szovegekNyelvvel } from "@/domain/szotar";
 
 export type MutatottTetel = {
@@ -24,7 +24,7 @@ export function ElszamolasTetelek({
   const mennyiseg = (tetel: MutatottTetel) =>
     tetel.mennyiseg === null
       ? null
-      : `${new Intl.NumberFormat(helyszin(nyelv), { maximumFractionDigits: 2 }).format(tetel.mennyiseg)} ${tetel.mertekegyseg ?? ""}`;
+      : `${szamNyelven(tetel.mennyiseg, nyelv)} ${tetel.mertekegyseg ?? ""}`;
 
   return (
     <div className="mt-3 grid gap-2">
