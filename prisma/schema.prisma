@@ -45,6 +45,8 @@ model Felhasznalo {
   beszelgetesei       BeszelgetesResztvevo[]
   kuldottUzenetei     BeszelgetesUzenet[]  @relation("UzenetSzerzoje")
   elofizetesNyilatkozatai ElofizetesJovahagyas[]
+  bejelentettLatogatasai  SzolgaltatoiLatogatas[] @relation("LatogatasBejelentoje")
+  latogatasValaszai       LatogatasValasz[]
 }
 
 /// Bérbeadónkénti egyeztetési beállítások. Az összegtolerancia szándékosan nincs
@@ -171,6 +173,7 @@ model Jogviszony {
   betekintok          Betekinto[]
   beszelgetesek       Beszelgetes[]
   elofizetesek        Elofizetes[]
+  latogatasok         SzolgaltatoiLatogatas[]
 
   @@index([ingatlanId])
 }
@@ -791,4 +794,64 @@ model BeszelgetesUzenet {
   szerzo      Felhasznalo @relation("UzenetSzerzoje", fields: [szerzoId], references: [id])
 
   @@index([beszelgetesId, kuldve])
+}
+
+/// Szolgáltatói látogatás: kéményseprő, mérőóra-leolvasó, szerelő, hitelesítés.
+///
+/// Nem üzenet és nem teendő, hanem dátumos esemény, ami a bérlő lakásába szól.
+/// A kérdés, amit el kell dönteni, nem az, hogy mikor jön a szerelő — azt a
+/// szolgáltató mondja meg —, hanem hogy **ki engedi be**. Ez eddig SMS-ben
+/// ment, és épp az veszett el belőle, ami utólag számít: ki mit vállalt.
+///
+/// A bérbeadó nem mehet be a bérlő távollétében pusztán azért, mert övé az
+/// ingatlan. Ha kulccsal megy be, ahhoz a bérlő kimondott hozzájárulása kell,
+/// és ezt a rendszer rögzíti is — nem azért, hogy bizonyíték legyen, hanem
+/// mert enélkül a bérlő nem tudná, mibe egyezett bele.
+model SzolgaltatoiLatogatas {
+  id           String    @id @default(cuid())
+  jogviszonyId String
+  bejelentoId  String
+  fajta        String // "kemenysepro" | "meroora" | "javitas" | "mutatas" | "egyeb"
+  megnevezes   String
+  szolgaltato  String?
+  nap          DateTime
+  /// "09:00" alakú időablak. Szabad szöveg, mert a szolgáltató is így írja.
+  idoablakTol  String?
+  idoablakIg   String?
+  megjegyzes   String?
+  /// Lemondás: a látogatás nem törölhető, mert a bérlő már nyilatkozott rá.
+  lemondva     DateTime?
+  lemondasOka  String?
+  letrehozva   DateTime  @default(now())
+
+  jogviszony Jogviszony        @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  bejelento  Felhasznalo       @relation("LatogatasBejelentoje", fields: [bejelentoId], references: [id], onDelete: Cascade)
+  valaszok   LatogatasValasz[]
+
+  @@index([jogviszonyId, nap])
+}
+
+/// A bérlő válasza egy bejelentett látogatásra.
+///
+/// Ugyanaz a kétoldali elv, mint az előfizetésnél és a fényképnél: a bérbeadó
+/// bejelenti, a bérlő a saját adatával mondja meg, mi lesz. Amíg nem mondta,
+/// nem tudjuk, hogy be fog-e jutni a szerelő — és ezt ki is mondjuk, ahelyett
+/// hogy megtippelnénk.
+///
+/// Három válasz van, mert ennyi eset van: itthon leszek; nem leszek itthon, de
+/// a bérbeadó beengedheti a kulccsal; nem jó ez az időpont. A harmadik
+/// indoklás nélkül nincs, mert abból a bérbeadó nem tud új időpontot javasolni.
+model LatogatasValasz {
+  id          String   @id @default(cuid())
+  latogatasId String
+  berloId     String
+  valasz      String // "itthon_leszek" | "kulccsal_beengedheto" | "nem_jo_idopont"
+  indoklas    String?
+  letrehozva  DateTime @default(now())
+
+  latogatas SzolgaltatoiLatogatas @relation(fields: [latogatasId], references: [id], onDelete: Cascade)
+  berlo     Felhasznalo           @relation(fields: [berloId], references: [id], onDelete: Cascade)
+
+  @@unique([latogatasId, berloId])
+  @@index([berloId])
 }

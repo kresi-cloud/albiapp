@@ -525,6 +525,147 @@ export const SZOTAR: Szotar = {
     en: "No deadlines this week.",
   },
 
+  // --- Szolgáltatói látogatás
+  "nav.latogatasok": { hu: "Látogatások", en: "Visits" },
+  "latogatas.cim": { hu: "Szolgáltatói látogatások", en: "Service visits" },
+  "latogatas.alcim": {
+    hu: "Kéményseprő, leolvasás, szerelő — és hogy ki engedi be.",
+    en: "Chimney sweep, meter reading, contractor — and who lets them in.",
+  },
+  "latogatas.sugo.cim": { hu: "Mire jó ez a lap?", en: "What is this page for?" },
+  "latogatas.sugo.mirol": {
+    hu: "A kérdés nem az, hogy mikor jön a szerelő — azt a szolgáltató mondja meg —, hanem hogy ki engedi be. Eddig ez SMS-ben ment, és épp az veszett el belőle, ami utólag számít: ki mit vállalt.",
+    en: "The question is not when the contractor arrives — the provider decides that — but who lets them in. This used to go by text message, and what mattered later was exactly what got lost: who agreed to what.",
+  },
+  "latogatas.sugo.ketoldali": {
+    hu: "A bérbeadó nem mehet be a bérlő távollétében pusztán azért, mert övé az ingatlan. Ha kulccsal megy be, ahhoz a bérlő kimondott hozzájárulása kell, és amíg nem mondta, itt sem írunk semmit a helyébe.",
+    en: "A landlord may not enter while the tenant is away simply because they own the property. Entering with a key needs the tenant's explicit agreement, and until they give it, nothing here is assumed on their behalf.",
+  },
+  "latogatas.fajta.kemenysepro": { hu: "Kéményseprő", en: "Chimney sweep" },
+  "latogatas.fajta.meroora": { hu: "Mérőóra-leolvasás", en: "Meter reading" },
+  "latogatas.fajta.javitas": { hu: "Javítás, szerelő", en: "Repair, contractor" },
+  "latogatas.fajta.mutatas": { hu: "Bérleménymutatás", en: "Viewing" },
+  "latogatas.fajta.egyeb": { hu: "Egyéb", en: "Other" },
+  "latogatas.allapot.varakozik": {
+    hu: "Még nem tudjuk, ki engedi be: {nev} nem nyilatkozott.",
+    en: "We do not yet know who will let them in: {nev} has not said.",
+  },
+  "latogatas.allapot.idopont_gond": {
+    hu: "{nev} szerint nem jó ez az időpont.",
+    en: "{nev} says this time does not work.",
+  },
+  "latogatas.allapot.itthon_lesz": {
+    hu: "{nev} itthon lesz, és beengedi.",
+    en: "{nev} will be home and will let them in.",
+  },
+  "latogatas.allapot.kulccsal": {
+    hu: "Senki nem lesz itthon, de a bérbeadó bemehet a kulccsal.",
+    en: "Nobody will be home, but the landlord may enter with the key.",
+  },
+  "latogatas.allapot.lemondva": { hu: "Lemondva.", en: "Cancelled." },
+  "latogatas.allapot.elmult": { hu: "Elmúlt.", en: "Past." },
+  "latogatas.idoablak": { hu: "{tol} és {ig} között", en: "between {tol} and {ig}" },
+  "latogatas.idoablak_tol": { hu: "{tol}-tól", en: "from {tol}" },
+  "latogatas.valasz.itthon_leszek": { hu: "Itthon leszek", en: "I will be home" },
+  "latogatas.valasz.kulccsal_beengedheto": {
+    hu: "Nem leszek itthon, a bérbeadó bemehet a kulccsal",
+    en: "I will not be home; the landlord may enter with the key",
+  },
+  "latogatas.valasz.nem_jo_idopont": { hu: "Nem jó ez az időpont", en: "This time does not work" },
+  "latogatas.valaszolt": { hu: "A te válaszod: {valasz}", en: "Your answer: {valasz}" },
+  "latogatas.valaszolj": { hu: "Mi lesz ezen a napon?", en: "What will happen on this day?" },
+  "latogatas.bejelento": { hu: "Bejelentette: {nev}", en: "Announced by {nev}" },
+  "latogatas.szolgaltato": { hu: "Szolgáltató: {nev}", en: "Provider: {nev}" },
+  "latogatas.fiok_nelkul": {
+    hu: "{nev} még nem lépett be a saját fiókjába, ezért tőle nem tudunk választ kérni.",
+    en: "{nev} has not signed in to their own account yet, so we cannot ask them.",
+  },
+  "latogatas.nincs": {
+    hu: "Nincs bejelentett látogatás.",
+    en: "No visits announced.",
+  },
+  "latogatas.kesobbi": { hu: "Lemondott és elmúlt", en: "Cancelled and past" },
+  "latogatas.uj": { hu: "Új látogatás", en: "New visit" },
+  "latogatas.lemondas": { hu: "Lemondom", en: "Cancel it" },
+  "latogatas.lemondas_folyamatban": { hu: "Lemondom…", en: "Cancelling…" },
+  "latogatas.lemondas_oka": { hu: "Miért marad el?", en: "Why is it not happening?" },
+  "latogatas.lemondva_mert": { hu: "Lemondva: {oka}", en: "Cancelled: {oka}" },
+  "latogatas.urlap.fajta": { hu: "Mi ez a látogatás?", en: "What kind of visit?" },
+  "latogatas.urlap.megnevezes": { hu: "Megnevezés", en: "Name" },
+  "latogatas.urlap.megnevezes_helyorzo": {
+    hu: "Éves kéményellenőrzés",
+    en: "Annual chimney inspection",
+  },
+  "latogatas.urlap.szolgaltato": { hu: "Szolgáltató", en: "Provider" },
+  "latogatas.urlap.nap": { hu: "Melyik napon", en: "On which day" },
+  "latogatas.urlap.idoablak": { hu: "Hány órától hány óráig", en: "From when to when" },
+  "latogatas.urlap.idoablak_sugo": {
+    hu: "Nem kötelező. Sok szolgáltató nem is ad meg pontos időt, és ezt jobb kiírni, mint kitalálni egyet.",
+    en: "Optional. Many providers give no exact time, and saying so is better than inventing one.",
+  },
+  "latogatas.urlap.megjegyzes": { hu: "Megjegyzés", en: "Note" },
+  "latogatas.urlap.berlemeny": { hu: "Melyik bérleményhez", en: "Which tenancy" },
+  "latogatas.urlap.mentes": { hu: "Bejelentem", en: "Announce it" },
+  "latogatas.urlap.mentes_folyamatban": { hu: "Mentem…", en: "Saving…" },
+  "latogatas.urlap.valasz_indoklas": {
+    hu: "Miért nem jó? Enélkül a másik fél nem tud új időpontot javasolni.",
+    en: "Why not? Without this the other party cannot propose a new time.",
+  },
+  "latogatas.urlap.valasz_mentes": { hu: "Ezt válaszolom", en: "Send my answer" },
+  "latogatas.urlap.valasz_folyamatban": { hu: "Küldöm…", en: "Sending…" },
+  "latogatas.hiba.megnevezes": {
+    hu: "Írd le, mi ez a látogatás.",
+    en: "Say what this visit is.",
+  },
+  "latogatas.hiba.nap": { hu: "Adj meg egy napot.", en: "Give a day." },
+  "latogatas.hiba.ora": {
+    hu: "Az időt óra:perc alakban add meg, például 9:00.",
+    en: "Give the time as hour:minute, for example 9:00.",
+  },
+  "latogatas.hiba.sorrend": {
+    hu: "Az időablak vége nem lehet a kezdete előtt.",
+    en: "The end of the time window cannot be before its start.",
+  },
+  "latogatas.hiba.fajta": { hu: "Válaszd ki, mi ez a látogatás.", en: "Choose what kind of visit this is." },
+  "latogatas.hiba.hianyos": { hu: "Hiányzó adat.", en: "Missing details." },
+  "latogatas.hiba.valasz": { hu: "Válassz egy választ.", en: "Choose an answer." },
+  "latogatas.hiba.indoklas": {
+    hu: "Írd le, miért nem jó az időpont.",
+    en: "Say why the time does not work.",
+  },
+  "latogatas.hiba.csak_berlo": {
+    hu: "Erre a bérlő nyilatkozik, mert az ő lakásáról van szó.",
+    en: "The tenant answers this, because it is their home.",
+  },
+  "latogatas.hiba.lemondas_oka": {
+    hu: "Írd le, miért marad el.",
+    en: "Say why it is not happening.",
+  },
+  "latogatas.kesz.bejelentve": { hu: "Bejelentve.", en: "Announced." },
+  "latogatas.kesz.valaszolva": { hu: "Elküldve.", en: "Sent." },
+  "latogatas.kesz.lemondva": { hu: "Lemondva.", en: "Cancelled." },
+  "teendo.latogatas.valasz": {
+    hu: "Nyilatkozz: {megnevezes}",
+    en: "Say what will happen: {megnevezes}",
+  },
+  "teendo.latogatas.varakozik": {
+    hu: "A bérbeadó nem tudja, bejut-e a szolgáltató.",
+    en: "The landlord does not know whether the provider can get in.",
+  },
+  "teendo.latogatas.surgetes": {
+    hu: "Nincs még válasz: {megnevezes}",
+    en: "No answer yet: {megnevezes}",
+  },
+  "teendo.latogatas.kire_var": { hu: "{nev} nem nyilatkozott.", en: "{nev} has not answered." },
+  "teendo.latogatas.uj_idopont": {
+    hu: "Új időpont kell: {megnevezes}",
+    en: "A new time is needed: {megnevezes}",
+  },
+  "teendo.latogatas.kifogas": {
+    hu: "A bérlőnek nem jó a bejelentett nap.",
+    en: "The announced day does not work for the tenant.",
+  },
+
   // --- Hibabejelentés
   "hiba.terulet.epulet": {
     hu: "Épületszerkezet (fal, tető, csatorna, erkély)",

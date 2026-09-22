@@ -342,6 +342,50 @@ ugyanaz, és aki a mai cellában látná mindkettőt, azt hinné, ma keletkezett
 ezért a hétsáv külön sorban mondja meg, hány lejárt tétel van, a havi rács pedig
 kiírja, ha a lejárt tétel nem ebben a hónapban van.
 
+## A szolgáltatói látogatás alapelve
+
+Kéményseprő, mérőóra-leolvasás, szerelő, bérleménymutatás. Eddig SMS-ben ment,
+és épp az veszett el belőle, ami utólag számít: ki mit vállalt.
+
+A megválaszolandó kérdés **nem az, hogy mikor jön a szerelő** — azt a szolgáltató
+mondja meg —, hanem hogy **ki engedi be**. Ezért a látogatásnak nem „elfogadva"
+és „elutasítva" állapota van, hanem az, hogy a bejutás módja tisztázott-e.
+
+A bérbeadó nem mehet be a bérlő távollétében pusztán azért, mert övé az
+ingatlan. Ha kulccsal megy be, ahhoz a bérlő kimondott hozzájárulása kell — nem
+azért, hogy bizonyíték legyen, hanem mert enélkül a bérlő nem tudná, mibe
+egyezett bele.
+
+Három válasz van, mert ennyi eset van: itthon leszek; nem leszek itthon, de a
+bérbeadó beengedheti a kulccsal; nem jó ez az időpont. A harmadik indoklás
+nélkül nincs, mert abból a másik fél nem tud új időpontot javasolni — ugyanaz,
+mint a fénykép és az előfizetés kifogásánál.
+
+Bejelenteni mindkét fél tud: a kéményseprőt a bérbeadó hívja, a saját szerelőjét
+viszont a bérlő. **Nyilatkozni viszont mindig a bérlő nyilatkozik**, mert a
+kérdés az ő lakásába való bejutásról szól, és ezt a kiszolgáló ellenőrzi, nem az
+űrlap.
+
+Több bérlőnél mindenkitől várunk választ, akinek van fiókja, és **egy kifogás
+egymagában is dönt** — a lakótárs nem szavazhatja le azt, akinek nem jó. Amíg
+valaki nem nyilatkozott, nem mondjuk, hogy eldőlt: a legrosszabb hiba az lenne,
+ha a lap azt írná ki, „rendben, bejut a szerelő", holott a másik lakó még nem is
+válaszolt. Fiók nélküli bérlőt nem lehet megkérdezni, és a felület ezt ki is
+mondja.
+
+Törölni nem lehet, csak lemondani, ugyanúgy, mint az előfizetést: a bérlő már
+nyilatkozott rá, és egy eltűnt sor mellől az ő nyilatkozata is eltűnne. A
+lemondás oka nem formaság — a bérlő ebből tudja meg, hogy nem kell otthon
+maradnia.
+
+Az időablak szabad szöveg, és nem kötelező: sok szolgáltató nem ad meg pontos
+időt, és ezt jobb kiírni, mint kitalálni egyet. Amit megadtak, azt változatlanul
+adjuk vissza, mert a bérlő azt fogja az SMS-sel összevetni.
+
+A látogatásból teendő lesz mindkét félnél, amíg nyitott: a bérlőnél a saját
+nyilatkozata, a bérbeadónál a sürgetés vagy az új időpont keresése. Származtatott
+teendő, tehát eltűnik, amint a látogatás eldőlt vagy elmúlt.
+
 ## A beszélgetés alapelve
 
 A bérlet hétköznapi ügye — mikor jön a kéményseprő, elviheti-e a szekrényt,

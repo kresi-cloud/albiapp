@@ -233,12 +233,24 @@ export function IkonTeendok(t: IkonTulajdonsagok) {
   );
 }
 
+/** Ajtó kilinccsel: a látogatásnál a kérdés az, ki nyit ajtót. */
+export function IkonLatogatas(t: IkonTulajdonsagok) {
+  return (
+    <Rajz {...t}>
+      <path d="M6 3.5h9a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6Z" />
+      <path d="M4 20.5h16" />
+      <circle cx="12.5" cy="12" r="1" />
+    </Rajz>
+  );
+}
+
 export const IKON_UTVONAL: Record<
   string,
   (t: IkonTulajdonsagok) => React.ReactElement
 > = {
   "/": IkonAttekinto,
   "/teendok": IkonTeendok,
+  "/latogatasok": IkonLatogatas,
   "/ingatlanok": IkonIngatlanok,
   "/berlok": IkonBerlok,
   "/befizetesek": IkonBefizetesek,
@@ -250,6 +262,7 @@ export const IKON_UTVONAL: Record<
   "/beallitasok": IkonBeallitasok,
   "/berlo": IkonBerlemenyem,
   "/berlo/teendok": IkonTeendok,
+  "/berlo/latogatasok": IkonLatogatas,
   "/berlo/hibak": IkonHibabejelentes,
   "/berlo/dokumentumok": IkonDokumentumok,
   "/berlo/jegyzokonyvek": IkonJegyzokonyv,
