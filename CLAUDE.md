@@ -51,6 +51,25 @@ befizetést az előíráshoz) bérbeadónként állítható, a `Beallitasok` tá
 Az összegtolerancia ezzel szemben szándékosan fix nulla: bármekkora eltérésnél
 egyeztetés indul.
 
+## A havi előírások alapelve
+
+Az előírt tételek nem kézzel kerülnek be: a jogviszonyból következnek
+(`src/domain/eloirasok.ts`). A bérleti díj, a közös költség és a rezsiátalány
+minden hónapra egy-egy előírás, a jogviszony kezdetétől a mai hónapig. Jövőbeli
+hónapra nem írunk elő: amit még nem kellett fizetni, azt ne is kérjük számon.
+
+Töredékhónap napra arányosítva jár, és mindig tartozik hozzá részletezés
+(`reszletezes`): a bérlő lássa, miért nem a teljes havi összeg áll ott.
+
+A pótlás akkor fut, amikor valaki ránéz a befizetésekre — nincs ütemező, és egy
+magánbérbeadónak nem is kell. Meglévő előírást soha nem írunk át: amire egyszer
+már egyeztettünk, azt egy későbbi díjemelés nem változtathatja meg.
+
+A jogviszony lezárása ennek a határa. A kiköltözés utáni hónapok előírásait
+törli, a záró hónapét arányosítja, a múlthoz nem nyúl. A lezárás visszavonása
+ezt vissza is számolja, mert egy elkattintott lezárás egyébként csendben
+kevesebb bérleti díjat írna elő.
+
 ## Belépés és jogosultság
 
 Minden oldal és minden szerveroldali művelet a belépett felhasználóból indul ki

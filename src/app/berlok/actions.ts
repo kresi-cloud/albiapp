@@ -6,6 +6,8 @@ import { emailNekLatszik, emailtNormalizal, meghivoLejarata } from "@/domain/bel
 import { prisma } from "@/lib/db";
 import { meghivoToken } from "@/lib/meghivo";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
+import { jogviszonytLezar, jogviszonytUjranyit } from "@/lib/jogviszony";
 
 export type MeghivoEredmeny = {
   allapot: "ures" | "kesz" | "hiba";
@@ -199,4 +201,52 @@ export async function berlotTorol(_elozo: Eredmeny, urlap: FormData): Promise<Er
   revalidatePath("/szerzodesek");
 
   return { allapot: "kesz", uzenet: `${berlo.nev} levéve a jogviszonyról.`, hibak: [] };
+}
+
+export async function jogviszonytLezarAction(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+
+  const nyersNap = szoveg(urlap.get("vege"));
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(nyersNap)) {
+    return hiba(sz("valasz.lezaras_datum_kell"), ["vege"]);
+  }
+  const vege = new Date(`${nyersNap}T00:00:00.000Z`);
+  if (Number.isNaN(vege.getTime())) {
+    return hiba(sz("valasz.lezaras_datum_kell"), ["vege"]);
+  }
+
+  const eredmeny = await jogviszonytLezar(berbeado.id, szoveg(urlap.get("jogviszonyId")), vege);
+  if (!eredmeny) return hiba(sz("valasz.nincs_jogosultsag"));
+
+  revalidatePath("/berlok");
+  revalidatePath("/befizetesek");
+  revalidatePath("/");
+  return {
+    allapot: "kesz",
+    uzenet: sz("valasz.lezarva", {
+      torolt: eredmeny.toroltEloirasok,
+      aranyositott: eredmeny.aranyositottEloirasok,
+    }),
+    hibak: [],
+  };
+}
+
+export async function jogviszonytUjranyitAction(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+
+  const sikerult = await jogviszonytUjranyit(berbeado.id, szoveg(urlap.get("jogviszonyId")));
+  if (!sikerult) return hiba(sz("valasz.nincs_jogosultsag"));
+
+  revalidatePath("/berlok");
+  revalidatePath("/befizetesek");
+  revalidatePath("/");
+  return { allapot: "kesz", uzenet: sz("valasz.ujranyitva"), hibak: [] };
 }

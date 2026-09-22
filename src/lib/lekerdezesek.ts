@@ -1,7 +1,12 @@
 import { prisma } from "@/lib/db";
+import {
+  eloirasokatPotol,
+  eloirasokatPotolBerlonek,
+  reszletezesbol,
+} from "@/lib/eloirasok";
 import { nyitottHibak } from "@/lib/hibabejelentes";
 import { hibakbolTeendok } from "@/domain/hibabejelentes";
-import { uzenet } from "@/domain/nyelv";
+import { uzenet, type Uzenet } from "@/domain/nyelv";
 import { nevsor } from "@/domain/szerzodes";
 import {
   ALAPERTELMEZETT_BEALLITASOK,
@@ -36,6 +41,8 @@ export type JogviszonyNezet = {
     kivonatDatuma: Date | null;
     igazolasOsszegFt: number | null;
     igazolasDatuma: Date | null;
+    /** Miért ennyi, ha nem a teljes havi összeg. Töredékhónapnál van kitöltve. */
+    reszletezes: Uzenet | null;
   })[];
 };
 
@@ -45,7 +52,7 @@ type BetoltottJogviszony = {
   berlok: { nev: string }[];
   berletiDijFt: number;
   ingatlan: { megnevezes: string; cim: string; tulajdonosId: string };
-  eloirtTetelek: EloirtTetel[];
+  eloirtTetelek: (EloirtTetel & { reszletezes: string | null })[];
   berloiIgazolasok: BerloiIgazolas[];
   kivonattetelek: Kivonattetel[];
 };
@@ -112,6 +119,7 @@ function nezetteAlakit(
         kivonatDatuma: kivonat?.konyvelesDatuma ?? null,
         igazolasOsszegFt: igazolas?.osszegFt ?? null,
         igazolasDatuma: igazolas?.utalasDatuma ?? null,
+        reszletezes: eloiras ? reszletezesbol(eloiras.reszletezes) : null,
       };
     }),
   };
@@ -121,6 +129,10 @@ export async function jogviszonyNezetek(
   tulajdonosId: string,
   ma: Date = new Date(),
 ): Promise<JogviszonyNezet[]> {
+  // A hiányzó havi előírások pótlása, mielőtt egyeztetnénk: különben egy új
+  // hónap díja meg sem jelenne, és a bérlő azt hinné, nincs mit fizetnie.
+  await eloirasokatPotol(tulajdonosId, ma);
+
   const beallitasok = await egyeztetesBeallitasok(tulajdonosId);
 
   const jogviszonyok = await prisma.jogviszony.findMany({
@@ -137,6 +149,8 @@ export async function berloNezetei(
   berloId: string,
   ma: Date = new Date(),
 ): Promise<JogviszonyNezet[]> {
+  await eloirasokatPotolBerlonek(berloId, ma);
+
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { berlok: { some: { berloId } } },
     include: BETOLTES,

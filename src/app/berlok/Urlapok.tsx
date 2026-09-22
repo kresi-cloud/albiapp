@@ -6,9 +6,11 @@ import {
   berloAdataitMenti,
   berlotHozzaad,
   berlotTorol,
+  jogviszonytLezarAction,
+  jogviszonytUjranyitAction,
   type Eredmeny,
 } from "./actions";
-import { MEZO, GOMB } from "@/components/urlap";
+import { MEZO, GOMB, APRO_GOMB } from "@/components/urlap";
 
 const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
 
@@ -114,6 +116,66 @@ export function BerloTorles({ jogviszonyBerloId, nev }: { jogviszonyBerloId: str
         className="justify-self-start text-xs text-stone-500 underline underline-offset-2 hover:text-rose-700 disabled:opacity-60 dark:text-stone-400"
       >
         {folyamatban ? "Leveszem…" : `${nev} levétele a jogviszonyról`}
+      </button>
+      <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
+    </form>
+  );
+}
+
+/**
+ * A jogviszony lezárása nem csak állapotjelző: a záró hónap utáni előírásokat
+ * törli, a záró hónapot pedig napra arányosítja. Ezért kérünk dátumot, nem
+ * csak egy kattintást.
+ */
+export function JogviszonyLezaras({
+  jogviszonyId,
+  cimke,
+  napCimke,
+  gombCimke,
+  sugo,
+  maiNap,
+}: {
+  jogviszonyId: string;
+  cimke: string;
+  napCimke: string;
+  gombCimke: string;
+  sugo: string;
+  maiNap: string;
+}) {
+  const [allapot, kuldes, folyamatban] = useActionState(jogviszonytLezarAction, KEZDETI);
+
+  return (
+    <details className="mt-3">
+      <summary className="cursor-pointer text-sm text-stone-600 underline underline-offset-2 dark:text-stone-400">
+        {cimke}
+      </summary>
+      <form action={kuldes} className="mt-3 grid gap-3">
+        <input type="hidden" name="jogviszonyId" value={jogviszonyId} />
+        <Mezo nev="vege" cimke={napCimke} ertek={maiNap} tipus="date" sugo={sugo} />
+        <button type="submit" disabled={folyamatban} className={GOMB}>
+          {folyamatban ? "…" : gombCimke}
+        </button>
+        <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
+      </form>
+    </details>
+  );
+}
+
+/** Téves lezárás visszavonása: a jogviszony újra él, az előírások pótlódnak. */
+export function JogviszonyUjranyitas({
+  jogviszonyId,
+  cimke,
+}: {
+  jogviszonyId: string;
+  cimke: string;
+}) {
+  const [allapot, kuldes, folyamatban] = useActionState(jogviszonytUjranyitAction, KEZDETI);
+
+  return (
+    <form action={kuldes} className="mt-2 grid gap-2">
+      <input type="hidden" name="jogviszonyId" value={jogviszonyId} />
+      <button type="submit" disabled={folyamatban} className={APRO_GOMB}>
+        {folyamatban ? "…" : cimke}
       </button>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
     </form>

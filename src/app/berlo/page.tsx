@@ -162,6 +162,11 @@ export default async function BerloiNezet() {
                     })}{" "}
                     {u(sor.magyarazat)}
                   </p>
+                  {sor.reszletezes ? (
+                    <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+                      {u(sor.reszletezes)}
+                    </p>
+                  ) : null}
                 </li>
               ))}
           </ul>
