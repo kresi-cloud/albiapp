@@ -121,3 +121,25 @@ export function forintNyelven(osszegFt: number, nyelv: Nyelv): string {
 export function datumNyelven(ertek: Date, nyelv: Nyelv): string {
   return new Intl.DateTimeFormat(helyszin(nyelv), { dateStyle: "medium" }).format(ertek);
 }
+
+/**
+ * Az "ÉÉÉÉ-HH" alakú időszak emberi alakja: "2026. szeptember", illetve
+ * "September 2026". A két nyelv szórendje sem azonos, ezért ez is itt van, és
+ * nem az oldalakon.
+ *
+ * Amit nem ismerünk fel, azt változatlanul adjuk vissza: a tippelés rosszabb,
+ * mint a nyers alak.
+ */
+export function honapNyelven(idoszak: string, nyelv: Nyelv): string {
+  const talalat = /^(\d{4})-(\d{2})$/.exec(idoszak);
+  if (!talalat) return idoszak;
+
+  const nap = new Date(Date.UTC(Number(talalat[1]), Number(talalat[2]) - 1, 1));
+  if (Number.isNaN(nap.getTime())) return idoszak;
+
+  return new Intl.DateTimeFormat(helyszin(nyelv), {
+    year: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  }).format(nap);
+}

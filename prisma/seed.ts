@@ -517,15 +517,15 @@ async function main() {
     },
   });
 
-  // Betekintő: Anna kiadott egy linket egy új lakás megpályázásához.
+  // Betekintő: Anna megosztotta a bérleményét a szüleivel, akik fizetik.
   const betekinto = await prisma.betekinto.create({
     data: {
       jogviszonyId: annaJogviszony.id,
       berloId: berloAnna.id,
       token: "probabetekinto2026",
-      cel: "Lakásbérléshez, egy meghirdetett albérlet megpályázásához",
-      osszegetMutat: false,
-      lejar: nap(3, 28),
+      cel: "Anyáéknak, hogy lássák, mi hogy áll",
+      osszegetMutat: true,
+      lejar: nap(9, 28),
     },
   });
 
