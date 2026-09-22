@@ -1,14 +1,12 @@
 import { Teendolista } from "@/components/Teendolista";
-import { aktualisBerbeado, jogviszonyNezetek, teendok } from "@/lib/lekerdezesek";
+import { jogviszonyNezetek, teendok } from "@/lib/lekerdezesek";
+import { kotelezoSzerep } from "@/lib/munkamenet";
 import { forint } from "@/domain/penz";
 
 export const dynamic = "force-dynamic";
 
 export default async function Attekinto() {
-  const berbeado = await aktualisBerbeado();
-  if (!berbeado) {
-    return <p>Még nincs bérbeadó az adatbázisban. Futtasd a példaadat betöltését.</p>;
-  }
+  const berbeado = await kotelezoSzerep("berbeado");
 
   const ma = new Date();
   const [sajatTeendok, nezetek] = await Promise.all([

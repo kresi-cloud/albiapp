@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: "file:./ci.db"
+      MUNKAMENET_TITOK: "ellenorzeshez-hasznalt-titok"
     steps:
       - uses: actions/checkout@v4
 

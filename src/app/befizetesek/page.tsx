@@ -1,18 +1,14 @@
 import Link from "next/link";
 import { Allapotjelzo } from "@/components/Allapotjelzo";
 import { datum, forint } from "@/domain/penz";
-import {
-  aktualisBerbeado,
-  egyeztetesBeallitasok,
-  jogviszonyNezetek,
-} from "@/lib/lekerdezesek";
+import { egyeztetesBeallitasok, jogviszonyNezetek } from "@/lib/lekerdezesek";
+import { kotelezoSzerep } from "@/lib/munkamenet";
 import { KivonatFeltoltes } from "./KivonatFeltoltes";
 
 export const dynamic = "force-dynamic";
 
 export default async function Befizetesek() {
-  const berbeado = await aktualisBerbeado();
-  if (!berbeado) return <p>Még nincs bérbeadó az adatbázisban.</p>;
+  const berbeado = await kotelezoSzerep("berbeado");
 
   const nezetek = await jogviszonyNezetek(berbeado.id);
   const beallitasok = await egyeztetesBeallitasok(berbeado.id);

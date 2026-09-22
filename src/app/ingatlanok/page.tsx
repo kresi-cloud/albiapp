@@ -1,12 +1,11 @@
 import { prisma } from "@/lib/db";
-import { aktualisBerbeado } from "@/lib/lekerdezesek";
+import { kotelezoSzerep } from "@/lib/munkamenet";
 import { forint } from "@/domain/penz";
 
 export const dynamic = "force-dynamic";
 
 export default async function Ingatlanok() {
-  const berbeado = await aktualisBerbeado();
-  if (!berbeado) return <p>Még nincs bérbeadó az adatbázisban.</p>;
+  const berbeado = await kotelezoSzerep("berbeado");
 
   const ingatlanok = await prisma.ingatlan.findMany({
     where: { tulajdonosId: berbeado.id },

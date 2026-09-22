@@ -39,6 +39,15 @@ befizetést az előíráshoz) bérbeadónként állítható, a `Beallitasok` tá
 Az összegtolerancia ezzel szemben szándékosan fix nulla: bármekkora eltérésnél
 egyeztetés indul.
 
+## Belépés és jogosultság
+
+Minden oldal és minden szerveroldali művelet a belépett felhasználóból indul ki
+(`kotelezoSzerep`), soha nem abból, amit az űrlap küld. A bérbeadói adatokhoz a
+lekérdezés mindig szűr a tulajdonosra, a bérlői oldal a saját jogviszonyaira.
+
+A bérlő fiókja meghívóval készül. A meghívó egyszer használható és lejár, és
+meglévő fiók jelszavát soha nem írja felül: a link a bérbeadónál is megvan.
+
 ## Mit jelent, hogy kész
 
 - `npx eslint .`, `npm run typecheck`, `npm test` és `npm run build` zöld.
