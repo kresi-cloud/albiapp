@@ -15,12 +15,12 @@ const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
 
 export function OraallasUrlap({
   merooraId,
-  mertekegyseg,
   mai,
+  cimkek,
 }: {
   merooraId: string;
-  mertekegyseg: string;
   mai: string;
+  cimkek: { datum: string; ertek: string; gomb: string; folyamatban: string };
 }) {
   const [allapot, kuldes, folyamatban] = useActionState(oraallastRogzit, KEZDETI);
 
@@ -29,11 +29,11 @@ export function OraallasUrlap({
       <input type="hidden" name="merooraId" value={merooraId} />
       <div className="flex flex-wrap gap-2">
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">Dátum</span>
+          <span className="text-stone-500 dark:text-stone-400">{cimkek.datum}</span>
           <input type="date" name="datum" defaultValue={mai} className={MEZO} required />
         </label>
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">Óraállás ({mertekegyseg})</span>
+          <span className="text-stone-500 dark:text-stone-400">{cimkek.ertek}</span>
           <input
             type="text"
             inputMode="decimal"
@@ -44,7 +44,7 @@ export function OraallasUrlap({
         </label>
       </div>
       <button type="submit" disabled={folyamatban} className={GOMB}>
-        {folyamatban ? "Rögzítés…" : "Óraállás rögzítése"}
+        {folyamatban ? cimkek.folyamatban : cimkek.gomb}
       </button>
       <Uzenetsav {...allapot} />
     </form>
@@ -55,10 +55,12 @@ export function ElszamolasUrlap({
   jogviszonyId,
   kezdete,
   vege,
+  cimkek,
 }: {
   jogviszonyId: string;
   kezdete: string;
   vege: string;
+  cimkek: { kezdete: string; vege: string; gomb: string; folyamatban: string };
 }) {
   const [allapot, kuldes, folyamatban] = useActionState(elszamolastKeszitAction, KEZDETI);
 
@@ -67,16 +69,16 @@ export function ElszamolasUrlap({
       <input type="hidden" name="jogviszonyId" value={jogviszonyId} />
       <div className="flex flex-wrap gap-2">
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">Időszak kezdete</span>
+          <span className="text-stone-500 dark:text-stone-400">{cimkek.kezdete}</span>
           <input type="date" name="kezdete" defaultValue={kezdete} className={MEZO} required />
         </label>
         <label className="grid gap-1 text-xs">
-          <span className="text-stone-500 dark:text-stone-400">Időszak vége</span>
+          <span className="text-stone-500 dark:text-stone-400">{cimkek.vege}</span>
           <input type="date" name="vege" defaultValue={vege} className={MEZO} required />
         </label>
       </div>
       <button type="submit" disabled={folyamatban} className={GOMB}>
-        {folyamatban ? "Számolás…" : "Elszámolás készítése"}
+        {folyamatban ? cimkek.folyamatban : cimkek.gomb}
       </button>
       <Uzenetsav {...allapot} />
     </form>
@@ -86,9 +88,11 @@ export function ElszamolasUrlap({
 export function KiadasUrlap({
   elszamolasId,
   esedekesseg,
+  cimkek,
 }: {
   elszamolasId: string;
   esedekesseg: string;
+  cimkek: { hatarido: string; gomb: string; folyamatban: string };
 }) {
   const [allapot, kuldes, folyamatban] = useActionState(elszamolastKiad, KEZDETI);
 
@@ -96,7 +100,7 @@ export function KiadasUrlap({
     <form action={kuldes} className="mt-3 grid gap-2">
       <input type="hidden" name="elszamolasId" value={elszamolasId} />
       <label className="grid gap-1 text-xs">
-        <span className="text-stone-500 dark:text-stone-400">Fizetési határidő</span>
+        <span className="text-stone-500 dark:text-stone-400">{cimkek.hatarido}</span>
         <input
           type="date"
           name="esedekesseg"
@@ -106,23 +110,27 @@ export function KiadasUrlap({
         />
       </label>
       <button type="submit" disabled={folyamatban} className={GOMB}>
-        {folyamatban ? "Kiadás…" : "Kiadom a bérlőnek"}
+        {folyamatban ? cimkek.folyamatban : cimkek.gomb}
       </button>
       <Uzenetsav {...allapot} />
     </form>
   );
 }
 
-export function ElbiralasUrlap({ elszamolasId }: { elszamolasId: string }) {
+export function ElbiralasUrlap({
+  elszamolasId,
+  cimkek,
+}: {
+  elszamolasId: string;
+  cimkek: { sugo: string; elfogad: string; vitat: string };
+}) {
   const [allapot, kuldes, folyamatban] = useActionState(elszamolastElbiral, KEZDETI);
 
   return (
     <form action={kuldes} className="mt-3 grid gap-2">
       <input type="hidden" name="elszamolasId" value={elszamolasId} />
       <label className="grid gap-1 text-xs">
-        <span className="text-stone-500 dark:text-stone-400">
-          Ha vitatod, írd le, melyik tétellel van baj
-        </span>
+        <span className="text-stone-500 dark:text-stone-400">{cimkek.sugo}</span>
         <textarea name="berloiUzenet" rows={2} className={MEZO} />
       </label>
       <div className="flex flex-wrap gap-2">
@@ -133,7 +141,7 @@ export function ElbiralasUrlap({ elszamolasId }: { elszamolasId: string }) {
           disabled={folyamatban}
           className={GOMB}
         >
-          Elfogadom
+          {cimkek.elfogad}
         </button>
         <button
           type="submit"
@@ -142,7 +150,7 @@ export function ElbiralasUrlap({ elszamolasId }: { elszamolasId: string }) {
           disabled={folyamatban}
           className="justify-self-start rounded border border-stone-300 px-4 py-2 text-sm font-medium disabled:opacity-60 dark:border-stone-700"
         >
-          Vitatom
+          {cimkek.vitat}
         </button>
       </div>
       <Uzenetsav {...allapot} />

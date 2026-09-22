@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { datum as datumSzoveg } from "@/domain/penz";
 import { elszamolastOsszeallit } from "@/lib/rezsi";
 import { prisma } from "@/lib/db";
+import { datumNyelven } from "@/domain/nyelv";
 import { belepettFelhasznalo, kotelezoSzerep } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 
 export type Eredmeny = { allapot: "ures" | "kesz" | "hiba"; uzenet: string; hibak: string[] };
 
@@ -30,14 +31,15 @@ function szamotOlvas(nyers: unknown): number | null {
 /** Óraállást a bérbeadó és a bérlő is rögzíthet, de csak a saját ingatlanához. */
 export async function oraallastRogzit(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const felhasznalo = await belepettFelhasznalo();
-  if (!felhasznalo) return hiba("Lépj be a rögzítéshez.");
+  const { sz, nyelv } = await szovegek();
+  if (!felhasznalo) return hiba(sz("rezsi.hiba.lepj_be"));
 
   const merooraId = String(urlap.get("merooraId") ?? "");
   const nap = napotOlvas(urlap.get("datum"));
   const ertek = szamotOlvas(urlap.get("ertek"));
 
-  if (!nap) return hiba("Adj meg egy dátumot.");
-  if (ertek === null) return hiba("Az óraállás csak nem negatív szám lehet.");
+  if (!nap) return hiba(sz("rezsi.hiba.datum"));
+  if (ertek === null) return hiba(sz("rezsi.hiba.oraallas_negativ"));
 
   const meroora = await prisma.meroora.findFirst({
     where: {
@@ -49,13 +51,15 @@ export async function oraallastRogzit(_elozo: Eredmeny, urlap: FormData): Promis
     },
     include: { oraallasok: { orderBy: { datum: "desc" }, take: 1 } },
   });
-  if (!meroora) return hiba("Ehhez a mérőórához nincs jogosultságod.");
+  if (!meroora) return hiba(sz("rezsi.hiba.meroora_nem_tied"));
 
   const utolso = meroora.oraallasok[0];
   if (utolso && ertek < utolso.ertek) {
     return hiba(
-      `A legutóbbi állás ${utolso.ertek} volt (${datumSzoveg(utolso.datum)}). ` +
-        "Ennél kisebb értéket nem rögzítek: nézd meg még egyszer a számokat.",
+      sz("rezsi.hiba.kisebb_allas", {
+        ertek: utolso.ertek,
+        nap: datumNyelven(utolso.datum, nyelv),
+      }),
     );
   }
 
@@ -66,7 +70,7 @@ export async function oraallastRogzit(_elozo: Eredmeny, urlap: FormData): Promis
   revalidatePath("/rezsi");
   revalidatePath("/berlo");
 
-  return { allapot: "kesz", uzenet: "Óraállás rögzítve.", hibak: [] };
+  return { allapot: "kesz", uzenet: sz("rezsi.kesz.oraallas"), hibak: [] };
 }
 
 /** Tervezet készítése: kiszámolja a tételeket, és elmenti, de még nem adja ki. */
@@ -75,24 +79,25 @@ export async function elszamolastKeszitAction(
   urlap: FormData,
 ): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, u } = await szovegek();
 
   const jogviszonyId = String(urlap.get("jogviszonyId") ?? "");
   const kezdete = napotOlvas(urlap.get("kezdete"));
   const vege = napotOlvas(urlap.get("vege"));
 
-  if (!kezdete || !vege) return hiba("Adj meg egy kezdő és egy záró napot.");
+  if (!kezdete || !vege) return hiba(sz("rezsi.hiba.idoszak"));
   if (vege.getTime() <= kezdete.getTime()) {
-    return hiba("A záró nap legyen későbbi a kezdőnél.");
+    return hiba(sz("rezsi.hiba.sorrend"));
   }
 
   const jogviszony = await prisma.jogviszony.findFirst({
     where: { id: jogviszonyId, ingatlan: { tulajdonosId: berbeado.id } },
   });
-  if (!jogviszony) return hiba("Ez a jogviszony nem a tiéd.");
+  if (!jogviszony) return hiba(sz("rezsi.hiba.jogviszony_nem_tied"));
 
   const osszeallitas = await elszamolastOsszeallit(jogviszonyId, kezdete, vege);
   if (osszeallitas.tetelek.length === 0) {
-    return hiba("Ebből az időszakból nem jött ki egyetlen tétel sem.", osszeallitas.kihagyott);
+    return hiba(sz("rezsi.hiba.nincs_tetel"), osszeallitas.kihagyott.map(u));
   }
 
   await prisma.elszamolas.create({
@@ -120,8 +125,8 @@ export async function elszamolastKeszitAction(
 
   return {
     allapot: "kesz",
-    uzenet: "Elkészült a tervezet. Nézd át, és ha rendben van, add ki a bérlőnek.",
-    hibak: osszeallitas.kihagyott,
+    uzenet: sz("rezsi.kesz.tervezet"),
+    hibak: osszeallitas.kihagyott.map(u),
   };
 }
 
@@ -131,10 +136,11 @@ export async function elszamolastKeszitAction(
  */
 export async function elszamolastKiad(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, nyelv } = await szovegek();
 
   const elszamolasId = String(urlap.get("elszamolasId") ?? "");
   const esedekesseg = napotOlvas(urlap.get("esedekesseg"));
-  if (!esedekesseg) return hiba("Adj meg egy fizetési határidőt.");
+  if (!esedekesseg) return hiba(sz("rezsi.hiba.hatarido"));
 
   const elszamolas = await prisma.elszamolas.findFirst({
     where: {
@@ -143,7 +149,7 @@ export async function elszamolastKiad(_elozo: Eredmeny, urlap: FormData): Promis
       jogviszony: { ingatlan: { tulajdonosId: berbeado.id } },
     },
   });
-  if (!elszamolas) return hiba("Ez az elszámolás nem adható ki.");
+  if (!elszamolas) return hiba(sz("rezsi.hiba.nem_kiadhato"));
 
   const idoszak = await szabadIdoszakJel(elszamolas.jogviszonyId, elszamolas.idoszakVege);
 
@@ -169,7 +175,7 @@ export async function elszamolastKiad(_elozo: Eredmeny, urlap: FormData): Promis
 
   return {
     allapot: "kesz",
-    uzenet: `Kiadva. A bérlő látja a tételeket, és a befizetése a ${datumSzoveg(esedekesseg)}-i határidőhöz párosul.`,
+    uzenet: sz("rezsi.kesz.kiadva", { nap: datumNyelven(esedekesseg, nyelv) }),
     hibak: [],
   };
 }
@@ -190,14 +196,15 @@ async function szabadIdoszakJel(jogviszonyId: string, idoszakVege: Date): Promis
 /** A bérlő elfogadja vagy vitatja az elszámolást. Ez a "ellenőrizhető" lényege. */
 export async function elszamolastElbiral(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berlo = await kotelezoSzerep("berlo");
+  const { sz } = await szovegek();
 
   const elszamolasId = String(urlap.get("elszamolasId") ?? "");
   const dontes = String(urlap.get("dontes") ?? "");
   const uzenet = String(urlap.get("berloiUzenet") ?? "").trim();
 
-  if (dontes !== "elfogadva" && dontes !== "vitatott") return hiba("Ismeretlen döntés.");
+  if (dontes !== "elfogadva" && dontes !== "vitatott") return hiba(sz("rezsi.hiba.dontes"));
   if (dontes === "vitatott" && uzenet === "") {
-    return hiba("Írd le, melyik tétellel van baj: ebből tud a bérbeadó javítani.");
+    return hiba(sz("rezsi.hiba.vita_uzenet"));
   }
 
   const elszamolas = await prisma.elszamolas.findFirst({
@@ -207,7 +214,7 @@ export async function elszamolastElbiral(_elozo: Eredmeny, urlap: FormData): Pro
       jogviszony: { berlok: { some: { berloId: berlo.id } } },
     },
   });
-  if (!elszamolas) return hiba("Ez az elszámolás nem a tiéd, vagy már lezárult.");
+  if (!elszamolas) return hiba(sz("rezsi.hiba.elszamolas_nem_tied"));
 
   await prisma.elszamolas.update({
     where: { id: elszamolas.id },
@@ -223,10 +230,7 @@ export async function elszamolastElbiral(_elozo: Eredmeny, urlap: FormData): Pro
 
   return {
     allapot: "kesz",
-    uzenet:
-      dontes === "elfogadva"
-        ? "Elfogadtad az elszámolást."
-        : "Jeleztem a bérbeadónak, hogy vitatod. Az üzeneted is látja.",
+    uzenet: sz(dontes === "elfogadva" ? "rezsi.kesz.elfogadva" : "rezsi.kesz.vitatva"),
     hibak: [],
   };
 }

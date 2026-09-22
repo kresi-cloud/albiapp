@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { forint } from "@/domain/penz";
 import {
   hianyzoTetelek,
   jegyzokonyvSzovege,
@@ -14,6 +13,7 @@ import { prisma } from "@/lib/db";
 import { jegyzokonyvBetoltes, kezdoTetelek } from "@/lib/jegyzokonyv";
 import { igazolhatoIdoszakok, szerzodesKelte } from "@/lib/igazolas";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 
 export type Eredmeny = {
   allapot: "ures" | "kesz" | "hiba";
@@ -45,6 +45,7 @@ function idopontotOlvas(nyers: unknown): Date | null {
 
 export async function jegyzokonyvetKeszit(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const jogviszonyId = szoveg(urlap.get("jogviszonyId"));
   const fajta = szoveg(urlap.get("fajta")) === "visszaadas" ? "visszaadas" : "birtokbaadas";
 
@@ -52,9 +53,9 @@ export async function jegyzokonyvetKeszit(_elozo: Eredmeny, urlap: FormData): Pr
     where: { id: jogviszonyId, ingatlan: { tulajdonosId: berbeado.id } },
     include: { berlok: true },
   });
-  if (!jogviszony) return hiba("Ez a jogviszony nem a tiéd.");
+  if (!jogviszony) return hiba(sz("dokumentumok.hiba.jogviszony_nem_tied"));
   if (jogviszony.berlok.length === 0) {
-    return hiba("Előbb vedd fel a bérlőt, különben nincs kivel jegyzőkönyvet felvenni.");
+    return hiba(sz("dokumentumok.hiba.nincs_berlo"));
   }
 
   const tetelek = await kezdoTetelek(jogviszonyId);
@@ -74,19 +75,20 @@ export async function jegyzokonyvetKeszit(_elozo: Eredmeny, urlap: FormData): Pr
 
 export async function jegyzokonyvetMent(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const jegyzokonyvId = szoveg(urlap.get("jegyzokonyvId"));
 
   const jegyzokonyv = await prisma.jegyzokonyv.findFirst({
     where: { id: jegyzokonyvId, jogviszony: { ingatlan: { tulajdonosId: berbeado.id } } },
     include: { tetelek: true },
   });
-  if (!jegyzokonyv) return hiba("Ez a jegyzőkönyv nem a tiéd.");
+  if (!jegyzokonyv) return hiba(sz("jegyzokonyv.hiba.nem_tied"));
   if (jegyzokonyv.allapot !== "tervezet") {
-    return hiba("A véglegesített jegyzőkönyv nem módosítható.");
+    return hiba(sz("jegyzokonyv.hiba.vegleges"));
   }
 
   const idopont = idopontotOlvas(urlap.get("idopont"));
-  if (!idopont) return hiba("Adj meg egy érvényes időpontot.");
+  if (!idopont) return hiba(sz("jegyzokonyv.hiba.idopont"));
 
   const frissitesek = jegyzokonyv.tetelek.map((tetel) =>
     prisma.jegyzokonyvTetel.update({
@@ -114,27 +116,28 @@ export async function jegyzokonyvetMent(_elozo: Eredmeny, urlap: FormData): Prom
   ]);
 
   revalidatePath(`/jegyzokonyvek/${jegyzokonyvId}`);
-  return { allapot: "kesz", uzenet: "Mentve.", hibak: [] };
+  return { allapot: "kesz", uzenet: sz("jegyzokonyv.kesz.mentve"), hibak: [] };
 }
 
 export async function jegyzokonyvTetelt(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const jegyzokonyvId = szoveg(urlap.get("jegyzokonyvId"));
   const fajta = szoveg(urlap.get("fajta"));
   const megnevezes = szoveg(urlap.get("megnevezes"));
 
   if (!["meroora", "kulcs", "hiba", "dokumentum"].includes(fajta)) {
-    return hiba("Ismeretlen tételfajta.");
+    return hiba(sz("jegyzokonyv.hiba.tetelfajta"));
   }
-  if (megnevezes === "") return hiba("Add meg, mit rögzítesz.");
+  if (megnevezes === "") return hiba(sz("jegyzokonyv.hiba.megnevezes"));
 
   const jegyzokonyv = await prisma.jegyzokonyv.findFirst({
     where: { id: jegyzokonyvId, jogviszony: { ingatlan: { tulajdonosId: berbeado.id } } },
     include: { tetelek: true },
   });
-  if (!jegyzokonyv) return hiba("Ez a jegyzőkönyv nem a tiéd.");
+  if (!jegyzokonyv) return hiba(sz("jegyzokonyv.hiba.nem_tied"));
   if (jegyzokonyv.allapot !== "tervezet") {
-    return hiba("A véglegesített jegyzőkönyv nem módosítható.");
+    return hiba(sz("jegyzokonyv.hiba.vegleges"));
   }
 
   await prisma.jegyzokonyvTetel.create({
@@ -148,7 +151,7 @@ export async function jegyzokonyvTetelt(_elozo: Eredmeny, urlap: FormData): Prom
   });
 
   revalidatePath(`/jegyzokonyvek/${jegyzokonyvId}`);
-  return { allapot: "kesz", uzenet: `„${megnevezes}” hozzáadva.`, hibak: [] };
+  return { allapot: "kesz", uzenet: sz("jegyzokonyv.kesz.tetel", { megnevezes }), hibak: [] };
 }
 
 /**
@@ -157,15 +160,16 @@ export async function jegyzokonyvTetelt(_elozo: Eredmeny, urlap: FormData): Prom
  */
 export async function jegyzokonyvetVeglegesit(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, u } = await szovegek();
   const jegyzokonyvId = szoveg(urlap.get("jegyzokonyvId"));
 
   const betoltott = await jegyzokonyvBetoltes(jegyzokonyvId, berbeado.id);
-  if (!betoltott) return hiba("Ez a jegyzőkönyv nem a tiéd.");
-  if (betoltott.allapot !== "tervezet") return hiba("Ez a jegyzőkönyv már véglegesített.");
+  if (!betoltott) return hiba(sz("jegyzokonyv.hiba.nem_tied"));
+  if (betoltott.allapot !== "tervezet") return hiba(sz("jegyzokonyv.hiba.mar_vegleges"));
 
   const hianyok = hianyzoTetelek(betoltott.bemenet);
   if (hianyok.length > 0 && szoveg(urlap.get("megis")) !== "igen") {
-    return hiba("Hiányzó adatok. Pótold őket, vagy véglegesítsd így.", hianyok);
+    return hiba(sz("jegyzokonyv.hiba.hianyok"), hianyok.map(u));
   }
 
   const idopont = betoltott.bemenet.idopont;
@@ -206,7 +210,11 @@ export async function jegyzokonyvetVeglegesit(_elozo: Eredmeny, urlap: FormData)
 
     for (const [index, vallalas] of vallalasok.entries()) {
       const kulcs = `jegyzokonyv:${jegyzokonyvId}:${index}`;
-      const felelosNeve = vallalas.felelos === "berbeado" ? "te vállaltad" : "a bérlő vállalta";
+      // A tárolt teendő szövege a bérbeadó akkori nyelvén készül: egy elmentett
+      // mondat nem tud később nyelvet váltani, a származtatott teendő viszont igen.
+      const felelosNeve = sz(
+        vallalas.felelos === "berbeado" ? "teendo.vallalo.berbeado" : "teendo.vallalo.berlo",
+      );
       await tranzakcio.teendo.upsert({
         where: { kulcs },
         create: {
@@ -215,7 +223,7 @@ export async function jegyzokonyvetVeglegesit(_elozo: Eredmeny, urlap: FormData)
           jogviszonyId: betoltott.jogviszonyId,
           tipus: "jegyzokonyvi_vallalas",
           cim: vallalas.megnevezes,
-          leiras: `A jegyzőkönyvben ${felelosNeve} a rendezését.`,
+          leiras: sz("teendo.jegyzokonyvi_vallalas", { felelos: felelosNeve }),
           esedekesseg: vallalas.hatarido as Date,
           hivatkozas: `/jegyzokonyvek/${jegyzokonyvId}`,
         },
@@ -229,26 +237,25 @@ export async function jegyzokonyvetVeglegesit(_elozo: Eredmeny, urlap: FormData)
   revalidatePath("/rezsi");
   revalidatePath("/");
 
-  const reszek = [`A jegyzőkönyv véglegesítve.`];
+  const reszek = [sz("jegyzokonyv.kesz.veglegesitve")];
   if (oraallasok.length > 0) {
-    reszek.push(`${oraallasok.length} óraállás bekerült a mérőórák történetébe.`);
+    reszek.push(sz("jegyzokonyv.kesz.oraallasok", { db: oraallasok.length }));
   }
   if (vallalasok.length > 0) {
-    reszek.push(`${vallalasok.length} vállalásból teendő lett.`);
+    reszek.push(sz("jegyzokonyv.kesz.vallalasok", { db: vallalasok.length }));
   }
 
   return {
     allapot: "kesz",
     uzenet: reszek.join(" "),
-    hibak: olvashatatlan.map(
-      (nev) => `${nev}: az óraállásból nem tudtam számot kiolvasni, ezért nem rögzítettem.`,
-    ),
+    hibak: olvashatatlan.map((nev) => sz("jegyzokonyv.hiba.olvashatatlan", { nev })),
   };
 }
 
 /** Igazolás kiállítása egy bérlőnek, a párosított befizetés adataiból. */
 export async function igazolastKiallit(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
   const jogviszonyBerloId = szoveg(urlap.get("jogviszonyBerloId"));
   const idoszak = szoveg(urlap.get("idoszak"));
   const cel = szoveg(urlap.get("cel"));
@@ -262,15 +269,13 @@ export async function igazolastKiallit(_elozo: Eredmeny, urlap: FormData): Promi
       jogviszony: { include: { ingatlan: true, berlok: { orderBy: { sorrend: "asc" } } } },
     },
   });
-  if (!berlo) return hiba("Ez a bérlő nem a te jogviszonyodhoz tartozik.");
-  if (cel === "") return hiba("Add meg, mihez kell az igazolás.");
+  if (!berlo) return hiba(sz("igazolas.hiba.nem_tied"));
+  if (cel === "") return hiba(sz("igazolas.hiba.cel"));
 
   const befizetesek = await igazolhatoIdoszakok(berlo.jogviszonyId, berbeado.id);
   const befizetes = befizetesek.find((sor) => sor.idoszak === idoszak);
   if (!befizetes) {
-    return hiba(
-      "Erre a hónapra nincs beazonosított befizetés, ezért nem állítok ki róla igazolást.",
-    );
+    return hiba(sz("igazolas.hiba.nincs_befizetes"));
   }
 
   const modja = szoveg(urlap.get("teljesitesModja"));
@@ -283,9 +288,7 @@ export async function igazolastKiallit(_elozo: Eredmeny, urlap: FormData): Promi
       ? Math.round(megadottOsszeg)
       : befizetes.osszegFt;
   if (osszegFt > befizetes.osszegFt) {
-    return hiba(
-      `Erre a hónapra ${forint(befizetes.osszegFt)} érkezett; ennél többet nem igazolok.`,
-    );
+    return hiba(sz("igazolas.hiba.tobb", { osszeg: befizetes.osszegFt }));
   }
 
   const adatok = await prisma.berbeadoiAdatok.findUnique({ where: { berbeadoId: berbeado.id } });
@@ -332,7 +335,7 @@ export async function igazolastKiallit(_elozo: Eredmeny, urlap: FormData): Promi
   revalidatePath("/dokumentumok");
   return {
     allapot: "kesz",
-    uzenet: `Kész az igazolás ${berlo.nev} részére. Letöltheted és aláírhatod.`,
+    uzenet: sz("igazolas.kesz", { nev: berlo.nev }),
     hibak: [],
   };
 }

@@ -17,6 +17,7 @@ import {
   nevsor,
 } from "./szerzodes";
 import { MODULOK } from "./szerzodes-modulok";
+import { uzenet, type Uzenet } from "./nyelv";
 
 export type Bemenet = {
   berbeado: Berbeado;
@@ -126,34 +127,34 @@ export function szakaszok(bemenet: Bemenet): Szakasz[] {
  * enélkül is elkészül, de véglegesíteni így nem érdemes, és a bérbeadó jobb, ha
  * előre látja, mi hiányzik.
  */
-export function hianyzoAdatok(bemenet: Bemenet): string[] {
-  const hianyok: string[] = [];
+export function hianyzoAdatok(bemenet: Bemenet): Uzenet[] {
+  const hianyok: Uzenet[] = [];
   const b = bemenet.berbeado;
 
-  if (!b.lakcim) hianyok.push("A bérbeadó lakcíme hiányzik.");
-  if (!b.szuletesiHely || !b.szuletesiIdo) hianyok.push("A bérbeadó születési helye vagy ideje hiányzik.");
-  if (!b.anyjaNeve) hianyok.push("A bérbeadó anyja neve hiányzik.");
-  if (!b.igazolvanySzam) hianyok.push("A bérbeadó igazolványszáma hiányzik.");
-  if (!b.bankszamla) hianyok.push("A bérbeadó bankszámlaszáma hiányzik, enélkül nincs hová utalni.");
+  if (!b.lakcim) hianyok.push(uzenet("hiany.berbeado.lakcim"));
+  if (!b.szuletesiHely || !b.szuletesiIdo) hianyok.push(uzenet("hiany.berbeado.szuletes"));
+  if (!b.anyjaNeve) hianyok.push(uzenet("hiany.berbeado.anyjaNeve"));
+  if (!b.igazolvanySzam) hianyok.push(uzenet("hiany.berbeado.igazolvanySzam"));
+  if (!b.bankszamla) hianyok.push(uzenet("hiany.berbeado.bankszamla"));
 
+  // Bérlőnként soronként egy hiány: a mezőnevek felsorolása egy mondatban
+  // nyelvenként más szórendet kívánna, és a bérlő nevét is ragozná.
   for (const berlo of bemenet.berlok) {
-    const sajat: string[] = [];
-    if (!berlo.lakcim) sajat.push("lakcím");
-    if (!berlo.szuletesiHely || !berlo.szuletesiIdo) sajat.push("születési hely és idő");
-    if (!berlo.anyjaNeve) sajat.push("anyja neve");
-    if (!berlo.igazolvanySzam) sajat.push("igazolványszám");
-    if (sajat.length > 0) hianyok.push(`${berlo.nev}: ${sajat.join(", ")}.`);
+    const mezok: string[] = [];
+    if (!berlo.lakcim) mezok.push("lakcim");
+    if (!berlo.szuletesiHely || !berlo.szuletesiIdo) mezok.push("szuletesiIdo");
+    if (!berlo.anyjaNeve) mezok.push("anyjaNeve");
+    if (!berlo.igazolvanySzam) mezok.push("igazolvanySzam");
+    for (const mezo of mezok) {
+      hianyok.push(uzenet("hiany.berlo", { nev: berlo.nev, mezo: uzenet(`adatok.mezo.${mezo}`) }));
+    }
   }
 
-  if (!bemenet.ingatlan.helyrajziSzam) {
-    hianyok.push("Az ingatlan helyrajzi száma hiányzik, enélkül a bérlemény azonosítása hiányos.");
-  }
+  if (!bemenet.ingatlan.helyrajziSzam) hianyok.push(uzenet("hiany.ingatlan.helyrajziSzam"));
   if (!bemenet.ingatlan.energetikaiAzonosito) {
-    hianyok.push("Az energetikai tanúsítvány azonosítója hiányzik; átadása jogszabályi kötelezettség.");
+    hianyok.push(uzenet("hiany.ingatlan.energetikai"));
   }
-  if (bemenet.berlok.length === 0) {
-    hianyok.push("A jogviszonyhoz nincs bérlő rögzítve.");
-  }
+  if (bemenet.berlok.length === 0) hianyok.push(uzenet("hiany.nincs_berlo"));
 
   return hianyok;
 }

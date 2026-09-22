@@ -11,7 +11,7 @@
  * tervezetet nem mutatunk neki, mert a tervezet még változhat.
  */
 
-import { uzenet, type Uzenet } from "./nyelv";
+import { honap, uzenet, type Uzenet } from "./nyelv";
 import { forint, datum, szam } from "./penz";
 import { simaSzokoz } from "./szerzodes";
 
@@ -24,7 +24,8 @@ export function fajtaCimke(fajta: DokumentumFajta): Uzenet {
 export type Dokumentum = {
   kulcs: string;
   fajta: DokumentumFajta;
-  cim: string;
+  /** A lista címe. Üzenet, mert hónapnév és dátum is van benne. */
+  cim: Uzenet;
   reszlet: Uzenet;
   datum: Date;
   /** Kiadott okirat-e. Ami nem az, az tervezet, és a bérlő elől rejtve marad. */
@@ -47,7 +48,7 @@ export type TarSzerzodes = {
 
 export type TarJegyzokonyv = {
   id: string;
-  fajtaNeve: string;
+  fajta: string;
   idopont: Date;
   allapot: string;
   veglegesitve: Date | null;
@@ -56,7 +57,7 @@ export type TarJegyzokonyv = {
 export type TarIgazolas = {
   id: string;
   berloNev: string;
-  idoszakCimke: string;
+  idoszak: string;
   osszegFt: number;
   kiallitva: Date;
 };
@@ -90,7 +91,7 @@ export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] 
       ...kozos,
       kulcs: `szerzodes:${szerzodes.id}`,
       fajta: "szerzodes",
-      cim: szerzodes.megnevezes,
+      cim: uzenet("nyers", { szoveg: szerzodes.megnevezes }),
       reszlet: uzenet(vegleges ? "dokumentum.szerzodes.kesz" : "dokumentum.szerzodes.tervezet"),
       datum: szerzodes.veglegesitve ?? szerzodes.letrehozva,
       kiadott: vegleges,
@@ -106,8 +107,8 @@ export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] 
       ...kozos,
       kulcs: `jegyzokonyv:${jegyzokonyv.id}`,
       fajta: "jegyzokonyv",
-      cim: jegyzokonyv.fajtaNeve,
-      reszlet: uzenet("dokumentum.jegyzokonyv.felveve", { nap: datum(jegyzokonyv.idopont) }),
+      cim: uzenet(`jegyzokonyv.fajta.${jegyzokonyv.fajta}`),
+      reszlet: uzenet("dokumentum.jegyzokonyv.felveve", { nap: jegyzokonyv.idopont }),
       datum: jegyzokonyv.veglegesitve ?? jegyzokonyv.idopont,
       kiadott: vegleges,
       allapotCimke: uzenet(vegleges ? "dokumentum.veglegesitve" : "dokumentum.tervezet"),
@@ -121,7 +122,10 @@ export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] 
       ...kozos,
       kulcs: `igazolas:${igazolas.id}`,
       fajta: "igazolas",
-      cim: `${igazolas.berloNev} · ${igazolas.idoszakCimke}`,
+      cim: uzenet("dokumentum.igazolas.cim", {
+        nev: igazolas.berloNev,
+        honap: honap(igazolas.idoszak),
+      }),
       reszlet: uzenet("dokumentum.igazolas.osszeg", { osszeg: igazolas.osszegFt }),
       datum: igazolas.kiallitva,
       kiadott: true,
@@ -136,7 +140,10 @@ export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] 
       ...kozos,
       kulcs: `elszamolas:${elszamolas.id}`,
       fajta: "elszamolas",
-      cim: `${datum(elszamolas.idoszakKezdete)} – ${datum(elszamolas.idoszakVege)}`,
+      cim: uzenet("dokumentum.elszamolas.cim", {
+        kezdet: elszamolas.idoszakKezdete,
+        veg: elszamolas.idoszakVege,
+      }),
       reszlet: uzenet("dokumentum.elszamolas.vegosszeg", { osszeg: elszamolas.osszegFt }),
       datum: elszamolas.kiadva ?? elszamolas.idoszakVege,
       kiadott,

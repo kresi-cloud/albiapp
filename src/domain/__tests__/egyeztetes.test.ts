@@ -362,7 +362,7 @@ describe("ablakotEllenoriz", () => {
     const { ablak, hibak } = ablakotEllenoriz({ korabbiAblakNap: "tíz", kesobbiAblakNap: "25" });
 
     expect(ablak).toBeNull();
-    expect(hibak[0]).toContain("egész napszám");
+    expect(hibak[0].kulcs).toBe("beallitasok.hiba.egesz_nap");
   });
 
   it("a felső határon túl nem enged", () => {
@@ -372,7 +372,8 @@ describe("ablakotEllenoriz", () => {
     });
 
     expect(ablak).toBeNull();
-    expect(hibak[0]).toContain(String(ABLAK_MAX_NAP));
+    expect(hibak[0].kulcs).toBe("beallitasok.hiba.max_nap");
+    expect(hibak[0].adatok?.max).toBe(ABLAK_MAX_NAP);
   });
 });
 
