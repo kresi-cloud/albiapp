@@ -47,7 +47,18 @@ export async function oraallastRogzit(_elozo: Eredmeny, urlap: FormData): Promis
       ingatlan:
         felhasznalo.szerep === "berbeado"
           ? { tulajdonosId: felhasznalo.id }
-          : { jogviszonyok: { some: { berlok: { some: { berloId: felhasznalo.id } } } } },
+          : // A bérlő csak addig olvas órát, amíg ott lakik. A lezárt
+            // jogviszony órái a bérbeadóé és a következő bérlőé: a volt bérlő
+            // rögzítése onnantól idegen fogyasztást vinne az elszámolásba, és
+            // a záró óraállását is felülírhatná.
+            {
+              jogviszonyok: {
+                some: {
+                  statusz: "elo",
+                  berlok: { some: { berloId: felhasznalo.id } },
+                },
+              },
+            },
     },
     include: { oraallasok: { orderBy: { datum: "desc" }, take: 1 } },
   });

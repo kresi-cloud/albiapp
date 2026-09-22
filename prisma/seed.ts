@@ -701,9 +701,10 @@ async function main() {
       kezdete: nap(-13),
       // Tizenkét napja költözött ki, tehát az értékelési ablak még nyitva van.
       vege: napokkalEzelott(12),
-      // A bérbeadó aznap rögzítette is: így a `vege` és a `lezarva` egybeesik,
-      // ami a rendes eset. Ahol a kettő eltér, ott az ablak a rögzítéstől megy.
-      lezarva: napokkalEzelott(12),
+      // A bérbeadó aznap rögzítette is, tehát az értékelési ablak kezdete is
+      // ez a nap: ez a rendes eset. Ahol a kettő eltér — utólag rögzített
+      // lezárásnál —, ott az ablak a rögzítéstől megy.
+      ertekelesAblak: napokkalEzelott(12),
       statusz: "lezart",
       berletiDijFt: 165000,
       kozosKoltsegFt: 14000,

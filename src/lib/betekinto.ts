@@ -149,11 +149,21 @@ export async function nyilvanosNezet(
           eloirtTetelek: true,
           berloiIgazolasok: true,
           berbeadoiIgazolasok: true,
+          berlok: { select: { berloId: true } },
         },
       },
     },
   });
   if (!betekinto || allapota(betekinto, most) !== "elo") return null;
+
+  // A linket a bérlő a saját bérletéről adta ki. Ha időközben lekerült a
+  // jogviszonyról, a bérlet már nem az ő adata: a link nem mutathatja tovább
+  // annak a lakásnak a befizetéseit, ahol a következő bérlő lakik. A
+  // visszavonás a bérlő kezében van, de a levétel nem az ő kattintása volt.
+  const rajtaVan = betekinto.jogviszony.berlok.some(
+    (sor) => sor.berloId === betekinto.berloId,
+  );
+  if (!rajtaVan) return null;
 
   // A párosítást itt is ugyanaz a függvény végzi, mint a befizetések lapon.
   // Korábban ez egy `Egyeztetes` táblát olvasott, amibe viszont soha semmi nem

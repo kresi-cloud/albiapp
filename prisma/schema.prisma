@@ -170,7 +170,7 @@ model Jogviszony {
   rezsiElszamolas String    @default("almero") // "almero" | "atalany" | "kozos_koltsegben"
   rezsiAtalanyFt  Int       @default(0) // havi átalány, ha a rezsi átalányban megy
   statusz         String    @default("elo") // "elo" | "lezart"
-  lezarva         DateTime? // mikor rögzítették a lezárást; a `vege` a kiköltözés napja
+  ertekelesAblak  DateTime? // az értékelési ablak kezdete, a lezáráskor eltárolva
   letrehozva      DateTime  @default(now())
 
   ingatlan            Ingatlan            @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)

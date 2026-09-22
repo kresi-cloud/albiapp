@@ -58,6 +58,11 @@ vitás marad, csak nem kérünk hozzá semmit. Amit már feltöltöttek, azt a
 kikapcsolás nem rejti el, és a rendezés sem: egy kapcsoló ne tüntesse el csendben
 a másik fél fájlját. Törölni mindenki a sajátját tudja.
 
+Oldalanként egy bizonylat van, a bérlői oldal viszont a lakótársaké közösen.
+Feltöltéskor ezért nem írjuk felül a másik feltöltő fájlját: aki a magáét
+felviszi rá, utána a saját nevén törölhetné is, és a lakótárs bizonylata két
+kattintással eltűnne. Aki cserélni akar, a feltöltőt kéri meg rá.
+
 Melyik oldal bizonylatát ki adja fel, az a szerepből következik
 (`oldalaEnnek`), nem az űrlapból: a bérlőnek küldő oldali bizonylata van, a
 bérbeadónak fogadó oldali. Bizonylatot csak vitás előíráshoz fogadunk el, és ezt
@@ -113,11 +118,14 @@ korábbi véget is kaphatna: az már egyeztetett előírt tételeket törölne, 
 záró hónapot újraarányosítaná. Aki a dátumot javítani akarja, előbb visszavonja
 a lezárást — az vissza is számolja, amit az első elvett —, és utána zár le újra.
 
-A `vege` és a `lezarva` két külön adat: az egyik a kiköltözés napja, a másik az,
-mikor került be az alkalmazásba. A kettő eltér, ha a bérbeadó utólag rögzíti a
-lezárást, és a különbség nem mindegy: ami a lezárástól számít határidőt, annak a
-rögzítés napjától kell indulnia, mert a bérlő addig nem is látta, hogy a bérlet
-lezárult.
+A lezárás ezért eltárol egy második dátumot is (`ertekelesAblak`): a `vege` a
+kiköltözés beírt napja, ez pedig az, ahonnan a lezáráshoz kötött határidők
+futnak. A kettő eltér, ha a bérbeadó utólag rögzíti a lezárást — a bérlő addig
+nem is látta, hogy a bérlet lezárult —, és akkor a rögzítés napja számít. Előre
+rögzített lezárásnál viszont a kiköltözés napja a későbbi, és az a kezdet: a
+bérlet addig még fut. **Ezt egyszer állítjuk be, és a visszavonás is csak akkor
+törli, ha a jogviszonyon még egy értékelés sem született**; különben egy
+visszavonás-újralezárás tetszőleges sokszor újraindítaná a határidőt.
 
 ## Belépés és jogosultság
 
@@ -127,6 +135,13 @@ lekérdezés mindig szűr a tulajdonosra, a bérlői oldal a saját jogviszonyai
 
 A bérlő fiókja meghívóval készül. A meghívó egyszer használható és lejár, és
 meglévő fiók jelszavát soha nem írja felül: a link a bérbeadónál is megvan.
+
+**Meghívót csak olyan helyre készítünk, ahol még nem ül fiók.** Az elfogadás
+átírja a hely `berloId`-ját: ha a helyen már ott van a valódi bérlő, ez csendes
+csere lenne — a bérlő lekerülne a jogviszonyról, a helyére pedig egy olyan fiók
+ülne, aminek a bérbeadó ismeri a jelszavát, és onnantól az erősítene meg
+fényképet, fogadna el elszámolást és írna értékelést a nevében. Ha tényleg
+kicserélődik a bérlő, a régit le kell venni és az újat hozzáadni: az látszik is.
 
 Ugyanebből következik, hogy **meglévő fiókot a meghívó csak annak a fióknak a
 saját jelszavával köt a jogviszonyhoz**. A link a bérbeadó kezében van, tehát
@@ -142,6 +157,12 @@ Ezt e-mailes megerősítés zárná le, az pedig a küldőszolgáltatáson múli
 Az egységár fillérben, egészben számol (`Int`), és forintra csak a kész tétel
 kerekít. Az elszámolás végösszege a kerekített tételek összege, nem a
 kerekítetlen összeg kerekítése: a bérlő össze fogja adni a sorokat.
+
+**Óraállást az olvas, aki ott lakik.** A lezárt jogviszony mérőórái már a
+bérbeadóé és a következő bérlőé: a volt bérlő rögzítése onnantól idegen
+fogyasztást vinne az elszámolásba, és a saját záró óraállását is felülírhatná.
+A felület sem kínálja fel neki, de a szabályt a kiszolgáló tartja be — a bérlő
+lapja nyitva maradhat akkor is, amikor a bérbeadó épp lezárja a jogviszonyt.
 
 Az éves kedvezményes keret az elszámolt napokra arányosítva jár. Minden tételhez
 tartozik emberi nyelvű részletezés; számot magyarázat nélkül nem küldünk ki.
@@ -351,13 +372,22 @@ szóló értékelés eltűnjön. Felfedés után senki nem ír és nem módosít
 másik fél elolvasott, azt nem írjuk át — ugyanaz az elv, mint a `veglegesSzoveg`
 befagyasztásánál.
 
-**A harminc nap nem a kiköltözéstől számít, hanem attól, hogy a lezárás mikor
-került be** (`ablakKezdete`, a `Jogviszony.lezarva`-ból). A kettő rendes esetben
+**A harminc nap nem a beírt kiköltözési naptól számít, hanem attól, amit a
+lezárás pillanatában eltároltunk** (`ablakKezdete`, a `Jogviszony.ertekelesAblak`
+mezőből; a kezdetet `ablakotKezd` állítja elő). A kettő rendes esetben
 egybeesik, de ha a bérbeadó utólag rögzíti a lezárást, nem: a bérlő addig nem is
 látta, hogy a bérlet lezárult, tehát értékelni sem tudott. A dátum ráadásul a
 bérbeadó kezében van, és a `vege`-től számolva egy visszakeltezett lezárás
 azonnal felfedné a másik fél addig rejtett szövegét, és elvenné tőle a sajátja
 megírását — vagyis pont az a fél keltezne vissza, akinek ez az érdeke.
+
+**És nem is indul újra.** A lezárás visszavonható, utána újra le lehet zárni; ha
+az ablak minden lezáráskor nulláról indulna, a bérbeadó egy visszavonással új
+harminc napot adhatna magának — akár olyat is, amiben már elolvasta a másik fél
+felfedett szövegét. Ezért a tárolt kezdet csak akkor áll be, ha még nincs, és a
+visszavonás is csak akkor törli, ha ezen a jogviszonyon még egy értékelés sem
+született: egy elkattintott lezárásnak ne maradjon nyoma, egy megírt
+értékelésnek viszont igen.
 
 A harminc nap oka ugyanaz, mint a beszélgetés kilencvenéé, csak rövidebb: az
 óvadék elszámolása és az utolsó rezsiszámla a kiköltözés utáni hetekben derül
@@ -453,6 +483,11 @@ csúszik-e az utalás — eddig SMS-ben és e-mailben ment, vagyis ott, ahol ké
 senki nem találja meg. A hibabejelentésnek és az elszámolásnak megvan a saját
 üzenetváltása; ami egyikbe sem fér bele, az ide tartozik.
 
+**A résztvevői sor egymagában nem jogosultság.** A jogviszonyról levett bérlő
+résztvevő marad, a bérlemény ügyei viszont már nem rá tartoznak, és a szál
+addigi üzeneteit is tovább olvasná. Ezért minden lekérdezés a mostani
+tartozást is kéri: a bérbeadónál a tulajdont, a bérlőnél a bérlősort.
+
 **A beszélgetés az első üzenettel jön létre**, nem előbb. Üres szálat nem
 nyitunk: egy lista, amiben három üres beszélgetés áll „még nincs üzenet”
 felirattal, csak zajt csinál. Ezért nincs külön „indítás” gomb sem: a címzett és
@@ -543,6 +578,12 @@ Az élettartam a jogviszony hosszához igazodik (alapból egy év), nem egy
 pályázathoz. A valódi fék a visszavonás: azonnal hat, és a bérlő kezében van. A
 megnyitásból csak az időpontot tároljuk, IP-t és böngészőazonosítót nem: a
 bérlőnek az számít, hányszor nézték meg.
+
+**A link a bérlő jogviszonyához van kötve, nem csak a tokenhez.** Ha a bérlő
+lekerül a jogviszonyról, a bérlet már nem az ő adata: a korábban kiadott link
+nem mutathatja tovább annak a lakásnak a befizetéseit, ahol már a következő
+bérlő lakik. A visszavonás a bérlő kezében van, a levétel viszont nem az ő
+kattintása volt, tehát nem is várhatjuk tőle.
 
 ## Jogi tájékoztatók
 

@@ -3,6 +3,7 @@ import {
   ABLAK_NAP,
   SZEMPONTOK,
   ablakKezdete,
+  ablakotKezd,
   ablakNyitva,
   allapota,
   ellenoriz,
@@ -221,24 +222,42 @@ describe("a szempontok", () => {
 describe("az ablak kezdete", () => {
   const KESOBB = new Date(Date.UTC(2026, 7, 15));
 
-  it("a kiköltözés napjától számít, ha a lezárás akkor került be", () => {
-    expect(ablakKezdete(VEGE, VEGE)?.getTime()).toBe(VEGE.getTime());
-    expect(ablakKezdete(VEGE, null)?.getTime()).toBe(VEGE.getTime());
-  });
-
-  it("utólag rögzített lezárásnál a rögzítés napjától", () => {
-    // A bérlő addig nem is látta, hogy a bérlet lezárult: harminc napja
-    // innentől van, nem a kiköltözéstől.
+  it("a lezáráskor eltárolt kezdet a mérvadó, nem a beírt kiköltözési nap", () => {
     expect(ablakKezdete(VEGE, KESOBB)?.getTime()).toBe(KESOBB.getTime());
   });
 
-  it("előre rögzített lezárásnál marad a kiköltözés napja", () => {
-    const korabban = new Date(VEGE.getTime() - 5 * 86400000);
-    expect(ablakKezdete(VEGE, korabban)?.getTime()).toBe(VEGE.getTime());
+  it("tárolt kezdet nélkül a kiköltözés napja marad", () => {
+    // Ez a jogviszony még a mező előttről van: ilyenkor nincs jobb adatunk.
+    expect(ablakKezdete(VEGE, null)?.getTime()).toBe(VEGE.getTime());
   });
 
   it("futó jogviszonynál nincs kezdet", () => {
     expect(ablakKezdete(null, KESOBB)).toBeNull();
+  });
+});
+
+describe("az ablak kezdetének eltárolása", () => {
+  const MOST = new Date(Date.UTC(2026, 6, 10));
+
+  it("visszakeltezett lezárásnál a rögzítés napja", () => {
+    // A bérlő addig nem is látta, hogy a bérlet lezárult: harminc napja
+    // innentől van, nem a beírt kiköltözéstől.
+    const regen = new Date(Date.UTC(2026, 4, 1));
+    expect(ablakotKezd(null, regen, MOST).getTime()).toBe(MOST.getTime());
+  });
+
+  it("előre rögzített lezárásnál a kiköltözés napja", () => {
+    // A bérlet addig még fut: értékelni sincs mit.
+    const kesobb = new Date(Date.UTC(2026, 7, 1));
+    expect(ablakotKezd(null, kesobb, MOST).getTime()).toBe(kesobb.getTime());
+  });
+
+  it("amit egyszer eltároltunk, azt egy újabb lezárás nem írja felül", () => {
+    // Ez a támadás: a bérbeadó visszavonja a lezárást, és újra lezárja, hogy
+    // annak, aki a másik szövegét már elolvasta, új harminc napja legyen.
+    const elso = new Date(Date.UTC(2026, 3, 20));
+    const ujVege = new Date(Date.UTC(2026, 8, 1));
+    expect(ablakotKezd(elso, ujVege, MOST).getTime()).toBe(elso.getTime());
   });
 
   it("a visszakeltezett lezárás nem fedi fel a másik fél szövegét", () => {
@@ -252,6 +271,21 @@ describe("az ablak kezdete", () => {
 
     expect(felfedve(paros, visszakeltezett, ma)).toBe(true);
     expect(felfedve(paros, ablakKezdete(visszakeltezett, rogzitve), ma)).toBe(false);
+  });
+
+  it("az újralezárás nem rejti vissza a már felfedett szöveget", () => {
+    // A másik oldala: a bérlő szövege az ablak leteltével felfedődött, a
+    // bérbeadó elolvasta. Ha most visszavonná a lezárást, és egy frissebb
+    // kiköltözési nappal újra lezárná, az ablak újraindulna — és ő
+    // elolvasott szöveg birtokában írná meg a sajátját.
+    const paros: Paros = { sajat: null, masike: ertekeles("berlo", "berbeado") };
+    const elsoLezaras = new Date(Date.UTC(2026, 4, 1));
+    const ujVege = new Date(Date.UTC(2026, 6, 1));
+    const ma = new Date(Date.UTC(2026, 6, 5));
+
+    expect(felfedve(paros, ablakKezdete(ujVege, null), ma)).toBe(false);
+    expect(felfedve(paros, ablakKezdete(ujVege, elsoLezaras), ma)).toBe(true);
+    expect(irhato(paros, ablakKezdete(ujVege, elsoLezaras), ma)).toBe(false);
   });
 });
 
