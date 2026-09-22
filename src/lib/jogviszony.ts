@@ -14,6 +14,7 @@
  * más be nem sorolható utalás.
  */
 
+import { ablakotKezd } from "@/domain/ertekeles";
 import { eloirasok } from "@/domain/eloirasok";
 import { jogviszonyAdatta as adatta } from "@/lib/eloirasok";
 import { prisma } from "@/lib/db";
@@ -55,13 +56,22 @@ export async function jogviszonytLezar(
     });
   }
 
-  // A `lezarva` nem ugyanaz, mint a `vege`: az a kiköltözés napja, ez az, mikor
-  // került be az alkalmazásba. A kettő eltér, ha a bérbeadó utólag rögzíti a
-  // lezárást — és az értékelési ablaknak ez utóbbitól kell indulnia, mert a
-  // bérlő addig nem is látta, hogy a bérlet lezárult.
+  // Az értékelési ablak kezdetét itt tároljuk el, és **csak egyszer**.
+  //
+  // Nem a `vege` a kezdete: az a kiköltözés beírt napja, a bérlő viszont addig
+  // nem is látta, hogy a bérlet lezárult, amíg a bérbeadó nem rögzítette. Egy
+  // visszakeltezett lezárás enélkül azonnal felfedné a másik fél addig rejtett
+  // szövegét. Előre rögzített lezárásnál viszont a kiköltözés napja a későbbi,
+  // és akkor az a kezdet: a bérlet addig még fut.
+  //
+  // És nem számoljuk újra: a lezárás visszavonható, utána újra le lehet zárni,
+  // és ha az ablak ilyenkor újraindulna, a bérbeadó egy visszavonással új
+  // harminc napot adhatna annak, aki a másik szövegét már elolvasta.
+  const ablak = ablakotKezd(jogviszony.ertekelesAblak, vege, new Date());
+
   await prisma.jogviszony.update({
     where: { id: jogviszonyId },
-    data: { statusz: "lezart", vege, lezarva: new Date() },
+    data: { statusz: "lezart", vege, ertekelesAblak: ablak },
   });
 
   // A záró hónap arányosítása: a domain mondja meg, mennyi jár.
@@ -131,9 +141,18 @@ export async function jogviszonytUjranyit(
   tulajdonosId: string,
   jogviszonyId: string,
 ): Promise<boolean> {
+  // Az értékelési ablak kezdetét csak akkor felejtjük el, ha még senki nem
+  // írt ezen a jogviszonyon: egy elkattintott lezárásnak ne maradjon nyoma.
+  // Ha viszont már van értékelés, a kezdet marad, mert a visszavonás
+  // különben új harminc napot adna annak, aki a másikét már elolvasta.
+  const irtakMar = await prisma.ertekeles.count({ where: { jogviszonyId } });
+
   const eredmeny = await prisma.jogviszony.updateMany({
     where: { id: jogviszonyId, ingatlan: { tulajdonosId }, statusz: "lezart" },
-    data: { statusz: "elo", vege: null, lezarva: null },
+    data:
+      irtakMar > 0
+        ? { statusz: "elo", vege: null }
+        : { statusz: "elo", vege: null, ertekelesAblak: null },
   });
   if (eredmeny.count === 0) return false;
 

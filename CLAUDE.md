@@ -118,11 +118,14 @@ korábbi véget is kaphatna: az már egyeztetett előírt tételeket törölne, 
 záró hónapot újraarányosítaná. Aki a dátumot javítani akarja, előbb visszavonja
 a lezárást — az vissza is számolja, amit az első elvett —, és utána zár le újra.
 
-A `vege` és a `lezarva` két külön adat: az egyik a kiköltözés napja, a másik az,
-mikor került be az alkalmazásba. A kettő eltér, ha a bérbeadó utólag rögzíti a
-lezárást, és a különbség nem mindegy: ami a lezárástól számít határidőt, annak a
-rögzítés napjától kell indulnia, mert a bérlő addig nem is látta, hogy a bérlet
-lezárult.
+A lezárás ezért eltárol egy második dátumot is (`ertekelesAblak`): a `vege` a
+kiköltözés beírt napja, ez pedig az, ahonnan a lezáráshoz kötött határidők
+futnak. A kettő eltér, ha a bérbeadó utólag rögzíti a lezárást — a bérlő addig
+nem is látta, hogy a bérlet lezárult —, és akkor a rögzítés napja számít. Előre
+rögzített lezárásnál viszont a kiköltözés napja a későbbi, és az a kezdet: a
+bérlet addig még fut. **Ezt egyszer állítjuk be, és a visszavonás is csak akkor
+törli, ha a jogviszonyon még egy értékelés sem született**; különben egy
+visszavonás-újralezárás tetszőleges sokszor újraindítaná a határidőt.
 
 ## Belépés és jogosultság
 
@@ -369,13 +372,22 @@ szóló értékelés eltűnjön. Felfedés után senki nem ír és nem módosít
 másik fél elolvasott, azt nem írjuk át — ugyanaz az elv, mint a `veglegesSzoveg`
 befagyasztásánál.
 
-**A harminc nap nem a kiköltözéstől számít, hanem attól, hogy a lezárás mikor
-került be** (`ablakKezdete`, a `Jogviszony.lezarva`-ból). A kettő rendes esetben
+**A harminc nap nem a beírt kiköltözési naptól számít, hanem attól, amit a
+lezárás pillanatában eltároltunk** (`ablakKezdete`, a `Jogviszony.ertekelesAblak`
+mezőből; a kezdetet `ablakotKezd` állítja elő). A kettő rendes esetben
 egybeesik, de ha a bérbeadó utólag rögzíti a lezárást, nem: a bérlő addig nem is
 látta, hogy a bérlet lezárult, tehát értékelni sem tudott. A dátum ráadásul a
 bérbeadó kezében van, és a `vege`-től számolva egy visszakeltezett lezárás
 azonnal felfedné a másik fél addig rejtett szövegét, és elvenné tőle a sajátja
 megírását — vagyis pont az a fél keltezne vissza, akinek ez az érdeke.
+
+**És nem is indul újra.** A lezárás visszavonható, utána újra le lehet zárni; ha
+az ablak minden lezáráskor nulláról indulna, a bérbeadó egy visszavonással új
+harminc napot adhatna magának — akár olyat is, amiben már elolvasta a másik fél
+felfedett szövegét. Ezért a tárolt kezdet csak akkor áll be, ha még nincs, és a
+visszavonás is csak akkor törli, ha ezen a jogviszonyon még egy értékelés sem
+született: egy elkattintott lezárásnak ne maradjon nyoma, egy megírt
+értékelésnek viszont igen.
 
 A harminc nap oka ugyanaz, mint a beszélgetés kilencvenéé, csak rövidebb: az
 óvadék elszámolása és az utolsó rezsiszámla a kiköltözés utáni hetekben derül

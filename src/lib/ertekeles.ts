@@ -70,7 +70,7 @@ function nezette(
   jogviszonyId: string,
   cimke: string,
   vege: Date | null,
-  lezarva: Date | null,
+  ertekelesAblak: Date | null,
   sajatId: string,
   masikId: string | null,
   masikNev: string,
@@ -82,9 +82,10 @@ function nezette(
   // kiről. Két fiókos lakótársnál a bérbeadónak két értékelése van ezen az
   // egy jogviszonyon, és a szerző egymagában nem választja szét őket.
   const paros: Paros = parosaEnnek(sorok.map(adatta), sajatId, masikId);
-  // Az ablak nem a kiköltözéstől számít, hanem attól, hogy a lezárás mikor
-  // került be: a bérlő addig nem is látta, hogy a bérlet lezárult.
-  const kezdet = ablakKezdete(vege, lezarva);
+  // Az ablak nem a beírt kiköltözési naptól számít, hanem a lezáráskor
+  // eltárolt kezdettől: az sem visszakeltezéssel, sem újralezárással nem
+  // mozdul el.
+  const kezdet = ablakKezdete(vege, ertekelesAblak);
   const lathato = nezet(paros, kezdet, ma);
 
   return {
@@ -136,7 +137,7 @@ export async function berbeadoErtekelesei(
         jogviszony.id,
         jogviszony.ingatlan.megnevezes,
         jogviszony.vege,
-        jogviszony.lezarva,
+        jogviszony.ertekelesAblak,
         berbeadoId,
         berlo.berloId,
         berlo.nev,
@@ -173,7 +174,7 @@ export async function berloErtekelesei(
       jogviszony.id,
       jogviszony.ingatlan.megnevezes,
       jogviszony.vege,
-      jogviszony.lezarva,
+      jogviszony.ertekelesAblak,
       berloId,
       jogviszony.ingatlan.tulajdonosId,
       jogviszony.ingatlan.tulajdonos.nev,

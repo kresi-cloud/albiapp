@@ -117,16 +117,39 @@ export type Allapot =
 /**
  * Mikortól számít az értékelési ablak.
  *
- * Alapesetben a kiköltözés napja. Ha viszont a bérbeadó utólag rögzítette a
- * lezárást, akkor a rögzítés napja: a bérlő addig nem is látta, hogy a bérlet
- * lezárult, tehát értékelni sem tudott. Enélkül egy visszakeltezett lezárás
- * azonnal felfedné a másik fél addig rejtett szövegét — és pont az a fél
- * keltezne vissza, akinek ez az érdeke.
+ * Nem a beírt kiköltözési napból számoljuk, hanem abból, amit a lezárás
+ * pillanatában eltároltunk (`Jogviszony.ertekelesAblak`). Két okból.
+ *
+ * Egy: a bérbeadó utólag is rögzítheti a lezárást, és a bérlő addig nem is
+ * látta, hogy a bérlet lezárult — egy visszakeltezett lezárás így azonnal
+ * felfedné a másik fél addig rejtett szövegét, és pont az a fél keltezne
+ * vissza, akinek ez az érdeke.
+ *
+ * Kettő: a lezárás visszavonható, és utána újra le lehet zárni. Ha az ablak
+ * minden lezáráskor újraindulna, az olvashatná el a másik szövegét, aki a
+ * sajátját még meg sem írta: megvárja a felfedést, elolvassa, aztán a
+ * bérbeadó egy visszavonással új harminc napot ad neki. Ezért a tárolt kezdet
+ * csak akkor áll be, ha még nincs, és a visszavonás is csak akkor törli, ha
+ * ezen a jogviszonyon még egy értékelés sem született.
+ *
+ * Amíg a jogviszony fut, nincs ablak: értékelni csak lezárás után lehet.
  */
-export function ablakKezdete(vege: Date | null, lezarva: Date | null): Date | null {
+export function ablakKezdete(vege: Date | null, ertekelesAblak: Date | null): Date | null {
   if (vege === null) return null;
-  if (lezarva === null) return vege;
-  return lezarva.getTime() > vege.getTime() ? lezarva : vege;
+  return ertekelesAblak ?? vege;
+}
+
+/**
+ * Mit tárolunk el az ablak kezdeteként, amikor a jogviszony lezárul.
+ *
+ * Ami már be van állítva, azt nem írjuk felül: a visszavont és újra megejtett
+ * lezárás nem indíthatja újra a harminc napot. Ha még nincs, akkor a mai nap —
+ * kivéve az előre rögzített lezárást, ahol a kiköltözés napja a későbbi, és a
+ * bérlet addig még fut.
+ */
+export function ablakotKezd(meglevo: Date | null, vege: Date, most: Date): Date {
+  if (meglevo !== null) return meglevo;
+  return vege.getTime() > most.getTime() ? vege : most;
 }
 
 /** Az ablak kezdete óta hányadik napon járunk. Kezdet nélkül negatív. */
