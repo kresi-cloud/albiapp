@@ -2,6 +2,13 @@ import { describe, expect, it } from "vitest";
 import { NYELVEK, szovegezo, uzenet, type Szotar } from "../nyelv";
 import { SZOTAR, szovegekNyelvvel } from "../szotar";
 import {
+  allapotNeve as betekintoAllapotNeve,
+  mondatok,
+  osszesit,
+  type Allapot as BetekintoAllapot,
+  type BetekintoTetel,
+} from "../betekinto";
+import {
   allapotNeve,
   koltsegJavaslat,
   lepesCimke,
@@ -114,6 +121,32 @@ describe("a domain kulcsai megvannak a szótárban", () => {
         megvan(koltsegJavaslat(terulet, ok).indoklas);
       }
     }
+  });
+
+  it("betekintő mondatai és állapotai", () => {
+    const tetel = (idoszak: string, reszlet: Partial<BetekintoTetel> = {}): BetekintoTetel => ({
+      idoszak,
+      allapot: "egyezik",
+      keses: 0,
+      osszegFt: 180000,
+      ...reszlet,
+    });
+
+    // Minden mondat előfordul: a hibátlan előzmény kevesebb sort ad, mint a
+    // döcögős, ezért mindkettőt végigjárjuk.
+    mondatok(osszesit([])).forEach(megvan);
+    mondatok(osszesit([tetel("2026-08"), tetel("2026-09")])).forEach(megvan);
+    mondatok(
+      osszesit([
+        tetel("2026-06", { keses: 11 }),
+        tetel("2026-07", { allapot: "hianyzik" }),
+        tetel("2026-08", { allapot: "elter", osszegFt: 120000 }),
+        tetel("2026-09"),
+      ]),
+    ).forEach(megvan);
+
+    const allapotok: BetekintoAllapot[] = ["elo", "lejart", "visszavonva"];
+    allapotok.forEach((allapot) => megvan(betekintoAllapotNeve(allapot)));
   });
 
   it("dokumentumfajták és elszámolásállapotok", () => {

@@ -33,6 +33,7 @@ model Felhasznalo {
   berbeadoiAdatok   BerbeadoiAdatok?
   hibabejelentesei  Hibabejelentes[]  @relation("Hibabejelentesei")
   hibaUzenetei      HibaUzenet[]      @relation("HibaUzenetei")
+  betekintoi        Betekinto[]       @relation("Betekintoi")
 }
 
 /// Bérbeadónkénti egyeztetési beállítások. Az összegtolerancia szándékosan nincs
@@ -150,6 +151,7 @@ model Jogviszony {
   szerzodesek      Szerzodes[]
   jegyzokonyvek    Jegyzokonyv[]
   hibabejelentesek Hibabejelentes[]
+  betekintok       Betekinto[]
 
   @@index([ingatlanId])
 }
@@ -543,4 +545,44 @@ model HibaUzenet {
   szerzo         Felhasznalo    @relation("HibaUzenetei", fields: [szerzoId], references: [id])
 
   @@index([hibabejelentesId, letrehozva])
+}
+
+/**
+ * Betekintő: a bérlő által kiadott, csak olvasható nézet a fizetési
+ * előzményeire. A bérlőszűrés jogilag korlátos, ez viszont a bérlő saját
+ * döntése a saját adatáról, és onnan jön, amit a bérbeadó kivonata igazol.
+ */
+model Betekinto {
+  id           String    @id @default(cuid())
+  jogviszonyId String
+  berloId      String
+  token        String    @unique
+  /** Mire kéri: "lakásbérléshez", "munkáltatónak". A bérlő írja be. */
+  cel          String
+  /** Az összegek megjelenjenek-e. Alapból nem: a tény elég, a díj magánügy. */
+  osszegetMutat Boolean  @default(false)
+  lejar        DateTime
+  visszavonva  DateTime?
+  letrehozva   DateTime  @default(now())
+
+  jogviszony  Jogviszony           @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  berlo       Felhasznalo          @relation("Betekintoi", fields: [berloId], references: [id], onDelete: Cascade)
+  megnyitasok BetekintoMegnyitas[]
+
+  @@index([berloId])
+  @@index([jogviszonyId])
+}
+
+/**
+ * Egy megnyitás ideje, és semmi más. IP-t és böngészőazonosítót szándékosan
+ * nem tárolunk: a bérlőnek az számít, hányszor és mikor nézték meg.
+ */
+model BetekintoMegnyitas {
+  id          String   @id @default(cuid())
+  betekintoId String
+  mikor       DateTime @default(now())
+
+  betekinto Betekinto @relation(fields: [betekintoId], references: [id], onDelete: Cascade)
+
+  @@index([betekintoId, mikor])
 }

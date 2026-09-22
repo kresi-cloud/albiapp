@@ -58,6 +58,14 @@ export async function belep(oldal, email) {
   await oldal.waitForLoadState("networkidle");
 }
 
+/** Hány képponttal lóg ki az oldal vízszintesen. Nulla, ha elfér. */
+export async function tullogas(oldal) {
+  return oldal.evaluate(() => {
+    const gyoker = document.documentElement;
+    return gyoker.scrollWidth - gyoker.clientWidth;
+  });
+}
+
 /** A választott nyelvet visszaállítja magyarra, hogy a próbák ne fertőzzék egymást. */
 export async function magyarra(oldal) {
   await oldal.goto(`${ALAP}/`);

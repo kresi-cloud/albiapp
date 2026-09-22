@@ -190,6 +190,20 @@ Az adatkezelési tájékoztató és a felhasználási feltételek a lábléc ké
 hivatkozása mögött vannak, mindkét nyelven. Az üzemeltető adatait élesítés
 előtt ki kell tölteni: a szövegben `[kitöltendő]` jelöli a helyüket.
 
+## Betekintő
+
+A bérlő a saját fizetési előzményéről adhat ki csak olvasható linket
+(`/berlo/betekinto`), például egy új albérlet megpályázásához. A nyilvános oldal
+belépés nélkül nyílik, mert a token maga a jogosultság, és rövid életű: a bérlő
+7, 30 vagy 90 napot választ, és bármikor visszavonhatja.
+
+Az oldal tényeket mutat — hány hónapra volt esedékes díj, ebből mennyi érkezett
+határidőre, mennyi késve és átlagosan hány nappal —, pontszámot nem. Az adat a
+bérbeadó által feltöltött kivonatból jön, tehát nem a bérlő bemondása, és az
+oldal ezt ki is mondja. Amit soha nem mutat: bérbeadói nevet, pontos címet (csak
+települést), lakótársat, személyes adatot. A bérleti díj összege csak akkor
+látszik, ha a bérlő külön bekapcsolja.
+
 ## Minőségi kapuk
 
 A megállapodásaink egy részét nem elég leírni, mert olyasmiről szólnak, amit sem

@@ -403,10 +403,23 @@ async function main() {
     },
   });
 
+  // Betekintő: Anna kiadott egy linket egy új lakás megpályázásához.
+  const betekinto = await prisma.betekinto.create({
+    data: {
+      jogviszonyId: annaJogviszony.id,
+      berloId: berloAnna.id,
+      token: "probabetekinto2026",
+      cel: "Lakásbérléshez, egy meghirdetett albérlet megpályázásához",
+      osszegetMutat: false,
+      lejar: new Date(Date.UTC(2026, 11, 31)),
+    },
+  });
+
   console.log("Példaadat betöltve.");
   console.log(`Bérbeadó: ${berbeado.email} / ${PROBA_JELSZO}`);
   console.log(`Bérlő: ${berloAnna.email} / ${PROBA_JELSZO}`);
   console.log(`Szabó Tamás meghívója: /meghivo/${meghivo.token}`);
+  console.log(`Anna betekintője: /betekinto/${betekinto.token}`);
 }
 
 main()
