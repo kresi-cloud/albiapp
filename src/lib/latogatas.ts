@@ -18,7 +18,9 @@ const BETOLTES = {
 } as const;
 
 type Betoltott = Awaited<
-  ReturnType<typeof prisma.szolgaltatoiLatogatas.findMany<{ include: typeof BETOLTES }>>
+  ReturnType<
+    typeof prisma.szolgaltatoiLatogatas.findMany<{ include: typeof BETOLTES }>
+  >
 >[number];
 
 export type LatogatasNezet = Latogatas & {
@@ -34,6 +36,7 @@ function nezette(sor: Betoltott): LatogatasNezet {
   return {
     id: sor.id,
     jogviszonyId: sor.jogviszonyId,
+    bejelentoId: sor.bejelentoId,
     fajta: sor.fajta as Fajta,
     megnevezes: sor.megnevezes,
     szolgaltato: sor.szolgaltato,
@@ -61,7 +64,9 @@ function nezette(sor: Betoltott): LatogatasNezet {
   };
 }
 
-export async function berbeadoLatogatasai(berbeadoId: string): Promise<LatogatasNezet[]> {
+export async function berbeadoLatogatasai(
+  berbeadoId: string,
+): Promise<LatogatasNezet[]> {
   const sorok = await prisma.szolgaltatoiLatogatas.findMany({
     where: { jogviszony: { ingatlan: { tulajdonosId: berbeadoId } } },
     include: BETOLTES,
@@ -70,7 +75,9 @@ export async function berbeadoLatogatasai(berbeadoId: string): Promise<Latogatas
   return sorok.map(nezette);
 }
 
-export async function berloLatogatasai(berloId: string): Promise<LatogatasNezet[]> {
+export async function berloLatogatasai(
+  berloId: string,
+): Promise<LatogatasNezet[]> {
   const sorok = await prisma.szolgaltatoiLatogatas.findMany({
     where: { jogviszony: { berlok: { some: { berloId } } } },
     include: BETOLTES,
@@ -94,7 +101,11 @@ export async function nyitottLatogatasok(
     where: {
       jogviszonyId: { in: jogviszonyIdk },
       lemondva: null,
-      nap: { gte: new Date(Date.UTC(ma.getUTCFullYear(), ma.getUTCMonth(), ma.getUTCDate())) },
+      nap: {
+        gte: new Date(
+          Date.UTC(ma.getUTCFullYear(), ma.getUTCMonth(), ma.getUTCDate()),
+        ),
+      },
     },
     include: BETOLTES,
   });

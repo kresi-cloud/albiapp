@@ -25,6 +25,7 @@ export default async function BerloiLatogatasok() {
       }))}
       nyelv={nyelv}
       berloId={berlo.id}
+      felhasznaloId={berlo.id}
       ma={ma}
     />
   );

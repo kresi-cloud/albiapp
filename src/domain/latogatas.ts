@@ -46,6 +46,8 @@ export type LatogatasValasz = {
 export type Latogatas = {
   id: string;
   jogviszonyId: string;
+  /** Aki bejelentette. A lemondás joga ebből következik, nem a szerepből. */
+  bejelentoId: string;
   fajta: Fajta;
   megnevezes: string;
   szolgaltato: string | null;
@@ -57,6 +59,23 @@ export type Latogatas = {
   varhatoValaszolok: { id: string; nev: string }[];
   valaszok: LatogatasValasz[];
 };
+
+/**
+ * Lemondhatja-e a látogatást a belépett fél.
+ *
+ * Csak a bejelentő. A lemondás azt jelenti, hogy a látogatás nem lesz meg —
+ * ezt az mondhatja ki, aki megszervezte. A bérlőnek nem a lemondás való,
+ * hanem a „nem jó időpont" válasz: abból a bérbeadó tudja, hogy egyeztetni
+ * kell, a szerelő viszont attól még jön, amíg a bérbeadó le nem mondja.
+ *
+ * A már lemondott látogatást másodszor nem lehet lemondani.
+ */
+export function lemondhatja(
+  latogatas: Pick<Latogatas, "bejelentoId" | "lemondva">,
+  felhasznaloId: string,
+): boolean {
+  return latogatas.lemondva === null && latogatas.bejelentoId === felhasznaloId;
+}
 
 /**
  * A látogatás állapota.
@@ -92,7 +111,9 @@ export function allapot(latogatas: Latogatas, ma: Date): Allapot {
 
   // Fiók nélküli bérlőt nem lehet megkérdezni; akit meg lehet, attól várunk.
   const valaszolt = new Set(latogatas.valaszok.map((sor) => sor.berloId));
-  const hianyzik = latogatas.varhatoValaszolok.filter((sor) => !valaszolt.has(sor.id));
+  const hianyzik = latogatas.varhatoValaszolok.filter(
+    (sor) => !valaszolt.has(sor.id),
+  );
   if (hianyzik.length > 0) return "varakozik";
 
   if (latogatas.valaszok.some((sor) => sor.valasz === "itthon_leszek")) {
@@ -102,7 +123,9 @@ export function allapot(latogatas: Latogatas, ma: Date): Allapot {
 }
 
 /** Akiktől még várunk választ. A felület ezt írja ki, nem tippel. */
-export function hianyzoValaszolok(latogatas: Latogatas): { id: string; nev: string }[] {
+export function hianyzoValaszolok(
+  latogatas: Latogatas,
+): { id: string; nev: string }[] {
   const valaszolt = new Set(latogatas.valaszok.map((sor) => sor.berloId));
   return latogatas.varhatoValaszolok.filter((sor) => !valaszolt.has(sor.id));
 }
@@ -115,8 +138,12 @@ export function allapotMondata(latogatas: Latogatas, ma: Date): Uzenet {
   const mostani = allapot(latogatas, ma);
 
   if (mostani === "idopont_gond") {
-    const kifogas = latogatas.valaszok.find((sor) => sor.valasz === "nem_jo_idopont");
-    return uzenet("latogatas.allapot.idopont_gond", { nev: kifogas?.berloNeve ?? "" });
+    const kifogas = latogatas.valaszok.find(
+      (sor) => sor.valasz === "nem_jo_idopont",
+    );
+    return uzenet("latogatas.allapot.idopont_gond", {
+      nev: kifogas?.berloNeve ?? "",
+    });
   }
   if (mostani === "varakozik") {
     const hianyzik = hianyzoValaszolok(latogatas);
@@ -125,7 +152,9 @@ export function allapotMondata(latogatas: Latogatas, ma: Date): Uzenet {
     });
   }
   if (mostani === "itthon_lesz") {
-    const itthon = latogatas.valaszok.filter((sor) => sor.valasz === "itthon_leszek");
+    const itthon = latogatas.valaszok.filter(
+      (sor) => sor.valasz === "itthon_leszek",
+    );
     return uzenet("latogatas.allapot.itthon_lesz", {
       nev: itthon.map((sor) => sor.berloNeve).join(", "),
     });
@@ -144,7 +173,8 @@ export function idoablak(latogatas: Latogatas): Uzenet | null {
   if (idoablakTol && idoablakIg) {
     return uzenet("latogatas.idoablak", { tol: idoablakTol, ig: idoablakIg });
   }
-  if (idoablakTol) return uzenet("latogatas.idoablak_tol", { tol: idoablakTol });
+  if (idoablakTol)
+    return uzenet("latogatas.idoablak_tol", { tol: idoablakTol });
   return null;
 }
 
@@ -175,7 +205,10 @@ export function latogatasokbolTeendok(
       const hianyzik = hianyzoValaszolok(latogatas);
       // A bérlő csak a saját nyilatkozatáról kap teendőt: a lakótársét nem ő
       // adja meg, tehát nem is tud vele mit kezdeni.
-      if (belepettBerloId && hianyzik.some((sor) => sor.id === belepettBerloId)) {
+      if (
+        belepettBerloId &&
+        hianyzik.some((sor) => sor.id === belepettBerloId)
+      ) {
         teendok.push({
           kulcs: `latogatas:${latogatas.id}:valasz:${belepettBerloId}`,
           cimzett: "berlo",
@@ -236,7 +269,10 @@ export function bejelentestEllenoriz(bemenet: {
   const kifogasok: Kifogas[] = [];
 
   if (bemenet.megnevezes.trim() === "") {
-    kifogasok.push({ mezo: "megnevezes", uzenet: uzenet("latogatas.hiba.megnevezes") });
+    kifogasok.push({
+      mezo: "megnevezes",
+      uzenet: uzenet("latogatas.hiba.megnevezes"),
+    });
   }
   if (!bemenet.nap || Number.isNaN(bemenet.nap.getTime())) {
     kifogasok.push({ mezo: "nap", uzenet: uzenet("latogatas.hiba.nap") });
@@ -255,7 +291,10 @@ export function bejelentestEllenoriz(bemenet: {
   const tol = bemenet.idoablakTol.trim();
   const ig = bemenet.idoablakIg.trim();
   if (ora.test(tol) && ora.test(ig) && percben(ig) <= percben(tol)) {
-    kifogasok.push({ mezo: "idoablakIg", uzenet: uzenet("latogatas.hiba.sorrend") });
+    kifogasok.push({
+      mezo: "idoablakIg",
+      uzenet: uzenet("latogatas.hiba.sorrend"),
+    });
   }
 
   return kifogasok;
@@ -271,7 +310,10 @@ function percben(ora: string): number {
  * Egy múlt heti kéményseprő nem áll a jövő hetei elé csak azért, mert később
  * jelentették be.
  */
-export function latogatasokatRendez<T extends Latogatas>(latogatasok: T[], ma: Date): T[] {
+export function latogatasokatRendez<T extends Latogatas>(
+  latogatasok: T[],
+  ma: Date,
+): T[] {
   const rang = (latogatas: T) => {
     const mostani = allapot(latogatas, ma);
     return mostani === "lemondva" || mostani === "elmult" ? 1 : 0;

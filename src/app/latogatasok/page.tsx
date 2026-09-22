@@ -25,6 +25,7 @@ export default async function LatogatasokLap() {
       }))}
       nyelv={nyelv}
       berloId={null}
+      felhasznaloId={berbeado.id}
       ma={ma}
     />
   );

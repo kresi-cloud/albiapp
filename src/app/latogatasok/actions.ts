@@ -12,7 +12,11 @@ import {
   type Valasz,
 } from "@/domain/latogatas";
 
-export type Eredmeny = { allapot: "ures" | "kesz" | "hiba"; uzenet: string; hibak: string[] };
+export type Eredmeny = {
+  allapot: "ures" | "kesz" | "hiba";
+  uzenet: string;
+  hibak: string[];
+};
 
 function hiba(uzenet: string, hibak: string[] = []): Eredmeny {
   return { allapot: "hiba", uzenet, hibak };
@@ -39,7 +43,11 @@ function frissit(): void {
 }
 
 /** Az a jogviszony, amihez a belépett felhasználónak tényleg köze van. */
-async function elerhetoJogviszony(felhasznaloId: string, szerep: string, jogviszonyId: string) {
+async function elerhetoJogviszony(
+  felhasznaloId: string,
+  szerep: string,
+  jogviszonyId: string,
+) {
   return prisma.jogviszony.findFirst({
     where:
       szerep === "berlo"
@@ -56,13 +64,20 @@ async function elerhetoJogviszony(felhasznaloId: string, szerep: string, jogvisz
  * szerelőjét viszont a bérlő. Nyilatkozni viszont mindig a bérlő nyilatkozik,
  * mert a kérdés az ő lakásába való bejutásról szól.
  */
-export async function latogatastBejelent(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+export async function latogatastBejelent(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
   const { sz } = await szovegek();
   const felhasznalo = await belepettFelhasznalo();
   if (!felhasznalo) return hiba(sz("valasz.lepj_be"));
 
   const jogviszonyId = szoveg(urlap.get("jogviszonyId"));
-  const jogviszony = await elerhetoJogviszony(felhasznalo.id, felhasznalo.szerep, jogviszonyId);
+  const jogviszony = await elerhetoJogviszony(
+    felhasznalo.id,
+    felhasznalo.szerep,
+    jogviszonyId,
+  );
   if (!jogviszony) return hiba(sz("valasz.nincs_hozzaferes"));
 
   const fajta = szoveg(urlap.get("fajta")) as Fajta;
@@ -99,7 +114,11 @@ export async function latogatastBejelent(_elozo: Eredmeny, urlap: FormData): Pro
   });
 
   frissit();
-  return { allapot: "kesz", uzenet: sz("latogatas.kesz.bejelentve"), hibak: [] };
+  return {
+    allapot: "kesz",
+    uzenet: sz("latogatas.kesz.bejelentve"),
+    hibak: [],
+  };
 }
 
 /**
@@ -109,11 +128,15 @@ export async function latogatastBejelent(_elozo: Eredmeny, urlap: FormData): Pro
  * A kifogás indoklás nélkül nincs, mert abból a másik fél nem tud új időpontot
  * javasolni — ugyanaz, mint a fénykép és az előfizetés kifogásánál.
  */
-export async function latogatasraValaszol(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+export async function latogatasraValaszol(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
   const { sz } = await szovegek();
   const felhasznalo = await belepettFelhasznalo();
   if (!felhasznalo) return hiba(sz("valasz.lepj_be"));
-  if (felhasznalo.szerep !== "berlo") return hiba(sz("latogatas.hiba.csak_berlo"));
+  if (felhasznalo.szerep !== "berlo")
+    return hiba(sz("latogatas.hiba.csak_berlo"));
 
   const latogatasId = szoveg(urlap.get("latogatasId"));
   const valasz = szoveg(urlap.get("valasz")) as Valasz;
@@ -137,7 +160,12 @@ export async function latogatasraValaszol(_elozo: Eredmeny, urlap: FormData): Pr
   // A nyilatkozat módosítható: aki tévedett, ki tudja javítani, és a legutolsó
   // szava számít. Ezért `upsert`, nem `create`.
   await prisma.latogatasValasz.upsert({
-    where: { latogatasId_berloId: { latogatasId: latogatas.id, berloId: felhasznalo.id } },
+    where: {
+      latogatasId_berloId: {
+        latogatasId: latogatas.id,
+        berloId: felhasznalo.id,
+      },
+    },
     create: {
       latogatasId: latogatas.id,
       berloId: felhasznalo.id,
@@ -148,7 +176,11 @@ export async function latogatasraValaszol(_elozo: Eredmeny, urlap: FormData): Pr
   });
 
   frissit();
-  return { allapot: "kesz", uzenet: sz("latogatas.kesz.valaszolva"), hibak: [] };
+  return {
+    allapot: "kesz",
+    uzenet: sz("latogatas.kesz.valaszolva"),
+    hibak: [],
+  };
 }
 
 /**
@@ -159,7 +191,10 @@ export async function latogatasraValaszol(_elozo: Eredmeny, urlap: FormData): Pr
  * nyilatkozata is eltűnne. A lemondás oka nem formaság: a bérlő ebből tudja
  * meg, kell-e otthon lennie.
  */
-export async function latogatastLemond(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+export async function latogatastLemond(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
   const { sz } = await szovegek();
   const felhasznalo = await belepettFelhasznalo();
   if (!felhasznalo) return hiba(sz("valasz.lepj_be"));
@@ -168,14 +203,15 @@ export async function latogatastLemond(_elozo: Eredmeny, urlap: FormData): Promi
   const oka = szoveg(urlap.get("oka"));
   if (oka === "") return hiba(sz("latogatas.hiba.lemondas_oka"));
 
+  // A lemondás a bejelentőé, nem a jogviszony bármelyik résztvevőjéé. A bérlő
+  // a saját jogviszonyán is csak azt mondhatja le, amit ő szervezett: a
+  // bérbeadó bejelentette szerelőt nem tudja lefújni, arra a „nem jó időpont"
+  // válasz való. Ezt a kiszolgáló dönti el, nem a gomb elrejtése.
   const latogatas = await prisma.szolgaltatoiLatogatas.findFirst({
-    where:
-      felhasznalo.szerep === "berlo"
-        ? { id: latogatasId, jogviszony: { berlok: { some: { berloId: felhasznalo.id } } } }
-        : { id: latogatasId, jogviszony: { ingatlan: { tulajdonosId: felhasznalo.id } } },
+    where: { id: latogatasId, bejelentoId: felhasznalo.id, lemondva: null },
     select: { id: true },
   });
-  if (!latogatas) return hiba(sz("valasz.nincs_hozzaferes"));
+  if (!latogatas) return hiba(sz("latogatas.hiba.nem_te_jelentetted"));
 
   await prisma.szolgaltatoiLatogatas.update({
     where: { id: latogatas.id },

@@ -1,11 +1,20 @@
 import { Bejelentes, Lemondas, Valaszurlap } from "@/app/latogatasok/Urlapok";
-import { Jelzo, Lapfej, NYITO, Sugo, Szakaszcim, Ures, type Allapotszin } from "@/components/ui/alap";
+import {
+  Jelzo,
+  Lapfej,
+  NYITO,
+  Sugo,
+  Szakaszcim,
+  Ures,
+  type Allapotszin,
+} from "@/components/ui/alap";
 import {
   allapot,
   allapotMondata,
   FAJTAK,
   idoablak,
   latogatasokatRendez,
+  lemondhatja,
   VALASZOK,
   type Allapot,
 } from "@/domain/latogatas";
@@ -49,6 +58,7 @@ export function Latogatasok({
   jogviszonyok,
   nyelv,
   berloId,
+  felhasznaloId,
   ma,
 }: {
   latogatasok: LatogatasNezet[];
@@ -56,6 +66,8 @@ export function Latogatasok({
   nyelv: Nyelv;
   /** A belépett bérlő azonosítója, vagy null, ha bérbeadó nézi. */
   berloId: string | null;
+  /** A belépett fél azonosítója, szereptől függetlenül: a lemondás ebből dől el. */
+  felhasznaloId: string;
   ma: Date;
 }) {
   const { sz } = szovegekNyelvvel(nyelv);
@@ -101,6 +113,7 @@ export function Latogatasok({
                 latogatas={latogatas}
                 nyelv={nyelv}
                 berloId={berloId}
+                felhasznaloId={felhasznaloId}
                 ma={ma}
               />
             ))}
@@ -113,8 +126,12 @@ export function Latogatasok({
       {hatul.length > 0 ? (
         <details className="group">
           <summary className={`${NYITO} font-bold`}>
-            <span className="font-display text-base">{sz("latogatas.kesobbi")}</span>
-            <span className="ml-2 text-sm font-medium text-halvany">({hatul.length})</span>
+            <span className="font-display text-base">
+              {sz("latogatas.kesobbi")}
+            </span>
+            <span className="ml-2 text-sm font-medium text-halvany">
+              ({hatul.length})
+            </span>
           </summary>
           <ul className="mt-2 grid gap-3">
             {hatul.map((latogatas) => (
@@ -123,6 +140,7 @@ export function Latogatasok({
                 latogatas={latogatas}
                 nyelv={nyelv}
                 berloId={berloId}
+                felhasznaloId={felhasznaloId}
                 ma={ma}
               />
             ))}
@@ -148,7 +166,6 @@ export function Latogatasok({
           </div>
         </details>
       ) : null}
-
     </div>
   );
 }
@@ -157,11 +174,13 @@ function Kartya({
   latogatas,
   nyelv,
   berloId,
+  felhasznaloId,
   ma,
 }: {
   latogatas: LatogatasNezet;
   nyelv: Nyelv;
   berloId: string | null;
+  felhasznaloId: string;
   ma: Date;
 }) {
   const { sz, u } = szovegekNyelvvel(nyelv);
@@ -201,7 +220,9 @@ function Kartya({
       ) : null}
 
       {latogatas.megjegyzes ? (
-        <p className="mt-1 text-sm text-halvany text-pretty">{latogatas.megjegyzes}</p>
+        <p className="mt-1 text-sm text-halvany text-pretty">
+          {latogatas.megjegyzes}
+        </p>
       ) : null}
 
       {/* A kifogás indoklása a másik fél egyetlen kiindulópontja: ez nem
@@ -220,7 +241,9 @@ function Kartya({
 
       {latogatas.fiokNelkuliBerlok.length > 0 && !lezart ? (
         <p className="mt-1 text-xs text-nagyon-halvany text-pretty">
-          {sz("latogatas.fiok_nelkul", { nev: latogatas.fiokNelkuliBerlok.join(", ") })}
+          {sz("latogatas.fiok_nelkul", {
+            nev: latogatas.fiokNelkuliBerlok.join(", "),
+          })}
         </p>
       ) : null}
 
@@ -241,7 +264,7 @@ function Kartya({
         />
       ) : null}
 
-      {!lezart ? (
+      {!lezart && lemondhatja(latogatas, felhasznaloId) ? (
         <Lemondas
           latogatasId={latogatas.id}
           cimkek={{

@@ -16,6 +16,7 @@ import {
   idoablak,
   latogatasokatRendez,
   latogatasokbolTeendok,
+  lemondhatja,
   type Latogatas,
   type Valasz,
 } from "../latogatas";
@@ -28,6 +29,7 @@ function latogatas(modositas: Partial<Latogatas> = {}): Latogatas {
   return {
     id: "l1",
     jogviszonyId: "j1",
+    bejelentoId: "berbeado",
     fajta: "kemenysepro",
     megnevezes: "Kemenysepro",
     szolgaltato: null,
@@ -58,7 +60,10 @@ describe("a látogatás állapota", () => {
 
   it("ha senki nem lesz otthon, de hozzájárultak, kulccsal megy", () => {
     expect(
-      allapot(latogatas({ valaszok: [valasz("b1", "kulccsal_beengedheto")] }), MA),
+      allapot(
+        latogatas({ valaszok: [valasz("b1", "kulccsal_beengedheto")] }),
+        MA,
+      ),
     ).toBe("kulccsal");
   });
 
@@ -82,7 +87,9 @@ describe("a látogatás állapota", () => {
       valaszok: [valasz("b1", "kulccsal_beengedheto")],
     });
     expect(allapot(kettoBerlo, MA)).toBe("varakozik");
-    expect(hianyzoValaszolok(kettoBerlo).map((sor) => sor.nev)).toEqual(["Tamas"]);
+    expect(hianyzoValaszolok(kettoBerlo).map((sor) => sor.nev)).toEqual([
+      "Tamas",
+    ]);
   });
 
   it("fiók nélküli bérlőre nem várunk: őt nem lehet megkérdezni", () => {
@@ -94,7 +101,10 @@ describe("a látogatás állapota", () => {
 
   it("a lemondás és az elmúlt nap mindent felülír", () => {
     expect(
-      allapot(latogatas({ lemondva: MA, valaszok: [valasz("b1", "nem_jo_idopont")] }), MA),
+      allapot(
+        latogatas({ lemondva: MA, valaszok: [valasz("b1", "nem_jo_idopont")] }),
+        MA,
+      ),
     ).toBe("lemondva");
     expect(allapot(latogatas({ nap: TEGNAP }), MA)).toBe("elmult");
   });
@@ -131,7 +141,9 @@ describe("a látogatás mondata", () => {
 
 describe("időablak", () => {
   it("a megadott alakot adja vissza, nem formázza át", () => {
-    const uzenet = idoablak(latogatas({ idoablakTol: "9:00", idoablakIg: "11:00" }));
+    const uzenet = idoablak(
+      latogatas({ idoablakTol: "9:00", idoablakIg: "11:00" }),
+    );
     expect(uzenet?.adatok).toEqual({ tol: "9:00", ig: "11:00" });
   });
 
@@ -182,8 +194,12 @@ describe("teendők a látogatásból", () => {
   });
 
   it("a lemondott és az elmúlt látogatásból sincs", () => {
-    expect(latogatasokbolTeendok([latogatas({ lemondva: MA })], MA, "b1")).toEqual([]);
-    expect(latogatasokbolTeendok([latogatas({ nap: TEGNAP })], MA, "b1")).toEqual([]);
+    expect(
+      latogatasokbolTeendok([latogatas({ lemondva: MA })], MA, "b1"),
+    ).toEqual([]);
+    expect(
+      latogatasokbolTeendok([latogatas({ nap: TEGNAP })], MA, "b1"),
+    ).toEqual([]);
   });
 
   it("a teendő a látogatás napjára esedékes", () => {
@@ -252,5 +268,36 @@ describe("rendezés", () => {
       "elmult",
       "lemondott",
     ]);
+  });
+});
+
+describe("a lemondás joga", () => {
+  it("a bejelentő lemondhatja", () => {
+    expect(
+      lemondhatja(latogatas({ bejelentoId: "berbeado" }), "berbeado"),
+    ).toBe(true);
+  });
+
+  it("a bérlő nem mondhatja le, amit a bérbeadó jelentett be", () => {
+    // A szerelő attól még jön: a bérlőnek a „nem jó időpont" válasz való, és
+    // abból a bérbeadó tudja, hogy egyeztetni kell.
+    expect(lemondhatja(latogatas({ bejelentoId: "berbeado" }), "berlo")).toBe(
+      false,
+    );
+  });
+
+  it("a bérbeadó sem mondhatja le, amit a bérlő jelentett be", () => {
+    expect(lemondhatja(latogatas({ bejelentoId: "berlo" }), "berbeado")).toBe(
+      false,
+    );
+  });
+
+  it("a már lemondottat nem lehet másodszor is lemondani", () => {
+    expect(
+      lemondhatja(
+        latogatas({ bejelentoId: "berbeado", lemondva: TEGNAP }),
+        "berbeado",
+      ),
+    ).toBe(false);
   });
 });
