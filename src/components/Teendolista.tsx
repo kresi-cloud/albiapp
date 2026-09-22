@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Surgosseg, TeendoSurgosseggel } from "@/domain/teendok";
 import { datum } from "@/domain/penz";
+import { TeendoLezaras } from "./TeendoLezaras";
 
 const CIMKE: Record<Surgosseg, string> = {
   lejart: "Lejárt",
@@ -43,14 +44,17 @@ export function Teendolista({ teendok }: { teendok: TeendoSurgosseggel[] }) {
               {teendo.leiras}
             </p>
           ) : null}
-          {teendo.hivatkozas ? (
-            <Link
-              href={teendo.hivatkozas}
-              className="mt-2 inline-block text-sm text-blue-700 underline underline-offset-2 dark:text-blue-400"
-            >
-              Megnézem
-            </Link>
-          ) : null}
+          <div className="flex flex-wrap items-baseline gap-4">
+            {teendo.hivatkozas ? (
+              <Link
+                href={teendo.hivatkozas}
+                className="mt-2 inline-block text-sm text-blue-700 underline underline-offset-2 dark:text-blue-400"
+              >
+                Megnézem
+              </Link>
+            ) : null}
+            {teendo.tarolt ? <TeendoLezaras kulcs={teendo.kulcs} /> : null}
+          </div>
         </li>
       ))}
     </ul>

@@ -78,10 +78,11 @@ model Meroora {
   almero       Boolean  @default(false)
   letrehozva   DateTime @default(now())
 
-  ingatlan    Ingatlan          @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
-  oraallasok  Oraallas[]
-  dijszabasok Dijszabas[]
-  tetelek     ElszamolasTetel[]
+  ingatlan           Ingatlan           @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
+  oraallasok         Oraallas[]
+  dijszabasok        Dijszabas[]
+  tetelek            ElszamolasTetel[]
+  jegyzokonyvTetelek JegyzokonyvTetel[]
 
   @@index([ingatlanId])
 }
@@ -145,6 +146,7 @@ model Jogviszony {
   elszamolasok     Elszamolas[]
   teendok          Teendo[]
   szerzodesek      Szerzodes[]
+  jegyzokonyvek    Jegyzokonyv[]
 
   @@index([ingatlanId])
 }
@@ -174,6 +176,7 @@ model JogviszonyBerlo {
   jogviszony Jogviszony   @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
   berlo      Felhasznalo? @relation("BerloJogviszonyai", fields: [berloId], references: [id])
   meghivok   Meghivo[]
+  igazolasok Igazolas[]
 
   @@index([jogviszonyId, sorrend])
   @@index([berloId])
@@ -417,4 +420,73 @@ model SzerzodesParameter {
   szerzodes Szerzodes @relation(fields: [szerzodesId], references: [id], onDelete: Cascade)
 
   @@unique([szerzodesId, kulcs])
+}
+
+/// Átadás-átvételi jegyzőkönyv: mérőóraállások, kulcsok, állapot, hibák.
+///
+/// Ez a bérlet legfontosabb bizonyítéka. Enélkül a kiköltözéskor szó áll
+/// szemben szóval arról, mi volt a lakásban és milyen állapotban.
+///
+/// Véglegesítéskor két dolog történik: a szöveg befagy, és a rögzített
+/// óraállások bekerülnek a mérőórák történetébe. Az utóbbi azért fontos, mert
+/// így a birtokbaadás állása lesz az első rezsielszámolás kiindulópontja, és
+/// ugyanazt az adatot nem kell kétszer beírni.
+model Jegyzokonyv {
+  id             String    @id @default(cuid())
+  jogviszonyId   String
+  fajta          String // "birtokbaadas" | "visszaadas"
+  idopont        DateTime
+  allapotLeiras  String    @default("")
+  megjegyzes     String?
+  allapot        String    @default("tervezet") // "tervezet" | "veglegesitve"
+  veglegesSzoveg String?
+  veglegesitve   DateTime?
+  letrehozva     DateTime  @default(now())
+
+  jogviszony Jogviszony         @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  tetelek    JegyzokonyvTetel[]
+
+  @@index([jogviszonyId, idopont])
+}
+
+/// A jegyzőkönyv egy sora. A hibákhoz felelős és határidő is tartozhat: abból
+/// lesz teendő, hogy a „majd megcsináljuk” ne vesszen el.
+model JegyzokonyvTetel {
+  id            String    @id @default(cuid())
+  jegyzokonyvId String
+  fajta         String // "meroora" | "kulcs" | "hiba" | "dokumentum"
+  merooraId     String?
+  megnevezes    String
+  ertek         String?
+  megjegyzes    String?
+  felelos       String? // "berbeado" | "berlo"
+  hatarido      DateTime?
+  sorrend       Int       @default(0)
+
+  jegyzokonyv Jegyzokonyv @relation(fields: [jegyzokonyvId], references: [id], onDelete: Cascade)
+  meroora     Meroora?    @relation(fields: [merooraId], references: [id])
+
+  @@index([jegyzokonyvId, sorrend])
+}
+
+/// Bérbeadói igazolás egy bérlőnek: albérlettámogatáshoz, ösztöndíjhoz,
+/// munkáltatói térítéshez kérik, jellemzően havonta.
+///
+/// Az összeget és a teljesítés napját nem kézzel írjuk be, hanem a párosított
+/// befizetésből vesszük: az alkalmazás már tudja, melyik hónapra mennyi érkezett.
+/// A kiállított igazolás szövegét elmentjük, mert az egy kiadott okirat.
+model Igazolas {
+  id                String   @id @default(cuid())
+  jogviszonyBerloId String
+  cel               String
+  idoszak           String // "2026-09"
+  osszegFt          Int
+  teljesitesNapja   DateTime
+  teljesitesModja   String // "atutalas" | "keszpenz" | "egyeb"
+  szoveg            String
+  kiallitva         DateTime @default(now())
+
+  jogviszonyBerlo JogviszonyBerlo @relation(fields: [jogviszonyBerloId], references: [id], onDelete: Cascade)
+
+  @@index([jogviszonyBerloId, idoszak])
 }

@@ -55,8 +55,8 @@ export default async function SzerzodesOldal({
   return (
     <div className="grid gap-6">
       <section>
-        <Link href="/szerzodesek" className="text-sm underline underline-offset-2">
-          ← Szerződések
+        <Link href="/dokumentumok" className="text-sm underline underline-offset-2">
+          ← Dokumentumok
         </Link>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight">{megnevezes}</h1>
         <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
