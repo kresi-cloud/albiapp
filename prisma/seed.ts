@@ -794,7 +794,7 @@ async function main() {
         tipus: "sajat",
         cim: "Kéményseprő egyeztetése",
         leiras: "A társasház a jövő héten hívja a kéményseprőt, Annával egyeztetni kell az időpontot.",
-        esedekesseg: nap(0, Math.min(28, MOST.getUTCDate() + 3)),
+        esedekesseg: nap(0, MOST.getUTCDate() + 3),
         kulcs: "peldaadat:kemenysepro",
       },
       {
@@ -819,7 +819,7 @@ async function main() {
         jogviszonyId: annaJogviszony.id,
         tipus: "sajat",
         cim: "Postaláda kulcsát pótolni",
-        esedekesseg: nap(0, Math.min(28, MOST.getUTCDate() + 5)),
+        esedekesseg: nap(0, MOST.getUTCDate() + 5),
         kulcs: "peldaadat:postalada",
       },
     ],
