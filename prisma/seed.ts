@@ -279,10 +279,13 @@ async function main() {
       data: {
         merooraId: meroora.id,
         ervenyesTol: nap(-8),
-        kedvezmenyesArFiller: 79900, // 799 Ft/m3, víz és csatorna együtt
-        piaciArFiller: 79900,
+        kedvezmenyesArFiller: 37300, // 373 Ft/m3 ivóvíz
+        piaciArFiller: 37300,
         evesKeret: null, // a víznél nincs sáv
         alapdijFt: 0,
+        // Ugyanarra a köbméterre a szennyvízelvezetés. Külön sor lesz belőle az
+        // elszámolásban, ahogy a vízszámlán is külön áll.
+        csatornaArFiller: 42600, // 426 Ft/m3
       },
     });
   }
@@ -675,6 +678,42 @@ async function main() {
       osszegetMutat: true,
       lejar: nap(9, 28),
     },
+  });
+
+  // Beszélgetés: a hétköznapi ügy, ami se hibabejelentés, se elszámolás.
+  // Kétirányú szál a bérbeadó és Anna között, hogy a lista ne legyen üres a
+  // demóban — a csoportos esethez Tamásnak még nincs fiókja, és ez pont jól
+  // mutatja, miért nem szerepel a címzettek közt.
+  const kemenysepro = await prisma.beszelgetes.create({
+    data: {
+      jogviszonyId: annaJogviszony.id,
+      resztvevok: { create: [{ felhasznaloId: berbeado.id }, { felhasznaloId: berloAnna.id }] },
+      utolsoUzenet: nap(0, 11),
+    },
+  });
+
+  await prisma.beszelgetesUzenet.createMany({
+    data: [
+      {
+        beszelgetesId: kemenysepro.id,
+        szerzoId: berbeado.id,
+        szoveg:
+          "Csütörtökön 9 és 11 között jön a kéményseprő. Itthon tudsz lenni, vagy hagyjam nálad a kulcsot?",
+        kuldve: nap(-1, 9),
+      },
+      {
+        beszelgetesId: kemenysepro.id,
+        szerzoId: berloAnna.id,
+        szoveg: "Itthon leszek, nem kell kulcs. Köszönöm, hogy szóltál előre.",
+        kuldve: nap(-1, 10),
+      },
+      {
+        beszelgetesId: kemenysepro.id,
+        szerzoId: berbeado.id,
+        szoveg: "Rendben, akkor csütörtökön. Ha csúsznak, írok.",
+        kuldve: nap(0, 11),
+      },
+    ],
   });
 
   console.log("Példaadat betöltve.");

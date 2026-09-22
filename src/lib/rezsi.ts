@@ -74,6 +74,7 @@ export async function elszamolastOsszeallit(
         piaciArFiller: dijszabas.piaciArFiller,
         evesKeret: dijszabas.evesKeret,
         alapdijFt: dijszabas.alapdijFt,
+        csatornaArFiller: dijszabas.csatornaArFiller,
       },
       nyito: { datum: nyito.datum, ertek: nyito.ertek },
       zaro: { datum: zaro.datum, ertek: zaro.ertek },

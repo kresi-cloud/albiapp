@@ -1416,6 +1416,10 @@ export const SZOTAR: Szotar = {
     en: ", allowance {keret} {egyseg}/year, above it {piaci} HUF/{egyseg}",
   },
   "rezsi.dijszabas_nincs_savhatar": { hu: ", nincs sávhatár", en: ", no band limit" },
+  "rezsi.dijszabas_csatorna": {
+    hu: ", csatornadíj {ar} Ft/{egyseg}",
+    en: ", sewage {ar} HUF/{egyseg}",
+  },
   "rezsi.nincs_dijszabas": { hu: "nincs díjszabás felvéve", en: "no tariff has been added" },
   "rezsi.uj_elszamolas": { hu: "Új elszámolás", en: "New settlement" },
   "rezsi.vitatja": { hu: "A bérlő vitatja: {uzenet}", en: "The tenant disputes it: {uzenet}" },
@@ -2281,6 +2285,86 @@ export const SZOTAR: Szotar = {
   "szerzodes.megnevezes": {
     hu: "Bérleti szerződés – {ingatlan}",
     en: "Lease agreement – {ingatlan}",
+  },
+
+  // Beszélgetés a bérbeadó és a bérlő között.
+  "nav.beszelgetesek": { hu: "Üzenetek", en: "Messages" },
+  "beszelgetes.cim": { hu: "Üzenetek", en: "Messages" },
+  "beszelgetes.bevezeto": {
+    hu: "A bérlet hétköznapi ügyei egy helyen, ott, ahol később is megtalálod. Ami egy hibabejelentéshez tartozik, arra ott a saját üzenetváltása.",
+    en: "The everyday matters of the tenancy in one place, where you can still find them later. Anything that belongs to a fault report has its own thread there.",
+  },
+  "beszelgetes.nincs": {
+    hu: "Még nincs beszélgetésed. Az első üzenettel indul.",
+    en: "You have no conversations yet. The first message starts one.",
+  },
+  "beszelgetes.uj": { hu: "Új beszélgetés", en: "New conversation" },
+  "beszelgetes.uj_sugo": {
+    hu: "A beszélgetés az első üzenettel jön létre. Jelöld be, kinek írsz: egy címzett kétirányú beszélgetés, több címzett csoportos.",
+    en: "A conversation is created by its first message. Tick who you are writing to: one recipient makes it one-to-one, several make it a group.",
+  },
+  "beszelgetes.cimzettek": { hu: "Kinek írsz?", en: "Who are you writing to?" },
+  "beszelgetes.csoport_sugo": {
+    hu: "Aki még nem lépett be a saját fiókjába, nem szerepel itt: neki még nincs hová írni.",
+    en: "Anyone who has not signed in to their own account yet is not listed: there is nowhere to write to them.",
+  },
+  "beszelgetes.nincs_tars": {
+    hu: "Még nincs kivel beszélgetned. Amint a bérlő belép a meghívójával, itt megjelenik.",
+    en: "There is no one to talk to yet. Once the tenant signs in with their invitation, they appear here.",
+  },
+  "beszelgetes.uzenet": { hu: "Az üzenet", en: "Message" },
+  "beszelgetes.uzenet_pelda": {
+    hu: "pl. Csütörtökön 9 és 11 között jön a kéményseprő, be tudtok engedni?",
+    en: "e.g. The chimney sweep is coming Thursday between 9 and 11, can you let them in?",
+  },
+  "beszelgetes.valasz": { hu: "Válasz", en: "Reply" },
+  "beszelgetes.kuldes": { hu: "Küldés", en: "Send" },
+  "beszelgetes.kuldom": { hu: "Küldöm…", en: "Sending…" },
+  "beszelgetes.vissza": { hu: "Vissza az üzenetekhez", en: "Back to messages" },
+  "beszelgetes.en": { hu: "Én", en: "Me" },
+  "beszelgetes.darab": { hu: "{darab} üzenet", en: "{darab} messages" },
+  "beszelgetes.korabbi_uzenetek": {
+    hu: "Korábbi üzenetek ({darab})",
+    en: "Earlier messages ({darab})",
+  },
+  "beszelgetes.archivaltak": {
+    hu: "Archivált beszélgetések ({darab})",
+    en: "Archived conversations ({darab})",
+  },
+  "beszelgetes.archivalt": { hu: "Archiválva", en: "Archived" },
+  "beszelgetes.fajta.ketiranyu": { hu: "Kétirányú", en: "One-to-one" },
+  "beszelgetes.fajta.csoportos": { hu: "Csoportos", en: "Group" },
+  "beszelgetes.lezarult_sugo": {
+    hu: "A jogviszony lezárult. A beszélgetés még {nap} napig nyitva marad, {datum}-ig, hogy az óvadék, az utolsó rezsiszámla és a hátrahagyott holmi ügyét legyen hol megbeszélni.",
+    en: "The tenancy has ended. This conversation stays open for another {nap} days, until {datum}, so there is somewhere to settle the deposit, the last utility bill and anything left behind.",
+  },
+  "beszelgetes.archivalt_sugo": {
+    hu: "Archiválva: a jogviszony lezárása után {nap} nappal lezárult. Olvasható marad, de írni már nem lehet bele.",
+    en: "Archived: it closed {nap} days after the tenancy ended. It stays readable, but nothing can be added.",
+  },
+  "beszelgetes.archivalt_nem_irhato": {
+    hu: "Ez a beszélgetés archivált, ezért nem lehet hozzáírni. Ami benne van, az megmarad.",
+    en: "This conversation is archived, so nothing can be added. What is in it stays.",
+  },
+  "beszelgetes.hiba.ures": {
+    hu: "Üres üzenetet nem küldünk el.",
+    en: "We do not send an empty message.",
+  },
+  "beszelgetes.hiba.hosszu": {
+    hu: "Ez hosszabb, mint amit egy üzenet elbír ({max} karakter). Ami ennél hosszabb, az inkább dokumentum.",
+    en: "This is longer than one message can carry ({max} characters). Anything longer belongs in a document.",
+  },
+  "beszelgetes.hiba.nincs_jogosultsag": {
+    hu: "Ehhez a beszélgetéshez nincs közöd.",
+    en: "This conversation is not yours.",
+  },
+  "beszelgetes.hiba.archivalt": {
+    hu: "Ez a beszélgetés archivált, nem lehet hozzáírni.",
+    en: "This conversation is archived; nothing can be added.",
+  },
+  "beszelgetes.hiba.nincs_cimzett": {
+    hu: "Jelöld be, kinek írsz.",
+    en: "Tick who you are writing to.",
   },
 };
 

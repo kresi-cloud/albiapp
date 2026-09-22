@@ -101,7 +101,13 @@ export default async function Rezsi() {
                                   egyseg: meroora.mertekegyseg,
                                   piaci: szamF(dijszabas.piaciArFiller / 100),
                                 })
-                              : sz("rezsi.dijszabas_nincs_savhatar"))
+                              : sz("rezsi.dijszabas_nincs_savhatar")) +
+                            (dijszabas.csatornaArFiller > 0
+                              ? sz("rezsi.dijszabas_csatorna", {
+                                  ar: szamF(dijszabas.csatornaArFiller / 100),
+                                  egyseg: meroora.mertekegyseg,
+                                })
+                              : "")
                           : sz("rezsi.nincs_dijszabas")}
                       </p>
                       <OraallasUrlap
