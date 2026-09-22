@@ -58,11 +58,12 @@ export async function bizonylatotFeltolt(
   });
   if (baj) return hiba(u(baj), ["bizonylat"]);
 
-  await bizonylatotMent(ki, eloirtTetelId, {
+  const sikerult = await bizonylatotMent(ki, eloirtTetelId, {
     nev: fajl.name,
     tipus: fajl.type,
     tartalom: new Uint8Array(await fajl.arrayBuffer()),
   });
+  if (!sikerult) return hiba(sz("bizonylat.hiba.lakotarse"), ["bizonylat"]);
 
   frissit();
   return { allapot: "kesz", uzenet: sz("bizonylat.kesz"), hibak: [] };
