@@ -351,6 +351,14 @@ szóló értékelés eltűnjön. Felfedés után senki nem ír és nem módosít
 másik fél elolvasott, azt nem írjuk át — ugyanaz az elv, mint a `veglegesSzoveg`
 befagyasztásánál.
 
+**A harminc nap nem a kiköltözéstől számít, hanem attól, hogy a lezárás mikor
+került be** (`ablakKezdete`, a `Jogviszony.lezarva`-ból). A kettő rendes esetben
+egybeesik, de ha a bérbeadó utólag rögzíti a lezárást, nem: a bérlő addig nem is
+látta, hogy a bérlet lezárult, tehát értékelni sem tudott. A dátum ráadásul a
+bérbeadó kezében van, és a `vege`-től számolva egy visszakeltezett lezárás
+azonnal felfedné a másik fél addig rejtett szövegét, és elvenné tőle a sajátja
+megírását — vagyis pont az a fél keltezne vissza, akinek ez az érdeke.
+
 A harminc nap oka ugyanaz, mint a beszélgetés kilencvenéé, csak rövidebb: az
 óvadék elszámolása és az utolsó rezsiszámla a kiköltözés utáni hetekben derül
 ki, ezek nélkül a bérlet felét nem lehetne értékelni. Fél év múlva viszont már

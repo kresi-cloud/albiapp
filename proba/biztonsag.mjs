@@ -6,7 +6,11 @@
  *    nem bizonyít semmit: a meglévő jelszó az, ami a fiók gazdájától jön.
  * 2. A **lezárt** jogviszonyt nem lehet újra lezárni. A második lezárás
  *    korábbi véget is kaphatna, az pedig már egyeztetett előírt tételeket
- *    törölne, és az értékelési ablakot is kinyitná visszamenőleg.
+ *    törölne.
+ * 3. A **visszakeltezett** lezárás nem nyitja meg az értékelési ablakot. A
+ *    harminc nap attól számít, hogy a lezárás mikor került be, nem attól,
+ *    milyen napot írtak be — különben a bérbeadó a saját értékelése nélkül
+ *    olvashatná el a bérlőét.
  *
  * Mindkettő a kiszolgálón dől el, nem a gomb elrejtésén, ezért mindkettőt
  * **valódi űrlappal** próbáljuk: a rejtett mezőbe idegen azonosítót írunk,
@@ -172,5 +176,73 @@ export async function futtat(oldal) {
   all(
     new URL(oldal.url()).pathname === "/berlo",
     "önpróba: a saját jelszavával a fiók gazdája elfogadhatja a meghívót",
+  );
+
+  // --- 3. A visszakeltezett lezárás nem nyitja meg az értékelési ablakot
+  //
+  // A bérbeadó Mártonról már írt, Márton még nem írt a bérbeadóról. Ha a
+  // bérlet lezárását hatvan nappal visszakeltezve rögzítené, a harminc napos
+  // ablak lejártnak látszana: a bérbeadó szövege felfedődne, Márton írási
+  // lehetősége pedig egy kattintással elveszne. Ezért az ablak nem attól
+  // számít, milyen napot írtak be, hanem attól, mikor került be a lezárás.
+  const MARTON_MONDATA = "Mártonnal a közös költség elszámolása körül";
+
+  await belep(oldal, "berbeado@pelda.hu");
+  await magyarra(oldal);
+  await oldal.goto(`${ALAP}/ertekelesek`);
+  await oldal.waitForLoadState("networkidle");
+  await mindetKinyit(oldal);
+  all(
+    (await oldal.content()).includes(MARTON_MONDATA),
+    "önpróba: a bérbeadó a saját szövegét látja, tehát a keresett mondat megtalálható",
+  );
+
+  await belep(oldal, "marton@pelda.hu");
+  await magyarra(oldal);
+  await oldal.goto(`${ALAP}/ertekelesek`);
+  await oldal.waitForLoadState("networkidle");
+  await mindetKinyit(oldal);
+  all(
+    !(await oldal.content()).includes(MARTON_MONDATA),
+    "kiindulás: Márton a lap forrásában sem látja a róla szóló szöveget",
+  );
+  all(
+    (await oldal.locator('textarea[name="szoveg"]').count()) > 0,
+    "kiindulás: Márton írhatja a sajátját",
+  );
+
+  await belep(oldal, "berbeado@pelda.hu");
+  await magyarra(oldal);
+  await berlokLapja(oldal);
+  const zugloi = oldal
+    .locator("h2")
+    .filter({ hasText: "Zuglói kislakás" })
+    .first()
+    .locator("xpath=ancestor::li[1]");
+  await zugloi.getByRole("button", { name: "Mégis él" }).click();
+  await oldal.waitForTimeout(1500);
+
+  await berlokLapja(oldal);
+  const ujraZugloi = oldal
+    .locator("h2")
+    .filter({ hasText: "Zuglói kislakás" })
+    .first()
+    .locator("xpath=ancestor::li[1]");
+  await ujraZugloi.locator('input[name="vege"]').fill(napot(-60));
+  await ujraZugloi.getByRole("button", { name: "Lezárom" }).click();
+  await oldal.waitForTimeout(2000);
+
+  await belep(oldal, "marton@pelda.hu");
+  await magyarra(oldal);
+  await oldal.goto(`${ALAP}/ertekelesek`);
+  await oldal.waitForLoadState("networkidle");
+  await mindetKinyit(oldal);
+  all(
+    !(await oldal.content()).includes(MARTON_MONDATA),
+    "a visszakeltezett lezárás sem fedi fel a másik fél szövegét",
+  );
+  all(
+    (await oldal.locator('textarea[name="szoveg"]').count()) > 0,
+    "és nem is veszi el Mártontól a saját értékelése megírását",
   );
 }

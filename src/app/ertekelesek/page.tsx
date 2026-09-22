@@ -106,7 +106,9 @@ function Sor({
   sz: Szoveg;
   u: Uzenetezo;
 }) {
-  const hatra = hatralevoNap(sor.vege, ma);
+  // A visszaszámlálás az ablak kezdetétől megy, nem a kiköltözéstől: utólag
+  // rögzített lezárásnál a kettő nem ugyanaz.
+  const hatra = hatralevoNap(sor.ablakKezdete, ma);
   const szempontok = SZEMPONTOK[sor.sajatIrany].map((kulcs) => ({
     kulcs,
     cimke: u(szempontNeve(sor.sajatIrany, kulcs)),

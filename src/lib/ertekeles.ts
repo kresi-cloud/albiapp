@@ -7,6 +7,7 @@
  */
 
 import {
+  ablakKezdete,
   irhato,
   nezet,
   parosaEnnek,
@@ -27,7 +28,13 @@ export type Nezet = {
   masikFelNeve: string;
   /** Van-e egyáltalán kinek írni: fiók nélküli bérlőt nem lehet értékelni. */
   vanMasikFel: boolean;
+  /** A kiköltözés napja. Ezt írjuk ki: a bérletről ez mondja meg, meddig élt. */
   vege: Date | null;
+  /**
+   * Mikortól számít a harminc nap. Ugyanaz, mint a `vege`, kivéve ha a
+   * bérbeadó utólag rögzítette a lezárást — akkor a rögzítés napja.
+   */
+  ablakKezdete: Date | null;
   allapot: Allapot;
   /** Melyik irányban ír a belépett fél. */
   sajatIrany: Irany;
@@ -63,6 +70,7 @@ function nezette(
   jogviszonyId: string,
   cimke: string,
   vege: Date | null,
+  lezarva: Date | null,
   sajatId: string,
   masikId: string | null,
   masikNev: string,
@@ -74,7 +82,10 @@ function nezette(
   // kiről. Két fiókos lakótársnál a bérbeadónak két értékelése van ezen az
   // egy jogviszonyon, és a szerző egymagában nem választja szét őket.
   const paros: Paros = parosaEnnek(sorok.map(adatta), sajatId, masikId);
-  const lathato = nezet(paros, vege, ma);
+  // Az ablak nem a kiköltözéstől számít, hanem attól, hogy a lezárás mikor
+  // került be: a bérlő addig nem is látta, hogy a bérlet lezárult.
+  const kezdet = ablakKezdete(vege, lezarva);
+  const lathato = nezet(paros, kezdet, ma);
 
   return {
     jogviszonyId,
@@ -83,11 +94,12 @@ function nezette(
     masikFelNeve: masikNev,
     vanMasikFel: masikId !== null,
     vege,
+    ablakKezdete: kezdet,
     allapot: lathato.allapot,
     sajatIrany,
     sajat: lathato.sajat,
     masike: lathato.masike,
-    irhato: masikId !== null && irhato(paros, vege, ma),
+    irhato: masikId !== null && irhato(paros, kezdet, ma),
   };
 }
 
@@ -124,6 +136,7 @@ export async function berbeadoErtekelesei(
         jogviszony.id,
         jogviszony.ingatlan.megnevezes,
         jogviszony.vege,
+        jogviszony.lezarva,
         berbeadoId,
         berlo.berloId,
         berlo.nev,
@@ -160,6 +173,7 @@ export async function berloErtekelesei(
       jogviszony.id,
       jogviszony.ingatlan.megnevezes,
       jogviszony.vege,
+      jogviszony.lezarva,
       berloId,
       jogviszony.ingatlan.tulajdonosId,
       jogviszony.ingatlan.tulajdonos.nev,
@@ -257,7 +271,7 @@ export async function ertekelesTeendoAdatai(
     jogviszonyId: string;
     masikFelId: string;
     cimke: string;
-    vege: Date | null;
+    kezdet: Date | null;
     paros: Paros;
   }[]
 > {
@@ -274,7 +288,7 @@ export async function ertekelesTeendoAdatai(
       jogviszonyId: sor.jogviszonyId,
       masikFelId: sor.masikFelId,
       cimke: sor.cimke,
-      vege: sor.vege,
+      kezdet: sor.ablakKezdete,
       // `masike` felfedésig szándékosan null, de a teendő ettől nem téved: a
       // teendő csak akkor van, ha a **saját** hiányzik, és olyankor a másiké
       // egymagában úgysem fed fel semmit. Amint mindkettő megvan, a saját nem
