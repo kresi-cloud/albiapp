@@ -533,7 +533,13 @@ Rövid listát nem csukunk össze: három sor mögé kattintani rosszabb, mint
 elolvasni őket.
 
 A laphossz ezért kapu: a `proba/meret.mjs` minden lapon megméri, és nyolc
-telefonképernyőnél hosszabb lap megbukik. Ha egy lap átlépi, csoportosítani
+telefonképernyőnél hosszabb lap megbukik. Egy lapot viszont nem tudott mérni: a
+véglegesített szerződését, mert a példaadatban nincs véglegesített szerződés, a
+méretpróba pedig a sor elején fut, friss adatbázison. A vakfolt mögött a lap
+tizenkilenc képernyő lett (a kész szöveg alapból nyitva állt), és semmi nem
+szólt. Azóta a `proba/forditas.mjs` méri meg, ott, ahol épp véglegesített egy
+szerződést — a tanulság pedig általános: ha egy állapotot a példaadat nem
+tartalmaz, azt az az oldal mérje meg, amelyik előállítja. Ha egy lap átlépi, csoportosítani
 vagy összecsukni kell, nem a korlátot emelni. A mérés önpróbával kezd —
 magassággal és szélességgel egyaránt —, mert ebben a projektben már két
 olyan próbaállítás volt, ami mindig igazat adott.

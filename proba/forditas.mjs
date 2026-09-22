@@ -155,6 +155,38 @@ export async function futtat(oldal) {
   await oldal.waitForLoadState("networkidle");
   await oldal.waitForTimeout(500);
 
+  // A véglegesített szerződés lapját a méretkapu soha nem méri: a példaadatban
+  // nincs véglegesített szerződés, és a méretpróba a sor elején fut, friss
+  // adatbázison. Ez a vakfolt mögött tizenkilenc telefonképernyős lapot hagyott,
+  // ezért itt mérjük meg, ahol van ilyen lap.
+  //
+  // Frissen töltjük be, mert a `mindetKinyit` stíluslapja addig minden
+  // összecsukott szakaszt kirajzoltat. Az összecsukás a lap része, nem a próba
+  // kényelme: csukva kell mérni, ugyanúgy, ahogy a méretkapu teszi.
+  const KEPERNYO = 844;
+  const MAX_KEPERNYO = 8;
+  await oldal.goto(`${ALAP}/szerzodesek/${id}`);
+  await oldal.waitForLoadState("networkidle");
+
+  // Önpróba: kinyitva ez a lap bizonyítottan elbukna a korláton. Enélkül nem
+  // lehetne tudni, hogy a mérés nem azért zöld, mert semmit nem lát — ebben a
+  // projektben már volt két olyan próbaállítás, ami mindig igazat adott.
+  await mindetKinyit(oldal);
+  const nyitva = await oldal.evaluate(() => document.documentElement.scrollHeight);
+  all(
+    nyitva > KEPERNYO * MAX_KEPERNYO,
+    `a korlát elbukna ezen a lapon kinyitva (${(nyitva / KEPERNYO).toFixed(1)} képernyő)`,
+  );
+
+  await oldal.goto(`${ALAP}/szerzodesek/${id}`);
+  await oldal.waitForLoadState("networkidle");
+  const magassag = await oldal.evaluate(() => document.documentElement.scrollHeight);
+  all(
+    magassag <= KEPERNYO * MAX_KEPERNYO,
+    `a véglegesített szerződés lapja sem hosszabb ${MAX_KEPERNYO} telefonképernyőnél ` +
+      `(${(magassag / KEPERNYO).toFixed(1)} képernyő, ${magassag}px)`,
+  );
+
   const veglegesAngol = await letoltes(oldal, `/szerzodesek/${id}/letoltes?nyelv=en`);
   all(veglegesAngol.kod === 200, "a véglegesített szerződés fordítása is letölthető");
   all(

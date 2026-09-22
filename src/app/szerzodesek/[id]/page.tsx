@@ -237,13 +237,16 @@ export default async function SzerzodesOldal({
         átállítása és a véglegesítés is az aljára kerül, vagyis minden
         próbálkozás után végig kell görgetni rajta. Összecsukva áll, de nem
         rejtve: a nyitósor kiírja, hány szakaszból áll, és egy koppintásra
-        látszik. A véglegesített szöveg alapból nyitva van, mert azt olvasni
-        jön vissza az ember.
+        látszik.
+
+        A véglegesített szöveg korábban alapból nyitva volt, azzal az
+        indokkal, hogy azt olvasni jön vissza az ember. Ettől viszont a
+        véglegesített szerződés lapja tizenkilenc telefonképernyő lett, és ezt
+        semmi nem szólta be: a méretkapu csak tervezetet mért, mert a
+        példaadatban nincs véglegesített szerződés. A korlát nem emelhető, tehát
+        ez is csukva áll — egy koppintás, és ugyanúgy ott a teljes szöveg.
       */}
-      <details
-        open={veglegesSzoveg !== null}
-        className="rounded-kartya border border-keret bg-felulet p-4"
-      >
+      <details className="rounded-kartya border border-keret bg-felulet p-4">
         <summary className={NYITO}>
           {sz("szerzodes.szoveg_nyito", { db: kesz.length })}
         </summary>
