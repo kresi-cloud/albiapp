@@ -1,6 +1,8 @@
 import { Dokumentumlista } from "@/components/Dokumentumlista";
+import { szovegekNyelvvel } from "@/domain/szotar";
 import { berloTara } from "@/lib/dokumentumtar";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { aktualisNyelv } from "@/lib/nyelv";
 
 export const dynamic = "force-dynamic";
 
@@ -10,22 +12,26 @@ export const dynamic = "force-dynamic";
  */
 export default async function BerloiDokumentumok() {
   const berlo = await kotelezoSzerep("berlo");
+  const nyelv = await aktualisNyelv();
+  const { sz } = szovegekNyelvvel(nyelv);
   const dokumentumok = await berloTara(berlo.id);
 
   return (
     <div className="grid gap-6">
       <section>
-        <h1 className="text-2xl font-semibold tracking-tight">Dokumentumaim</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{sz("dokumentum.oldal.cim")}</h1>
         <p className="mt-1 text-stone-600 dark:text-stone-400">
-          Minden papír, ami a bérleményedről kiadásra került: a szerződés, az
-          átadás-átvételi jegyzőkönyv, a rezsielszámolások és a bérbeadói igazolások.
-          Mindegyik letölthető, és ugyanazt tartalmazza, amit a bérbeadó lát.
+          {sz("dokumentum.oldal.bevezeto")}
+        </p>
+        <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+          {sz("dokumentum.oldal.magyarul")}
         </p>
       </section>
 
       <Dokumentumlista
         dokumentumok={dokumentumok}
-        uresUzenet="Még nincs kiadott dokumentumod. Amint a bérbeadó véglegesít egyet, itt megjelenik."
+        nyelv={nyelv}
+        uresUzenet={sz("dokumentum.oldal.ures")}
       />
     </div>
   );

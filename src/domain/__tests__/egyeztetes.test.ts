@@ -58,7 +58,7 @@ describe("egyeztet", () => {
     );
     expect(eredmeny.allapot).toBe("egyezik");
     expect(eredmeny.keses).toBe(7);
-    expect(eredmeny.magyarazat).toContain("7 nappal");
+    expect(eredmeny.magyarazat).toEqual({ kulcs: "egyeztetes.keson", adatok: { nap: 7 } });
   });
 
   it("a kevesebb összeget eltérésként jelzi, és megmondja a különbséget", () => {

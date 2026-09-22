@@ -7,8 +7,20 @@ egyértelműen jobbat.
 
 ## Nyelv
 
-- A felhasználói felület, a hibaüzenetek és a dokumentáció magyarul vannak.
-- A kód azonosítói is magyarul: `eloirtTetel`, `kivonattetel`, `egyeztetes`.
+- A felület magyarul és angolul megy. A bérbeadó magyar magánszemély, a bérlő
+  viszont gyakran nem: egyetemi városban külföldi hallgató, nagyvárosban
+  külföldön dolgozó. A nyelvet a `Nyelvvalto` állítja, és az ezen az eszközön
+  tett utolsó választás dönt (süti), süti híján a fiókban mentett nyelv.
+- **A kiadott okiratok magyarul érvényesek, és magyarul is maradnak**: a
+  szerződés, a jegyzőkönyv, az igazolás és a rezsielszámolás szövegét nem
+  fordítjuk, mert a fordítás nem az, amit aláírtak. A felület ezt ki is mondja.
+- A domain nem ad vissza kész mondatot, hanem `Uzenet`-et: kulcsot és a
+  behelyettesítendő adatokat (`src/domain/nyelv.ts`). A mondat a szótárban él
+  (`src/domain/szotar.ts`), hogy a két nyelv ne csússzon szét. A számítás így
+  nyelvfüggetlen marad, és a tesztek kulcsra állítanak, nem prózára.
+- A dokumentáció és a kódon belüli magyarázat magyarul van.
+- A hibaüzenetek is a szótáron mennek át.
+- A kód azonosítói magyarul: `eloirtTetel`, `kivonattetel`, `egyeztetes`.
   Az ok gyakorlati: ezeknek a szakkifejezéseknek nincs jó angol párjuk, és a
   félrefordítás a pénzügyi logikában hiba forrása.
 - Kivétel a keretrendszer által előírt nevek (`page.tsx`, `layout.tsx`).
@@ -135,6 +147,14 @@ Négy tábla, egy lista. A bérlő csak a kiadott okiratot látja és töltheti 
 véglegesített szerződést és jegyzőkönyvet, kiadott elszámolást, neki kiállított
 igazolást. Tervezetet nem, mert az még változhat. Az igazolás névre szól, ezért a
 lakótárs igazolását a bérlő nem látja.
+
+## Jogi tájékoztatók
+
+Az adatkezelési tájékoztató és a felhasználási feltételek szövege
+`src/domain/jogi.ts`-ben van, mindkét nyelven, és a lábléc minden oldalról
+elérhetővé teszi. Az üzemeltető adatai szögletes zárójellel kitöltendőként
+állnak benne: az adatkezelő megnevezése jogi nyilatkozat, nem találjuk ki a
+bérbeadó helyett. Élesítés előtt ezeket ki kell tölteni.
 
 ## Mit jelent, hogy kész
 

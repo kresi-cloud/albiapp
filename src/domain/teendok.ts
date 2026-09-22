@@ -7,6 +7,7 @@
  */
 
 import type { Allapot, ElteresOka } from "./egyeztetes";
+import { uzenet, type Uzenet } from "./nyelv";
 import { napKulonbseg } from "./penz";
 
 export type Surgosseg = "lejart" | "ma" | "kozeli" | "kesobbi";
@@ -15,8 +16,8 @@ export type Teendo = {
   kulcs: string;
   cimzett: "berbeado" | "berlo";
   tipus: string;
-  cim: string;
-  leiras?: string;
+  cim: Uzenet;
+  leiras?: Uzenet;
   esedekesseg: Date;
   hivatkozas?: string;
   /**
@@ -83,8 +84,11 @@ export function egyeztetesbolTeendok(
         kulcs: `hianyzik:${azonosito}:berlo`,
         cimzett: "berlo",
         tipus: "befizetes_hianyzik",
-        cim: "Esedékes befizetés nem érkezett meg",
-        leiras: `${egyeztetes.idoszak ?? ""} időszak, ${egyeztetes.osszegFt} Ft.`,
+        cim: uzenet("teendo.hianyzik.berlo"),
+        leiras: uzenet("teendo.idoszak_osszeg", {
+          idoszak: egyeztetes.idoszak ?? "",
+          osszeg: egyeztetes.osszegFt,
+        }),
         esedekesseg: egyeztetes.esedekesseg,
         hivatkozas,
       });
@@ -92,8 +96,11 @@ export function egyeztetesbolTeendok(
         kulcs: `hianyzik:${azonosito}:berbeado`,
         cimzett: "berbeado",
         tipus: "befizetes_hianyzik",
-        cim: "Elmaradt befizetés, emlékeztető küldhető",
-        leiras: `${egyeztetes.idoszak ?? ""} időszak, ${egyeztetes.osszegFt} Ft.`,
+        cim: uzenet("teendo.hianyzik.berbeado"),
+        leiras: uzenet("teendo.idoszak_osszeg", {
+          idoszak: egyeztetes.idoszak ?? "",
+          osszeg: egyeztetes.osszegFt,
+        }),
         esedekesseg: egyeztetes.esedekesseg,
         hivatkozas,
       });
@@ -103,16 +110,16 @@ export function egyeztetesbolTeendok(
     if (egyeztetes.allapot === "elter") {
       const cim =
         egyeztetes.elteresOka === "nincs_eloiras"
-          ? "Beérkezett utalás, amihez nincs előírás"
+          ? uzenet("teendo.elter.nincs_eloiras")
           : egyeztetes.elteresOka === "nincs_kivonattetel"
-            ? "A bérlő igazolta a befizetést, de a kivonaton nincs meg"
-            : "Eltérés a befizetésben";
+            ? uzenet("teendo.elter.nincs_kivonattetel")
+            : uzenet("teendo.elter.berbeado");
       teendok.push({
         kulcs: `elter:${azonosito}:berbeado`,
         cimzett: "berbeado",
         tipus: "befizetes_elter",
         cim,
-        leiras: `Eltérés: ${egyeztetes.elteresFt} Ft.`,
+        leiras: uzenet("teendo.elteres", { osszeg: egyeztetes.elteresFt }),
         esedekesseg: egyeztetes.esedekesseg,
         hivatkozas,
       });
@@ -121,8 +128,8 @@ export function egyeztetesbolTeendok(
           kulcs: `elter:${azonosito}:berlo`,
           cimzett: "berlo",
           tipus: "befizetes_elter",
-          cim: "Eltérés a befizetésedben",
-          leiras: `Eltérés: ${egyeztetes.elteresFt} Ft.`,
+          cim: uzenet("teendo.elter.berlo"),
+          leiras: uzenet("teendo.elteres", { osszeg: egyeztetes.elteresFt }),
           esedekesseg: egyeztetes.esedekesseg,
           hivatkozas,
         });
@@ -156,8 +163,11 @@ export function kozelgoBefizetesTeendok(
       kulcs: `esedekes:${tetel.id}:berlo`,
       cimzett: "berlo" as const,
       tipus: "befizetes_esedekes",
-      cim: "Közeleg a fizetési határidő",
-      leiras: `${tetel.idoszak} időszak, ${tetel.osszegFt} Ft.`,
+      cim: uzenet("teendo.kozelgo"),
+      leiras: uzenet("teendo.idoszak_osszeg", {
+        idoszak: tetel.idoszak,
+        osszeg: tetel.osszegFt,
+      }),
       esedekesseg: tetel.esedekesseg,
       hivatkozas: `/berlo/befizetesek?jogviszony=${tetel.jogviszonyId}`,
     }));

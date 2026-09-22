@@ -3,9 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { belepettFelhasznalo } from "@/lib/munkamenet";
+import { szovegek } from "@/lib/nyelv";
 import {
-  ALLAPOT_NEVE,
+  allapotNeve,
   lepesLehetseges,
+  OKOK,
+  SURGOSSEGEK,
+  TERULETEK,
   type HibaAllapot,
   type HibaSurgosseg,
   type Ok,
@@ -23,19 +27,6 @@ function hiba(uzenet: string, hibak: string[] = []): Eredmeny {
 function szoveg(nyers: unknown): string {
   return String(nyers ?? "").trim();
 }
-
-const TERULETEK: Terulet[] = [
-  "epulet",
-  "kozponti_berendezes",
-  "kozos_terulet",
-  "burkolat",
-  "nyilaszaro",
-  "berendezes",
-  "haztartasi_gep",
-  "egyeb",
-];
-const OKOK: Ok[] = ["elhasznalodas", "karokozas", "ismeretlen"];
-const SURGOSSEGEK: HibaSurgosseg[] = ["veszhelyzet", "surgos", "normal"];
 
 /** Mindkét fél listáját és a kezdőlapok teendőit is érinti egy változás. */
 function frissit(): void {
@@ -67,12 +58,13 @@ async function elerhetoHiba(felhasznaloId: string, szerep: string, hibaId: strin
 }
 
 export async function hibatBejelent(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const { sz } = await szovegek();
   const felhasznalo = await belepettFelhasznalo();
-  if (!felhasznalo) return hiba("Lépj be.");
+  if (!felhasznalo) return hiba(sz("valasz.lepj_be"));
 
   const jogviszonyId = szoveg(urlap.get("jogviszonyId"));
   const jogviszony = await elerhetoJogviszony(felhasznalo.id, felhasznalo.szerep, jogviszonyId);
-  if (!jogviszony) return hiba("Ehhez a bérleményhez nincs hozzáférésed.");
+  if (!jogviszony) return hiba(sz("valasz.nincs_hozzaferes"));
 
   const targy = szoveg(urlap.get("targy"));
   const leiras = szoveg(urlap.get("leiras"));
@@ -81,12 +73,12 @@ export async function hibatBejelent(_elozo: Eredmeny, urlap: FormData): Promise<
   const surgosseg = szoveg(urlap.get("surgosseg")) as HibaSurgosseg;
 
   const hianyok: string[] = [];
-  if (targy === "") hianyok.push("Írd le egy mondatban, mi a baj.");
-  if (leiras === "") hianyok.push("A részletezés nélkül nehéz eldönteni, mit kell vinni.");
-  if (!TERULETEK.includes(terulet)) hianyok.push("Válaszd ki, mi romlott el.");
-  if (!OKOK.includes(ok)) hianyok.push("Válaszd ki, mitől romlott el.");
-  if (!SURGOSSEGEK.includes(surgosseg)) hianyok.push("Válaszd ki, mennyire sürgős.");
-  if (hianyok.length > 0) return hiba("Ezt még pótold:", hianyok);
+  if (targy === "") hianyok.push(sz("valasz.hiany.targy"));
+  if (leiras === "") hianyok.push(sz("valasz.hiany.leiras"));
+  if (!TERULETEK.includes(terulet)) hianyok.push(sz("valasz.hiany.terulet"));
+  if (!OKOK.includes(ok)) hianyok.push(sz("valasz.hiany.ok"));
+  if (!SURGOSSEGEK.includes(surgosseg)) hianyok.push(sz("valasz.hiany.surgosseg"));
+  if (hianyok.length > 0) return hiba(sz("valasz.potold"), hianyok);
 
   await prisma.hibabejelentes.create({
     data: {
@@ -104,28 +96,28 @@ export async function hibatBejelent(_elozo: Eredmeny, urlap: FormData): Promise<
 
   return {
     allapot: "kesz",
-    uzenet:
-      surgosseg === "veszhelyzet"
-        ? "Bejelentve. Veszélyhelyzetnél a bejelentés mellett telefonálj is: az alkalmazás nem csörög."
-        : "Bejelentve. A bérbeadó a teendői között azonnal látja.",
+    uzenet: sz(
+      surgosseg === "veszhelyzet" ? "valasz.bejelentve.veszely" : "valasz.bejelentve",
+    ),
     hibak: [],
   };
 }
 
 /** Állapotlépés. Hogy ki mit léphet, az a domainben van, nem az űrlapon. */
 export async function hibatLep(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const { sz, u } = await szovegek();
   const felhasznalo = await belepettFelhasznalo();
-  if (!felhasznalo) return hiba("Lépj be.");
+  if (!felhasznalo) return hiba(sz("valasz.lepj_be"));
 
   const hibaId = szoveg(urlap.get("hibaId"));
   const cel = szoveg(urlap.get("cel")) as HibaAllapot;
 
   const bejelentes = await elerhetoHiba(felhasznalo.id, felhasznalo.szerep, hibaId);
-  if (!bejelentes) return hiba("Ez a bejelentés nem a tiéd.");
+  if (!bejelentes) return hiba(sz("valasz.nem_tied"));
 
   const szerep = felhasznalo.szerep === "berlo" ? "berlo" : "berbeado";
   if (!lepesLehetseges(bejelentes.allapot as HibaAllapot, cel, szerep)) {
-    return hiba("Ez a lépés innen nem lehetséges.");
+    return hiba(sz("valasz.lepes_nem_lehet"));
   }
 
   const most = new Date();
@@ -141,24 +133,29 @@ export async function hibatLep(_elozo: Eredmeny, urlap: FormData): Promise<Eredm
 
   frissit();
 
-  return { allapot: "kesz", uzenet: `Új állapot: ${ALLAPOT_NEVE[cel]}.`, hibak: [] };
+  return {
+    allapot: "kesz",
+    uzenet: sz("valasz.uj_allapot", { allapot: u(allapotNeve(cel)) }),
+    hibak: [],
+  };
 }
 
 /** A költségviselőt csak a bérbeadó mondhatja ki, és csak ő írhatja felül. */
 export async function viselotMent(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const { sz } = await szovegek();
   const felhasznalo = await belepettFelhasznalo();
   if (!felhasznalo || felhasznalo.szerep !== "berbeado") {
-    return hiba("Ezt csak a bérbeadó döntheti el.");
+    return hiba(sz("valasz.csak_berbeado"));
   }
 
   const hibaId = szoveg(urlap.get("hibaId"));
   const viselo = szoveg(urlap.get("viseloFel"));
   if (!["berbeado", "berlo", "megosztott", ""].includes(viselo)) {
-    return hiba("Ismeretlen költségviselő.");
+    return hiba(sz("valasz.ismeretlen_viselo"));
   }
 
   const bejelentes = await elerhetoHiba(felhasznalo.id, "berbeado", hibaId);
-  if (!bejelentes) return hiba("Ez a bejelentés nem a tiéd.");
+  if (!bejelentes) return hiba(sz("valasz.nem_tied"));
 
   await prisma.hibabejelentes.update({
     where: { id: bejelentes.id },
@@ -169,21 +166,22 @@ export async function viselotMent(_elozo: Eredmeny, urlap: FormData): Promise<Er
 
   return {
     allapot: "kesz",
-    uzenet: viselo === "" ? "A költségviselő újra eldöntetlen." : "Rögzítve, a bérlő is látja.",
+    uzenet: sz(viselo === "" ? "valasz.viselo_torolve" : "valasz.viselo_mentve"),
     hibak: [],
   };
 }
 
 export async function uzenetetKuld(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const { sz } = await szovegek();
   const felhasznalo = await belepettFelhasznalo();
-  if (!felhasznalo) return hiba("Lépj be.");
+  if (!felhasznalo) return hiba(sz("valasz.lepj_be"));
 
   const hibaId = szoveg(urlap.get("hibaId"));
   const uzenet = szoveg(urlap.get("szoveg"));
   if (uzenet === "") return URES;
 
   const bejelentes = await elerhetoHiba(felhasznalo.id, felhasznalo.szerep, hibaId);
-  if (!bejelentes) return hiba("Ez a bejelentés nem a tiéd.");
+  if (!bejelentes) return hiba(sz("valasz.nem_tied"));
 
   await prisma.hibaUzenet.create({
     data: { hibabejelentesId: bejelentes.id, szerzoId: felhasznalo.id, szoveg: uzenet },
@@ -191,5 +189,5 @@ export async function uzenetetKuld(_elozo: Eredmeny, urlap: FormData): Promise<E
 
   frissit();
 
-  return { allapot: "kesz", uzenet: "Elküldve.", hibak: [] };
+  return { allapot: "kesz", uzenet: sz("valasz.elkuldve"), hibak: [] };
 }

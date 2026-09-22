@@ -105,9 +105,9 @@ describe("dokumentumtár", () => {
     expect(sorok.find((sor) => sor.kulcs === "elszamolas:el2")?.letoltes).toBeUndefined();
   });
 
-  it("az elszámolás állapotát emberi nyelven mondja", () => {
+  it("az elszámolás állapotát kulccsal adja vissza, hogy fordítható legyen", () => {
     const sor = jogviszonyDokumentumai(teli).find((sor) => sor.kulcs === "elszamolas:el1");
-    expect(sor?.allapotCimke).toBe("kiadva, a bérlő elbírálására vár");
+    expect(sor?.allapotCimke.kulcs).toBe("dokumentum.elszamolas.allapot.kiadva");
   });
 
   it("minden sor tudja, melyik jogviszonyhoz tartozik", () => {

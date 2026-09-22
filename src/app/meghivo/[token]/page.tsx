@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { JELSZO_MIN_HOSSZ, meghivoAllapota } from "@/domain/belepes";
+import { szovegekNyelvvel } from "@/domain/szotar";
 import { prisma } from "@/lib/db";
+import { aktualisNyelv } from "@/lib/nyelv";
 import { MeghivoUrlap } from "./MeghivoUrlap";
 
 export const dynamic = "force-dynamic";
@@ -11,6 +13,8 @@ export default async function MeghivoOldal({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+  const nyelv = await aktualisNyelv();
+  const { sz } = szovegekNyelvvel(nyelv);
 
   const meghivo = await prisma.meghivo.findUnique({
     where: { token },
@@ -22,14 +26,12 @@ export default async function MeghivoOldal({
   if (!meghivo || allapot !== "ervenyes") {
     return (
       <div className="mx-auto grid max-w-sm gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">A meghívó nem él</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{sz("meghivo.nem_el")}</h1>
         <p className="text-stone-600 dark:text-stone-400">
-          {allapot === "felhasznalt"
-            ? "Ezt a meghívót már felhasználták. Ha te készítetted el vele a fiókodat, lépj be."
-            : "Ez a link lejárt vagy nem létezik. Kérj újat a bérbeadódtól."}
+          {sz(allapot === "felhasznalt" ? "meghivo.felhasznalt" : "meghivo.lejart")}
         </p>
         <Link href="/belepes" className="underline underline-offset-2">
-          Belépés
+          {sz("belepes.cim")}
         </Link>
       </div>
     );
@@ -38,14 +40,15 @@ export default async function MeghivoOldal({
   return (
     <div className="mx-auto grid max-w-sm gap-6">
       <section>
-        <h1 className="text-2xl font-semibold tracking-tight">Fiók készítése</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{sz("meghivo.fiok")}</h1>
         <p className="mt-1 text-stone-600 dark:text-stone-400">
-          {meghivo.jogviszonyBerlo.jogviszony.ingatlan.megnevezes} ({meghivo.jogviszonyBerlo.jogviszony.ingatlan.cim}) bérlőjeként
-          hívtak meg. A fiók díjmentes, és csak a saját bérleményedet látod benne.
+          {sz("meghivo.bevezeto", {
+            berlemeny: meghivo.jogviszonyBerlo.jogviszony.ingatlan.megnevezes,
+            cim: meghivo.jogviszonyBerlo.jogviszony.ingatlan.cim,
+          })}
         </p>
         <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
-          A jelszó legyen legalább {JELSZO_MIN_HOSSZ} karakter. Hosszabb jelszó
-          jobban véd, mint a kevert írásjelek.
+          {sz("meghivo.jelszo_sugo", { hossz: JELSZO_MIN_HOSSZ })}
         </p>
       </section>
 

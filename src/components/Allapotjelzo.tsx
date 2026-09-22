@@ -1,4 +1,6 @@
 import type { Allapot } from "@/domain/egyeztetes";
+import type { Nyelv } from "@/domain/nyelv";
+import { szovegekNyelvvel } from "@/domain/szotar";
 
 const STILUS: Record<Allapot, string> = {
   egyezik:
@@ -7,18 +9,20 @@ const STILUS: Record<Allapot, string> = {
   hianyzik: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
 };
 
-const SZOVEG: Record<Allapot, string> = {
-  egyezik: "Egyezik",
-  elter: "Eltér",
-  hianyzik: "Hiányzik",
+const KULCS: Record<Allapot, string> = {
+  egyezik: "egyeztetes.egyezik",
+  elter: "egyeztetes.elter",
+  hianyzik: "egyeztetes.hianyzik_cimke",
 };
 
-export function Allapotjelzo({ allapot }: { allapot: Allapot }) {
+export function Allapotjelzo({ allapot, nyelv = "hu" }: { allapot: Allapot; nyelv?: Nyelv }) {
+  const { sz } = szovegekNyelvvel(nyelv);
+
   return (
     <span
-      className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${STILUS[allapot]}`}
+      className={`inline-block rounded px-2 py-0.5 text-xs font-medium capitalize ${STILUS[allapot]}`}
     >
-      {SZOVEG[allapot]}
+      {sz(KULCS[allapot])}
     </span>
   );
 }

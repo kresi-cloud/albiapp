@@ -1,4 +1,5 @@
-import { forint } from "@/domain/penz";
+import { forintNyelven, helyszin, type Nyelv } from "@/domain/nyelv";
+import { szovegekNyelvvel } from "@/domain/szotar";
 
 export type MutatottTetel = {
   id: string;
@@ -13,14 +14,17 @@ export type MutatottTetel = {
 export function ElszamolasTetelek({
   tetelek,
   osszegFt,
+  nyelv = "hu",
 }: {
   tetelek: MutatottTetel[];
   osszegFt: number;
+  nyelv?: Nyelv;
 }) {
+  const { sz } = szovegekNyelvvel(nyelv);
   const mennyiseg = (tetel: MutatottTetel) =>
     tetel.mennyiseg === null
       ? null
-      : `${new Intl.NumberFormat("hu-HU", { maximumFractionDigits: 2 }).format(tetel.mennyiseg)} ${tetel.mertekegyseg ?? ""}`;
+      : `${new Intl.NumberFormat(helyszin(nyelv), { maximumFractionDigits: 2 }).format(tetel.mennyiseg)} ${tetel.mertekegyseg ?? ""}`;
 
   return (
     <div className="mt-3 grid gap-2">
@@ -39,15 +43,17 @@ export function ElszamolasTetelek({
                   </span>
                 ) : null}
               </span>
-              <span className="tabular-nums font-medium">{forint(tetel.osszegFt)}</span>
+              <span className="tabular-nums font-medium">
+              {forintNyelven(tetel.osszegFt, nyelv)}
+            </span>
             </div>
             <p className="mt-1 text-stone-600 dark:text-stone-400">{tetel.reszletezes}</p>
           </li>
         ))}
       </ul>
       <div className="flex items-baseline justify-between border-t border-stone-200 pt-2 text-sm font-semibold dark:border-stone-800">
-        <span>Összesen</span>
-        <span className="tabular-nums">{forint(osszegFt)}</span>
+        <span>{sz("berlo.osszesen")}</span>
+        <span className="tabular-nums">{forintNyelven(osszegFt, nyelv)}</span>
       </div>
     </div>
   );

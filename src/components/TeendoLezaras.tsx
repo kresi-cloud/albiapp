@@ -5,7 +5,15 @@ import { teendotLezar, type Eredmeny } from "@/app/teendok/actions";
 
 const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
 
-export function TeendoLezaras({ kulcs }: { kulcs: string }) {
+export function TeendoLezaras({
+  kulcs,
+  cimke,
+  folyamatbanCimke,
+}: {
+  kulcs: string;
+  cimke: string;
+  folyamatbanCimke: string;
+}) {
   const [allapot, kuldes, folyamatban] = useActionState(teendotLezar, KEZDETI);
 
   return (
@@ -16,7 +24,7 @@ export function TeendoLezaras({ kulcs }: { kulcs: string }) {
         disabled={folyamatban}
         className="text-sm text-stone-600 underline underline-offset-2 disabled:opacity-60 dark:text-stone-400"
       >
-        {folyamatban ? "Lezárom…" : allapot.allapot === "hiba" ? allapot.uzenet : "Kész"}
+        {folyamatban ? folyamatbanCimke : allapot.allapot === "hiba" ? allapot.uzenet : cimke}
       </button>
     </form>
   );

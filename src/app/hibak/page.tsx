@@ -3,12 +3,14 @@ import { nyitott } from "@/domain/hibabejelentes";
 import { prisma } from "@/lib/db";
 import { berbeadoHibai } from "@/lib/hibabejelentes";
 import { kotelezoSzerep } from "@/lib/munkamenet";
+import { aktualisNyelv } from "@/lib/nyelv";
 import { HibaBejelentes } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
 
 export default async function Hibak() {
   const berbeado = await kotelezoSzerep("berbeado");
+  const nyelv = await aktualisNyelv();
   const ma = new Date();
 
   const [hibak, jogviszonyok] = await Promise.all([
@@ -50,6 +52,7 @@ export default async function Hibak() {
                 hiba={hiba}
                 szerep="berbeado"
                 ma={ma}
+                nyelv={nyelv}
                 berlemenyCimke={`${hiba.jogviszonyCimke} · ${hiba.berlokNeve}`}
               />
             ))}
@@ -67,6 +70,7 @@ export default async function Hibak() {
                 hiba={hiba}
                 szerep="berbeado"
                 ma={ma}
+                nyelv={nyelv}
                 berlemenyCimke={`${hiba.jogviszonyCimke} · ${hiba.berlokNeve}`}
               />
             ))}
@@ -82,6 +86,7 @@ export default async function Hibak() {
         </p>
         <div className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
           <HibaBejelentes
+            nyelv={nyelv}
             jogviszonyok={jogviszonyok.map((jogviszony) => ({
               id: jogviszony.id,
               cimke: jogviszony.ingatlan.megnevezes,

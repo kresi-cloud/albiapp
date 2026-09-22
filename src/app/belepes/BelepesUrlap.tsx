@@ -1,11 +1,14 @@
 "use client";
 
 import { useActionState } from "react";
+import type { Nyelv } from "@/domain/nyelv";
+import { szovegekNyelvvel } from "@/domain/szotar";
 import { belep, type BelepesEredmeny } from "./actions";
 
 const KEZDETI: BelepesEredmeny = { allapot: "ures", uzenet: "", email: "" };
 
-export function BelepesUrlap() {
+export function BelepesUrlap({ nyelv = "hu" }: { nyelv?: Nyelv }) {
+  const { sz } = szovegekNyelvvel(nyelv);
   const [allapot, kuldes, folyamatban] = useActionState(belep, KEZDETI);
 
   return (
@@ -14,7 +17,7 @@ export function BelepesUrlap() {
       className="grid gap-3 rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900"
     >
       <label className="grid gap-1 text-sm">
-        <span className="font-medium">E-mail-cím</span>
+        <span className="font-medium">{sz("belepes.email")}</span>
         <input
           id="email"
           name="email"
@@ -28,7 +31,7 @@ export function BelepesUrlap() {
       </label>
 
       <label className="grid gap-1 text-sm">
-        <span className="font-medium">Jelszó</span>
+        <span className="font-medium">{sz("belepes.jelszo")}</span>
         <input
           id="jelszo"
           name="jelszo"
@@ -44,7 +47,7 @@ export function BelepesUrlap() {
         disabled={folyamatban}
         className="justify-self-start rounded bg-stone-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-stone-100 dark:text-stone-900"
       >
-        {folyamatban ? "Belépés…" : "Belépés"}
+        {folyamatban ? sz("belepes.folyamatban") : sz("belepes.gomb")}
       </button>
 
       {allapot.allapot === "hiba" ? (

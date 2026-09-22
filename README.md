@@ -175,3 +175,16 @@ A `/dokumentumok` oldal tetején és a bérlő `/berlo/dokumentumok` oldalán eg
 listában áll minden papír: szerződés, átadás-átvételi jegyzőkönyv, rezsielszámolás
 és bérbeadói igazolás, időrendben, letöltéssel. A bérlő csak a kiadott okiratokat
 látja, és csak a neki szóló igazolást.
+
+## Kétnyelvű felület
+
+A fejléc nyelvváltójával a felület magyarra vagy angolra állítható, belépés
+előtt is. A választás ezen az eszközön megmarad, és belépve a fiókba is
+beíródik, hogy a másik eszközön is azt kapd. A kiadott dokumentumok szövege
+magyar marad: az aláírt szerződés és a kiállított igazolás magyarul érvényes.
+
+## Jogi tájékoztatók
+
+Az adatkezelési tájékoztató és a felhasználási feltételek a lábléc két
+hivatkozása mögött vannak, mindkét nyelven. Az üzemeltető adatait élesítés
+előtt ki kell tölteni: a szövegben `[kitöltendő]` jelöli a helyüket.
