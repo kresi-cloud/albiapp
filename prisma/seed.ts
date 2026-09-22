@@ -74,7 +74,10 @@ function pngDarab(tipus: string, adat: Buffer): Buffer {
   return Buffer.concat([hossz, test, ellenorzo]);
 }
 
-function peldaKep(meret: number, szin: [number, number, number]): Uint8Array<ArrayBuffer> {
+function peldaKep(
+  meret: number,
+  szin: [number, number, number],
+): Uint8Array<ArrayBuffer> {
   const fejlec = Buffer.alloc(13);
   fejlec.writeUInt32BE(meret, 0);
   fejlec.writeUInt32BE(meret, 4);
@@ -136,6 +139,13 @@ async function main() {
       nev: "Nagy Péter",
       jelszoHash,
       szerep: "berbeado",
+      // A példaadatban a bérbeadó egyben az üzemeltető is, hogy a bemutatkozó
+      // oldalak rendszergazdai nézete külön belépés nélkül kipróbálható
+      // legyen. A jelölő éles adatbázisban külön adandó meg; felületről nem
+      // állítható.
+      rendszergazda: true,
+      bemutatkozas:
+        "Két lakást adok ki Budapesten, mindkettőt hosszú távra. A rezsit mért fogyasztás szerint számolom el, és a számlákat minden elszámoláshoz mellékelem.",
     },
   });
 
@@ -145,6 +155,8 @@ async function main() {
       nev: "Kovács Anna",
       jelszoHash,
       szerep: "berlo",
+      bemutatkozas:
+        "Másodéves egyetemista vagyok, csendes albérletet keresek. Nem dohányzom, háziállatom nincs.",
     },
   });
 
@@ -159,6 +171,8 @@ async function main() {
       nev: "Tóth Eszter",
       jelszoHash,
       szerep: "berlo",
+      bemutatkozas:
+        "Három évig béreltem ugyanazt a lakást, munkahelyváltás miatt költöztem el.",
     },
   });
 
@@ -175,8 +189,18 @@ async function main() {
       beszerzesDatuma: new Date(Date.UTC(2021, 4, 12)),
       meroorak: {
         create: [
-          { tipus: "villany", mertekegyseg: "kWh", gyariSzam: "E-884213", almero: false },
-          { tipus: "viz", mertekegyseg: "m3", gyariSzam: "V-119043", almero: true },
+          {
+            tipus: "villany",
+            mertekegyseg: "kWh",
+            gyariSzam: "E-884213",
+            almero: false,
+          },
+          {
+            tipus: "viz",
+            mertekegyseg: "m3",
+            gyariSzam: "V-119043",
+            almero: true,
+          },
         ],
       },
     },
@@ -192,7 +216,14 @@ async function main() {
       energetikaiAzonosito: "HET-01044893",
       kozosKoltsegFt: 21000,
       meroorak: {
-        create: [{ tipus: "villany", mertekegyseg: "kWh", gyariSzam: "E-552901", almero: false }],
+        create: [
+          {
+            tipus: "villany",
+            mertekegyseg: "kWh",
+            gyariSzam: "E-552901",
+            almero: false,
+          },
+        ],
       },
     },
   });
@@ -210,7 +241,14 @@ async function main() {
       helyrajziSzam: "31954/6/A/4",
       kozosKoltsegFt: 12000,
       meroorak: {
-        create: [{ tipus: "villany", mertekegyseg: "kWh", gyariSzam: "E-770118", almero: false }],
+        create: [
+          {
+            tipus: "villany",
+            mertekegyseg: "kWh",
+            gyariSzam: "E-770118",
+            almero: false,
+          },
+        ],
       },
     },
   });
@@ -303,7 +341,9 @@ async function main() {
 
   // Nagyjából a magyar lakossági árak: a kedvezményes sáv és fölötte a piaci ár.
   // Egységár fillérben, hogy ne kelljen lebegőponttal szorozni.
-  const villanyorak = await prisma.meroora.findMany({ where: { tipus: "villany" } });
+  const villanyorak = await prisma.meroora.findMany({
+    where: { tipus: "villany" },
+  });
   const vizorak = await prisma.meroora.findMany({ where: { tipus: "viz" } });
 
   for (const meroora of villanyorak) {
@@ -336,15 +376,34 @@ async function main() {
   }
 
   // Óraállások: a nyáron sok a villany, hogy a keret fölötti sáv is látszódjon.
-  const ferencvarosiVillany = villanyorak.find((meroora) => meroora.ingatlanId === ferencvaros.id);
-  const ferencvarosiViz = vizorak.find((meroora) => meroora.ingatlanId === ferencvaros.id);
+  const ferencvarosiVillany = villanyorak.find(
+    (meroora) => meroora.ingatlanId === ferencvaros.id,
+  );
+  const ferencvarosiViz = vizorak.find(
+    (meroora) => meroora.ingatlanId === ferencvaros.id,
+  );
 
   if (ferencvarosiVillany) {
     await prisma.oraallas.createMany({
       data: [
-        { merooraId: ferencvarosiVillany.id, datum: nap(-2), ertek: 12480, rogzitoId: berloAnna.id },
-        { merooraId: ferencvarosiVillany.id, datum: nap(-1), ertek: 12790, rogzitoId: berloAnna.id },
-        { merooraId: ferencvarosiVillany.id, datum: nap(0), ertek: 13165, rogzitoId: berloAnna.id },
+        {
+          merooraId: ferencvarosiVillany.id,
+          datum: nap(-2),
+          ertek: 12480,
+          rogzitoId: berloAnna.id,
+        },
+        {
+          merooraId: ferencvarosiVillany.id,
+          datum: nap(-1),
+          ertek: 12790,
+          rogzitoId: berloAnna.id,
+        },
+        {
+          merooraId: ferencvarosiVillany.id,
+          datum: nap(0),
+          ertek: 13165,
+          rogzitoId: berloAnna.id,
+        },
       ],
     });
   }
@@ -352,9 +411,24 @@ async function main() {
   if (ferencvarosiViz) {
     await prisma.oraallas.createMany({
       data: [
-        { merooraId: ferencvarosiViz.id, datum: nap(-2), ertek: 214.2, rogzitoId: berloAnna.id },
-        { merooraId: ferencvarosiViz.id, datum: nap(-1), ertek: 218.9, rogzitoId: berloAnna.id },
-        { merooraId: ferencvarosiViz.id, datum: nap(0), ertek: 223.4, rogzitoId: berloAnna.id },
+        {
+          merooraId: ferencvarosiViz.id,
+          datum: nap(-2),
+          ertek: 214.2,
+          rogzitoId: berloAnna.id,
+        },
+        {
+          merooraId: ferencvarosiViz.id,
+          datum: nap(-1),
+          ertek: 218.9,
+          rogzitoId: berloAnna.id,
+        },
+        {
+          merooraId: ferencvarosiViz.id,
+          datum: nap(0),
+          ertek: 223.4,
+          rogzitoId: berloAnna.id,
+        },
       ],
     });
   }
@@ -364,7 +438,13 @@ async function main() {
   // az alkalmazás magától generál — és pont ez volt a baj.
   async function eloirasokatKiir(jogviszonyId: string, adat: JogviszonyAdat) {
     const sorok = eloirasok(adat, MOST);
-    const kesz: { id: string; tipus: string; idoszak: string; esedekesseg: Date; osszegFt: number }[] = [];
+    const kesz: {
+      id: string;
+      tipus: string;
+      idoszak: string;
+      esedekesseg: Date;
+      osszegFt: number;
+    }[] = [];
 
     for (const eloiras of sorok) {
       const tetel = await prisma.eloirtTetel.create({
@@ -375,7 +455,9 @@ async function main() {
           idoszak: eloiras.idoszak,
           esedekesseg: eloiras.esedekesseg,
           osszegFt: eloiras.osszegFt,
-          reszletezes: eloiras.reszletezes ? JSON.stringify(eloiras.reszletezes) : null,
+          reszletezes: eloiras.reszletezes
+            ? JSON.stringify(eloiras.reszletezes)
+            : null,
         },
       });
       kesz.push(tetel);
@@ -401,7 +483,8 @@ async function main() {
       return { fajta: "vitas", berbeadoOsszeg: 175000 };
     }
     // Két csúszás a múltban, hogy a betekintő ne csak makulátlan sort mutasson.
-    if (honapokVissza === 4 || honapokVissza === 9) return { fajta: "keses", nap: 6 };
+    if (honapokVissza === 4 || honapokVissza === 9)
+      return { fajta: "keses", nap: 6 };
     return { fajta: "pontos" };
   }
 
@@ -420,7 +503,13 @@ async function main() {
 
   async function befizeteseketKiir(
     jogviszonyId: string,
-    tetelek: { id: string; tipus: string; idoszak: string; esedekesseg: Date; osszegFt: number }[],
+    tetelek: {
+      id: string;
+      tipus: string;
+      idoszak: string;
+      esedekesseg: Date;
+      osszegFt: number;
+    }[],
     sorsa: (honapokVissza: number, tipus: string) => Sors,
     kozlemenyek: Record<string, string>,
   ) {
@@ -433,7 +522,12 @@ async function main() {
       const kozlemeny = `${kozlemenyek[tetel.tipus] ?? "Befizetés"} — ${tetel.idoszak}`;
 
       await prisma.berloiIgazolas.create({
-        data: { jogviszonyId, utalasDatuma: utalas, osszegFt: tetel.osszegFt, kozlemeny },
+        data: {
+          jogviszonyId,
+          utalasDatuma: utalas,
+          osszegFt: tetel.osszegFt,
+          kozlemeny,
+        },
       });
 
       await prisma.berbeadoiIgazolas.create({
@@ -443,7 +537,8 @@ async function main() {
           // A bérbeadó egy nappal később veszi észre: ennyi tűrés van a két
           // oldal dátuma közt, és így életszerűbb is.
           erkezesDatuma: new Date(utalas.getTime() + 86400000),
-          osszegFt: sors.fajta === "vitas" ? sors.berbeadoOsszeg : tetel.osszegFt,
+          osszegFt:
+            sors.fajta === "vitas" ? sors.berbeadoOsszeg : tetel.osszegFt,
           kozlemeny,
         },
       });
@@ -472,7 +567,11 @@ async function main() {
     },
   });
   await prisma.elofizetesJovahagyas.create({
-    data: { elofizetesId: annaInternet.id, berloId: berloAnna.id, allapot: "jovahagyva" },
+    data: {
+      elofizetesId: annaInternet.id,
+      berloId: berloAnna.id,
+      allapot: "jovahagyva",
+    },
   });
 
   // Ez most került fel: Anna még nem nyilatkozott róla, tehát nem írunk elő
@@ -523,7 +622,9 @@ async function main() {
         haviDijFt: annaInternet.haviDijFt,
         kezdete: annaInternet.kezdete,
         vege: annaInternet.vege,
-        nyilatkozatok: [{ berloId: berloAnna.id, allapot: "jovahagyva", indoklas: null }],
+        nyilatkozatok: [
+          { berloId: berloAnna.id, allapot: "jovahagyva", indoklas: null },
+        ],
       },
     ],
     fiokosBerlok: [berloAnna.id],
@@ -539,14 +640,18 @@ async function main() {
     fizetesiNap: tamasJogviszony.fizetesiNap,
   });
 
-  await befizeteseketKiir(annaJogviszony.id, annaTetelek, annaSorsa, KOZLEMENYEK);
+  await befizeteseketKiir(
+    annaJogviszony.id,
+    annaTetelek,
+    annaSorsa,
+    KOZLEMENYEK,
+  );
   await befizeteseketKiir(
     tamasJogviszony.id,
     tamasTetelek,
     (vissza) => tamasSorsa(vissza),
     KOZLEMENYEK,
   );
-
 
   // A lezárt jogviszony: Eszter tavaly lakott a garzonban, és kiköltözött.
   // Végigfizette, tehát a befizetések lapját nem terheli semmivel — az
@@ -591,7 +696,12 @@ async function main() {
     fizetesiNap: eszterJogviszony.fizetesiNap,
   });
 
-  await befizeteseketKiir(eszterJogviszony.id, eszterTetelek, () => ({ fajta: "pontos" }), KOZLEMENYEK);
+  await befizeteseketKiir(
+    eszterJogviszony.id,
+    eszterTetelek,
+    () => ({ fajta: "pontos" }),
+    KOZLEMENYEK,
+  );
 
   // Eszter már értékelt, a bérbeadó még nem. Ez a vak állapot: a bérbeadó
   // lapján ott a teendő, de Eszter szövegéből egy betűt sem lát, amíg meg nem
@@ -639,9 +749,33 @@ async function main() {
       lezarva: nap(0, 6),
       tetelek: {
         create: [
-          { fajta: "meroora", megnevezes: "Villany", mennyiseg: 685, mertekegyseg: "kWh", reszletezes: "12 480 → 13 165 kWh, 62 nap. Ebből 428,56 kWh kedvezményes áron (36,9 Ft/kWh), a keret fölötti 256,44 kWh piaci áron (70,1 Ft/kWh). Alapdíj 62 napra: 1835 Ft.", osszegFt: 35625, sorrend: 0 },
-          { fajta: "meroora", megnevezes: "Víz (almérő)", mennyiseg: 9.2, mertekegyseg: "m3", reszletezes: "214,2 → 223,4 m3, 62 nap. Mind a kedvezményes sávban (799 Ft/m3).", osszegFt: 7351, sorrend: 1 },
-          { fajta: "kozos_koltseg", megnevezes: "Közös költség", reszletezes: "14 000 Ft / hó, 62 napra arányosítva.", osszegFt: 28537, sorrend: 2 },
+          {
+            fajta: "meroora",
+            megnevezes: "Villany",
+            mennyiseg: 685,
+            mertekegyseg: "kWh",
+            reszletezes:
+              "12 480 → 13 165 kWh, 62 nap. Ebből 428,56 kWh kedvezményes áron (36,9 Ft/kWh), a keret fölötti 256,44 kWh piaci áron (70,1 Ft/kWh). Alapdíj 62 napra: 1835 Ft.",
+            osszegFt: 35625,
+            sorrend: 0,
+          },
+          {
+            fajta: "meroora",
+            megnevezes: "Víz (almérő)",
+            mennyiseg: 9.2,
+            mertekegyseg: "m3",
+            reszletezes:
+              "214,2 → 223,4 m3, 62 nap. Mind a kedvezményes sávban (799 Ft/m3).",
+            osszegFt: 7351,
+            sorrend: 1,
+          },
+          {
+            fajta: "kozos_koltseg",
+            megnevezes: "Közös költség",
+            reszletezes: "14 000 Ft / hó, 62 napra arányosítva.",
+            osszegFt: 28537,
+            sorrend: 2,
+          },
         ],
       },
     },
@@ -661,9 +795,27 @@ async function main() {
 
   await prisma.koltseg.createMany({
     data: [
-      { ingatlanId: ferencvaros.id, datum: nap(-6, 18), fajta: "felujitas", megnevezes: "Kazán karbantartás, számla 2026/114", osszegFt: 48000 },
-      { ingatlanId: ferencvaros.id, datum: nap(-8, 9), fajta: "biztositas", megnevezes: "Lakásbiztosítás éves díja", osszegFt: 62000 },
-      { ingatlanId: ujbuda.id, datum: nap(-3, 2), fajta: "felujitas", megnevezes: "Fürdőszoba csaptelep csere", osszegFt: 85000 },
+      {
+        ingatlanId: ferencvaros.id,
+        datum: nap(-6, 18),
+        fajta: "felujitas",
+        megnevezes: "Kazán karbantartás, számla 2026/114",
+        osszegFt: 48000,
+      },
+      {
+        ingatlanId: ferencvaros.id,
+        datum: nap(-8, 9),
+        fajta: "biztositas",
+        megnevezes: "Lakásbiztosítás éves díja",
+        osszegFt: 62000,
+      },
+      {
+        ingatlanId: ujbuda.id,
+        datum: nap(-3, 2),
+        fajta: "felujitas",
+        megnevezes: "Fürdőszoba csaptelep csere",
+        osszegFt: 85000,
+      },
     ],
   });
 
@@ -698,7 +850,10 @@ async function main() {
       },
       parameterek: {
         create: [
-          { kulcs: "dij_kozlemeny", ertek: "Bogdánfy 5/2 - tárgyév/tárgyhónap" },
+          {
+            kulcs: "dij_kozlemeny",
+            ertek: "Bogdánfy 5/2 - tárgyév/tárgyhónap",
+          },
           { kulcs: "kulcs_garnitura", ertek: "2" },
           { kulcs: "berlemeny_butorozott", ertek: "igen" },
         ],
@@ -811,7 +966,8 @@ async function main() {
       szin: [160, 140, 120] as [number, number, number],
       megerositoId: berloAnna.id,
       megerositve: nap(-12, 3),
-      kifogas: "Ez a folt a beköltözéskor még nem volt itt, a képen viszont már látszik.",
+      kifogas:
+        "Ez a folt a beköltözéskor még nem volt itt, a képen viszont már látszik.",
     },
     {
       // A bérlő is tölthet fel: a saját állítása ugyanannyit ér.
@@ -864,7 +1020,12 @@ async function main() {
   const kemenysepro = await prisma.beszelgetes.create({
     data: {
       jogviszonyId: annaJogviszony.id,
-      resztvevok: { create: [{ felhasznaloId: berbeado.id }, { felhasznaloId: berloAnna.id }] },
+      resztvevok: {
+        create: [
+          { felhasznaloId: berbeado.id },
+          { felhasznaloId: berloAnna.id },
+        ],
+      },
       utolsoUzenet: nap(0, 11),
     },
   });

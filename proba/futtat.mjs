@@ -9,7 +9,7 @@
 import { mkdirSync } from "node:fs";
 import { bongeszot } from "./kozos.mjs";
 
-const PROBAK = ["./meret.mjs", "./hibabejelentes.mjs", "./nyelv.mjs", "./letoltes.mjs", "./betekinto.mjs", "./eloirasok.mjs", "./egyeztetes.mjs", "./adatok.mjs", "./berlemeny.mjs", "./urlap.mjs", "./fenykepek.mjs", "./beszelgetes.mjs", "./csatornadij.mjs", "./elofizetes.mjs", "./zaradek.mjs", "./ertekeles.mjs"];
+const PROBAK = ["./meret.mjs", "./hibabejelentes.mjs", "./nyelv.mjs", "./letoltes.mjs", "./betekinto.mjs", "./eloirasok.mjs", "./egyeztetes.mjs", "./adatok.mjs", "./berlemeny.mjs", "./urlap.mjs", "./fenykepek.mjs", "./beszelgetes.mjs", "./csatornadij.mjs", "./elofizetes.mjs", "./zaradek.mjs", "./ertekeles.mjs", "./bemutatkozas.mjs"];
 
 mkdirSync("proba/kepek", { recursive: true });
 

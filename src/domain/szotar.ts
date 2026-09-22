@@ -52,7 +52,10 @@ export const SZOTAR: Szotar = {
   },
 
   // --- Meghívó
-  "meghivo.nem_el": { hu: "A meghívó nem él", en: "This invitation is not valid" },
+  "meghivo.nem_el": {
+    hu: "A meghívó nem él",
+    en: "This invitation is not valid",
+  },
   "meghivo.felhasznalt": {
     hu: "Ezt a meghívót már felhasználták. Ha te készítetted el vele a fiókodat, lépj be.",
     en: "This invitation has already been used. If you created your account with it, sign in.",
@@ -127,9 +130,18 @@ export const SZOTAR: Szotar = {
   },
 
   // --- Bizonylat (csak vitás befizetéshez)
-  "bizonylat.cim": { hu: "Bizonylat ehhez az utaláshoz", en: "Receipt for this transfer" },
-  "bizonylat.kuldo": { hu: "Küldő oldali bizonylat", en: "Sending-side receipt" },
-  "bizonylat.fogado": { hu: "Fogadó oldali bizonylat", en: "Receiving-side receipt" },
+  "bizonylat.cim": {
+    hu: "Bizonylat ehhez az utaláshoz",
+    en: "Receipt for this transfer",
+  },
+  "bizonylat.kuldo": {
+    hu: "Küldő oldali bizonylat",
+    en: "Sending-side receipt",
+  },
+  "bizonylat.fogado": {
+    hu: "Fogadó oldali bizonylat",
+    en: "Receiving-side receipt",
+  },
   "bizonylat.feltolt": { hu: "Bizonylat feltöltése", en: "Upload a receipt" },
   "bizonylat.gomb": { hu: "Feltöltöm", en: "Upload" },
   "bizonylat.torles": { hu: "Törlöm", en: "Delete" },
@@ -152,8 +164,14 @@ export const SZOTAR: Szotar = {
     en: "The landlord turned receipt requests off, so we ask for no new ones. What is already uploaded stays.",
   },
   "bizonylat.feltoltve": { hu: "Feltöltve: {nap}", en: "Uploaded: {nap}" },
-  "bizonylat.kesz": { hu: "Feltöltöttem a bizonylatot.", en: "The receipt is uploaded." },
-  "bizonylat.torolve": { hu: "Töröltem a bizonylatot.", en: "The receipt is deleted." },
+  "bizonylat.kesz": {
+    hu: "Feltöltöttem a bizonylatot.",
+    en: "The receipt is uploaded.",
+  },
+  "bizonylat.torolve": {
+    hu: "Töröltem a bizonylatot.",
+    en: "The receipt is deleted.",
+  },
   "bizonylat.hiba.ures": { hu: "Válassz ki egy fájlt.", en: "Choose a file." },
   "bizonylat.hiba.nagy": {
     hu: "A fájl túl nagy: legfeljebb {max} MB lehet.",
@@ -187,29 +205,59 @@ export const SZOTAR: Szotar = {
     hu: "nappali, a kanapé mögötti fal",
     en: "living room, the wall behind the sofa",
   },
-  "kep.tetel": { hu: "Melyik tételhez tartozik?", en: "Which item is it about?" },
-  "kep.tetel_nelkul": { hu: "általános kép a lakásról", en: "general photo of the flat" },
+  "kep.tetel": {
+    hu: "Melyik tételhez tartozik?",
+    en: "Which item is it about?",
+  },
+  "kep.tetel_nelkul": {
+    hu: "általános kép a lakásról",
+    en: "general photo of the flat",
+  },
   "kep.fajl": { hu: "Fénykép", en: "Photo" },
   "kep.feltoltes": { hu: "Kép hozzáadása", en: "Add photo" },
   "kep.feltoltom": { hu: "Feltöltöm…", en: "Uploading…" },
-  "kep.kesz": { hu: "A kép bekerült az albumba.", en: "The photo is in the album." },
+  "kep.kesz": {
+    hu: "A kép bekerült az albumba.",
+    en: "The photo is in the album.",
+  },
   "kep.torolve": { hu: "Töröltem a képet.", en: "The photo is deleted." },
   "kep.torles": { hu: "Kép törlése", en: "Delete photo" },
   "kep.nincs": {
     hu: "Még nincs kép. Az állapotot szavakkal nehéz rögzíteni, képpel nem.",
     en: "No photos yet. Condition is hard to record in words, easy in pictures.",
   },
-  "kep.keszitette.berbeado": { hu: "A bérbeadó töltötte fel.", en: "Uploaded by the landlord." },
-  "kep.keszitette.berlo": { hu: "A bérlő töltötte fel.", en: "Uploaded by the tenant." },
+  "kep.keszitette.berbeado": {
+    hu: "A bérbeadó töltötte fel.",
+    en: "Uploaded by the landlord.",
+  },
+  "kep.keszitette.berlo": {
+    hu: "A bérlő töltötte fel.",
+    en: "Uploaded by the tenant.",
+  },
   "kep.allapot.egyoldalu": {
     hu: "a másik fél megerősítésére vár",
     en: "waiting for the other party to confirm",
   },
-  "kep.allapot.megerositve": { hu: "mindkét fél elismerte", en: "both parties acknowledged" },
-  "kep.allapot.vitatott": { hu: "a másik fél kifogást emelt", en: "the other party objected" },
-  "kep.megerosit": { hu: "Ezt láttam, megerősítem", en: "This is what I saw, I confirm" },
-  "kep.kifogasol": { hu: "Kifogásom van ezzel a képpel", en: "I have an objection to this photo" },
-  "kep.kifogas_szovege": { hu: "Mi a kifogásod?", en: "What is your objection?" },
+  "kep.allapot.megerositve": {
+    hu: "mindkét fél elismerte",
+    en: "both parties acknowledged",
+  },
+  "kep.allapot.vitatott": {
+    hu: "a másik fél kifogást emelt",
+    en: "the other party objected",
+  },
+  "kep.megerosit": {
+    hu: "Ezt láttam, megerősítem",
+    en: "This is what I saw, I confirm",
+  },
+  "kep.kifogasol": {
+    hu: "Kifogásom van ezzel a képpel",
+    en: "I have an objection to this photo",
+  },
+  "kep.kifogas_szovege": {
+    hu: "Mi a kifogásod?",
+    en: "What is your objection?",
+  },
   "kep.kifogas_pelda": {
     hu: "Ez a kép nem a mi lakásunkról készült.",
     en: "This photo is not of our flat.",
@@ -218,9 +266,18 @@ export const SZOTAR: Szotar = {
     hu: "Írd le, mi a kifogásod: enélkül a másik fél nem tud mit kezdeni vele.",
     en: "Describe your objection: without it the other party cannot act on it.",
   },
-  "kep.megerositve_kesz": { hu: "Megerősítetted a képet.", en: "You confirmed the photo." },
-  "kep.kifogas_kesz": { hu: "Rögzítettem a kifogásodat.", en: "Your objection is recorded." },
-  "kep.par_cim": { hu: "Birtokbaadáskor így nézett ki", en: "How it looked at move-in" },
+  "kep.megerositve_kesz": {
+    hu: "Megerősítetted a képet.",
+    en: "You confirmed the photo.",
+  },
+  "kep.kifogas_kesz": {
+    hu: "Rögzítettem a kifogásodat.",
+    en: "Your objection is recorded.",
+  },
+  "kep.par_cim": {
+    hu: "Birtokbaadáskor így nézett ki",
+    en: "How it looked at move-in",
+  },
   "kep.par_hianyzik": {
     hu: "Ezekről készült kép a birtokbaadáskor, most viszont még nem: {darab} darab.",
     en: "These were photographed at move-in but not yet now: {darab}.",
@@ -348,9 +405,15 @@ export const SZOTAR: Szotar = {
       "they filled in on your behalf.",
   },
 
-  "adatok.forras.berlo": { hu: "A bérlő adta meg", en: "Entered by the tenant" },
+  "adatok.forras.berlo": {
+    hu: "A bérlő adta meg",
+    en: "Entered by the tenant",
+  },
   "adatok.forras.berbeado": { hu: "Te írtad be", en: "You entered this" },
-  "adatok.forras.nincs": { hu: "Még senki nem adta meg", en: "Not entered yet" },
+  "adatok.forras.nincs": {
+    hu: "Még senki nem adta meg",
+    en: "Not entered yet",
+  },
 
   "adatok.hiba.igazolvany": {
     hu: "Ez nem tűnik igazolványszámnak. Nézd meg még egyszer.",
@@ -367,7 +430,10 @@ export const SZOTAR: Szotar = {
 
   // --- Személyazonosság a szerződés előtt
   // Az alkalmazás nem igazol személyazonosságot, és ezt ki is mondja.
-  "azonossag.cim": { hu: "Szerződés előtt: igazoljátok a személyazonosságot", en: "Before signing: verify identity" },
+  "azonossag.cim": {
+    hu: "Szerződés előtt: igazoljátok a személyazonosságot",
+    en: "Before signing: verify identity",
+  },
   "azonossag.szoveg": {
     hu:
       "Az alkalmazás nem ellenőrzi, hogy ki kicsoda: amit a felek megadtak, az a saját állításuk. " +
@@ -411,7 +477,10 @@ export const SZOTAR: Szotar = {
     hu: "{idoszak} · {osszeg} Ft",
     en: "{idoszak} · HUF {osszeg}",
   },
-  "teendo.elteres": { hu: "Eltérés: {osszeg} Ft.", en: "Difference: HUF {osszeg}." },
+  "teendo.elteres": {
+    hu: "Eltérés: {osszeg} Ft.",
+    en: "Difference: HUF {osszeg}.",
+  },
   "teendo.hianyzik.berlo": {
     hu: "Esedékes befizetés nem érkezett meg",
     en: "A payment that was due has not arrived",
@@ -420,8 +489,14 @@ export const SZOTAR: Szotar = {
     hu: "Elmaradt befizetés, emlékeztető küldhető",
     en: "Missed payment, you can send a reminder",
   },
-  "teendo.elter.berbeado": { hu: "Eltérés a befizetésben", en: "Payment mismatch" },
-  "teendo.elter.berlo": { hu: "Eltérés a befizetésedben", en: "Mismatch in your payment" },
+  "teendo.elter.berbeado": {
+    hu: "Eltérés a befizetésben",
+    en: "Payment mismatch",
+  },
+  "teendo.elter.berlo": {
+    hu: "Eltérés a befizetésedben",
+    en: "Mismatch in your payment",
+  },
   "teendo.elter.nincs_eloiras": {
     hu: "Beérkezett utalás, amihez nincs előírás",
     en: "A transfer arrived with no scheduled item",
@@ -446,7 +521,10 @@ export const SZOTAR: Szotar = {
     hu: "Add meg, mikor és mennyit utaltál",
     en: "Tell us when and how much you transferred",
   },
-  "teendo.kozelgo": { hu: "Közeleg a fizetési határidő", en: "Payment deadline approaching" },
+  "teendo.kozelgo": {
+    hu: "Közeleg a fizetési határidő",
+    en: "Payment deadline approaching",
+  },
   "teendo.hiba.megerosites": {
     hu: "Erősítsd meg, hogy a hiba rendben van",
     en: "Confirm that the fault has been fixed",
@@ -455,9 +533,18 @@ export const SZOTAR: Szotar = {
     hu: "{targy}. A bérbeadó elhárítottnak jelölte.",
     en: "{targy}. The landlord marked it as fixed.",
   },
-  "teendo.hiba.uj": { hu: "Új hibabejelentés: {targy}", en: "New fault report: {targy}" },
-  "teendo.hiba.nyitott": { hu: "Nyitott hiba: {targy}", en: "Open fault: {targy}" },
-  "teendo.hiba.allapotsor": { hu: "{surgosseg} · {allapot}", en: "{surgosseg} · {allapot}" },
+  "teendo.hiba.uj": {
+    hu: "Új hibabejelentés: {targy}",
+    en: "New fault report: {targy}",
+  },
+  "teendo.hiba.nyitott": {
+    hu: "Nyitott hiba: {targy}",
+    en: "Open fault: {targy}",
+  },
+  "teendo.hiba.allapotsor": {
+    hu: "{surgosseg} · {allapot}",
+    en: "{surgosseg} · {allapot}",
+  },
 
   // --- Hibabejelentés
   "hiba.terulet.epulet": {
@@ -495,7 +582,10 @@ export const SZOTAR: Szotar = {
     en: "It broke down or wore out on its own",
   },
   "hiba.ok.karokozas": { hu: "Mi okoztuk", en: "We caused it" },
-  "hiba.ok.ismeretlen": { hu: "Nem tudom, mitől", en: "I do not know what caused it" },
+  "hiba.ok.ismeretlen": {
+    hu: "Nem tudom, mitől",
+    en: "I do not know what caused it",
+  },
 
   "hiba.surgosseg.veszhelyzet": { hu: "Veszélyhelyzet", en: "Emergency" },
   "hiba.surgosseg.surgos": { hu: "Sürgős", en: "Urgent" },
@@ -514,8 +604,14 @@ export const SZOTAR: Szotar = {
   },
 
   "hiba.allapot.bejelentve": { hu: "Bejelentve", en: "Reported" },
-  "hiba.allapot.atvette": { hu: "A bérbeadó átvette", en: "The landlord has acknowledged it" },
-  "hiba.allapot.folyamatban": { hu: "Javítás folyamatban", en: "Repair in progress" },
+  "hiba.allapot.atvette": {
+    hu: "A bérbeadó átvette",
+    en: "The landlord has acknowledged it",
+  },
+  "hiba.allapot.folyamatban": {
+    hu: "Javítás folyamatban",
+    en: "Repair in progress",
+  },
   "hiba.allapot.elharitva": {
     hu: "Elhárítva, a bérlő megerősítésére vár",
     en: "Fixed, waiting for the tenant to confirm",
@@ -530,11 +626,20 @@ export const SZOTAR: Szotar = {
   "hiba.lepes.atvette": { hu: "Átvettem", en: "Acknowledge" },
   "hiba.lepes.folyamatban": { hu: "Javítás elindult", en: "Repair started" },
   "hiba.lepes.elharitva": { hu: "Elhárítottam", en: "Mark as fixed" },
-  "hiba.lepes.lezarva": { hu: "Rendben van, lezárom", en: "All good, close it" },
+  "hiba.lepes.lezarva": {
+    hu: "Rendben van, lezárom",
+    en: "All good, close it",
+  },
   "hiba.lepes.elutasitva": { hu: "Elutasítom", en: "Decline" },
 
-  "hiba.viselo.berbeado": { hu: "A bérbeadót terheli", en: "The landlord bears the cost" },
-  "hiba.viselo.berlo": { hu: "A bérlőt terheli", en: "The tenant bears the cost" },
+  "hiba.viselo.berbeado": {
+    hu: "A bérbeadót terheli",
+    en: "The landlord bears the cost",
+  },
+  "hiba.viselo.berlo": {
+    hu: "A bérlőt terheli",
+    en: "The tenant bears the cost",
+  },
   "hiba.viselo.megosztott": {
     hu: "Megosztva: karbantartás a bérlőé, csere a bérbeadóé",
     en: "Shared: maintenance is the tenant's, replacement is the landlord's",
@@ -603,7 +708,10 @@ export const SZOTAR: Szotar = {
       "fix yourself: until you say it is all good, the report stays open.",
   },
   "hiba.oldal.uj": { hu: "Új bejelentés", en: "New report" },
-  "hiba.oldal.elerhetoseg": { hu: "A bérbeadó elérhetősége", en: "How to reach the landlord" },
+  "hiba.oldal.elerhetoseg": {
+    hu: "A bérbeadó elérhetősége",
+    en: "How to reach the landlord",
+  },
   "hiba.oldal.nincs_telefon": {
     hu:
       "Telefonszámot még nem adott meg. Veszélyhelyzetnél kérd el tőle, mert a bejelentés magától " +
@@ -612,15 +720,24 @@ export const SZOTAR: Szotar = {
       "No phone number given yet. Ask for one in case of an emergency: a report in the app does not " +
       "ring anyone's phone.",
   },
-  "hiba.oldal.nyitottak": { hu: "Nyitott bejelentéseim", en: "My open reports" },
-  "hiba.oldal.lezartak": { hu: "Lezárt bejelentéseim", en: "My closed reports" },
+  "hiba.oldal.nyitottak": {
+    hu: "Nyitott bejelentéseim",
+    en: "My open reports",
+  },
+  "hiba.oldal.lezartak": {
+    hu: "Lezárt bejelentéseim",
+    en: "My closed reports",
+  },
   "hiba.oldal.nincs_nyitott": {
     hu: "Nincs nyitott bejelentésed.",
     en: "You have no open reports.",
   },
 
   "hiba.urlap.berlemeny": { hu: "Melyik bérlemény", en: "Which home" },
-  "hiba.urlap.targy": { hu: "Mi a baj, egy mondatban", en: "What is wrong, in one sentence" },
+  "hiba.urlap.targy": {
+    hu: "Mi a baj, egy mondatban",
+    en: "What is wrong, in one sentence",
+  },
   "hiba.urlap.targy_pelda": {
     hu: "Csöpög a mosogató csaptelepe",
     en: "The kitchen tap is dripping",
@@ -633,13 +750,14 @@ export const SZOTAR: Szotar = {
   "hiba.urlap.terulet": { hu: "Mi romlott el", en: "What broke" },
   "hiba.urlap.ok": { hu: "Mitől romlott el", en: "What caused it" },
   "hiba.urlap.ok_sugo": {
-    hu:
-      "Ebből tudjuk megmondani, kit terhel a költség. Ha nem tudod, ne tippelj: azt is választhatod.",
-    en:
-      "This is what decides who bears the cost. If you do not know, do not guess: that is an option too.",
+    hu: "Ebből tudjuk megmondani, kit terhel a költség. Ha nem tudod, ne tippelj: azt is választhatod.",
+    en: "This is what decides who bears the cost. If you do not know, do not guess: that is an option too.",
   },
   "hiba.urlap.surgosseg": { hu: "Mennyire sürgős", en: "How urgent is it" },
-  "hiba.urlap.veszely_cim": { hu: "Amíg a bérbeadó ideér", en: "Until the landlord arrives" },
+  "hiba.urlap.veszely_cim": {
+    hu: "Amíg a bérbeadó ideér",
+    en: "Until the landlord arrives",
+  },
   "hiba.urlap.kuldes": { hu: "Bejelentem", en: "Send report" },
   "hiba.urlap.kuldom": { hu: "Küldöm…", en: "Sending…" },
   "hiba.urlap.uzenet": { hu: "Üzenet", en: "Message" },
@@ -654,10 +772,19 @@ export const SZOTAR: Szotar = {
   "hiba.urlap.mentem": { hu: "Mentem…", en: "Saving…" },
 
   "hiba.kartya.bejelentve": { hu: "bejelentve {nap}", en: "reported {nap}" },
-  "hiba.kartya.hatarido": { hu: "vállalt válasz: {nap}", en: "response promised by {nap}" },
+  "hiba.kartya.hatarido": {
+    hu: "vállalt válasz: {nap}",
+    en: "response promised by {nap}",
+  },
   "hiba.kartya.lejart": { hu: " (lejárt)", en: " (overdue)" },
-  "hiba.kartya.bejelento": { hu: "bejelentette: {nev}", en: "reported by {nev}" },
-  "hiba.kartya.viselo": { hu: "Költségviselő: {fel}", en: "Cost borne by: {fel}" },
+  "hiba.kartya.bejelento": {
+    hu: "bejelentette: {nev}",
+    en: "reported by {nev}",
+  },
+  "hiba.kartya.viselo": {
+    hu: "Költségviselő: {fel}",
+    en: "Cost borne by: {fel}",
+  },
   "hiba.kartya.nincs_viselo": {
     hu: "A költségviselőről a bérbeadó még nem döntött. {indoklas}",
     en: "The landlord has not decided who bears the cost. {indoklas}",
@@ -665,10 +792,19 @@ export const SZOTAR: Szotar = {
   "hiba.kartya.te": { hu: "Te", en: "You" },
 
   // --- Dokumentumtár
-  "dokumentum.fajta.szerzodes": { hu: "Bérleti szerződés", en: "Lease agreement" },
+  "dokumentum.fajta.szerzodes": {
+    hu: "Bérleti szerződés",
+    en: "Lease agreement",
+  },
   "dokumentum.fajta.jegyzokonyv": { hu: "Jegyzőkönyv", en: "Handover record" },
-  "dokumentum.fajta.igazolas": { hu: "Bérbeadói igazolás", en: "Landlord's certificate" },
-  "dokumentum.fajta.elszamolas": { hu: "Rezsielszámolás", en: "Utility statement" },
+  "dokumentum.fajta.igazolas": {
+    hu: "Bérbeadói igazolás",
+    en: "Landlord's certificate",
+  },
+  "dokumentum.fajta.elszamolas": {
+    hu: "Rezsielszámolás",
+    en: "Utility statement",
+  },
   "dokumentum.veglegesitve": { hu: "véglegesítve", en: "finalised" },
   "dokumentum.tervezet": { hu: "tervezet", en: "draft" },
   "dokumentum.kiallitva": { hu: "kiállítva", en: "issued" },
@@ -680,7 +816,10 @@ export const SZOTAR: Szotar = {
     hu: "Tervezet: a modulok és a paraméterek még változtathatók.",
     en: "Draft: the modules and their values can still be changed.",
   },
-  "dokumentum.jegyzokonyv.felveve": { hu: "Felvéve {nap}.", en: "Recorded on {nap}." },
+  "dokumentum.jegyzokonyv.felveve": {
+    hu: "Felvéve {nap}.",
+    en: "Recorded on {nap}.",
+  },
   "dokumentum.igazolas.osszeg": {
     hu: "Igazolt befizetés: {osszeg} Ft.",
     en: "Confirmed payment: HUF {osszeg}.",
@@ -745,7 +884,10 @@ export const SZOTAR: Szotar = {
     en: "last {ertek} {egyseg} · {nap}",
   },
   "berlo.oraallas.nincs": { hu: "még nincs óraállás", en: "no reading yet" },
-  "berlo.elszamolas": { hu: "Rezsielszámolás · {tol} – {ig}", en: "Utility statement · {tol} – {ig}" },
+  "berlo.elszamolas": {
+    hu: "Rezsielszámolás · {tol} – {ig}",
+    en: "Utility statement · {tol} – {ig}",
+  },
   "berlo.elszamolas.kiadva": {
     hu: "Nézd át a tételeket. Ha bármelyik nem stimmel, vitasd, és írd meg, melyik.",
     en: "Check the lines. If any of them looks wrong, dispute it and say which one.",
@@ -758,14 +900,29 @@ export const SZOTAR: Szotar = {
     hu: "Ezt az elszámolást vitattad, a bérbeadó látja az üzenetedet.",
     en: "You disputed this statement; the landlord can see your message.",
   },
-  "berlo.elszamolas.uzeneted": { hu: "Amit írtál: {szoveg}", en: "What you wrote: {szoveg}" },
-  "berlo.befizetesek": { hu: "Befizetéseim · {berlemeny}", en: "My payments · {berlemeny}" },
+  "berlo.elszamolas.uzeneted": {
+    hu: "Amit írtál: {szoveg}",
+    en: "What you wrote: {szoveg}",
+  },
+  "berlo.befizetesek": {
+    hu: "Befizetéseim · {berlemeny}",
+    en: "My payments · {berlemeny}",
+  },
   "berlo.esedekesseg": { hu: "Esedékesség: {nap}.", en: "Due: {nap}." },
   "berlo.osszesen": { hu: "Összesen", en: "Total" },
-  "berlo.utalas.nyito": { hu: "Elutaltam, rögzítem", en: "I have transferred it" },
+  "berlo.utalas.nyito": {
+    hu: "Elutaltam, rögzítem",
+    en: "I have transferred it",
+  },
   "berlo.utalas.datum": { hu: "Mikor utaltad", en: "When you transferred it" },
-  "berlo.utalas.osszeg": { hu: "Mennyit utaltál (Ft)", en: "How much you transferred (HUF)" },
-  "berlo.utalas.kozlemeny": { hu: "Közlemény (ha volt)", en: "Reference (if any)" },
+  "berlo.utalas.osszeg": {
+    hu: "Mennyit utaltál (Ft)",
+    en: "How much you transferred (HUF)",
+  },
+  "berlo.utalas.kozlemeny": {
+    hu: "Közlemény (ha volt)",
+    en: "Reference (if any)",
+  },
   "berlo.utalas.gomb": { hu: "Rögzítem", en: "Record it" },
   "berlo.utalas.sugo": {
     hu:
@@ -777,7 +934,10 @@ export const SZOTAR: Szotar = {
   },
   "berlo.utalas.visszavon": { hu: "Ezt elgépeltem", en: "I mistyped this" },
   "berlo.utalas.sajat": { hu: "Amit te mondtál", en: "What you said" },
-  "berlo.utalas.berbeado": { hu: "Amit a bérbeadó mond", en: "What the landlord says" },
+  "berlo.utalas.berbeado": {
+    hu: "Amit a bérbeadó mond",
+    en: "What the landlord says",
+  },
   "berlo.utalas.nem_erkezett": { hu: "nem érkezett meg", en: "did not arrive" },
   "berlo.utalas.bizonylat": {
     hu:
@@ -794,7 +954,10 @@ export const SZOTAR: Szotar = {
     hu: "Ehhez a bérleményhez nincs hozzáférésed.",
     en: "You do not have access to this home.",
   },
-  "valasz.nem_tied": { hu: "Ez a bejelentés nem a tiéd.", en: "This report is not yours." },
+  "valasz.nem_tied": {
+    hu: "Ez a bejelentés nem a tiéd.",
+    en: "This report is not yours.",
+  },
   "valasz.potold": { hu: "Ezt még pótold:", en: "Please fill in:" },
   "valasz.hiany.targy": {
     hu: "Írd le egy mondatban, mi a baj.",
@@ -804,8 +967,14 @@ export const SZOTAR: Szotar = {
     hu: "A részletezés nélkül nehéz eldönteni, mit kell vinni.",
     en: "Without details it is hard to tell what the repairer should bring.",
   },
-  "valasz.hiany.terulet": { hu: "Válaszd ki, mi romlott el.", en: "Choose what broke." },
-  "valasz.hiany.ok": { hu: "Válaszd ki, mitől romlott el.", en: "Choose what caused it." },
+  "valasz.hiany.terulet": {
+    hu: "Válaszd ki, mi romlott el.",
+    en: "Choose what broke.",
+  },
+  "valasz.hiany.ok": {
+    hu: "Válaszd ki, mitől romlott el.",
+    en: "Choose what caused it.",
+  },
   "valasz.hiany.surgosseg": {
     hu: "Válaszd ki, mennyire sürgős.",
     en: "Choose how urgent it is.",
@@ -822,12 +991,18 @@ export const SZOTAR: Szotar = {
     hu: "Ez a lépés innen nem lehetséges.",
     en: "That step is not possible from here.",
   },
-  "valasz.uj_allapot": { hu: "Új állapot: {allapot}.", en: "New status: {allapot}." },
+  "valasz.uj_allapot": {
+    hu: "Új állapot: {allapot}.",
+    en: "New status: {allapot}.",
+  },
   "valasz.csak_berbeado": {
     hu: "Ezt csak a bérbeadó döntheti el.",
     en: "Only the landlord can decide this.",
   },
-  "valasz.ismeretlen_viselo": { hu: "Ismeretlen költségviselő.", en: "Unknown cost bearer." },
+  "valasz.ismeretlen_viselo": {
+    hu: "Ismeretlen költségviselő.",
+    en: "Unknown cost bearer.",
+  },
   "valasz.viselo_torolve": {
     hu: "A költségviselő újra eldöntetlen.",
     en: "The cost bearer is undecided again.",
@@ -843,7 +1018,10 @@ export const SZOTAR: Szotar = {
     hu: "Töredékhónap: {elso}–{utolso}. ({napok} nap a hónap {honapNapjai} napjából). A teljes havi összeg {teljes} Ft.",
     en: "Partial month: {elso}–{utolso} ({napok} of the month's {honapNapjai} days). The full monthly amount is {teljes} HUF.",
   },
-  "eloiras.elofizetes": { hu: "Előfizetés: {nev}.", en: "Subscription: {nev}." },
+  "eloiras.elofizetes": {
+    hu: "Előfizetés: {nev}.",
+    en: "Subscription: {nev}.",
+  },
   "eloiras.elofizetes_toredek": {
     hu: "Előfizetés: {nev}. Nem teljes hónap: {elso}–{utolso}. ({napok} nap a hónap {honapNapjai} napjából). A teljes havi díj {teljes} Ft.",
     en: "Subscription: {nev}. Partial month: {elso}–{utolso} ({napok} of the month's {honapNapjai} days). The full monthly fee is {teljes} HUF.",
@@ -864,12 +1042,24 @@ export const SZOTAR: Szotar = {
   "elofizetes.fajta.telefon": { hu: "Telefon", en: "Landline" },
   "elofizetes.fajta.internet": { hu: "Internet", en: "Internet" },
   "elofizetes.fajta.egyeb": { hu: "Egyéb", en: "Other" },
-  "elofizetes.elofizeto.berbeado": { hu: "A bérbeadó az előfizető", en: "The landlord is the subscriber" },
-  "elofizetes.elofizeto.berlo": { hu: "A bérlő az előfizető", en: "The tenant is the subscriber" },
-  "elofizetes.allapot.varakozik": { hu: "Jóváhagyásra vár", en: "Waiting for approval" },
+  "elofizetes.elofizeto.berbeado": {
+    hu: "A bérbeadó az előfizető",
+    en: "The landlord is the subscriber",
+  },
+  "elofizetes.elofizeto.berlo": {
+    hu: "A bérlő az előfizető",
+    en: "The tenant is the subscriber",
+  },
+  "elofizetes.allapot.varakozik": {
+    hu: "Jóváhagyásra vár",
+    en: "Waiting for approval",
+  },
   "elofizetes.allapot.jovahagyva": { hu: "Jóváhagyva", en: "Approved" },
   "elofizetes.allapot.kifogasolt": { hu: "Kifogásolt", en: "Objected to" },
-  "elofizetes.varunk_rad": { hu: "Rád vár: {nevek}", en: "Waiting for: {nevek}" },
+  "elofizetes.varunk_rad": {
+    hu: "Rád vár: {nevek}",
+    en: "Waiting for: {nevek}",
+  },
   "elofizetes.nincs_fiokos_berlo": {
     hu: "Egyik bérlőnek sincs még fiókja, ezért jóváhagyni sem tudják. Küldj nekik meghívót.",
     en: "No tenant has an account yet, so nobody can approve it. Send them an invitation.",
@@ -888,7 +1078,10 @@ export const SZOTAR: Szotar = {
     en: "Until it is approved, we charge nothing for it.",
   },
   "elofizetes.idoszak": { hu: "{kezdete} óta", en: "since {kezdete}" },
-  "elofizetes.idoszak_zart": { hu: "{kezdete} – {vege}", en: "{kezdete} – {vege}" },
+  "elofizetes.idoszak_zart": {
+    hu: "{kezdete} – {vege}",
+    en: "{kezdete} – {vege}",
+  },
 
   // Bérbeadói űrlap
   "elofizetes.uj": { hu: "Előfizetés felvétele", en: "Add a subscription" },
@@ -899,13 +1092,22 @@ export const SZOTAR: Szotar = {
     en: "As it appears on the bill, for example “Telekom 500/100 internet”.",
   },
   "elofizetes.mezo.szolgaltato": { hu: "Szolgáltató", en: "Provider" },
-  "elofizetes.mezo.elofizeto": { hu: "Kinek a nevén van az előfizetés?", en: "Whose name is the subscription in?" },
+  "elofizetes.mezo.elofizeto": {
+    hu: "Kinek a nevén van az előfizetés?",
+    en: "Whose name is the subscription in?",
+  },
   "elofizetes.mezo.havi_dij": { hu: "Havi díj (Ft)", en: "Monthly fee (HUF)" },
   "elofizetes.mezo.kezdete": { hu: "Mettől", en: "From" },
-  "elofizetes.mezo.vege": { hu: "Meddig (üresen hagyható)", en: "Until (may be left empty)" },
+  "elofizetes.mezo.vege": {
+    hu: "Meddig (üresen hagyható)",
+    en: "Until (may be left empty)",
+  },
   "elofizetes.gomb.felvesz": { hu: "Felvétel", en: "Add" },
   "elofizetes.gomb.felveszem": { hu: "Felveszem…", en: "Adding…" },
-  "elofizetes.gomb.megszuntet": { hu: "Megszüntetés mai nappal", en: "End it today" },
+  "elofizetes.gomb.megszuntet": {
+    hu: "Megszüntetés mai nappal",
+    en: "End it today",
+  },
   "elofizetes.gomb.megszuntetem": { hu: "Megszüntetem…", en: "Ending…" },
   "elofizetes.megszunt": { hu: "Megszűnt {vege}-n.", en: "Ended on {vege}." },
 
@@ -915,15 +1117,33 @@ export const SZOTAR: Szotar = {
     hu: "Ezeket a bérbeadó vette fel a bérleményhez. Amíg nem mondasz rá igent, nem kérünk érte pénzt.",
     en: "The landlord added these to the property. Until you say yes, we charge nothing for them.",
   },
-  "elofizetes.gomb.jovahagy": { hu: "Rendben, jóváhagyom", en: "Fine, I approve it" },
+  "elofizetes.gomb.jovahagy": {
+    hu: "Rendben, jóváhagyom",
+    en: "Fine, I approve it",
+  },
   "elofizetes.gomb.jovahagyom": { hu: "Jóváhagyom…", en: "Approving…" },
   "elofizetes.gomb.kifogas": { hu: "Kifogást emelek", en: "I object" },
   "elofizetes.gomb.kifogasolom": { hu: "Küldöm…", en: "Sending…" },
-  "elofizetes.mezo.indoklas": { hu: "Miért nem jó így?", en: "What is wrong with it?" },
-  "elofizetes.mar_nyilatkoztal": { hu: "Erről már nyilatkoztál.", en: "You have already responded to this." },
-  "elofizetes.sajat_nyilatkozat.jovahagyva": { hu: "Jóváhagytad.", en: "You approved it." },
-  "elofizetes.sajat_nyilatkozat.kifogasolt": { hu: "Kifogást emeltél: {indoklas}", en: "You objected: {indoklas}" },
-  "elofizetes.masik_kifogasa": { hu: "{nev} kifogása: {indoklas}", en: "{nev} objected: {indoklas}" },
+  "elofizetes.mezo.indoklas": {
+    hu: "Miért nem jó így?",
+    en: "What is wrong with it?",
+  },
+  "elofizetes.mar_nyilatkoztal": {
+    hu: "Erről már nyilatkoztál.",
+    en: "You have already responded to this.",
+  },
+  "elofizetes.sajat_nyilatkozat.jovahagyva": {
+    hu: "Jóváhagytad.",
+    en: "You approved it.",
+  },
+  "elofizetes.sajat_nyilatkozat.kifogasolt": {
+    hu: "Kifogást emeltél: {indoklas}",
+    en: "You objected: {indoklas}",
+  },
+  "elofizetes.masik_kifogasa": {
+    hu: "{nev} kifogása: {indoklas}",
+    en: "{nev} objected: {indoklas}",
+  },
 
   // Kifogások és figyelmeztetések
   "elofizetes.kifogas.nincs_megnevezes": {
@@ -962,9 +1182,18 @@ export const SZOTAR: Szotar = {
     hu: "Rendezett és megszűnt előfizetések ({darab})",
     en: "Settled and ended subscriptions ({darab})",
   },
-  "elofizetes.felvettuk": { hu: "Felvettük. A bérlő most kapja meg jóváhagyásra.", en: "Added. The tenant now has it to approve." },
-  "elofizetes.megszuntettuk": { hu: "Megszüntettük mai nappal.", en: "Ended as of today." },
-  "elofizetes.nyilatkoztal": { hu: "Elmentettük, amit mondtál.", en: "We saved your response." },
+  "elofizetes.felvettuk": {
+    hu: "Felvettük. A bérlő most kapja meg jóváhagyásra.",
+    en: "Added. The tenant now has it to approve.",
+  },
+  "elofizetes.megszuntettuk": {
+    hu: "Megszüntettük mai nappal.",
+    en: "Ended as of today.",
+  },
+  "elofizetes.nyilatkoztal": {
+    hu: "Elmentettük, amit mondtál.",
+    en: "We saved your response.",
+  },
 
   "valasz.datum_kell": { hu: "Adj meg egy dátumot.", en: "Give a date." },
   "valasz.osszeg_kell": {
@@ -1001,7 +1230,10 @@ export const SZOTAR: Szotar = {
     en: "Reopened; monthly items will be created again.",
   },
   "berlok.lezaras": { hu: "Jogviszony lezárása", en: "Close the tenancy" },
-  "berlok.lezaras_nap": { hu: "Melyik nappal zárul?", en: "On which day does it end?" },
+  "berlok.lezaras_nap": {
+    hu: "Melyik nappal zárul?",
+    en: "On which day does it end?",
+  },
   "berlok.lezaras_gomb": { hu: "Lezárom", en: "Close it" },
   "berlok.lezaras_sugo": {
     hu: "A kiköltözés utáni hónapok előírásait törlöm, a záró hónapét napra arányosítom. A múlthoz nem nyúlok.",
@@ -1043,7 +1275,10 @@ export const SZOTAR: Szotar = {
     hu: "Beszerzési ár és dátum nélkül a tételes adóelszámolásban nem tudunk értékcsökkenést számolni. Enélkül is működik minden más.",
     en: "Without the purchase price and date we cannot calculate depreciation in the itemised tax method. Everything else works without it.",
   },
-  "berlemeny.mentve": { hu: "A bérlemény elmentve.", en: "The property has been saved." },
+  "berlemeny.mentve": {
+    hu: "A bérlemény elmentve.",
+    en: "The property has been saved.",
+  },
   "berlemeny.uj": { hu: "Új bérlemény", en: "New property" },
   "berlemeny.mezo.megnevezes": { hu: "Név", en: "Name" },
   "berlemeny.mezo.megnevezes_sugo": {
@@ -1055,15 +1290,30 @@ export const SZOTAR: Szotar = {
     hu: "A szerződésbe ez kerül. Írd a szokásos alakban: 1094 Budapest, Minta utca 3. 2/4",
     en: "This goes into the contract. Use the usual form: 1094 Budapest, Minta utca 3. 2/4",
   },
-  "berlemeny.mezo.alapterulet": { hu: "Alapterület (m²)", en: "Floor area (m²)" },
-  "berlemeny.mezo.helyrajzi": { hu: "Helyrajzi szám", en: "Land registry number" },
+  "berlemeny.mezo.alapterulet": {
+    hu: "Alapterület (m²)",
+    en: "Floor area (m²)",
+  },
+  "berlemeny.mezo.helyrajzi": {
+    hu: "Helyrajzi szám",
+    en: "Land registry number",
+  },
   "berlemeny.mezo.energetikai": {
     hu: "Energetikai tanúsítvány azonosítója",
     en: "Energy certificate identifier",
   },
-  "berlemeny.mezo.kozos_koltseg": { hu: "Közös költség (Ft / hó)", en: "Common charges (HUF / month)" },
-  "berlemeny.mezo.beszerzesi_ar": { hu: "Beszerzési ár (Ft)", en: "Purchase price (HUF)" },
-  "berlemeny.mezo.beszerzes_datuma": { hu: "Beszerzés dátuma", en: "Purchase date" },
+  "berlemeny.mezo.kozos_koltseg": {
+    hu: "Közös költség (Ft / hó)",
+    en: "Common charges (HUF / month)",
+  },
+  "berlemeny.mezo.beszerzesi_ar": {
+    hu: "Beszerzési ár (Ft)",
+    en: "Purchase price (HUF)",
+  },
+  "berlemeny.mezo.beszerzes_datuma": {
+    hu: "Beszerzés dátuma",
+    en: "Purchase date",
+  },
   "berlemeny.mezo.adozas_sugo": {
     hu: "Csak az adóösszesítőhöz kell, az értékcsökkenéshez. Üresen is mehet.",
     en: "Only needed for the tax summary, for depreciation. You can leave it empty.",
@@ -1074,9 +1324,15 @@ export const SZOTAR: Szotar = {
     hu: "Ettől kezdve a bérleti díj, a közös költség és a rezsiátalány minden hónapra magától előírás lesz. Kézzel nem kell rögzítened.",
     en: "From here the rent, common charges and utility flat rate become scheduled items every month, on their own. You do not record them by hand.",
   },
-  "jogviszony.mezo.ingatlan": { hu: "Melyik bérleményre?", en: "Which property?" },
+  "jogviszony.mezo.ingatlan": {
+    hu: "Melyik bérleményre?",
+    en: "Which property?",
+  },
   "jogviszony.mezo.kezdete": { hu: "A bérlet kezdete", en: "Tenancy starts" },
-  "jogviszony.mezo.dij": { hu: "Bérleti díj (Ft / hó)", en: "Rent (HUF / month)" },
+  "jogviszony.mezo.dij": {
+    hu: "Bérleti díj (Ft / hó)",
+    en: "Rent (HUF / month)",
+  },
   "jogviszony.mezo.kozos_koltseg": {
     hu: "Közös költség, amit a bérlő fizet (Ft / hó)",
     en: "Common charges paid by the tenant (HUF / month)",
@@ -1086,7 +1342,10 @@ export const SZOTAR: Szotar = {
     hu: "A hónap hányadikára esedékes",
     en: "Due on which day of the month",
   },
-  "jogviszony.mezo.rezsi": { hu: "Hogyan megy a rezsi?", en: "How are utilities settled?" },
+  "jogviszony.mezo.rezsi": {
+    hu: "Hogyan megy a rezsi?",
+    en: "How are utilities settled?",
+  },
   "jogviszony.rezsi.almero": {
     hu: "Mérőóra szerint, elszámolással",
     en: "By meter, with a settlement",
@@ -1096,8 +1355,14 @@ export const SZOTAR: Szotar = {
     hu: "A közös költség tartalmazza",
     en: "Included in the common charges",
   },
-  "jogviszony.mezo.atalany": { hu: "Rezsiátalány (Ft / hó)", en: "Utility flat rate (HUF / month)" },
-  "jogviszony.mezo.berlo": { hu: "Az első bérlő neve", en: "First tenant\u2019s name" },
+  "jogviszony.mezo.atalany": {
+    hu: "Rezsiátalány (Ft / hó)",
+    en: "Utility flat rate (HUF / month)",
+  },
+  "jogviszony.mezo.berlo": {
+    hu: "Az első bérlő neve",
+    en: "First tenant\u2019s name",
+  },
   "jogviszony.mezo.berlo_email": {
     hu: "A bérlő e-mail-címe (a meghívóhoz)",
     en: "Tenant\u2019s email (for the invitation)",
@@ -1149,7 +1414,10 @@ export const SZOTAR: Szotar = {
   //
   // Egy-két év alatt száz fölötti tétel gyűlik össze. Amivel már nincs dolga
   // egyik félnek sem, az nem tűnik el, csak összecsukva áll, darabszámmal.
-  "lista.rendezett": { hu: "Rendezett tételek ({darab})", en: "Settled items ({darab})" },
+  "lista.rendezett": {
+    hu: "Rendezett tételek ({darab})",
+    en: "Settled items ({darab})",
+  },
   "lista.rendezett_bizonylattal": {
     hu: "Rendezett, de van hozzá feltöltött bizonylat ({darab})",
     en: "Settled, but a receipt was uploaded ({darab})",
@@ -1158,11 +1426,17 @@ export const SZOTAR: Szotar = {
     hu: "Ezzel a bérleménnyel most nincs dolgod.",
     en: "Nothing needs you on this tenancy right now.",
   },
-  "lista.korabbiak": { hu: "Korábbi hónapok ({darab})", en: "Earlier months ({darab})" },
+  "lista.korabbiak": {
+    hu: "Korábbi hónapok ({darab})",
+    en: "Earlier months ({darab})",
+  },
 
   // --- Betekintő nézet
   "nav.betekinto": { hu: "Betekintő", en: "Shared view" },
-  "betekinto.oldal.cim": { hu: "Betekintő a bérleményembe", en: "A window into my tenancy" },
+  "betekinto.oldal.cim": {
+    hu: "Betekintő a bérleményembe",
+    en: "A window into my tenancy",
+  },
   "betekinto.oldal.bevezeto": {
     hu: "Ha más fizeti vagy segíti a lakhatásodat — jellemzően a szüleid —, ezzel a linkkel megmutathatod nekik, hogy áll a bérlemény: mi volt esedékes, mi érkezett meg, és mi van még nyitva. Nem kell belépniük, és nem a te bemondásod: az adat abból jön, amit a bérbeadó maga rögzített a beérkezésekről.",
     en: "If someone else pays for or helps with your housing — usually your parents — this link shows them where the tenancy stands: what fell due, what arrived, and what is still open. They do not need to sign in, and it is not your own word: the data comes from what the landlord recorded as received.",
@@ -1172,39 +1446,84 @@ export const SZOTAR: Szotar = {
     en: "The link does not reveal your landlord's name, the exact address, your flatmates' names or any personal data. Whoever you send it to already knows the address; anyone the link reaches can open it, so we leave it out. You can revoke it at any time, and that takes effect immediately.",
   },
   "betekinto.urlap.cim": { hu: "Új betekintő", en: "New reference" },
-  "betekinto.urlap.jogviszony": { hu: "Melyik bérleményről?", en: "Which tenancy?" },
+  "betekinto.urlap.jogviszony": {
+    hu: "Melyik bérleményről?",
+    en: "Which tenancy?",
+  },
   "betekinto.urlap.cel": { hu: "Kinek készül?", en: "Who is it for?" },
   "betekinto.urlap.cel_sugo": {
     hu: "Ez a mondat a megnyitott oldal tetején lesz, hogy aki megkapja, lássa, neki szól. Magadnak is jelölés: a kiadott linkjeidet erről ismered fel.",
     en: "This sentence appears at the top of the page so the reader can see it was meant for them. It is also how you tell your issued links apart.",
   },
-  "betekinto.urlap.cel_pelda": { hu: "például: anyáéknak", en: "for example: for my parents" },
-  "betekinto.urlap.elettartam": { hu: "Meddig éljen a link?", en: "How long should the link live?" },
+  "betekinto.urlap.cel_pelda": {
+    hu: "például: anyáéknak",
+    en: "for example: for my parents",
+  },
+  "betekinto.urlap.elettartam": {
+    hu: "Meddig éljen a link?",
+    en: "How long should the link live?",
+  },
   "betekinto.urlap.nap": { hu: "{napok} nap", en: "{napok} days" },
-  "betekinto.urlap.osszeg": { hu: "Az összegek is látszódjanak", en: "Show the amounts too" },
+  "betekinto.urlap.osszeg": {
+    hu: "Az összegek is látszódjanak",
+    en: "Show the amounts too",
+  },
   "betekinto.urlap.osszeg_sugo": {
     hu: "Alapból látszik: aki fizeti, annak összeg nélkül semmit nem ér. Kapcsold ki, ha valakinek elég annyi, hogy rendben van-e.",
     en: "On by default: without the amounts it is of no use to whoever pays. Turn it off if the reader only needs to know whether things are in order.",
   },
   "betekinto.urlap.gomb": { hu: "Betekintő készítése", en: "Create reference" },
   "betekinto.lista.cim": { hu: "Kiadott linkjeim", en: "Links I have issued" },
-  "betekinto.lista.ures": { hu: "Még nem adtál ki betekintőt.", en: "You have not issued a reference yet." },
+  "betekinto.lista.ures": {
+    hu: "Még nem adtál ki betekintőt.",
+    en: "You have not issued a reference yet.",
+  },
   "betekinto.lista.lejar": { hu: "Lejár: {nap}", en: "Expires: {nap}" },
-  "betekinto.lista.megnyitas": { hu: "Megnyitva {darab} alkalommal", en: "Opened {darab} times" },
-  "betekinto.lista.megnyitas_soha": { hu: "Még nem nyitották meg", en: "Not opened yet" },
+  "betekinto.lista.megnyitas": {
+    hu: "Megnyitva {darab} alkalommal",
+    en: "Opened {darab} times",
+  },
+  "betekinto.lista.megnyitas_soha": {
+    hu: "Még nem nyitották meg",
+    en: "Not opened yet",
+  },
   "betekinto.lista.utoljara": { hu: "Utoljára: {nap}", en: "Last time: {nap}" },
   "betekinto.lista.visszavon": { hu: "Visszavonom", en: "Revoke" },
   "betekinto.allapot.elo": { hu: "Él", en: "Live" },
   "betekinto.allapot.lejart": { hu: "Lejárt", en: "Expired" },
   "betekinto.allapot.visszavonva": { hu: "Visszavonva", en: "Revoked" },
-  "betekinto.nyilvanos.cim": { hu: "Eddig így alakult", en: "How it has gone so far" },
-  "betekinto.nyilvanos.berlo": { hu: "{nev} bérleménye", en: "{nev}'s tenancy" },
-  "betekinto.nyilvanos.telepules": { hu: "A bérlemény települése: {telepules}", en: "The flat is in {telepules}" },
-  "betekinto.nyilvanos.kezdete": { hu: "A jogviszony kezdete: {nap}", en: "Tenancy started: {nap}" },
-  "betekinto.nyilvanos.el": { hu: "A jogviszony jelenleg is él.", en: "The tenancy is still running." },
-  "betekinto.nyilvanos.lezart": { hu: "A jogviszony már lezárult.", en: "The tenancy has ended." },
-  "betekinto.nyilvanos.dij": { hu: "Havi bérleti díj: {dij}", en: "Monthly rent: {dij}" },
-  "betekinto.nyilvanos.most": { hu: "Hol tart most", en: "Where it stands now" },
+  "betekinto.nyilvanos.cim": {
+    hu: "Eddig így alakult",
+    en: "How it has gone so far",
+  },
+  "betekinto.nyilvanos.berlo": {
+    hu: "{nev} bérleménye",
+    en: "{nev}'s tenancy",
+  },
+  "betekinto.nyilvanos.telepules": {
+    hu: "A bérlemény települése: {telepules}",
+    en: "The flat is in {telepules}",
+  },
+  "betekinto.nyilvanos.kezdete": {
+    hu: "A jogviszony kezdete: {nap}",
+    en: "Tenancy started: {nap}",
+  },
+  "betekinto.nyilvanos.el": {
+    hu: "A jogviszony jelenleg is él.",
+    en: "The tenancy is still running.",
+  },
+  "betekinto.nyilvanos.lezart": {
+    hu: "A jogviszony már lezárult.",
+    en: "The tenancy has ended.",
+  },
+  "betekinto.nyilvanos.dij": {
+    hu: "Havi bérleti díj: {dij}",
+    en: "Monthly rent: {dij}",
+  },
+  "betekinto.nyilvanos.most": {
+    hu: "Hol tart most",
+    en: "Where it stands now",
+  },
   "betekinto.nyilvanos.nyitott": {
     hu: "Amire a bérbeadó még nem igazolt beérkezést: {osszeg}",
     en: "Not yet confirmed as received by the landlord: {osszeg}",
@@ -1217,15 +1536,24 @@ export const SZOTAR: Szotar = {
     hu: "A friss hónap is idetartozik, amíg a bérbeadó rá nem nézett a számlájára; ez tehát nem feltétlenül tartozás.",
     en: "The current month sits here too until the landlord has checked their account, so this is not necessarily a debt.",
   },
-  "betekinto.nyilvanos.havi_cim": { hu: "Hónapról hónapra", en: "Month by month" },
+  "betekinto.nyilvanos.havi_cim": {
+    hu: "Hónapról hónapra",
+    en: "Month by month",
+  },
   "betekinto.nyilvanos.havi_sugo": {
     hu: "Az utolsó egy év. Egy hónap összege minden, ami arra a hónapra elő volt írva: a bérleti díj, a közös költség, a rezsiátalány, és ha volt, a rezsielszámolás is.",
     en: "The last twelve months. A month's amount is everything scheduled for that month: the rent, the common charges, the utility flat rate, and a utility settlement if there was one.",
   },
   "betekinto.nyilvanos.eloirt": { hu: "Előírva", en: "Scheduled" },
   "betekinto.nyilvanos.erkezett": { hu: "Beérkezett", en: "Received" },
-  "betekinto.havi.rendben": { hu: "Határidőre megérkezett", en: "Arrived on time" },
-  "betekinto.havi.kesve": { hu: "{napok} nap késéssel érkezett", en: "Arrived {napok} days late" },
+  "betekinto.havi.rendben": {
+    hu: "Határidőre megérkezett",
+    en: "Arrived on time",
+  },
+  "betekinto.havi.kesve": {
+    hu: "{napok} nap késéssel érkezett",
+    en: "Arrived {napok} days late",
+  },
   "betekinto.havi.elter": {
     hu: "Megérkezett, de az összeg eltért",
     en: "Arrived, but the amount differed",
@@ -1242,8 +1570,14 @@ export const SZOTAR: Szotar = {
     hu: "Pontszámot szándékosan nem adunk. A súlyozás, amit mi találnánk ki, mérésnek látszana; ítélni az olvasó dolga.",
     en: "We deliberately give no score. A weighting we invented would look like a measurement; judging is the reader's job.",
   },
-  "betekinto.nyilvanos.kiadva": { hu: "A bérlő adta ki {nap} napján, lejár {lejar} napján.", en: "Issued by the tenant on {nap}, expires on {lejar}." },
-  "betekinto.nyilvanos.nincs": { hu: "Ez a link lejárt vagy visszavonták.", en: "This link has expired or was revoked." },
+  "betekinto.nyilvanos.kiadva": {
+    hu: "A bérlő adta ki {nap} napján, lejár {lejar} napján.",
+    en: "Issued by the tenant on {nap}, expires on {lejar}.",
+  },
+  "betekinto.nyilvanos.nincs": {
+    hu: "Ez a link lejárt vagy visszavonták.",
+    en: "This link has expired or was revoked.",
+  },
   "betekinto.nyilvanos.nincs_bevezeto": {
     hu: "A linket vagy visszavonták, vagy lejárt. Aki kiadta, bármikor tud újat adni.",
     en: "The link was either revoked or has expired. Whoever issued it can issue a new one at any time.",
@@ -1299,10 +1633,22 @@ export const SZOTAR: Szotar = {
   // fülre 360 képponton nagyjából 70 képpont jut, és ami nem fér ki, azt a
   // böngésző levágja. A „Dokumentumok” így „Iratok”, a „Hibabejelentés” pedig
   // „Hibák” — a lap címe mindkettőnél a hosszú alak marad.
-  "berlok.sugo_cim": { hu: "Hogyan működik a több bérlő?", en: "How do several tenants work?" },
-  "rezsi.sugo_cim": { hu: "Hogyan készül az elszámolás?", en: "How is the settlement produced?" },
-  "hibak.sugo_cim": { hu: "Hogyan megy a hibabejelentés?", en: "How does a fault report work?" },
-  "ado.sugo_cim": { hu: "Mit jelent, hogy összesítő?", en: "What does \"summary\" mean here?" },
+  "berlok.sugo_cim": {
+    hu: "Hogyan működik a több bérlő?",
+    en: "How do several tenants work?",
+  },
+  "rezsi.sugo_cim": {
+    hu: "Hogyan készül az elszámolás?",
+    en: "How is the settlement produced?",
+  },
+  "hibak.sugo_cim": {
+    hu: "Hogyan megy a hibabejelentés?",
+    en: "How does a fault report work?",
+  },
+  "ado.sugo_cim": {
+    hu: "Mit jelent, hogy összesítő?",
+    en: 'What does "summary" mean here?',
+  },
   "beszelgetes.sugo_cim": {
     hu: "Mire való ez a lap?",
     en: "What is this page for?",
@@ -1315,7 +1661,10 @@ export const SZOTAR: Szotar = {
     hu: "Mi történik a bejelentés után?",
     en: "What happens after you report it?",
   },
-  "dokumentum.oldal.sugo_cim": { hu: "Mit látsz itt?", en: "What you see here" },
+  "dokumentum.oldal.sugo_cim": {
+    hu: "Mit látsz itt?",
+    en: "What you see here",
+  },
   "betekinto.oldal.sugo_cim": {
     hu: "Mire jó a betekintő, és mi nem kerül bele?",
     en: "What the shared view is for, and what it leaves out",
@@ -1401,10 +1750,22 @@ export const SZOTAR: Szotar = {
     en: "Not yet confirmed as received by the landlord",
   },
   "befizetesek.varr_rad": { hu: "Rád vár", en: "Waiting on you" },
-  "befizetesek.beerkezes_nyito": { hu: "Megérkezett? Rögzítem", en: "Arrived? Record it" },
-  "befizetesek.beerkezes_datum": { hu: "Mikor érkezett", en: "When it arrived" },
-  "befizetesek.beerkezes_osszeg": { hu: "Mennyi érkezett (Ft)", en: "How much arrived (HUF)" },
-  "befizetesek.beerkezes_kozlemeny": { hu: "Közlemény (ha van)", en: "Reference (if any)" },
+  "befizetesek.beerkezes_nyito": {
+    hu: "Megérkezett? Rögzítem",
+    en: "Arrived? Record it",
+  },
+  "befizetesek.beerkezes_datum": {
+    hu: "Mikor érkezett",
+    en: "When it arrived",
+  },
+  "befizetesek.beerkezes_osszeg": {
+    hu: "Mennyi érkezett (Ft)",
+    en: "How much arrived (HUF)",
+  },
+  "befizetesek.beerkezes_kozlemeny": {
+    hu: "Közlemény (ha van)",
+    en: "Reference (if any)",
+  },
   "befizetesek.beerkezes_gomb": { hu: "Rögzítem", en: "Record it" },
   "befizetesek.nem_erkezett_gomb": {
     hu: "Megnéztem: nem érkezett meg",
@@ -1447,9 +1808,18 @@ export const SZOTAR: Szotar = {
   },
   "befizetesek.ablak_atallitom": { hu: "Átállítom", en: "Change it" },
   "befizetesek.oszlop.eloiras": { hu: "Előírás", en: "Charged" },
-  "befizetesek.oszlop.berlo": { hu: "Amit a bérlő mond", en: "What the tenant reports" },
-  "befizetesek.oszlop.berbeado": { hu: "Ami hozzád megérkezett", en: "What reached you" },
-  "befizetesek.nem_erkezett_ertek": { hu: "nem érkezett meg", en: "nothing arrived" },
+  "befizetesek.oszlop.berlo": {
+    hu: "Amit a bérlő mond",
+    en: "What the tenant reports",
+  },
+  "befizetesek.oszlop.berbeado": {
+    hu: "Ami hozzád megérkezett",
+    en: "What reached you",
+  },
+  "befizetesek.nem_erkezett_ertek": {
+    hu: "nem érkezett meg",
+    en: "nothing arrived",
+  },
   "befizetesek.vita_magyarazat": {
     hu:
       "A két oldal nem egyezik. Ilyenkor van értelme az utalás bizonylatának: tőled a fogadó " +
@@ -1460,13 +1830,25 @@ export const SZOTAR: Szotar = {
   },
 
   // --- Beérkezés rögzítése (bérbeadói űrlap)
-  "beerkezes.nyito": { hu: "Megérkezett? Rögzítem", en: "Did it arrive? Record it" },
+  "beerkezes.nyito": {
+    hu: "Megérkezett? Rögzítem",
+    en: "Did it arrive? Record it",
+  },
   "beerkezes.datum": { hu: "Mikor érkezett", en: "When it arrived" },
-  "beerkezes.osszeg": { hu: "Mennyi érkezett (Ft)", en: "How much arrived (HUF)" },
+  "beerkezes.osszeg": {
+    hu: "Mennyi érkezett (Ft)",
+    en: "How much arrived (HUF)",
+  },
   "beerkezes.kozlemeny": { hu: "Közlemény (ha van)", en: "Reference (if any)" },
   "beerkezes.gomb": { hu: "Rögzítem", en: "Record it" },
-  "beerkezes.nem": { hu: "Megnéztem: nem érkezett meg", en: "I checked: nothing arrived" },
-  "beerkezes.visszavon": { hu: "Ezt tévedésből rögzítettem", en: "I recorded this by mistake" },
+  "beerkezes.nem": {
+    hu: "Megnéztem: nem érkezett meg",
+    en: "I checked: nothing arrived",
+  },
+  "beerkezes.visszavon": {
+    hu: "Ezt tévedésből rögzítettem",
+    en: "I recorded this by mistake",
+  },
 
   // --- Adóösszesítő
   "ado.cim": { hu: "Adóösszesítő · {ev}", en: "Tax summary · {ev}" },
@@ -1479,29 +1861,53 @@ export const SZOTAR: Szotar = {
       "figures. Income is counted when it is received, so only what actually arrived this year " +
       "is here.",
   },
-  "ado.letoltes": { hu: "Letöltés táblázatba", en: "Download as a spreadsheet" },
+  "ado.letoltes": {
+    hu: "Letöltés táblázatba",
+    en: "Download as a spreadsheet",
+  },
   "ado.bevetel": { hu: "Bevétel", en: "Income" },
   "ado.nem_bevetel": { hu: "Nem bevétel", en: "Not income" },
-  "ado.nem_bevetel_alcim": { hu: "mért, továbbhárított rezsi", en: "metered utilities passed on" },
+  "ado.nem_bevetel_alcim": {
+    hu: "mért, továbbhárított rezsi",
+    en: "metered utilities passed on",
+  },
   "ado.nem_bevetel_jelzes": { hu: "nem bevétel", en: "not income" },
   "ado.koltseg": { hu: "Költség", en: "Costs" },
-  "ado.melyik_mod": { hu: "Melyik elszámolással jársz jobban", en: "Which method leaves you better off" },
-  "ado.mod.hanyad": { hu: "{szazalek}%-os költséghányad", en: "{szazalek}% flat expense ratio" },
+  "ado.melyik_mod": {
+    hu: "Melyik elszámolással jársz jobban",
+    en: "Which method leaves you better off",
+  },
+  "ado.mod.hanyad": {
+    hu: "{szazalek}%-os költséghányad",
+    en: "{szazalek}% flat expense ratio",
+  },
   "ado.mod.hanyad_magyarazat": {
     hu: "Nem kell számlákat gyűjteni: a bevétel {szazalek}%-a az adóalap.",
     en: "No invoices to collect: {szazalek}% of your income is the tax base.",
   },
-  "ado.mod.hanyad_rag": { hu: "A költséghányaddal", en: "the flat expense ratio" },
-  "ado.mod.teteles": { hu: "Tételes költségelszámolás", en: "Itemised expenses" },
+  "ado.mod.hanyad_rag": {
+    hu: "A költséghányaddal",
+    en: "the flat expense ratio",
+  },
+  "ado.mod.teteles": {
+    hu: "Tételes költségelszámolás",
+    en: "Itemised expenses",
+  },
   "ado.mod.teteles_magyarazat": {
     hu: "A ténylegesen felmerült költségek, számlával, az értékcsökkenéssel együtt.",
     en: "Your actual costs, with invoices, depreciation included.",
   },
-  "ado.mod.teteles_rag": { hu: "A tételes elszámolással", en: "itemised expenses" },
+  "ado.mod.teteles_rag": {
+    hu: "A tételes elszámolással",
+    en: "itemised expenses",
+  },
   "ado.ajanlott": { hu: "ezzel jársz jobban", en: "better for you" },
   "ado.adoalap": { hu: "Adóalap", en: "Tax base" },
   "ado.szja": { hu: "Szja", en: "Income tax" },
-  "ado.egyforma": { hu: "A két mód most ugyanannyit hoz.", en: "The two methods come out the same this year." },
+  "ado.egyforma": {
+    hu: "A két mód most ugyanannyit hoz.",
+    en: "The two methods come out the same this year.",
+  },
   "ado.megtakaritas": {
     hu: "{mod} {osszeg} adóval kevesebbet fizetsz. Az szja kulcsa {kulcs}%.",
     en: "You pay {osszeg} less tax with {mod}. The income tax rate is {kulcs}%.",
@@ -1530,7 +1936,10 @@ export const SZOTAR: Szotar = {
       "It only counts under itemised expenses, but record it anyway: which method wins only " +
       "becomes clear at the end of the year.",
   },
-  "ado.ertekcsokkenes": { hu: "Értékcsökkenés alapja", en: "Basis for depreciation" },
+  "ado.ertekcsokkenes": {
+    hu: "Értékcsökkenés alapja",
+    en: "Basis for depreciation",
+  },
   "ado.ertekcsokkenes_sugo": {
     hu:
       "A tételes elszámolásban az épület beszerzési árának évi 2%-a leírható, a kiadott napokra " +
@@ -1552,7 +1961,10 @@ export const SZOTAR: Szotar = {
   },
 
   // Költségfajták
-  "ado.fajta.felujitas": { hu: "Felújítás, karbantartás", en: "Renovation, maintenance" },
+  "ado.fajta.felujitas": {
+    hu: "Felújítás, karbantartás",
+    en: "Renovation, maintenance",
+  },
   "ado.fajta.kozos_koltseg": { hu: "Közös költség", en: "Service charge" },
   "ado.fajta.biztositas": { hu: "Biztosítás", en: "Insurance" },
   "ado.fajta.kozuzem": { hu: "Közüzemi számla", en: "Utility bill" },
@@ -1578,11 +1990,20 @@ export const SZOTAR: Szotar = {
       "A service charge received from the tenant is income; if you pay it to the building, you " +
       "can deduct it as a cost.",
   },
-  "ado.indok.berleti_dij": { hu: "Bérleti díjként befolyt összeg.", en: "Received as rent." },
+  "ado.indok.berleti_dij": {
+    hu: "Bérleti díjként befolyt összeg.",
+    en: "Received as rent.",
+  },
 
   // A bevételi sor megnevezése
-  "ado.megnevezes.mert": { hu: "{alap} · mért fogyasztás", en: "{alap} · metered use" },
-  "ado.megnevezes.kozos_koltseg": { hu: "{alap} · közös költség", en: "{alap} · service charge" },
+  "ado.megnevezes.mert": {
+    hu: "{alap} · mért fogyasztás",
+    en: "{alap} · metered use",
+  },
+  "ado.megnevezes.kozos_koltseg": {
+    hu: "{alap} · közös költség",
+    en: "{alap} · service charge",
+  },
   "ado.megnevezes.atalany_es_kozos": {
     hu: "{alap} · átalány és közös költség",
     en: "{alap} · flat rate and service charge",
@@ -1635,7 +2056,10 @@ export const SZOTAR: Szotar = {
   "rezsi.mod": { hu: "Rezsi elszámolása {mod}", en: "Utilities settled {mod}" },
   "rezsi.mod.almero": { hu: "mérőóra szerint", en: "by meter" },
   "rezsi.mod.atalany": { hu: "átalánnyal", en: "at a flat rate" },
-  "rezsi.mod.kozos_koltsegben": { hu: "a közös költségben", en: "within the service charge" },
+  "rezsi.mod.kozos_koltsegben": {
+    hu: "a közös költségben",
+    en: "within the service charge",
+  },
   "rezsi.kozos_koltseg": {
     hu: "közös költség {osszeg} / hó",
     en: "service charge {osszeg} / month",
@@ -1654,25 +2078,40 @@ export const SZOTAR: Szotar = {
     hu: ", {keret} {egyseg}/év keret, fölötte {piaci} Ft/{egyseg}",
     en: ", allowance {keret} {egyseg}/year, above it {piaci} HUF/{egyseg}",
   },
-  "rezsi.dijszabas_nincs_savhatar": { hu: ", nincs sávhatár", en: ", no band limit" },
+  "rezsi.dijszabas_nincs_savhatar": {
+    hu: ", nincs sávhatár",
+    en: ", no band limit",
+  },
   "rezsi.dijszabas_csatorna": {
     hu: ", csatornadíj {ar} Ft/{egyseg}",
     en: ", sewage {ar} HUF/{egyseg}",
   },
-  "rezsi.nincs_dijszabas": { hu: "nincs díjszabás felvéve", en: "no tariff has been added" },
+  "rezsi.nincs_dijszabas": {
+    hu: "nincs díjszabás felvéve",
+    en: "no tariff has been added",
+  },
   "rezsi.uj_elszamolas": { hu: "Új elszámolás", en: "New settlement" },
-  "rezsi.vitatja": { hu: "A bérlő vitatja: {uzenet}", en: "The tenant disputes it: {uzenet}" },
+  "rezsi.vitatja": {
+    hu: "A bérlő vitatja: {uzenet}",
+    en: "The tenant disputes it: {uzenet}",
+  },
 
   // Óraállás űrlap
   "rezsi.oraallas.datum": { hu: "Dátum", en: "Date" },
-  "rezsi.oraallas.ertek": { hu: "Óraállás ({egyseg})", en: "Reading ({egyseg})" },
+  "rezsi.oraallas.ertek": {
+    hu: "Óraállás ({egyseg})",
+    en: "Reading ({egyseg})",
+  },
   "rezsi.oraallas.gomb": { hu: "Óraállás rögzítése", en: "Record reading" },
   "rezsi.oraallas.folyamatban": { hu: "Rögzítés…", en: "Recording…" },
 
   // Elszámolás készítése és kiadása
   "rezsi.elszamolas.kezdete": { hu: "Időszak kezdete", en: "Period starts" },
   "rezsi.elszamolas.vege": { hu: "Időszak vége", en: "Period ends" },
-  "rezsi.elszamolas.gomb": { hu: "Elszámolás készítése", en: "Prepare settlement" },
+  "rezsi.elszamolas.gomb": {
+    hu: "Elszámolás készítése",
+    en: "Prepare settlement",
+  },
   "rezsi.elszamolas.folyamatban": { hu: "Számolás…", en: "Calculating…" },
   "rezsi.kiadas.hatarido": { hu: "Fizetési határidő", en: "Payment due" },
   "rezsi.kiadas.gomb": { hu: "Kiadom a bérlőnek", en: "Issue to the tenant" },
@@ -1723,11 +2162,23 @@ export const SZOTAR: Szotar = {
       "working immediately.",
   },
   "berlok.meghivo": { hu: "Meghívó készítése", en: "Create an invitation" },
-  "berlok.uj_meghivo": { hu: "Új meghívó készítése", en: "Create a new invitation" },
-  "berlok.meghivo_email": { hu: "A bérlő e-mail-címe", en: "The tenant's email address" },
+  "berlok.uj_meghivo": {
+    hu: "Új meghívó készítése",
+    en: "Create a new invitation",
+  },
+  "berlok.meghivo_email": {
+    hu: "A bérlő e-mail-címe",
+    en: "The tenant's email address",
+  },
   "berlok.meghivo_folyamatban": { hu: "Készítem…", en: "Creating…" },
-  "berlok.adatok_cim": { hu: "Szerződéshez szükséges adatok", en: "Details needed for the contract" },
-  "berlok.adatok_hianyzik": { hu: "még {darab} hiányzik", en: "{darab} still missing" },
+  "berlok.adatok_cim": {
+    hu: "Szerződéshez szükséges adatok",
+    en: "Details needed for the contract",
+  },
+  "berlok.adatok_hianyzik": {
+    hu: "még {darab} hiányzik",
+    en: "{darab} still missing",
+  },
   "berlok.adatok_megvan": { hu: "megvannak", en: "all filled in" },
   "berlok.adatok_forras_berlo": {
     hu: "Ezeket a bérlő adta meg magáról.",
@@ -1743,7 +2194,10 @@ export const SZOTAR: Szotar = {
   },
   "berlok.adatok_gomb": { hu: "Adatok mentése", en: "Save details" },
   "berlok.adatok_folyamatban": { hu: "Mentem…", en: "Saving…" },
-  "berlok.hozzaadas": { hu: "További bérlő hozzáadása", en: "Add another tenant" },
+  "berlok.hozzaadas": {
+    hu: "További bérlő hozzáadása",
+    en: "Add another tenant",
+  },
   "berlok.hozzaadas_gomb": { hu: "Hozzáadás", en: "Add" },
   "berlok.hozzaadas_folyamatban": { hu: "Hozzáadom…", en: "Adding…" },
   "berlok.torles": {
@@ -1782,10 +2236,22 @@ export const SZOTAR: Szotar = {
       "tenant confirms the fix, so there is no argument later about whether it was put right.",
   },
   "hibak.nyitottak": { hu: "Nyitott bejelentések", en: "Open reports" },
-  "hibak.nyitottak_darab": { hu: "Nyitott bejelentések ({darab})", en: "Open reports ({darab})" },
-  "hibak.nincs_nyitott": { hu: "Nincs nyitott hibabejelentés.", en: "No open fault reports." },
-  "hibak.lezartak": { hu: "Lezárt bejelentések ({darab})", en: "Closed reports ({darab})" },
-  "hibak.sajat_cim": { hu: "Magam jelentek be egy hibát", en: "Report a fault myself" },
+  "hibak.nyitottak_darab": {
+    hu: "Nyitott bejelentések ({darab})",
+    en: "Open reports ({darab})",
+  },
+  "hibak.nincs_nyitott": {
+    hu: "Nincs nyitott hibabejelentés.",
+    en: "No open fault reports.",
+  },
+  "hibak.lezartak": {
+    hu: "Lezárt bejelentések ({darab})",
+    en: "Closed reports ({darab})",
+  },
+  "hibak.sajat_cim": {
+    hu: "Magam jelentek be egy hibát",
+    en: "Report a fault myself",
+  },
   "hibak.sajat_sugo": {
     hu:
       "Ha te veszed észre a hibát, ide is felveheted: így a bérlő is látja, és ugyanaz a nyoma " +
@@ -1824,8 +2290,14 @@ export const SZOTAR: Szotar = {
       "A payment that arrives within this many days is tied to the same monthly charge. Anything " +
       "outside the window shows up as a separate item.",
   },
-  "beallitasok.ablak_elotte": { hu: "Esedékesség előtt (nap)", en: "Before the due date (days)" },
-  "beallitasok.ablak_utana": { hu: "Esedékesség után (nap)", en: "After the due date (days)" },
+  "beallitasok.ablak_elotte": {
+    hu: "Esedékesség előtt (nap)",
+    en: "Before the due date (days)",
+  },
+  "beallitasok.ablak_utana": {
+    hu: "Esedékesség után (nap)",
+    en: "After the due date (days)",
+  },
   "beallitasok.bizonylat_cim": {
     hu: "Bizonylat vitás befizetésnél",
     en: "Receipt for a disputed payment",
@@ -1850,7 +2322,10 @@ export const SZOTAR: Szotar = {
   },
   "beallitasok.gomb": { hu: "Mentés", en: "Save" },
   "beallitasok.folyamatban": { hu: "Mentés…", en: "Saving…" },
-  "beallitasok.adatok_cim": { hu: "A te adataid a szerződéshez", en: "Your details for the contract" },
+  "beallitasok.adatok_cim": {
+    hu: "A te adataid a szerződéshez",
+    en: "Your details for the contract",
+  },
   "beallitasok.adatok_sugo": {
     hu:
       "Ezek a szerződésbe és az igazolásokba kerülnek. A belépéshez egyik sem kell, és naplóba sem " +
@@ -1861,11 +2336,17 @@ export const SZOTAR: Szotar = {
       "none is written to a log. The tenant sees your phone number when reporting a fault: in an " +
       "emergency the app does not ring anyone.",
   },
-  "beallitasok.mezo.adoazonosito": { hu: "Adóazonosító jel", en: "Tax identification number" },
+  "beallitasok.mezo.adoazonosito": {
+    hu: "Adóazonosító jel",
+    en: "Tax identification number",
+  },
   "beallitasok.mezo.bank": { hu: "Bank neve", en: "Name of the bank" },
   "beallitasok.adatok_gomb": { hu: "Mentés", en: "Save" },
   "beallitasok.adatok_folyamatban": { hu: "Mentem…", en: "Saving…" },
-  "beallitasok.tolerancia_cim": { hu: "Összegeltérés", en: "Difference in amount" },
+  "beallitasok.tolerancia_cim": {
+    hu: "Összegeltérés",
+    en: "Difference in amount",
+  },
   "beallitasok.tolerancia_sugo": {
     hu:
       "Az elfogadott eltérés nulla forint, és ez nem állítható. Bármekkora különbség az előírt és " +
@@ -1878,7 +2359,10 @@ export const SZOTAR: Szotar = {
   },
 
   // --- Dokumentumok lap
-  "dokumentum.veglegesitve_nap": { hu: "véglegesítve {nap}", en: "finalised {nap}" },
+  "dokumentum.veglegesitve_nap": {
+    hu: "véglegesítve {nap}",
+    en: "finalised {nap}",
+  },
   "dokumentum.kiallitva_nap": { hu: "kiállítva {nap}", en: "issued {nap}" },
   "jegyzokonyv.fajta.birtokbaadas": { hu: "Birtokbaadás", en: "Handover" },
   "jegyzokonyv.fajta.visszaadas": { hu: "Visszaadás", en: "Move-out" },
@@ -1892,20 +2376,35 @@ export const SZOTAR: Szotar = {
     hu: "Még nincs egyetlen dokumentum sem.",
     en: "There are no documents yet.",
   },
-  "dokumentumok.nincs_berlo": { hu: "Nincs bérlő rögzítve", en: "No tenant recorded" },
-  "dokumentumok.szerzodes_cim": { hu: "Bérleti szerződés", en: "Lease agreement" },
+  "dokumentumok.nincs_berlo": {
+    hu: "Nincs bérlő rögzítve",
+    en: "No tenant recorded",
+  },
+  "dokumentumok.szerzodes_cim": {
+    hu: "Bérleti szerződés",
+    en: "Lease agreement",
+  },
   "dokumentumok.nincs_szerzodes": {
     hu: "Ehhez a jogviszonyhoz még nem készült szerződés.",
     en: "No contract has been drawn up for this tenancy yet.",
   },
-  "dokumentumok.uj_szerzodes": { hu: "Új szerződéstervezet", en: "New draft contract" },
+  "dokumentumok.uj_szerzodes": {
+    hu: "Új szerződéstervezet",
+    en: "New draft contract",
+  },
   "dokumentumok.keszitem": { hu: "Készítem…", en: "Creating…" },
-  "dokumentumok.jegyzokonyv_cim": { hu: "Átadás-átvételi jegyzőkönyv", en: "Handover record" },
+  "dokumentumok.jegyzokonyv_cim": {
+    hu: "Átadás-átvételi jegyzőkönyv",
+    en: "Handover record",
+  },
   "dokumentumok.jegyzokonyv_sugo": {
     hu: "A véglegesített jegyzőkönyv óraállásai bekerülnek a mérőórák történetébe, és a birtokbaadás állása lesz az első rezsielszámolás kiindulópontja.",
     en: "Meter readings from a finalised record are added to the meters' history, so the handover reading becomes the starting point of the first utility statement.",
   },
-  "dokumentumok.igazolas_cim": { hu: "Bérbeadói igazolás", en: "Landlord's certificate" },
+  "dokumentumok.igazolas_cim": {
+    hu: "Bérbeadói igazolás",
+    en: "Landlord's certificate",
+  },
   "dokumentumok.igazolas_sugo": {
     hu: "Az összeget és a teljesítés napját a beazonosított befizetésből vesszük. Amelyik hónapra nincs igazolt beérkezés, arra nem ajánlunk igazolást.",
     en: "The amount and the payment date come from the matched payment. We do not offer a certificate for a month with no confirmed receipt.",
@@ -1915,19 +2414,31 @@ export const SZOTAR: Szotar = {
     en: "There is no month yet for which a certificate could be issued to {nev}: that needs a receipt confirmed by the landlord.",
   },
   "dokumentumok.igazolas_idoszak": { hu: "Időszak", en: "Period" },
-  "dokumentumok.igazolas_osszeg": { hu: "Igazolt összeg (Ft)", en: "Amount certified (HUF)" },
-  "dokumentumok.igazolas_osszeg_pelda": { hu: "az időszak összege", en: "the period's amount" },
+  "dokumentumok.igazolas_osszeg": {
+    hu: "Igazolt összeg (Ft)",
+    en: "Amount certified (HUF)",
+  },
+  "dokumentumok.igazolas_osszeg_pelda": {
+    hu: "az időszak összege",
+    en: "the period's amount",
+  },
   "dokumentumok.igazolas_osszeg_sugo": {
     hu: "Üresen hagyva az időszakra beazonosított összeg kerül bele. Ennél többet nem igazolunk.",
     en: "Left empty, the amount matched for the period is used. We never certify more than that.",
   },
   "dokumentumok.igazolas_cel": { hu: "Mire kéri", en: "Purpose" },
-  "dokumentumok.igazolas_mod": { hu: "Teljesítés módja", en: "Method of payment" },
+  "dokumentumok.igazolas_mod": {
+    hu: "Teljesítés módja",
+    en: "Method of payment",
+  },
   "dokumentumok.igazolas_mod_atutalas": { hu: "Átutalás", en: "Bank transfer" },
   "dokumentumok.igazolas_mod_keszpenz": { hu: "Készpénz", en: "Cash" },
   "dokumentumok.igazolas_mod_egyeb": { hu: "Egyéb", en: "Other" },
   "dokumentumok.igazolas_hely": { hu: "Kiállítás helye", en: "Place of issue" },
-  "dokumentumok.igazolas_gomb": { hu: "Igazolás {nev} részére", en: "Certificate for {nev}" },
+  "dokumentumok.igazolas_gomb": {
+    hu: "Igazolás {nev} részére",
+    en: "Certificate for {nev}",
+  },
   "dokumentumok.igazolas_folyamatban": { hu: "Kiállítom…", en: "Issuing…" },
 
   // --- Hiányzó adatok a szerződéshez
@@ -1951,7 +2462,10 @@ export const SZOTAR: Szotar = {
     hu: "A bérbeadó bankszámlaszáma hiányzik, enélkül nincs hová utalni.",
     en: "The landlord's bank account number is missing, so there is nowhere to transfer to.",
   },
-  "hiany.berlo": { hu: "{nev}: {mezo} hiányzik.", en: "{nev}: {mezo} is missing." },
+  "hiany.berlo": {
+    hu: "{nev}: {mezo} hiányzik.",
+    en: "{nev}: {mezo} is missing.",
+  },
   "hiany.ingatlan.helyrajziSzam": {
     hu: "Az ingatlan helyrajzi száma hiányzik, enélkül a bérlemény azonosítása hiányos.",
     en: "The property's land registry number is missing, so the property is not fully identified.",
@@ -1996,7 +2510,10 @@ export const SZOTAR: Szotar = {
     hu: "A bérlők adatai a Bérlők lapon, a tieid a Beállítások lapon tölthetők ki:",
     en: "The tenants' details go on the Tenants page, yours on the Settings page:",
   },
-  "szerzodes.dontes_cim": { hu: "Amiről dönteni kell", en: "What you need to decide" },
+  "szerzodes.dontes_cim": {
+    hu: "Amiről dönteni kell",
+    en: "What you need to decide",
+  },
   "szerzodes.dontes_sugo": {
     hu: "Minden modul mellett ott van, miért van rá szükség: nem vagy jogász, és amit nem értesz, azt nem tudod eldönteni.",
     en: "Every module says why it is needed: you are not a lawyer, and you cannot decide about something you do not understand.",
@@ -2037,7 +2554,10 @@ export const SZOTAR: Szotar = {
   "szerzodes.kelt_helye": { hu: "Kelt helye", en: "Place of signing" },
   "szerzodes.kelt_napja": { hu: "Kelt napja", en: "Date of signing" },
   "szerzodes.mentem": { hu: "Mentem…", en: "Saving…" },
-  "szerzodes.mentes": { hu: "Mentés és szöveg frissítése", en: "Save and rebuild the text" },
+  "szerzodes.mentes": {
+    hu: "Mentés és szöveg frissítése",
+    en: "Save and rebuild the text",
+  },
   "szerzodes.nyugtazas": {
     hu: "Megnéztük egymás fényképes igazolványát, és az abban álló adatok egyeznek azzal, ami a szerződésben szerepel.",
     en: "We have looked at each other's photo ID and the details in it match what the contract says.",
@@ -2065,13 +2585,19 @@ export const SZOTAR: Szotar = {
     hu: "Ha a hatályos szerződés utóbb kiegészül, azt nem írjuk át: az aláírt szöveg marad, a kiegészítés pedig külön okiratba, záradékba kerül.",
     en: "If the contract in force is supplemented later, we do not rewrite it: the signed text stays, and the addition goes into a separate amendment.",
   },
-  "szerzodes.zaradek_gomb": { hu: "Záradék készítése", en: "Create an amendment" },
+  "szerzodes.zaradek_gomb": {
+    hu: "Záradék készítése",
+    en: "Create an amendment",
+  },
   "szerzodes.zaradekot_keszitek": { hu: "Készítem…", en: "Creating…" },
   "szerzodes.hiba.zaradek_csak_veglegeshez": {
     hu: "Záradékot csak véglegesített szerződéshez lehet készíteni; a tervezet még szerkeszthető.",
     en: "An amendment can only supplement a finalised contract; a draft can still be edited.",
   },
-  "szerzodes.vissza_tervezetre": { hu: "Vissza tervezetre", en: "Back to draft" },
+  "szerzodes.vissza_tervezetre": {
+    hu: "Vissza tervezetre",
+    en: "Back to draft",
+  },
 
   // --- Szerződés műveletek üzenetei
   "szerzodes.hiba.jogviszony_nem_tied": {
@@ -2082,7 +2608,10 @@ export const SZOTAR: Szotar = {
     hu: "Előbb vedd fel a bérlőt a jogviszonyhoz, különben nincs kivel szerződni.",
     en: "Add the tenant to the tenancy first, otherwise there is nobody to contract with.",
   },
-  "szerzodes.hiba.nincs_modul": { hu: "Nincs ilyen modul.", en: "No such module." },
+  "szerzodes.hiba.nincs_modul": {
+    hu: "Nincs ilyen modul.",
+    en: "No such module.",
+  },
   "szerzodes.hiba.kotelezo_modul": {
     hu: "Ez a modul kötelező, nem kapcsolható ki.",
     en: "This module is mandatory and cannot be switched off.",
@@ -2107,8 +2636,14 @@ export const SZOTAR: Szotar = {
     hu: "Hiányzó adatok. Pótold őket, vagy véglegesítsd így.",
     en: "Details are missing. Fill them in, or finalise as is.",
   },
-  "szerzodes.kesz.modul_be": { hu: "„{cim}” bekapcsolva.", en: "\u201C{cim}\u201D switched on." },
-  "szerzodes.kesz.modul_ki": { hu: "„{cim}” kikapcsolva.", en: "\u201C{cim}\u201D switched off." },
+  "szerzodes.kesz.modul_be": {
+    hu: "„{cim}” bekapcsolva.",
+    en: "\u201C{cim}\u201D switched on.",
+  },
+  "szerzodes.kesz.modul_ki": {
+    hu: "„{cim}” kikapcsolva.",
+    en: "\u201C{cim}\u201D switched off.",
+  },
   "szerzodes.kesz.parameterek": {
     hu: "A beállítások mentve, a szöveg frissült.",
     en: "Settings saved, the text has been rebuilt.",
@@ -2164,7 +2699,10 @@ export const SZOTAR: Szotar = {
     en: "{db} promises became tasks; you can see them on the overview.",
   },
   "jegyzokonyv.hianyok_cim": { hu: "Ezek még hiányoznak", en: "Still missing" },
-  "jegyzokonyv.szoveg_cim": { hu: "A jegyzőkönyv szövege", en: "The text of the record" },
+  "jegyzokonyv.szoveg_cim": {
+    hu: "A jegyzőkönyv szövege",
+    en: "The text of the record",
+  },
   "jegyzokonyv.letoltes": { hu: "Letöltés szövegként", en: "Download as text" },
   "jegyzokonyv.uj_tetel_cim": { hu: "Új tétel", en: "New item" },
 
@@ -2174,8 +2712,14 @@ export const SZOTAR: Szotar = {
     hu: "Kulcsok és hozzáférési eszközök",
     en: "Keys and access devices",
   },
-  "jegyzokonyv.tetel.hiba": { hu: "Hibák és hiányosságok", en: "Faults and shortcomings" },
-  "jegyzokonyv.tetel.dokumentum": { hu: "Átadott dokumentumok", en: "Documents handed over" },
+  "jegyzokonyv.tetel.hiba": {
+    hu: "Hibák és hiányosságok",
+    en: "Faults and shortcomings",
+  },
+  "jegyzokonyv.tetel.dokumentum": {
+    hu: "Átadott dokumentumok",
+    en: "Documents handed over",
+  },
   "jegyzokonyv.ertek_sugo.meroora": {
     hu: "óraállás, mértékegységgel",
     en: "meter reading, with its unit",
@@ -2190,20 +2734,35 @@ export const SZOTAR: Szotar = {
   "jegyzokonyv.megjegyzes": { hu: "Megjegyzés", en: "Note" },
   "jegyzokonyv.megjegyzes_sugo": { hu: "megjegyzés", en: "note" },
   "jegyzokonyv.ki_rendezi": { hu: "Ki rendezi", en: "Who will fix it" },
-  "jegyzokonyv.nincs_vallalas": { hu: "nincs vállalás", en: "nobody has promised" },
+  "jegyzokonyv.nincs_vallalas": {
+    hu: "nincs vállalás",
+    en: "nobody has promised",
+  },
   "jegyzokonyv.felelos_berbeado": { hu: "a bérbeadó", en: "the landlord" },
   "jegyzokonyv.felelos_berlo": { hu: "a bérlő", en: "the tenant" },
   "jegyzokonyv.mikorra": { hu: "Mikorra", en: "By when" },
-  "jegyzokonyv.allapot_leiras": { hu: "A bérlemény állapota", en: "Condition of the property" },
+  "jegyzokonyv.allapot_leiras": {
+    hu: "A bérlemény állapota",
+    en: "Condition of the property",
+  },
   "jegyzokonyv.egyeb_megjegyzes": { hu: "Egyéb megjegyzés", en: "Other notes" },
   "jegyzokonyv.mentem": { hu: "Mentem…", en: "Saving…" },
   "jegyzokonyv.mentes": { hu: "Mentés", en: "Save" },
   "jegyzokonyv.tetel_fajtaja": { hu: "Tétel fajtája", en: "Type of item" },
-  "jegyzokonyv.fajta_hiba": { hu: "hiba vagy hiányosság", en: "fault or shortcoming" },
+  "jegyzokonyv.fajta_hiba": {
+    hu: "hiba vagy hiányosság",
+    en: "fault or shortcoming",
+  },
   "jegyzokonyv.fajta_meroora": { hu: "mérőóra", en: "meter" },
   "jegyzokonyv.fajta_kulcs": { hu: "kulcs", en: "key" },
-  "jegyzokonyv.fajta_dokumentum": { hu: "átadott dokumentum", en: "document handed over" },
-  "jegyzokonyv.mit_rogzitesz": { hu: "mit rögzítesz", en: "what you are recording" },
+  "jegyzokonyv.fajta_dokumentum": {
+    hu: "átadott dokumentum",
+    en: "document handed over",
+  },
+  "jegyzokonyv.mit_rogzitesz": {
+    hu: "mit rögzítesz",
+    en: "what you are recording",
+  },
   "jegyzokonyv.ertek_ha_van": { hu: "érték, ha van", en: "value, if any" },
   "jegyzokonyv.hozzaadom": { hu: "Hozzáadom…", en: "Adding…" },
   "jegyzokonyv.hozzaadas": { hu: "Hozzáadás", en: "Add" },
@@ -2243,7 +2802,10 @@ export const SZOTAR: Szotar = {
     hu: "Adj meg egy érvényes időpontot.",
     en: "Enter a valid date and time.",
   },
-  "jegyzokonyv.hiba.tetelfajta": { hu: "Ismeretlen tételfajta.", en: "Unknown type of item." },
+  "jegyzokonyv.hiba.tetelfajta": {
+    hu: "Ismeretlen tételfajta.",
+    en: "Unknown type of item.",
+  },
   "jegyzokonyv.hiba.megnevezes": {
     hu: "Add meg, mit rögzítesz.",
     en: "Say what you are recording.",
@@ -2257,7 +2819,10 @@ export const SZOTAR: Szotar = {
     en: "{nev}: I could not read a number from the meter reading, so I did not record it.",
   },
   "jegyzokonyv.kesz.mentve": { hu: "Mentve.", en: "Saved." },
-  "jegyzokonyv.kesz.tetel": { hu: "„{megnevezes}” hozzáadva.", en: "\u201C{megnevezes}\u201D added." },
+  "jegyzokonyv.kesz.tetel": {
+    hu: "„{megnevezes}” hozzáadva.",
+    en: "\u201C{megnevezes}\u201D added.",
+  },
   "jegyzokonyv.kesz.veglegesitve": {
     hu: "A jegyzőkönyv véglegesítve.",
     en: "The record is finalised.",
@@ -2304,7 +2869,10 @@ export const SZOTAR: Szotar = {
     hu: "{mezo}: legfeljebb {max} nap adható meg.",
     en: "{mezo}: at most {max} days are allowed.",
   },
-  "beallitasok.hiba.nem_mentve": { hu: "A beállítás nem mentve.", en: "The setting was not saved." },
+  "beallitasok.hiba.nem_mentve": {
+    hu: "A beállítás nem mentve.",
+    en: "The setting was not saved.",
+  },
   "beallitasok.kesz.ablak": {
     hu: "Mentve. Mostantól az esedékesség előtt {elotte} és utána {utana} nappal érkezett befizetést kötöm ugyanahhoz az előíráshoz.",
     en: "Saved. From now on I match a payment arriving up to {elotte} days before and {utana} days after the due date to the same charge.",
@@ -2317,7 +2885,10 @@ export const SZOTAR: Szotar = {
     hu: "Vitás tételnél nem kérek bizonylatot.",
     en: "For a disputed item I do not ask for a receipt.",
   },
-  "beallitasok.kesz.adatok": { hu: "Az adataid mentve.", en: "Your details are saved." },
+  "beallitasok.kesz.adatok": {
+    hu: "Az adataid mentve.",
+    en: "Your details are saved.",
+  },
   "jelszo.hiba.rovid": {
     hu: "A jelszó legyen legalább {min} karakter.",
     en: "The password must be at least {min} characters.",
@@ -2326,7 +2897,10 @@ export const SZOTAR: Szotar = {
     hu: "A jelszó nem állhat csak szóközökből.",
     en: "The password cannot be only spaces.",
   },
-  "jelszo.hiba.nem_egyezik": { hu: "A két jelszó nem egyezik.", en: "The two passwords differ." },
+  "jelszo.hiba.nem_egyezik": {
+    hu: "A két jelszó nem egyezik.",
+    en: "The two passwords differ.",
+  },
 
   // --- Belépés, meghívó, teendő
   "belepes.hiba.hianyos": {
@@ -2351,14 +2925,20 @@ export const SZOTAR: Szotar = {
     en: "You already have an account with this email address, so I linked the flat to it. Sign in with your existing password.",
   },
   "teendo.hiba.lepj_be": { hu: "Lépj be.", en: "Please sign in." },
-  "teendo.hiba.nem_tied": { hu: "Ez a teendő nem a tiéd.", en: "This task is not yours." },
+  "teendo.hiba.nem_tied": {
+    hu: "Ez a teendő nem a tiéd.",
+    en: "This task is not yours.",
+  },
   "teendo.kesz.lezarva": { hu: "Lezárva.", en: "Closed." },
   "teendo.jegyzokonyvi_vallalas": {
     hu: "A jegyzőkönyvben {felelos} a rendezését.",
     en: "In the handover record, {felelos} to fix it.",
   },
   "teendo.vallalo.berbeado": { hu: "te vállaltad", en: "you undertook" },
-  "teendo.vallalo.berlo": { hu: "a bérlő vállalta", en: "the tenant undertook" },
+  "teendo.vallalo.berlo": {
+    hu: "a bérlő vállalta",
+    en: "the tenant undertook",
+  },
 
   // --- Bérlők műveletei
   "berlok.hiba.nem_tied": {
@@ -2373,7 +2953,10 @@ export const SZOTAR: Szotar = {
     hu: "Az e-mail-cím nem tűnik érvényesnek.",
     en: "That email address does not look valid.",
   },
-  "berlok.hiba.nev_kell": { hu: "Add meg a bérlő nevét.", en: "Enter the tenant's name." },
+  "berlok.hiba.nev_kell": {
+    hu: "Add meg a bérlő nevét.",
+    en: "Enter the tenant's name.",
+  },
   "berlok.hiba.nev_ures": {
     hu: "A név nem maradhat üresen.",
     en: "The name cannot be left empty.",
@@ -2394,7 +2977,10 @@ export const SZOTAR: Szotar = {
     hu: "{nev} hozzáadva. A bérleti díj továbbra is egy előírás: a bérlők egyetemlegesen felelnek érte.",
     en: "{nev} added. The rent stays a single charge: the tenants are jointly and severally liable for it.",
   },
-  "berlok.kesz.adatok": { hu: "Az adatok mentve.", en: "The details are saved." },
+  "berlok.kesz.adatok": {
+    hu: "Az adatok mentve.",
+    en: "The details are saved.",
+  },
   "berlok.kesz.torolve": {
     hu: "{nev} levéve a jogviszonyról.",
     en: "{nev} removed from the tenancy.",
@@ -2410,12 +2996,18 @@ export const SZOTAR: Szotar = {
     hu: "Az összeg pozitív forint legyen.",
     en: "The amount must be a positive number of forints.",
   },
-  "ado.hiba.ingatlan": { hu: "Ez az ingatlan nem a tiéd.", en: "This property is not yours." },
+  "ado.hiba.ingatlan": {
+    hu: "Ez az ingatlan nem a tiéd.",
+    en: "This property is not yours.",
+  },
   "ado.hiba.beszerzesi_ar": {
     hu: "A beszerzési ár pozitív forint legyen.",
     en: "The purchase price must be a positive number of forints.",
   },
-  "ado.kesz.koltseg": { hu: "Rögzítve: {megnevezes}.", en: "Recorded: {megnevezes}." },
+  "ado.kesz.koltseg": {
+    hu: "Rögzítve: {megnevezes}.",
+    en: "Recorded: {megnevezes}.",
+  },
   "ado.kesz.beszerzes": {
     hu: "Mentve. Az értékcsökkenés mostantól szerepel a tételes elszámolásban.",
     en: "Saved. Depreciation is now included in the itemised calculation.",
@@ -2430,7 +3022,10 @@ export const SZOTAR: Szotar = {
     hu: "{nev}: nincs erre az időszakra érvényes díjszabás.",
     en: "{nev}: there is no tariff in force for this period.",
   },
-  "rezsi.hiba.lepj_be": { hu: "Lépj be a rögzítéshez.", en: "Sign in to record a reading." },
+  "rezsi.hiba.lepj_be": {
+    hu: "Lépj be a rögzítéshez.",
+    en: "Sign in to record a reading.",
+  },
   "rezsi.hiba.datum": { hu: "Adj meg egy dátumot.", en: "Enter a date." },
   "rezsi.hiba.oraallas_negativ": {
     hu: "Az óraállás csak nem negatív szám lehet.",
@@ -2477,7 +3072,10 @@ export const SZOTAR: Szotar = {
     hu: "Ez az elszámolás nem a tiéd, vagy már lezárult.",
     en: "This statement is not yours, or it is already closed.",
   },
-  "rezsi.kesz.oraallas": { hu: "Óraállás rögzítve.", en: "Meter reading recorded." },
+  "rezsi.kesz.oraallas": {
+    hu: "Óraállás rögzítve.",
+    en: "Meter reading recorded.",
+  },
   "rezsi.kesz.tervezet": {
     hu: "Elkészült a tervezet. Nézd át, és ha rendben van, add ki a bérlőnek.",
     en: "The draft is ready. Look it over, and if it is right, issue it to the tenant.",
@@ -2508,18 +3106,27 @@ export const SZOTAR: Szotar = {
     hu: "Nincs ilyen véglegesített szerződés.",
     en: "No such finalised contract.",
   },
-  "letoltes.nincs_jegyzokonyv": { hu: "Nincs ilyen jegyzőkönyv.", en: "No such record." },
+  "letoltes.nincs_jegyzokonyv": {
+    hu: "Nincs ilyen jegyzőkönyv.",
+    en: "No such record.",
+  },
   "letoltes.nincs_vegleges_jegyzokonyv": {
     hu: "Nincs ilyen véglegesített jegyzőkönyv.",
     en: "No such finalised record.",
   },
-  "letoltes.nincs_igazolas": { hu: "Nincs ilyen igazolás.", en: "No such certificate." },
+  "letoltes.nincs_igazolas": {
+    hu: "Nincs ilyen igazolás.",
+    en: "No such certificate.",
+  },
   "letoltes.nincs_elszamolas": {
     hu: "Nincs ilyen kiadott elszámolás.",
     en: "No such issued statement.",
   },
 
-  "letoltes.nincs_bizonylat": { hu: "Nincs ilyen bizonylat.", en: "No such receipt." },
+  "letoltes.nincs_bizonylat": {
+    hu: "Nincs ilyen bizonylat.",
+    en: "No such receipt.",
+  },
   "letoltes.nincs_kep": { hu: "Nincs ilyen kép.", en: "No such photo." },
   "dokumentumok.igazolas_cel_alap": {
     // Ez a szöveg a magyar igazolásba kerül, ezért angol felületen is magyar.
@@ -2528,7 +3135,10 @@ export const SZOTAR: Szotar = {
   },
 
   "dokumentum.igazolas.cim": { hu: "{nev} · {honap}", en: "{nev} · {honap}" },
-  "dokumentum.elszamolas.cim": { hu: "{kezdet} – {veg}", en: "{kezdet} – {veg}" },
+  "dokumentum.elszamolas.cim": {
+    hu: "{kezdet} – {veg}",
+    en: "{kezdet} – {veg}",
+  },
 
   "szerzodes.megnevezes": {
     hu: "Bérleti szerződés – {ingatlan}",
@@ -2617,18 +3227,27 @@ export const SZOTAR: Szotar = {
 
   // ——— Kölcsönös értékelés a jogviszony végén ———
   "nav.ertekelesek": { hu: "Értékelés", en: "Reviews" },
-  "befizetesek.lezart_berletek": { hu: "Lezárt bérletek", en: "Closed tenancies" },
+  "befizetesek.lezart_berletek": {
+    hu: "Lezárt bérletek",
+    en: "Closed tenancies",
+  },
   "ertekeles.cim": { hu: "Értékelés", en: "Reviews" },
   "ertekeles.alcim": {
     hu: "A lezárt bérletekről, kölcsönösen.",
     en: "On closed tenancies, both ways.",
   },
-  "ertekeles.sugo_cim": { hu: "Miért nem látod rögtön a másikét?", en: "Why can't you see theirs yet?" },
+  "ertekeles.sugo_cim": {
+    hu: "Miért nem látod rögtön a másikét?",
+    en: "Why can't you see theirs yet?",
+  },
   "ertekeles.sugo": {
     hu: "Amíg mindkét fél meg nem írta a sajátját, egyik sem látja a másikét. Enélkül a második értékelés az elsőre adott válasz lenne, nem a bérletről szólna. Ha a másik fél nem ír semmit, {nap} nap után az is felfedődik, ami megvan — különben elég lenne hallgatni ahhoz, hogy eltűnjön a rólad szóló értékelés.",
     en: "Until both sides have written theirs, neither can see the other's. Otherwise the second review would be a reply to the first, not about the tenancy. If the other side writes nothing, whatever exists is revealed after {nap} days — otherwise staying silent would be enough to make a review of you disappear.",
   },
-  "ertekeles.nem_meres_cim": { hu: "Ez vélemény, nem mérés", en: "This is an opinion, not a measurement" },
+  "ertekeles.nem_meres_cim": {
+    hu: "Ez vélemény, nem mérés",
+    en: "This is an opinion, not a measurement",
+  },
   "ertekeles.nem_meres": {
     hu: "Amit itt olvasol, a másik fél saját állítása arról, hogyan ment a bérlet. Az alkalmazás nem ellenőrzi, és nem is von össze egyetlen pontszámmá: a három szempont nem egyenértékű, és az átlaguk mérésnek látszana.",
     en: "What you read here is the other side's own account of how the tenancy went. The app does not verify it, and does not fold it into a single score: the three aspects are not equivalent, and an average would look like a measurement.",
@@ -2641,9 +3260,15 @@ export const SZOTAR: Szotar = {
     hu: "Ennek a bérlőnek nincs fiókja, ezért nem tud értékelni, és értékelni sem lehet: az értékelés két félé, nem egyé.",
     en: "This tenant has no account, so they cannot review and cannot be reviewed: a review belongs to two sides, not one.",
   },
-  "ertekeles.masik_fel": { hu: "A másik fél: {nev}", en: "The other side: {nev}" },
+  "ertekeles.masik_fel": {
+    hu: "A másik fél: {nev}",
+    en: "The other side: {nev}",
+  },
   "ertekeles.lezarva_nap": { hu: "Lezárva: {nap}", en: "Closed: {nap}" },
-  "ertekeles.hatralevo": { hu: "Még {nap} napig írhatsz.", en: "You can still write for {nap} days." },
+  "ertekeles.hatralevo": {
+    hu: "Még {nap} napig írhatsz.",
+    en: "You can still write for {nap} days.",
+  },
 
   "ertekeles.allapot.nem_ideje": {
     hu: "A bérlet még fut. Értékelni a lezárás után lehet.",
@@ -2669,26 +3294,50 @@ export const SZOTAR: Szotar = {
   "ertekeles.sajat_cim": { hu: "Amit te írtál", en: "What you wrote" },
   "ertekeles.masike_cim": { hu: "Amit {nev} írt", en: "What {nev} wrote" },
   "ertekeles.urlap_cim": { hu: "Értékelés írása", en: "Write a review" },
-  "ertekeles.urlap_modosit": { hu: "Az értékelésed módosítása", en: "Change your review" },
+  "ertekeles.urlap_modosit": {
+    hu: "Az értékelésed módosítása",
+    en: "Change your review",
+  },
   "ertekeles.modosithato": {
     hu: "Felfedésig módosíthatod. Utána nem: amit a másik fél elolvasott, azt nem írjuk át.",
     en: "You can change it until it is revealed. Not after: what the other side has read is not rewritten.",
   },
-  "ertekeles.szoveg_cimke": { hu: "Hogyan ment a bérlet?", en: "How did the tenancy go?" },
+  "ertekeles.szoveg_cimke": {
+    hu: "Hogyan ment a bérlet?",
+    en: "How did the tenancy go?",
+  },
   "ertekeles.szoveg_sugo": {
     hu: "Pontszám magyarázat nélkül nincs: abból a másik fél nem tud kiindulni.",
     en: "No score without a reason: the other side has nothing to go on otherwise.",
   },
   "ertekeles.kuld": { hu: "Értékelés mentése", en: "Save review" },
   "ertekeles.kuldom": { hu: "Mentem…", en: "Saving…" },
-  "ertekeles.pont_cimke": { hu: "{szempont}: {pont} az 5-ből", en: "{szempont}: {pont} out of 5" },
+  "ertekeles.pont_cimke": {
+    hu: "{szempont}: {pont} az 5-ből",
+    en: "{szempont}: {pont} out of 5",
+  },
 
   "ertekeles.szempont.berlorol.fizetes": { hu: "Fizetés", en: "Payment" },
-  "ertekeles.szempont.berlorol.allapot": { hu: "A lakás állapota", en: "Condition of the flat" },
-  "ertekeles.szempont.berlorol.kommunikacio": { hu: "Kommunikáció", en: "Communication" },
-  "ertekeles.szempont.berbeadorol.hibakezeles": { hu: "Hibák elhárítása", en: "Handling of faults" },
-  "ertekeles.szempont.berbeadorol.elerhetoseg": { hu: "Elérhetőség", en: "Reachability" },
-  "ertekeles.szempont.berbeadorol.elszamolas": { hu: "Elszámolás", en: "Settling up" },
+  "ertekeles.szempont.berlorol.allapot": {
+    hu: "A lakás állapota",
+    en: "Condition of the flat",
+  },
+  "ertekeles.szempont.berlorol.kommunikacio": {
+    hu: "Kommunikáció",
+    en: "Communication",
+  },
+  "ertekeles.szempont.berbeadorol.hibakezeles": {
+    hu: "Hibák elhárítása",
+    en: "Handling of faults",
+  },
+  "ertekeles.szempont.berbeadorol.elerhetoseg": {
+    hu: "Elérhetőség",
+    en: "Reachability",
+  },
+  "ertekeles.szempont.berbeadorol.elszamolas": {
+    hu: "Elszámolás",
+    en: "Settling up",
+  },
 
   "ertekeles.kifogas.nincs_szoveg": {
     hu: "Írd le, hogyan ment: pontszám magyarázat nélkül nincs.",
@@ -2718,12 +3367,153 @@ export const SZOTAR: Szotar = {
     hu: "Ehhez a bérlethez nincs hozzáférésed.",
     en: "You do not have access to this tenancy.",
   },
-  "ertekeles.kesz": { hu: "Az értékelésed elmentve.", en: "Your review has been saved." },
+  "ertekeles.kesz": {
+    hu: "Az értékelésed elmentve.",
+    en: "Your review has been saved.",
+  },
 
-  "teendo.ertekeles.cim": { hu: "Értékeld a lezárt bérletet: {cimke}", en: "Review the closed tenancy: {cimke}" },
+  "teendo.ertekeles.cim": {
+    hu: "Értékeld a lezárt bérletet: {cimke}",
+    en: "Review the closed tenancy: {cimke}",
+  },
   "teendo.ertekeles.leiras": {
     hu: "Még {nap} napig írhatsz. Amíg nem írsz, a rólad szólót sem látod.",
     en: "You can still write for {nap} days. Until you do, you cannot see the one about you.",
+  },
+
+  // ——— Bemutatkozó oldal ———
+  "nav.bemutatkozas": { hu: "Bemutatkozás", en: "Profile" },
+  "nav.rendszergazda": { hu: "Üzemeltetés", en: "Operations" },
+
+  "bemutatkozas.cim": { hu: "Bemutatkozás", en: "Profile" },
+  "bemutatkozas.alcim": {
+    hu: "Amit magadról írsz, és a rólad szóló értékelések. Ez az oldal egyelőre nem nyilvános.",
+    en: "What you write about yourself, and the reviews about you. This page is not public yet.",
+  },
+  "bemutatkozas.admin_alcim": {
+    hu: "Bemutatkozó oldal, üzemeltetői nézetben.",
+    en: "Profile page, operator view.",
+  },
+  "bemutatkozas.vissza": { hu: "Vissza a listához", en: "Back to the list" },
+  "bemutatkozas.szerep.berbeado": { hu: "Bérbeadó", en: "Landlord" },
+  "bemutatkozas.szerep.berlo": { hu: "Bérlő", en: "Tenant" },
+  "bemutatkozas.mezo_cimke": { hu: "Amit magadról írsz", en: "About you" },
+  "bemutatkozas.mezo_sugo": {
+    hu: "Néhány mondat arról, ki vagy és mit vársz a bérlettől. Ezt csak te látod és az üzemeltető; a másik félhez nem jut el.",
+    en: "A few sentences about who you are and what you expect from the tenancy. Only you and the operator can see it; it does not reach the other party.",
+  },
+  "bemutatkozas.ment": { hu: "Mentés", en: "Save" },
+  "bemutatkozas.mentem": { hu: "Mentem…", en: "Saving…" },
+  "bemutatkozas.kesz": {
+    hu: "A bemutatkozásod elmentve.",
+    en: "Your profile text has been saved.",
+  },
+  "bemutatkozas.hiba.nincs_belepve": {
+    hu: "Ehhez be kell lépned.",
+    en: "You need to be signed in for this.",
+  },
+  "bemutatkozas.hiba.tul_hosszu": {
+    hu: "A bemutatkozás legfeljebb {jel} karakter lehet.",
+    en: "The profile text can be at most {jel} characters.",
+  },
+  "bemutatkozas.ures_sajat": {
+    hu: "Még nem írtál magadról semmit.",
+    en: "You have not written anything about yourself yet.",
+  },
+  "bemutatkozas.ures_masike": {
+    hu: "Nem írt magáról semmit.",
+    en: "They have not written anything about themselves.",
+  },
+  "bemutatkozas.ertekelesek_cim": { hu: "Értékelések", en: "Reviews" },
+  "bemutatkozas.darab": { hu: "{darab} értékelés", en: "{darab} reviews" },
+  "bemutatkozas.atlag": {
+    hu: "{atlag} ({darab} értékelésből)",
+    en: "{atlag} (from {darab} reviews)",
+  },
+  "bemutatkozas.nincs_sajat": {
+    hu: "Még nincs rólad felfedett értékelés. Ami rejtve van, az ide sem számít bele.",
+    en: "There is no revealed review about you yet. Anything still hidden is not counted here either.",
+  },
+  "bemutatkozas.nincs_masike": {
+    hu: "Még nincs róla felfedett értékelés.",
+    en: "There is no revealed review about them yet.",
+  },
+  "bemutatkozas.nem_nyilvanos_cim": {
+    hu: "Ki látja ezt az oldalt?",
+    en: "Who can see this page?",
+  },
+  "bemutatkozas.nem_nyilvanos": {
+    hu: "Egyelőre csak te magad és az üzemeltető. A másik fél nem látja, és nyilvános hivatkozás sincs hozzá. Hogy a rólad szóló értékelést megmutathasd-e egy leendő bérbeadónak, még nincs eldöntve.",
+    en: "For now only you and the operator. The other party cannot see it, and there is no public link to it. Whether you may show a review about yourself to a prospective landlord is not decided yet.",
+  },
+  "bemutatkozas.rejtett_cim": {
+    hu: "Miért kevesebb, mint amennyit vártál?",
+    en: "Why fewer than you expected?",
+  },
+  "bemutatkozas.rejtett": {
+    hu: "Csak a felfedett értékelés látszik itt, és csak az számít bele a darabszámba. Amíg mindkét fél meg nem írta a sajátját, a rólad szóló rejtve marad — különben a puszta darabszámból is kiderülne, hogy a másik fél már írt.",
+    en: "Only revealed reviews appear here, and only those are counted. Until both parties have written their own, the one about you stays hidden — otherwise the count alone would reveal that the other party has already written.",
+  },
+
+  // ——— A rendszer saját értékelése, csak az üzemeltetőnek ———
+  "gepi.cim": { hu: "A rendszer értékelése", en: "System assessment" },
+  "gepi.alcim": {
+    hu: "Amit az alkalmazás maga mért. Csak az üzemeltető látja, a felhasználó nem.",
+    en: "What the application measured itself. Only the operator sees it, not the user.",
+  },
+  "gepi.szempont.pontossag": { hu: "Pontosság", en: "Accuracy" },
+  "gepi.szempont.valaszido": { hu: "Válaszidő", en: "Response time" },
+  "gepi.szempont.egyuttmukodes": { hu: "Együttműködés", en: "Cooperation" },
+  "gepi.pont": {
+    hu: "{pont} / 5 ({minta} megfigyelésből)",
+    en: "{pont} / 5 (from {minta} observations)",
+  },
+  "gepi.nincs_pont": { hu: "nincs elég adat", en: "not enough data" },
+  "gepi.nincs_eleg": {
+    hu: "{minta} megfigyelés van, és legalább {kell} kellene. Kevesebből a szám magát magyarázná.",
+    en: "There are {minta} observations, and at least {kell} would be needed. Fewer than that and the number would only explain itself.",
+  },
+  "gepi.pontossag": {
+    hu: "{minta} lejárt előírásból {rendben} zárult rendben, {vitas} vitás, {hianyzo} maradt nyilatkozat nélkül. A késés középértéke {keses} nap.",
+    en: "Of {minta} due charges, {rendben} closed cleanly, {vitas} are disputed and {hianyzo} were left without a statement. The median delay is {keses} days.",
+  },
+  "gepi.valaszido": {
+    hu: "{minta} megkeresésre adott válasz középértéke {ora} óra.",
+    en: "The median response to {minta} messages was {ora} hours.",
+  },
+  "gepi.egyuttmukodes": {
+    hu: "{minta} kétoldali kérdésből {megvalaszolt} esetben nyilatkozott, igennel vagy nemmel.",
+    en: "Of {minta} two-sided questions, they gave a statement in {megvalaszolt} cases, whether yes or no.",
+  },
+  "gepi.nincs_semmi": {
+    hu: "A rendszer még semmit nem tud erről a felhasználóról. Ez nem rossz jegy, hanem hiányzó adat.",
+    en: "The system knows nothing about this user yet. That is missing data, not a bad mark.",
+  },
+  "gepi.miert_cim": {
+    hu: "Miből jönnek ezek a számok?",
+    en: "Where do these numbers come from?",
+  },
+  "gepi.miert": {
+    hu: "Abból, amit az alkalmazás magától rögzített: a befizetések egyeztetéséből, a hibabejelentések és az üzenetek időpontjaiból, és abból, hány kétoldali kérdésre nyilatkozott a felhasználó. A három szempontot nem vonjuk össze egyetlen számmá, és amire nincs elég adat, arra nem tippelünk. A válaszidő sávjai az alkalmazás alapértelmezései, nem jogszabályi határidők. A számítás nincs eltárolva: minden megnyitáskor újra fut, tehát követi, ha a viselkedés megváltozik.",
+    en: "From what the application recorded on its own: the payment reconciliation, the timestamps of repair reports and messages, and how many two-sided questions the user answered. The three aspects are never merged into one number, and where there is not enough data we do not guess. The response-time bands are the application's defaults, not statutory deadlines. The calculation is not stored: it runs again on every visit, so it follows changes in behaviour.",
+  },
+
+  "rendszergazda.cim": { hu: "Üzemeltetés", en: "Operations" },
+  "rendszergazda.alcim": {
+    hu: "A felhasználók bemutatkozó oldalai.",
+    en: "The users' profile pages.",
+  },
+  "rendszergazda.sugo_cim": {
+    hu: "Mit látsz itt?",
+    en: "What do you see here?",
+  },
+  "rendszergazda.sugo": {
+    hu: "Minden felhasználó bemutatkozó oldalát, és rajtuk kétféle értékelést: amit a másik fél írt róla, és amit a rendszer mért. A rejtett értékelés itt sem látszik, és a darabszámba sem számít bele: a vakság ígérete a te oldaladon sem törik meg.",
+    en: "Every user's profile page, with two kinds of assessment on it: what the other party wrote about them, and what the system measured. Hidden reviews do not show here either, and are not counted: the promise of blind reviewing does not break on your side either.",
+  },
+  "rendszergazda.nincs": {
+    hu: "Nincs egyetlen felhasználó sem.",
+    en: "There are no users.",
   },
 };
 

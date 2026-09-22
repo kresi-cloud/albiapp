@@ -82,6 +82,7 @@ const BERBEADO_TOBBI = [
   { kulcs: "nav.elofizetesek", utvonal: "/elofizetesek" },
   { kulcs: "nav.hibak", utvonal: "/hibak" },
   { kulcs: "nav.ertekelesek", utvonal: "/ertekelesek" },
+  { kulcs: "nav.bemutatkozas", utvonal: "/bemutatkozas" },
   { kulcs: "nav.ado", utvonal: "/ado" },
   { kulcs: "nav.beallitasok", utvonal: "/beallitasok" },
 ];
@@ -98,6 +99,7 @@ const BERLO_TOBBI = [
   { kulcs: "nav.dokumentumaim", utvonal: "/berlo/dokumentumok" },
   { kulcs: "nav.jegyzokonyveim", utvonal: "/berlo/jegyzokonyvek" },
   { kulcs: "nav.ertekelesek", utvonal: "/ertekelesek" },
+  { kulcs: "nav.bemutatkozas", utvonal: "/bemutatkozas" },
   { kulcs: "nav.adataim", utvonal: "/berlo/adatok" },
 ];
 
@@ -114,12 +116,20 @@ export default async function RootLayout({
         ...elem,
         cimke: sz(elem.kulcs),
       }));
-  const tobbi: Fulelem[] = !felhasznalo
+  // Az üzemeltetői hivatkozás csak a rendszergazdának jelenik meg. A lap maga
+  // is ellenőrzi: egy elrejtett hivatkozás nem jogosultság.
+  const tobbiKulcsok = !felhasznalo
     ? []
-    : (berlo ? BERLO_TOBBI : BERBEADO_TOBBI).map((elem) => ({
-        ...elem,
-        cimke: sz(elem.kulcs),
-      }));
+    : [
+        ...(berlo ? BERLO_TOBBI : BERBEADO_TOBBI),
+        ...(felhasznalo.rendszergazda
+          ? [{ kulcs: "nav.rendszergazda", utvonal: "/rendszergazda" }]
+          : []),
+      ];
+  const tobbi: Fulelem[] = tobbiKulcsok.map((elem) => ({
+    ...elem,
+    cimke: sz(elem.kulcs),
+  }));
 
   const kilepesGomb = felhasznalo ? (
     <form action={kilep}>

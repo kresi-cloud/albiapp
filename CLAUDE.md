@@ -351,6 +351,72 @@ az termékdöntés és adatvédelmi kérdés egyszerre, és a betekintő gépeze
 (saját hozzájárulás, visszavonható link) készen áll rá — de ezt a bérbeadónak
 kell eldöntenie, az ügyvédi átnézéssel együtt.
 
+## A bemutatkozó oldal alapelve
+
+Minden felhasználónak van bemutatkozó oldala: amit magáról ír, és a róla szóló
+értékelések egy helyen, több jogviszonyból.
+
+**Csak a felfedett értékelés látszik rajta, és csak az számít bele a
+darabszámba is.** Ha a rejtett is beleszámítana, a puszta szám elárulná, hogy a
+másik fél már írt — abból pedig a vakság maradéka is elveszne: aki látja, hogy
+„1 értékelés” áll a másik oldalán, az tudja, mihez kell igazodnia.
+
+Összevont pontszám itt sincs, ugyanazért, amiért egy értékelésen belül sincs.
+Szempontonként viszont van átlag, mert ott több ember ugyanazt a dolgot mondja
+— és mellé mindig odaírjuk, hány értékelésből jött, mert kettőnek az átlaga nem
+ugyanaz, mint tízé.
+
+**A lap egyelőre nem nyilvános**: csak a felhasználó maga és az üzemeltető
+nyitja meg (`lathatja`), és ezt a kiszolgáló dönti el, nem a hivatkozás
+elrejtése. Hogy egy bérlő megmutathatja-e a róla szóló értékelést egy leendő
+bérbeadónak, termékdöntés és adatvédelmi kérdés egyszerre, és az ügyvédi
+átnézéssel együtt a bérbeadóé. Amíg nincs döntés, a szűkebb kör a helyes
+alapértelmezés: egy tévedésből kiadott értékelést nem lehet visszavenni.
+
+A rendszergazda nem a `szerep` harmadik értéke, hanem külön jelölő
+(`Felhasznalo.rendszergazda`): a szerep azt dönti el, melyik alkalmazást látja
+a felhasználó, az üzemeltetői rálátás pedig erre jön rá. Felületről nem adható
+meg, csak az adatbázisban — egy jogosultság, ami a felületről kérhető,
+előbb-utóbb kikerül oda, ahol nem kellene.
+
+### A rendszer saját értékelése
+
+Az üzemeltető a humán értékelés mellett a rendszerét is látja
+(`src/domain/gepi-ertekeles.ts`): pontosság, válaszidő és együttműködés. Ez
+szándékosan más természetű, mint a kölcsönös értékelés. Az vélemény, amit nem
+mérünk; ez mérés, abból, amit az alkalmazás maga rögzített — az egyeztetésből,
+a hibabejelentések és az üzenetek időpontjaiból, és abból, hány kétoldali
+kérdésre nyilatkozott egyáltalán az illető.
+
+Négy dolog tartja a helyén:
+
+- **Csak a rendszergazda látja.** A felhasználó sem magáról, sem a másik félről
+  nem. Egy gépi pontszám, amit a másik fél is lát, észrevétlenül bérlőszűrő
+  listává válna, és pont az lenne belőle, amit a termék kerül. Egy pontszám,
+  amit a saját tulajdonosa lát, pedig arra ösztönözne, hogy a mutatóra
+  játsszon.
+- **Számot magyarázat nélkül nem adunk.** Minden szemponthoz ott a minta mérete
+  és az egy mondatos indoklás, ugyanúgy, mint a rezsielszámolás tételeinél.
+- **Amiből nincs elég adat, arra nem tippelünk.** A pont ilyenkor `null`, nem
+  nulla és nem hármas, és a lap ki is írja, hogy nincs elég adat: a „nem
+  tudjuk” nem rossz jegy. A határ `LEGKISEBB_MINTA`, mert háromnál kevesebből
+  az arány önmagát magyarázná.
+- **Nincs eltárolva.** Minden lekérdezéskor újraszámol, tehát magától követi, ha
+  a viselkedés megváltozik — ugyanaz az elv, mint a származtatott teendőknél és
+  az archiválásnál.
+
+A pontosság a két szerepnél mást mér, és ez szándékos: a bérlőé az, hogy a pénz
+a kiírt összegben és időben megérkezett-e, a bérbeadóé az, hogy a saját oldalát
+vezette-e. A bérbeadó nem fizet, tehát egy nem fizető bérlő nem ronthatja az ő
+pontosságát. A vitás tétel viszont egyik oldalon sem rontja az
+együttműködést: vitatkozni szabad, és az együttműködés hiánya az, ha valaki nem
+is válaszol. A válaszidő sávjai az alkalmazás alapértelmezései, nem
+jogszabályi határidők, és a felület ezt ki is mondja — ugyanúgy, ahogy a
+hibabejelentés válaszhatáridejénél.
+
+A válaszidő mediánt néz, nem átlagot: egyetlen nyaralás alatt megkapott válasz
+nem minősítheti a többit.
+
 ## A beszélgetés alapelve
 
 A bérlet hétköznapi ügye — mikor jön a kéményseprő, elviheti-e a szekrényt,
