@@ -107,6 +107,18 @@ törli, a záró hónapét arányosítja, a múlthoz nem nyúl. A lezárás viss
 ezt vissza is számolja, mert egy elkattintott lezárás egyébként csendben
 kevesebb bérleti díjat írna elő.
 
+**A lezárás a nyitott jogviszony művelete**, és ezt a kiszolgáló tartja be, nem
+a gomb elrejtése. Lezártat újra lezárni azért nem lehet, mert a második lezárás
+korábbi véget is kaphatna: az már egyeztetett előírt tételeket törölne, és a
+záró hónapot újraarányosítaná. Aki a dátumot javítani akarja, előbb visszavonja
+a lezárást — az vissza is számolja, amit az első elvett —, és utána zár le újra.
+
+A `vege` és a `lezarva` két külön adat: az egyik a kiköltözés napja, a másik az,
+mikor került be az alkalmazásba. A kettő eltér, ha a bérbeadó utólag rögzíti a
+lezárást, és a különbség nem mindegy: ami a lezárástól számít határidőt, annak a
+rögzítés napjától kell indulnia, mert a bérlő addig nem is látta, hogy a bérlet
+lezárult.
+
 ## Belépés és jogosultság
 
 Minden oldal és minden szerveroldali művelet a belépett felhasználóból indul ki
@@ -115,6 +127,15 @@ lekérdezés mindig szűr a tulajdonosra, a bérlői oldal a saját jogviszonyai
 
 A bérlő fiókja meghívóval készül. A meghívó egyszer használható és lejár, és
 meglévő fiók jelszavát soha nem írja felül: a link a bérbeadónál is megvan.
+
+Ugyanebből következik, hogy **meglévő fiókot a meghívó csak annak a fióknak a
+saját jelszavával köt a jogviszonyhoz**. A link a bérbeadó kezében van, tehát
+az elfogadás önmagában nem a fiók gazdájától jön: enélkül a bérbeadó bárkinek a
+meglévő fiókját hozzáköthetné a saját bérleményéhez, és az illető csak akkor
+venné észre, amikor a bérlemény megjelenik nála. A jelszó ezen az úton sem
+íródik felül, és újat sem állítunk be. Ami így is megmarad: aki a linket
+megnyitja, a hibaüzenetből kikövetkeztetheti, hogy a címhez tartozik-e fiók.
+Ezt e-mailes megerősítés zárná le, az pedig a küldőszolgáltatáson múlik.
 
 ## A rezsielszámolás alapelve
 
@@ -329,6 +350,14 @@ A felfedés két úton jön: mindkettő megvan, vagy letelt az ablak
 szóló értékelés eltűnjön. Felfedés után senki nem ír és nem módosít: amit a
 másik fél elolvasott, azt nem írjuk át — ugyanaz az elv, mint a `veglegesSzoveg`
 befagyasztásánál.
+
+**A harminc nap nem a kiköltözéstől számít, hanem attól, hogy a lezárás mikor
+került be** (`ablakKezdete`, a `Jogviszony.lezarva`-ból). A kettő rendes esetben
+egybeesik, de ha a bérbeadó utólag rögzíti a lezárást, nem: a bérlő addig nem is
+látta, hogy a bérlet lezárult, tehát értékelni sem tudott. A dátum ráadásul a
+bérbeadó kezében van, és a `vege`-től számolva egy visszakeltezett lezárás
+azonnal felfedné a másik fél addig rejtett szövegét, és elvenné tőle a sajátja
+megírását — vagyis pont az a fél keltezne vissza, akinek ez az érdeke.
 
 A harminc nap oka ugyanaz, mint a beszélgetés kilencvenéé, csak rövidebb: az
 óvadék elszámolása és az utolsó rezsiszámla a kiköltözés utáni hetekben derül

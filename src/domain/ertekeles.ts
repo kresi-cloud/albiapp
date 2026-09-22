@@ -114,15 +114,30 @@ export type Allapot =
   /** Letelt az ablak, és egyik fél sem írt semmit. */
   | "elmaradt";
 
-/** A jogviszony vége utáni hányadik napon járunk. Vég nélkül negatív. */
-function eltelt(vege: Date | null, ma: Date): number {
-  if (vege === null) return -1;
-  return napKulonbseg(vege, ma);
+/**
+ * Mikortól számít az értékelési ablak.
+ *
+ * Alapesetben a kiköltözés napja. Ha viszont a bérbeadó utólag rögzítette a
+ * lezárást, akkor a rögzítés napja: a bérlő addig nem is látta, hogy a bérlet
+ * lezárult, tehát értékelni sem tudott. Enélkül egy visszakeltezett lezárás
+ * azonnal felfedné a másik fél addig rejtett szövegét — és pont az a fél
+ * keltezne vissza, akinek ez az érdeke.
+ */
+export function ablakKezdete(vege: Date | null, lezarva: Date | null): Date | null {
+  if (vege === null) return null;
+  if (lezarva === null) return vege;
+  return lezarva.getTime() > vege.getTime() ? lezarva : vege;
+}
+
+/** Az ablak kezdete óta hányadik napon járunk. Kezdet nélkül negatív. */
+function eltelt(kezdet: Date | null, ma: Date): number {
+  if (kezdet === null) return -1;
+  return napKulonbseg(kezdet, ma);
 }
 
 /** Nyitva van-e még az ablak. A vége napja még beleszámít. */
-export function ablakNyitva(vege: Date | null, ma: Date): boolean {
-  const nap = eltelt(vege, ma);
+export function ablakNyitva(kezdet: Date | null, ma: Date): boolean {
+  const nap = eltelt(kezdet, ma);
   return nap >= 0 && nap <= ABLAK_NAP;
 }
 
@@ -132,14 +147,14 @@ export function ablakNyitva(vege: Date | null, ma: Date): boolean {
  * Mindkettő megvan, vagy letelt az ablak. Az „ablak letelt" ág a hallgatás
  * ellen van: enélkül aki nem ír, az a róla szólót is eltünteti.
  */
-export function felfedve(paros: Paros, vege: Date | null, ma: Date): boolean {
+export function felfedve(paros: Paros, kezdet: Date | null, ma: Date): boolean {
   if (paros.sajat !== null && paros.masike !== null) return true;
-  return vege !== null && eltelt(vege, ma) > ABLAK_NAP;
+  return kezdet !== null && eltelt(kezdet, ma) > ABLAK_NAP;
 }
 
-export function allapota(paros: Paros, vege: Date | null, ma: Date): Allapot {
-  if (vege === null || eltelt(vege, ma) < 0) return "nem_ideje";
-  if (felfedve(paros, vege, ma)) {
+export function allapota(paros: Paros, kezdet: Date | null, ma: Date): Allapot {
+  if (kezdet === null || eltelt(kezdet, ma) < 0) return "nem_ideje";
+  if (felfedve(paros, kezdet, ma)) {
     return paros.sajat === null && paros.masike === null
       ? "elmaradt"
       : "lathato";
@@ -153,14 +168,14 @@ export function allapota(paros: Paros, vege: Date | null, ma: Date): Allapot {
  */
 export function nezet(
   paros: Paros,
-  vege: Date | null,
+  kezdet: Date | null,
   ma: Date,
 ): {
   allapot: Allapot;
   sajat: ErtekelesAdat | null;
   masike: ErtekelesAdat | null;
 } {
-  const allapot = allapota(paros, vege, ma);
+  const allapot = allapota(paros, kezdet, ma);
   return {
     allapot,
     sajat: paros.sajat,
@@ -169,8 +184,8 @@ export function nezet(
 }
 
 /** Írható vagy módosítható-e még a saját értékelés. Felfedés után soha. */
-export function irhato(paros: Paros, vege: Date | null, ma: Date): boolean {
-  return ablakNyitva(vege, ma) && !felfedve(paros, vege, ma);
+export function irhato(paros: Paros, kezdet: Date | null, ma: Date): boolean {
+  return ablakNyitva(kezdet, ma) && !felfedve(paros, kezdet, ma);
 }
 
 export type Kifogas =
@@ -256,9 +271,9 @@ export function allapotJelzoje(allapot: Allapot): Uzenet {
 }
 
 /** Hány nap van még hátra az ablakból. Lezáratlan jogviszonynál null. */
-export function hatralevoNap(vege: Date | null, ma: Date): number | null {
-  if (vege === null) return null;
-  const nap = eltelt(vege, ma);
+export function hatralevoNap(kezdet: Date | null, ma: Date): number | null {
+  if (kezdet === null) return null;
+  const nap = eltelt(kezdet, ma);
   if (nap < 0 || nap > ABLAK_NAP) return null;
   return ABLAK_NAP - nap;
 }
@@ -268,7 +283,7 @@ export type TeendoAdat = {
   /** A másik fél azonosítója. Két lakótársnál két külön értékelés jár. */
   masikFelId: string;
   cimke: string;
-  vege: Date | null;
+  kezdet: Date | null;
   paros: Paros;
 };
 
@@ -293,7 +308,7 @@ export function ertekelesTeendoi(
   hivatkozas: string;
 }[] {
   return adatok
-    .filter((adat) => adat.vege !== null && irhato(adat.paros, adat.vege, ma))
+    .filter((adat) => adat.kezdet !== null && irhato(adat.paros, adat.kezdet, ma))
     .filter((adat) => adat.paros.sajat === null)
     .map((adat) => ({
       // A kulcsban a másik fél is benne van: két lakótárs értékelése két
@@ -303,10 +318,10 @@ export function ertekelesTeendoi(
       tipus: "ertekeles",
       cim: uzenet("teendo.ertekeles.cim", { cimke: adat.cimke }),
       leiras: uzenet("teendo.ertekeles.leiras", {
-        nap: hatralevoNap(adat.vege, ma) ?? 0,
+        nap: hatralevoNap(adat.kezdet, ma) ?? 0,
       }),
       esedekesseg: new Date(
-        (adat.vege as Date).getTime() + ABLAK_NAP * 86400000,
+        (adat.kezdet as Date).getTime() + ABLAK_NAP * 86400000,
       ),
       hivatkozas: "/ertekelesek",
     }));

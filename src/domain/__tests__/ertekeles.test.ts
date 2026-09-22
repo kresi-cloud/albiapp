@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   ABLAK_NAP,
   SZEMPONTOK,
+  ablakKezdete,
   ablakNyitva,
   allapota,
   ellenoriz,
@@ -217,6 +218,43 @@ describe("a szempontok", () => {
   });
 });
 
+describe("az ablak kezdete", () => {
+  const KESOBB = new Date(Date.UTC(2026, 7, 15));
+
+  it("a kiköltözés napjától számít, ha a lezárás akkor került be", () => {
+    expect(ablakKezdete(VEGE, VEGE)?.getTime()).toBe(VEGE.getTime());
+    expect(ablakKezdete(VEGE, null)?.getTime()).toBe(VEGE.getTime());
+  });
+
+  it("utólag rögzített lezárásnál a rögzítés napjától", () => {
+    // A bérlő addig nem is látta, hogy a bérlet lezárult: harminc napja
+    // innentől van, nem a kiköltözéstől.
+    expect(ablakKezdete(VEGE, KESOBB)?.getTime()).toBe(KESOBB.getTime());
+  });
+
+  it("előre rögzített lezárásnál marad a kiköltözés napja", () => {
+    const korabban = new Date(VEGE.getTime() - 5 * 86400000);
+    expect(ablakKezdete(VEGE, korabban)?.getTime()).toBe(VEGE.getTime());
+  });
+
+  it("futó jogviszonynál nincs kezdet", () => {
+    expect(ablakKezdete(null, KESOBB)).toBeNull();
+  });
+
+  it("a visszakeltezett lezárás nem fedi fel a másik fél szövegét", () => {
+    // Ez a támadás: a bérbeadó a véget hatvan nappal visszakelteztetné, hogy
+    // az ablak lejártnak látsszon, és a bérlő addig rejtett szövegét úgy
+    // olvassa el, hogy ő maga nem írt semmit.
+    const paros: Paros = { sajat: null, masike: ertekeles("berlo", "berbeado") };
+    const visszakeltezett = new Date(Date.UTC(2026, 3, 1));
+    const rogzitve = new Date(Date.UTC(2026, 5, 30));
+    const ma = new Date(Date.UTC(2026, 6, 5));
+
+    expect(felfedve(paros, visszakeltezett, ma)).toBe(true);
+    expect(felfedve(paros, ablakKezdete(visszakeltezett, rogzitve), ma)).toBe(false);
+  });
+});
+
 describe("az értékelés teendője", () => {
   const alap = {
     jogviszonyId: "jv1",
@@ -226,7 +264,7 @@ describe("az értékelés teendője", () => {
 
   it("amíg nincs megírva és nyitva az ablak, teendő van belőle", () => {
     const teendok = ertekelesTeendoi(
-      [{ ...alap, vege: VEGE, paros: URES }],
+      [{ ...alap, kezdet: VEGE, paros: URES }],
       "berbeado",
       nappal(2),
     );
@@ -241,14 +279,14 @@ describe("az értékelés teendője", () => {
       masike: null,
     };
     expect(
-      ertekelesTeendoi([{ ...alap, vege: VEGE, paros }], "berbeado", nappal(2)),
+      ertekelesTeendoi([{ ...alap, kezdet: VEGE, paros }], "berbeado", nappal(2)),
     ).toEqual([]);
   });
 
   it("a futó jogviszonyból nincs teendő", () => {
     expect(
       ertekelesTeendoi(
-        [{ ...alap, vege: null, paros: URES }],
+        [{ ...alap, kezdet: null, paros: URES }],
         "berbeado",
         nappal(2),
       ),
@@ -258,7 +296,7 @@ describe("az értékelés teendője", () => {
   it("az ablak letelte után sincs", () => {
     expect(
       ertekelesTeendoi(
-        [{ ...alap, vege: VEGE, paros: URES }],
+        [{ ...alap, kezdet: VEGE, paros: URES }],
         "berbeado",
         nappal(ABLAK_NAP + 1),
       ),
@@ -267,7 +305,7 @@ describe("az értékelés teendője", () => {
 
   it("az esedékesség az ablak utolsó napja, nem a lezárás napja", () => {
     const teendok = ertekelesTeendoi(
-      [{ ...alap, vege: VEGE, paros: URES }],
+      [{ ...alap, kezdet: VEGE, paros: URES }],
       "berlo",
       nappal(2),
     );
