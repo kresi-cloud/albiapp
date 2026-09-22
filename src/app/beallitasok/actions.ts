@@ -44,3 +44,47 @@ export async function beallitasokatMent(
     hibak: [],
   };
 }
+
+function szoveg(nyers: unknown): string {
+  return String(nyers ?? "").trim();
+}
+
+function napotOlvas(nyers: unknown): Date | null {
+  const ertek = szoveg(nyers);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(ertek)) return null;
+  const nap = new Date(`${ertek}T00:00:00.000Z`);
+  return Number.isNaN(nap.getTime()) ? null : nap;
+}
+
+/**
+ * A bérbeadó szerződéshez kellő adatai. A belépéshez egyik sem kell, ezért
+ * külön táblában élnek, és csak a dokumentumok készítésekor olvassuk őket.
+ */
+export async function berbeadoiAdatokatMent(
+  _elozo: MentesEredmeny,
+  urlap: FormData,
+): Promise<MentesEredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+
+  const adatok = {
+    szuletesiHely: szoveg(urlap.get("szuletesiHely")) || null,
+    szuletesiIdo: napotOlvas(urlap.get("szuletesiIdo")),
+    anyjaNeve: szoveg(urlap.get("anyjaNeve")) || null,
+    lakcim: szoveg(urlap.get("lakcim")) || null,
+    igazolvanySzam: szoveg(urlap.get("igazolvanySzam")) || null,
+    adoazonosito: szoveg(urlap.get("adoazonosito")) || null,
+    bankszamla: szoveg(urlap.get("bankszamla")) || null,
+    bank: szoveg(urlap.get("bank")) || null,
+  };
+
+  await prisma.berbeadoiAdatok.upsert({
+    where: { berbeadoId: berbeado.id },
+    update: adatok,
+    create: { berbeadoId: berbeado.id, ...adatok },
+  });
+
+  revalidatePath("/beallitasok");
+  revalidatePath("/szerzodesek");
+
+  return { allapot: "kesz", uzenet: "Az adataid mentve.", hibak: [] };
+}

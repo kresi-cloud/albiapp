@@ -14,7 +14,7 @@ export default async function MeghivoOldal({
 
   const meghivo = await prisma.meghivo.findUnique({
     where: { token },
-    include: { jogviszony: { include: { ingatlan: true } } },
+    include: { jogviszonyBerlo: { include: { jogviszony: { include: { ingatlan: true } } } } },
   });
 
   const allapot = meghivo ? meghivoAllapota(meghivo, new Date()) : null;
@@ -40,7 +40,7 @@ export default async function MeghivoOldal({
       <section>
         <h1 className="text-2xl font-semibold tracking-tight">Fiók készítése</h1>
         <p className="mt-1 text-stone-600 dark:text-stone-400">
-          {meghivo.jogviszony.ingatlan.megnevezes} ({meghivo.jogviszony.ingatlan.cim}) bérlőjeként
+          {meghivo.jogviszonyBerlo.jogviszony.ingatlan.megnevezes} ({meghivo.jogviszonyBerlo.jogviszony.ingatlan.cim}) bérlőjeként
           hívtak meg. A fiók díjmentes, és csak a saját bérleményedet látod benne.
         </p>
         <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">

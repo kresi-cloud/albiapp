@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { nevsor } from "@/domain/szerzodes";
 import {
   ALAPERTELMEZETT_BEALLITASOK,
   egyeztet,
@@ -18,7 +19,8 @@ import {
 
 export type JogviszonyNezet = {
   id: string;
-  berloNev: string;
+  /** Egy jogviszonyhoz több bérlő is tartozhat: "Anna és Panna". */
+  berlokNeve: string;
   ingatlanMegnevezes: string;
   ingatlanCim: string;
   berletiDijFt: number;
@@ -36,7 +38,7 @@ export type JogviszonyNezet = {
 /** Amit egy jogviszonyból az egyeztetéshez betöltünk. */
 type BetoltottJogviszony = {
   id: string;
-  berloNev: string;
+  berlok: { nev: string }[];
   berletiDijFt: number;
   ingatlan: { megnevezes: string; cim: string; tulajdonosId: string };
   eloirtTetelek: EloirtTetel[];
@@ -46,6 +48,7 @@ type BetoltottJogviszony = {
 
 const BETOLTES = {
   ingatlan: true,
+  berlok: { orderBy: { sorrend: "asc" } },
   eloirtTetelek: { orderBy: { esedekesseg: "asc" } },
   berloiIgazolasok: { orderBy: { utalasDatuma: "asc" } },
   kivonattetelek: { orderBy: { konyvelesDatuma: "asc" } },
@@ -88,7 +91,7 @@ function nezetteAlakit(
 
   return {
     id: jogviszony.id,
-    berloNev: jogviszony.berloNev,
+    berlokNeve: nevsor(jogviszony.berlok.map((berlo) => berlo.nev)),
     ingatlanMegnevezes: jogviszony.ingatlan.megnevezes,
     ingatlanCim: jogviszony.ingatlan.cim,
     berletiDijFt: jogviszony.berletiDijFt,
@@ -131,7 +134,7 @@ export async function berloNezetei(
   ma: Date = new Date(),
 ): Promise<JogviszonyNezet[]> {
   const jogviszonyok = await prisma.jogviszony.findMany({
-    where: { berloId },
+    where: { berlok: { some: { berloId } } },
     include: BETOLTES,
     orderBy: { letrehozva: "asc" },
   });

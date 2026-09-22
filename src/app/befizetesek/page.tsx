@@ -33,7 +33,7 @@ export default async function Befizetesek() {
       <KivonatFeltoltes
         jogviszonyok={nezetek.map((nezet) => ({
           id: nezet.id,
-          cimke: `${nezet.ingatlanMegnevezes} — ${nezet.berloNev}`,
+          cimke: `${nezet.ingatlanMegnevezes} — ${nezet.berlokNeve}`,
         }))}
       />
 
@@ -42,7 +42,7 @@ export default async function Befizetesek() {
           <div>
             <h2 className="font-semibold">{nezet.ingatlanMegnevezes}</h2>
             <p className="text-sm text-stone-600 dark:text-stone-400">
-              {nezet.berloNev} · {forint(nezet.berletiDijFt)} / hó
+              {nezet.berlokNeve} · {forint(nezet.berletiDijFt)} / hó
             </p>
           </div>
 

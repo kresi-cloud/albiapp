@@ -1,5 +1,6 @@
 import { datum, forint } from "@/domain/penz";
 import { ElszamolasTetelek } from "@/components/ElszamolasTetelek";
+import { nevsor } from "@/domain/szerzodes";
 import { prisma } from "@/lib/db";
 import { merooraNeve } from "@/lib/rezsi";
 import { kotelezoSzerep } from "@/lib/munkamenet";
@@ -24,6 +25,7 @@ export default async function Rezsi() {
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { ingatlan: { tulajdonosId: berbeado.id } },
     include: {
+      berlok: { orderBy: { sorrend: "asc" } },
       ingatlan: {
         include: {
           meroorak: {
@@ -59,7 +61,7 @@ export default async function Rezsi() {
         <section key={jogviszony.id} className="grid gap-3">
           <div>
             <h2 className="font-semibold">
-              {jogviszony.ingatlan.megnevezes} · {jogviszony.berloNev}
+              {jogviszony.ingatlan.megnevezes} · {nevsor(jogviszony.berlok.map((berlo) => berlo.nev))}
             </h2>
             <p className="text-sm text-stone-600 dark:text-stone-400">
               Rezsi elszámolása {ELSZAMOLAS_MODJA[jogviszony.rezsiElszamolas] ?? jogviszony.rezsiElszamolas}

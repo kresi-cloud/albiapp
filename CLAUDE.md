@@ -70,6 +70,31 @@ befizetés legyen. Minden bevételi sor mellé indoklás kerül.
 Amit nem tudunk besorolni (előírás nélkül beérkezett pénz), azt nem tippeljük
 meg: külön listán megy a bérbeadóhoz.
 
+## A bérleti szerződés alapelve
+
+Egy jogviszonyhoz több bérlő tartozhat (`JogviszonyBerlo`). A fizetési
+kötelezettség ettől nem lesz több: a bérleti díj egy előírt tétel marad, és a
+bérlők egyetemlegesen felelnek érte. A befizetés-egyeztetés ezért a jogviszony
+szintjén dolgozik, nem bérlőnként.
+
+A szerződés modulokból áll, a katalógus kódban van
+(`src/domain/szerzodes-modulok.ts`), nem az adatbázisban: jogi szöveg, amit
+verziózni és ellenjegyeztetni kell, és egy javításnak minden tervezetre hatnia
+kell. Minden modul mellé tartozik egy `miert` mondat, mert a bérbeadó nem
+jogász, és amit nem ért, azt nem tudja eldönteni.
+
+A szöveg abból épül, amit az alkalmazás már tud: a bérleti díj, az óvadék, a
+bérlők és az ingatlan a saját adataiból jön, nem külön beírásból. Így a
+szerződésben nem állhat más összeg, mint a befizetés-egyeztetésben. Ami ezen
+felül kell, az modulparaméter.
+
+Véglegesítéskor a kész szöveget elmentjük (`veglegesSzoveg`). Amit a felek
+aláírtak, azt egy későbbi modulfrissítés nem írhatja át.
+
+A személyes adatok (születési adatok, anyja neve, igazolványszám, adóazonosító)
+kizárólag a dokumentumok kiállításához kellenek. A bérbeadóé külön táblában van
+(`BerbeadoiAdatok`), hogy a belépési út ne is olvassa. Naplóba egyik sem kerül.
+
 ## Mit jelent, hogy kész
 
 - `npx eslint .`, `npm run typecheck`, `npm test` és `npm run build` zöld.
