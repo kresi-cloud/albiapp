@@ -440,6 +440,17 @@ semmi — és a felhasználó a visszaállított értéket látja. Leglátványo
 `<select>`-en és a rádiógombon. Ezért a közös mező kirajzolás után ránézik az
 elemre, és visszaírja, ami elcsúszott.
 
+A vezérlésnek ára is van, és ezt a legördülőn fizettük meg. A megőrző mező a
+tartott értéket írja az elemre; ha a hívó nem adott alapértéket, ez üres, és a
+böngésző **semmit nem jelöl ki** (`selectedIndex` −1). A felhasználó üres
+legördülőt lát, a beküldés üres értéket visz, a kiszolgáló pedig jogosan
+utasítja el — vezérlés nélkül ez nem fordulna elő, mert a natív `<select>`
+magától az első opciót jelöli ki. Ezért a `Valaszto` kirajzolás után átveszi az
+első opció értékét, ha a tartott érték egyetlen opcióra sem illik: ami a
+képernyőn látszik, és ami beküldésre kerül, nem mondhat mást. Az üres
+opcióérték („Nem tartozik bérleményhez") ettől érintetlen marad, mert az illik
+egy opcióra.
+
 Jelszó nem megy át ezen: az újragépelése két másodperc, a megőrzése viszont
 ott hagyná a mezőben olyankor is, amikor a felhasználó már rég továbblépett.
 Fájlmező sem, mert azt a böngésző nem engedi programból kitölteni.
