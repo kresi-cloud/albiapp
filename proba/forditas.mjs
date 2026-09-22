@@ -155,10 +155,11 @@ export async function futtat(oldal) {
   await oldal.waitForLoadState("networkidle");
   await oldal.waitForTimeout(500);
 
-  // A véglegesített szerződés lapját a méretkapu soha nem méri: a példaadatban
-  // nincs véglegesített szerződés, és a méretpróba a sor elején fut, friss
-  // adatbázison. Ez a vakfolt mögött tizenkilenc telefonképernyős lapot hagyott,
-  // ezért itt mérjük meg, ahol van ilyen lap.
+  // A méretkapu a példaadat véglegesített szerződését méri; ez a lap viszont
+  // most készült, a mostani modulkészlettel, tehát itt is megmérjük. Amíg a
+  // példaadatban nem volt aláírt szerződés, ez volt az egyetlen hely, ahol egy
+  // ilyen lap egyáltalán látszott — és a vakfolt mögött tizenkilenc
+  // telefonképernyős lap állt.
   //
   // Frissen töltjük be, mert a `mindetKinyit` stíluslapja addig minden
   // összecsukott szakaszt kirajzoltat. Az összecsukás a lap része, nem a próba

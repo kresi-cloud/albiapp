@@ -471,6 +471,16 @@ Az előírásokat a seed ugyanazzal az `eloirasok` függvénnyel állítja elő,
 alkalmazás. Kézzel beírt előírás megint el tudna csúszni attól, amit a rendszer
 magától generál.
 
+Ugyanez áll a kiadott okiratokra. A példaadatban van aláírt szerződés és
+kiállított igazolás, és a szövegük ugyanazon a két függvényen megy át, mint
+véglegesítéskor (`okiratSzovege`, `igazolasSzovege`) — az igazolás összege és
+teljesítési napja pedig ugyanabból a párosításból jön, mint a befizetések
+lapján. Ez nem a demó kedvéért van: ami a példaadatból hiányzik, azt a
+méretkapu sem méri. A véglegesített szerződés lapja pont ezért tudott
+tizenkilenc telefonképernyő magas lenni úgy, hogy minden ellenőrzés zöld volt.
+A kapu ezért minden szerződés- és jegyzőkönyvlapot megmér, nem csak az elsőt:
+egy okirat tervezetként és véglegesítve két különböző lap.
+
 ## Az űrlapok alapelve
 
 Elutasított mentés nem viheti el a begépelt adatot. Egyetlen elgépelt
