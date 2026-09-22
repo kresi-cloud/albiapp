@@ -283,6 +283,22 @@ Az előírásokat a seed ugyanazzal az `eloirasok` függvénnyel állítja elő,
 alkalmazás. Kézzel beírt előírás megint el tudna csúszni attól, amit a rendszer
 magától generál.
 
+## Az űrlapok alapelve
+
+Elutasított mentés nem viheti el a begépelt adatot. A kiszolgálói művelet
+visszaadja a beküldött értékeket (`ertekek`), és az űrlap azokkal rajzolódik
+újra; sikeres mentés után üresen, mert akkor új adat következik. Enélkül a
+React újrarajzoláskor kiüríti az űrlapot, vagyis egyetlen hibás mező miatt
+tízet kell újragépelni — és ez a hiba sem a típusellenőrzésen, sem a
+fordításon nem akad fenn, csak a böngészős próbán.
+
+Kifogás és figyelmeztetés nem ugyanaz. Kifogás az, ami nélkül az adat
+értelmetlen vagy később hibát okoz: azt nem mentjük el. Figyelmeztetés az, ami
+hiányos, de a bérbeadó tudhatja jobban: azt elmentjük, és megmondjuk, minek mi
+lesz a következménye — nem „hiányos az adatlap", hanem hogy pontosan mi nem
+fog működni nélküle. Egy magánbérbeadó nem fogja kitölteni a helyrajzi számot
+az első percben, és ettől még el kell tudnia indulni.
+
 ## A hosszú listák alapelve
 
 Egy magánbérbeadónak egy-két év alatt száz fölötti befizetési tétele gyűlik
