@@ -9,6 +9,8 @@ import {
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { jegyzokonyvBetoltes } from "@/lib/jegyzokonyv";
+import { birtokbaadasiKepek, kepekJegyzokonyvhoz } from "@/lib/jegyzokonyv-kepek";
+import { Album } from "@/app/jegyzokonyv-kepek/Album";
 import { JegyzokonyvUrlap, UjTetel, VeglegesitesUrlap } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +34,15 @@ export default async function JegyzokonyvOldal({
   const { bemenet, allapot, veglegesSzoveg, tetelek } = betoltott;
   const szerkesztheto = allapot === "tervezet";
   const hianyok = hianyzoTetelek(bemenet);
+
+  const ki = { id: berbeado.id, szerep: "berbeado" as const };
+  const kepek = await kepekJegyzokonyvhoz(ki, id);
+  // A záró jegyzőkönyvnél a birtokbaadáskori képekhez párosítunk; a
+  // birtokbaadásnál nincs mihez, ott ez üres.
+  const nyitoKepek =
+    bemenet.fajta === "visszaadas"
+      ? await birtokbaadasiKepek(ki, betoltott.jogviszonyId)
+      : [];
 
   // Véglegesítéskor ezek történtek. A gomb melletti üzenet a véglegesítéssel
   // együtt eltűnik, ezért az eredményt magából a jegyzőkönyvből olvassuk vissza.
@@ -143,6 +154,17 @@ export default async function JegyzokonyvOldal({
           </section>
         </>
       ) : null}
+
+      <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
+        <Album
+          jegyzokonyvId={id}
+          fajta={bemenet.fajta}
+          lezart={!szerkesztheto}
+          kepek={kepek}
+          tetelek={tetelek.map((tetel) => ({ id: tetel.id, megnevezes: tetel.megnevezes }))}
+          nyitoKepek={nyitoKepek}
+        />
+      </section>
 
       <section className="rounded-lg border border-stone-200 bg-white p-4 dark:border-stone-800 dark:bg-stone-900">
         <div className="flex flex-wrap items-baseline justify-between gap-2">

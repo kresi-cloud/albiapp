@@ -25,6 +25,7 @@ export const SZOTAR: Szotar = {
   "nav.beallitasok": { hu: "Beállítások", en: "Settings" },
   "nav.berlemenyem": { hu: "Bérleményem", en: "My home" },
   "nav.hibabejelentes": { hu: "Hibabejelentés", en: "Report a fault" },
+  "nav.jegyzokonyveim": { hu: "Átadás-átvétel", en: "Handover" },
   "nav.dokumentumaim": { hu: "Dokumentumaim", en: "My documents" },
   "nav.adataim": { hu: "Adataim", en: "My details" },
   "nav.kilepes": { hu: "Kilépés", en: "Sign out" },
@@ -169,6 +170,112 @@ export const SZOTAR: Szotar = {
   "bizonylat.meret.bajt": { hu: "{meret} bájt", en: "{meret} bytes" },
   "bizonylat.meret.kb": { hu: "{meret} kB", en: "{meret} kB" },
   "bizonylat.meret.mb": { hu: "{meret} MB", en: "{meret} MB" },
+
+  // --- Fényképek az átadás-átvételi állapotról
+  // A megerősítés a másik fél külön adata; a kifogás nem törli a képet.
+  "kep.cim": { hu: "Fényképek az állapotról", en: "Photos of the condition" },
+  "kep.sugo": {
+    hu: "A képet az tölti fel, aki készítette, a másik fél pedig megerősíti, hogy ezt látta. Amíg nincs megerősítés, a kép egy fél állítása marad.",
+    en: "Whoever took the photo uploads it, and the other party confirms that this is what they saw. Until then it stays one side's claim.",
+  },
+  "kep.sugo.zaro": {
+    hu: "Kiköltözéskor a birtokbaadáskori képek mellé kerül a mostani állapot. A kaució körüli vita rendszerint épp az, hogy egy folt eddig is ott volt-e.",
+    en: "At move-out the current condition sits next to the move-in photos. The deposit dispute is usually about whether a mark was already there.",
+  },
+  "kep.megnevezes": { hu: "Mit mutat a kép?", en: "What does the photo show?" },
+  "kep.megnevezes_pelda": {
+    hu: "nappali, a kanapé mögötti fal",
+    en: "living room, the wall behind the sofa",
+  },
+  "kep.tetel": { hu: "Melyik tételhez tartozik?", en: "Which item is it about?" },
+  "kep.tetel_nelkul": { hu: "általános kép a lakásról", en: "general photo of the flat" },
+  "kep.fajl": { hu: "Fénykép", en: "Photo" },
+  "kep.feltoltes": { hu: "Kép hozzáadása", en: "Add photo" },
+  "kep.feltoltom": { hu: "Feltöltöm…", en: "Uploading…" },
+  "kep.kesz": { hu: "A kép bekerült az albumba.", en: "The photo is in the album." },
+  "kep.torolve": { hu: "Töröltem a képet.", en: "The photo is deleted." },
+  "kep.torles": { hu: "Kép törlése", en: "Delete photo" },
+  "kep.nincs": {
+    hu: "Még nincs kép. Az állapotot szavakkal nehéz rögzíteni, képpel nem.",
+    en: "No photos yet. Condition is hard to record in words, easy in pictures.",
+  },
+  "kep.keszitette.berbeado": { hu: "A bérbeadó töltötte fel.", en: "Uploaded by the landlord." },
+  "kep.keszitette.berlo": { hu: "A bérlő töltötte fel.", en: "Uploaded by the tenant." },
+  "kep.allapot.egyoldalu": {
+    hu: "a másik fél megerősítésére vár",
+    en: "waiting for the other party to confirm",
+  },
+  "kep.allapot.megerositve": { hu: "mindkét fél elismerte", en: "both parties acknowledged" },
+  "kep.allapot.vitatott": { hu: "a másik fél kifogást emelt", en: "the other party objected" },
+  "kep.megerosit": { hu: "Ezt láttam, megerősítem", en: "This is what I saw, I confirm" },
+  "kep.kifogasol": { hu: "Kifogásom van ezzel a képpel", en: "I have an objection to this photo" },
+  "kep.kifogas_szovege": { hu: "Mi a kifogásod?", en: "What is your objection?" },
+  "kep.kifogas_pelda": {
+    hu: "Ez a kép nem a mi lakásunkról készült.",
+    en: "This photo is not of our flat.",
+  },
+  "kep.kifogas_kell": {
+    hu: "Írd le, mi a kifogásod: enélkül a másik fél nem tud mit kezdeni vele.",
+    en: "Describe your objection: without it the other party cannot act on it.",
+  },
+  "kep.megerositve_kesz": { hu: "Megerősítetted a képet.", en: "You confirmed the photo." },
+  "kep.kifogas_kesz": { hu: "Rögzítettem a kifogásodat.", en: "Your objection is recorded." },
+  "kep.par_cim": { hu: "Birtokbaadáskor így nézett ki", en: "How it looked at move-in" },
+  "kep.par_hianyzik": {
+    hu: "Ezekről készült kép a birtokbaadáskor, most viszont még nem: {darab} darab.",
+    en: "These were photographed at move-in but not yet now: {darab}.",
+  },
+  "kep.par_keszit": { hu: "Kép erről most", en: "Photo of this now" },
+  "kep.osszesites": {
+    hu: "{osszes} kép, ebből {megerositve} megerősítve, {varakozik} megerősítésre vár, {vitatott} vitatott.",
+    en: "{osszes} photos: {megerositve} confirmed, {varakozik} awaiting confirmation, {vitatott} disputed.",
+  },
+  "kep.lezart": {
+    hu: "A jegyzőkönyv véglegesítve van, ezért az album lezárult: kép nem kerülhet bele és nem tűnhet el belőle. Megerősíteni viszont lehet, mert az a saját nyilatkozatod.",
+    en: "The handover record is final, so the album is closed: no photo can be added or removed. Confirming is still possible, because that is your own statement.",
+  },
+  "kep.hiba.ures": { hu: "Válassz ki egy fényképet.", en: "Choose a photo." },
+  "kep.hiba.nagy": {
+    hu: "A kép túl nagy: legfeljebb {max} MB lehet.",
+    en: "The photo is too large: at most {max} MB.",
+  },
+  "kep.hiba.tipus": {
+    hu: "JPG, PNG vagy WEBP képet tudok fogadni. Az iPhone HEIC formátumát nem: azt a böngészők nagy része nem rajzolja ki, és épp az nem látná, akinek mutatod. A telefon beállításaiban átállítható „legkompatibilisebb” formátumra.",
+    en: "I can accept JPG, PNG or WEBP. Not the iPhone HEIC format: most browsers cannot display it, so the very person you are showing it to would not see it. Your phone settings can switch to the “most compatible” format.",
+  },
+  "kep.hiba.tartalom": {
+    hu: "Ez a fájl nem az, aminek mondja magát: a tartalma nem kép.",
+    en: "This file is not what it claims to be: its content is not an image.",
+  },
+  "kep.hiba.sok": {
+    hu: "Egy jegyzőkönyvhöz legfeljebb {max} kép tartozhat. Ennél többet telefonon úgysem néz végig senki.",
+    en: "A handover record can hold at most {max} photos. Nobody scrolls through more than that on a phone.",
+  },
+  "kep.hiba.lezart": {
+    hu: "A véglegesített jegyzőkönyv albuma lezárult.",
+    en: "The album of a finalised handover record is closed.",
+  },
+  "kep.hiba.nem_tied": {
+    hu: "Ehhez a képhez nincs jogosultságod.",
+    en: "You have no access to this photo.",
+  },
+  "kep.oldal.cim": { hu: "Az átadás-átvétel képei", en: "Handover photos" },
+  "kep.oldal.bevezeto": {
+    hu: "Itt erősítheted meg, hogy a képeken az van, amit te is láttál. Amíg nem nyilatkozol, a kép a bérbeadó állítása marad.",
+    en: "Here you can confirm that the photos show what you saw too. Until you say so, a photo stays the landlord's claim.",
+  },
+  "kep.oldal.ures": {
+    hu: "Még nincs jegyzőkönyv a bérleményedhez. Amint a bérbeadó felvesz egyet, itt látod a képeit.",
+    en: "There is no handover record for your rental yet. As soon as your landlord creates one, its photos appear here.",
+  },
+  "kep.oldal.tervezet": {
+    hu: "A jegyzőkönyv még tervezet. A képeket szándékosan már most látod: a megerősítés akkor ér valamit, ha a véglegesítés előtt történik.",
+    en: "The handover record is still a draft. You can see the photos already on purpose: confirming matters most before it is finalised.",
+  },
+  "kep.hiba.sajat": {
+    hu: "A saját képedet nem te erősíted meg: attól nem lesz kétoldali.",
+    en: "You do not confirm your own photo: that would not make it two-sided.",
+  },
 
   // --- Személyes adatok
   // Mindkét fél a sajátját adja meg; a bérlőét eddig a bérbeadó gépelte be.
@@ -2161,6 +2268,7 @@ export const SZOTAR: Szotar = {
   },
 
   "letoltes.nincs_bizonylat": { hu: "Nincs ilyen bizonylat.", en: "No such receipt." },
+  "letoltes.nincs_kep": { hu: "Nincs ilyen kép.", en: "No such photo." },
   "dokumentumok.igazolas_cel_alap": {
     // Ez a szöveg a magyar igazolásba kerül, ezért angol felületen is magyar.
     hu: "a lakhatási támogatáshoz",

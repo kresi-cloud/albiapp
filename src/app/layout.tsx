@@ -27,6 +27,7 @@ const BERBEADO_MENU = [
 const BERLO_MENU = [
   { kulcs: "nav.berlemenyem", utvonal: "/berlo" },
   { kulcs: "nav.hibabejelentes", utvonal: "/berlo/hibak" },
+  { kulcs: "nav.jegyzokonyveim", utvonal: "/berlo/jegyzokonyvek" },
   { kulcs: "nav.dokumentumaim", utvonal: "/berlo/dokumentumok" },
   { kulcs: "nav.betekinto", utvonal: "/berlo/betekinto" },
   { kulcs: "nav.adataim", utvonal: "/berlo/adatok" },

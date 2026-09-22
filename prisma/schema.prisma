@@ -16,18 +16,18 @@ datasource db {
 }
 
 model Felhasznalo {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  nev        String
-  jelszoHash String
-  szerep     String // "berbeado" | "berlo"
-  nyelv      String   @default("hu") // "hu" | "en" — a bérlői oldal kétnyelvű
+  id             String    @id @default(cuid())
+  email          String    @unique
+  nev            String
+  jelszoHash     String
+  szerep         String // "berbeado" | "berlo"
+  nyelv          String    @default("hu") // "hu" | "en" — a bérlői oldal kétnyelvű
   /**
    * Mikor mutattuk meg neki az adatkérést. Egyszer kérjük, nem minden
    * belépéskor: a hiányra onnantól teendő emlékeztet.
    */
   adatkeresLatta DateTime?
-  letrehozva DateTime @default(now())
+  letrehozva     DateTime  @default(now())
 
   ingatlanok          Ingatlan[]
   berloJogviszonyai   JogviszonyBerlo[]   @relation("BerloJogviszonyai")
@@ -40,6 +40,8 @@ model Felhasznalo {
   hibabejelentesei    Hibabejelentes[]    @relation("Hibabejelentesei")
   hibaUzenetei        HibaUzenet[]        @relation("HibaUzenetei")
   betekintoi          Betekinto[]         @relation("Betekintoi")
+  feltoltottKepei     JegyzokonyvKep[]    @relation("KepFeltoltoje")
+  megerositettKepei   JegyzokonyvKep[]    @relation("KepMegerositoje")
 }
 
 /// Bérbeadónkénti egyeztetési beállítások. Az összegtolerancia szándékosan nincs
@@ -173,27 +175,27 @@ model Jogviszony {
 /// A személyes adatok (születési adatok, anyja neve, igazolványszám) csak a
 /// szerződés és az igazolások kiállításához kellenek. Naplóba egyik sem kerül.
 model JogviszonyBerlo {
-  id             String    @id @default(cuid())
-  jogviszonyId   String
-  berloId        String? // ha már van fiókja
-  nev            String
-  email          String?
-  szuletesiHely  String?
-  szuletesiIdo   DateTime?
-  anyjaNeve      String?
-  lakcim         String?
-  igazolvanySzam String?
+  id              String    @id @default(cuid())
+  jogviszonyId    String
+  berloId         String? // ha már van fiókja
+  nev             String
+  email           String?
+  szuletesiHely   String?
+  szuletesiIdo    DateTime?
+  anyjaNeve       String?
+  lakcim          String?
+  igazolvanySzam  String?
   // Sürgős hibánál a bérbeadó ezen éri el; a szerződés kapcsolattartási pontja is ezt írja.
-  telefon        String?
+  telefon         String?
   /**
    * Ki adta meg az adatokat: "berlo" vagy "berbeado". A bérbeadó azért írhat
    * ide, mert szerződést azelőtt is kell tudni készíteni, hogy a bérlő először
    * belépne — de ha a bérlő megadja a sajátját, az övé az érvényes.
    */
-  adatokForrasa  String?
+  adatokForrasa   String?
   adatokFrissitve DateTime?
-  sorrend        Int       @default(0)
-  letrehozva     DateTime  @default(now())
+  sorrend         Int       @default(0)
+  letrehozva      DateTime  @default(now())
 
   jogviszony Jogviszony   @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
   berlo      Felhasznalo? @relation("BerloJogviszonyai", fields: [berloId], references: [id])
@@ -272,7 +274,7 @@ model BerloiIgazolas {
   igazolasUtvonal String?
   rogzitve        DateTime @default(now())
 
-  jogviszony Jogviszony  @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  jogviszony Jogviszony @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
 
   @@index([jogviszonyId, utalasDatuma])
 }
@@ -324,7 +326,6 @@ model Bizonylat {
   @@unique([eloirtTetelId, oldal])
   @@index([eloirtTetelId])
 }
-
 
 /// Egy időszak rezsielszámolása. Tételesen áll össze, hogy a bérlő
 /// ellenőrizni tudja, ne csak elhinni.
@@ -480,6 +481,7 @@ model Jegyzokonyv {
 
   jogviszony Jogviszony         @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
   tetelek    JegyzokonyvTetel[]
+  kepek      JegyzokonyvKep[]
 
   @@index([jogviszonyId, idopont])
 }
@@ -498,10 +500,51 @@ model JegyzokonyvTetel {
   hatarido      DateTime?
   sorrend       Int       @default(0)
 
-  jegyzokonyv Jegyzokonyv @relation(fields: [jegyzokonyvId], references: [id], onDelete: Cascade)
-  meroora     Meroora?    @relation(fields: [merooraId], references: [id])
+  jegyzokonyv Jegyzokonyv      @relation(fields: [jegyzokonyvId], references: [id], onDelete: Cascade)
+  meroora     Meroora?         @relation(fields: [merooraId], references: [id])
+  kepek       JegyzokonyvKep[]
 
   @@index([jegyzokonyvId, sorrend])
+}
+
+/**
+ * Fénykép az átadás-átvételi állapotról.
+ * Nem különálló album: a kép a jegyzőkönyvhöz tartozik, és ha valamelyik
+ * tételről készült, akkor ahhoz a tételhez. Így a „karcos a konyhapult" sor
+ * mellett ott a fénykép, nem egy ötven képes mappában kell keresni.
+ * A megerősítés a másik fél külön adata, ugyanúgy, mint a befizetésnél vagy a
+ * hibabejelentésnél: aki feltöltötte, az állítja, hogy ezt látta, a másik fél
+ * pedig rábólint, vagy kifogást emel. Egyik sem írja felül a másikat, és a
+ * kifogás nem törli a képet: mindkettő az elszámolás része lesz.
+ * `parjaId` a kiköltözéskori képet köti a birtokbaadáskorihoz. A kaució körüli
+ * vita jellemzően pont az, hogy „ez a folt eddig is itt volt-e", és ez a
+ * kérdés csak a két kép egymás mellett válaszolható meg.
+ */
+model JegyzokonyvKep {
+  id            String    @id @default(cuid())
+  jegyzokonyvId String
+  tetelId       String?
+  parjaId       String?   @unique
+  megnevezes    String
+  fajlNev       String
+  mimeTipus     String
+  meretBajt     Int
+  tartalom      Bytes
+  feltoltoId    String
+  feltoltve     DateTime  @default(now())
+  megerositoId  String?
+  megerositve   DateTime?
+  kifogas       String?
+
+  jegyzokonyv Jegyzokonyv       @relation(fields: [jegyzokonyvId], references: [id], onDelete: Cascade)
+  tetel       JegyzokonyvTetel? @relation(fields: [tetelId], references: [id], onDelete: Cascade)
+  parja       JegyzokonyvKep?   @relation("KepPar", fields: [parjaId], references: [id])
+  parjaEnnek  JegyzokonyvKep?   @relation("KepPar")
+  feltolto    Felhasznalo       @relation("KepFeltoltoje", fields: [feltoltoId], references: [id], onDelete: Cascade)
+  megerosito  Felhasznalo?      @relation("KepMegerositoje", fields: [megerositoId], references: [id])
+
+  @@index([jegyzokonyvId, feltoltve])
+  @@index([tetelId])
 }
 
 /// Bérbeadói igazolás egy bérlőnek: albérlettámogatáshoz, ösztöndíjhoz,
