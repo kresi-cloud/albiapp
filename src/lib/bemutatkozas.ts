@@ -8,7 +8,7 @@
  */
 
 import { type Bemutatkozo } from "@/domain/bemutatkozas";
-import { felfedve, type ErtekelesAdat, type Paros } from "@/domain/ertekeles";
+import { ablakKezdete, felfedve, type ErtekelesAdat, type Paros } from "@/domain/ertekeles";
 import { prisma } from "@/lib/db";
 
 type Sor = {
@@ -58,7 +58,11 @@ export async function bemutatkozoLapja(
     include: {
       pontok: true,
       jogviszony: {
-        select: { vege: true, ertekelesek: { include: { pontok: true } } },
+        select: {
+          vege: true,
+          ertekelesAblak: true,
+          ertekelesek: { include: { pontok: true } },
+        },
       },
     },
     orderBy: { letrehozva: "desc" },
@@ -75,7 +79,12 @@ export async function bemutatkozoLapja(
         sajat: parja === null ? null : adatta(parja),
         masike: adatta(sor),
       };
-      return felfedve(paros, sor.jogviszony.vege, ma);
+      // Az ablak kezdete itt sem a beírt kiköltözési nap: a lezáráskor
+      // eltárolt kezdet, ugyanúgy, mint az értékelések lapján. Enélkül egy
+      // visszakeltezett lezárás ezen a lapon fedné fel a rejtett szöveget,
+      // miközben a másik lapon még rejtve marad.
+      const kezdet = ablakKezdete(sor.jogviszony.vege, sor.jogviszony.ertekelesAblak);
+      return felfedve(paros, kezdet, ma);
     })
     .map(adatta);
 
