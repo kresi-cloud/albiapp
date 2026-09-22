@@ -14,6 +14,7 @@ const BERBEADO_MENU = [
   { cim: "Ingatlanok", utvonal: "/ingatlanok" },
   { cim: "Bérlők", utvonal: "/berlok" },
   { cim: "Befizetések", utvonal: "/befizetesek" },
+  { cim: "Rezsi", utvonal: "/rezsi" },
   { cim: "Beállítások", utvonal: "/beallitasok" },
 ];
 

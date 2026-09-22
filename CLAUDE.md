@@ -48,6 +48,15 @@ lekérdezés mindig szűr a tulajdonosra, a bérlői oldal a saját jogviszonyai
 A bérlő fiókja meghívóval készül. A meghívó egyszer használható és lejár, és
 meglévő fiók jelszavát soha nem írja felül: a link a bérbeadónál is megvan.
 
+## A rezsielszámolás alapelve
+
+Az egységár fillérben, egészben számol (`Int`), és forintra csak a kész tétel
+kerekít. Az elszámolás végösszege a kerekített tételek összege, nem a
+kerekítetlen összeg kerekítése: a bérlő össze fogja adni a sorokat.
+
+Az éves kedvezményes keret az elszámolt napokra arányosítva jár. Minden tételhez
+tartozik emberi nyelvű részletezés; számot magyarázat nélkül nem küldünk ki.
+
 ## Mit jelent, hogy kész
 
 - `npx eslint .`, `npm run typecheck`, `npm test` és `npm run build` zöld.
@@ -55,3 +64,6 @@ meglévő fiók jelszavát soha nem írja felül: a link a bérbeadónál is meg
 - Telefonon is használható 360 képpont széles kijelzőtől.
 - Magyar formátumok: dátum, forint, ezres elválasztás.
 - Személyes adat nem kerül naplóba.
+- Új szerveroldali művelet után a böngészős próba is lefut. A `"use server"`
+  fájl szabályait (csak async függvényt exportálhat) sem a típusellenőrzés, sem
+  a fordítás nem fogja meg, csak a futtatás.
