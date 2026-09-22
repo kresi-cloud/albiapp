@@ -8,6 +8,7 @@ import {
   parametereketMenti,
   szerzodestVeglegesit,
   veglegesitestVisszavon,
+  zaradekotKeszit,
   type Eredmeny,
 } from "../actions";
 import { MEZO, GOMB } from "@/components/urlap";
@@ -220,6 +221,33 @@ export function VeglegesitesUrlap({
         {folyamatban ? cimkek.folyamatban : hianyzik ? cimkek.megis : cimkek.gomb}
       </button>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
+    </form>
+  );
+}
+
+/**
+ * Záradék indítása egy hatályos szerződéshez.
+ *
+ * Az aláírt szöveget nem írjuk át, ezért a kiegészítés külön okirat. A gomb
+ * csak véglegesített szerződésen jelenik meg: tervezetet még szerkeszteni
+ * lehet, ahhoz nem kell záradék.
+ */
+export function ZaradekUrlap({
+  szerzodesId,
+  cimkek,
+}: {
+  szerzodesId: string;
+  cimkek: { gomb: string; folyamatban: string; sugo: string };
+}) {
+  const [, kuldes, folyamatban] = useActionState(zaradekotKeszit, KEZDETI);
+
+  return (
+    <form action={kuldes} className="mt-3 grid gap-2 border-t border-stone-200 pt-3 dark:border-stone-800">
+      <input type="hidden" name="szerzodesId" value={szerzodesId} />
+      <p className="text-sm text-stone-600 dark:text-stone-400">{cimkek.sugo}</p>
+      <button type="submit" disabled={folyamatban} className={`${GOMB} justify-self-start`}>
+        {folyamatban ? cimkek.folyamatban : cimkek.gomb}
+      </button>
     </form>
   );
 }

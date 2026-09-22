@@ -23,17 +23,18 @@ const BERBEADOI = [
   "/berlok",
   "/ingatlanok",
   "/rezsi",
+  "/elofizetesek",
   "/ado",
   "/dokumentumok",
   "/hibak",
   "/beszelgetesek",
-  "/teendok",
   "/beallitasok",
 ];
 
 const BERLOI = [
   "/berlo",
   "/berlo/hibak",
+  "/elofizetesek",
   "/beszelgetesek",
   "/berlo/jegyzokonyvek",
   "/berlo/dokumentumok",

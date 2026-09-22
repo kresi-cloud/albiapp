@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
+import { allapota, terhelheto } from "@/domain/elofizetes";
 import { type Bemenet } from "@/domain/szerzodes-keszites";
+import { elofizetesAdatta } from "@/lib/eloirasok";
 
 /**
  * A szerződés bemenete az adatbázisból. Minden, amit a modulok használnak, innen
@@ -9,16 +11,25 @@ import { type Bemenet } from "@/domain/szerzodes-keszites";
 export async function szerzodesBemenet(
   szerzodesId: string,
   tulajdonosId: string,
-): Promise<{ bemenet: Bemenet; megnevezes: string; allapot: string; veglegesSzoveg: string | null } | null> {
+): Promise<{
+  bemenet: Bemenet;
+  megnevezes: string;
+  allapot: string;
+  veglegesSzoveg: string | null;
+  fajta: string;
+  alapSzerzodesId: string | null;
+} | null> {
   const szerzodes = await prisma.szerzodes.findFirst({
     where: { id: szerzodesId, jogviszony: { ingatlan: { tulajdonosId } } },
     include: {
       modulok: { orderBy: { sorrend: "asc" } },
       parameterek: true,
+      alap: { select: { megnevezes: true, kelte: true, veglegesitve: true } },
       jogviszony: {
         include: {
           ingatlan: true,
           berlok: { orderBy: { sorrend: "asc" } },
+          elofizetesek: { include: { jovahagyasok: true }, orderBy: { kezdete: "asc" } },
         },
       },
     },
@@ -37,10 +48,35 @@ export async function szerzodesBemenet(
   const parameterek: Record<string, string> = {};
   for (const sor of szerzodes.parameterek) parameterek[sor.kulcs] = sor.ertek;
 
+  // Csak a jóváhagyott és még élő előfizetés kerül a szerződésbe: amiről a
+  // bérlő nem nyilatkozott, az nem szerződéses kötelezettség.
+  const fiokosBerlok = jogviszony.berlok
+    .map((berlo) => berlo.berloId)
+    .filter((berloId): berloId is string => Boolean(berloId));
+  const elofizetesek = jogviszony.elofizetesek
+    .map(elofizetesAdatta)
+    .filter((sor) => !sor.vege)
+    .filter(
+      (sor) =>
+        allapota(sor, fiokosBerlok) === "jovahagyva" ||
+        // A bérlő sajátja nem terhelhető, tehát a „jóváhagyva" nem is róla szól:
+        // az ő előfizetése a hozzájárulás miatt kerül a szerződésbe.
+        (sor.elofizeto === "berlo" && !terhelheto(sor, allapota(sor, fiokosBerlok))),
+    )
+    .map((sor) => ({
+      megnevezes: sor.megnevezes,
+      fajta: sor.fajta,
+      szolgaltato: sor.szolgaltato,
+      elofizeto: sor.elofizeto,
+      haviDijFt: sor.haviDijFt,
+    }));
+
   return {
     megnevezes: szerzodes.megnevezes,
     allapot: szerzodes.allapot,
     veglegesSzoveg: szerzodes.veglegesSzoveg,
+    fajta: szerzodes.fajta,
+    alapSzerzodesId: szerzodes.alapSzerzodesId,
     bemenet: {
       berbeado: {
         nev: berbeado.nev,
@@ -87,6 +123,9 @@ export async function szerzodesBemenet(
       parameterek,
       kelteHelye: szerzodes.kelteHelye,
       kelte: szerzodes.kelte,
+      elofizetesek,
+      fajta: szerzodes.fajta === "zaradek" ? "zaradek" : "szerzodes",
+      alap: szerzodes.alap,
     },
   };
 }

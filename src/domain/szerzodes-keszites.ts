@@ -8,6 +8,7 @@
  */
 
 import {
+  type ElofizetesAdat,
   type Fel,
   type IngatlanAdat,
   type JogviszonyAdat,
@@ -24,12 +25,21 @@ export type Bemenet = {
   berlok: Fel[];
   ingatlan: IngatlanAdat;
   jogviszony: JogviszonyAdat;
+  /** A jóváhagyott előfizetések; ami nincs jóváhagyva, az a szerződésbe sem kerül. */
+  elofizetesek?: ElofizetesAdat[];
   /** A bekapcsolt modulok kulcsai. */
   valasztottModulok: string[];
   /** Paraméterkulcs → megadott érték. Ami hiányzik, az alapértelmezés. */
   parameterek: Record<string, string>;
   kelteHelye?: string;
   kelte?: Date | null;
+  /**
+   * Szerződés vagy záradék. A záradék nem húzza be a kötelező modulokat: az
+   * egy kiegészítő okirat, nem egy második teljes szerződés.
+   */
+  fajta?: "szerzodes" | "zaradek";
+  /** Melyik hatályos szerződést egészíti ki. Csak záradéknál. */
+  alap?: { megnevezes: string; kelte: Date | null; veglegesitve: Date | null } | null;
 };
 
 export type Szakasz = {
@@ -75,6 +85,7 @@ export function kontextustKeszit(bemenet: Bemenet): Kontextus {
     berlok: bemenet.berlok,
     ingatlan: bemenet.ingatlan,
     jogviszony: bemenet.jogviszony,
+    elofizetesek: bemenet.elofizetesek ?? [],
     p,
     psz: (kulcs) => {
       const szam = Number(String(p(kulcs)).replace(/\s/g, "").replace(",", "."));
@@ -90,7 +101,9 @@ export function kontextustKeszit(bemenet: Bemenet): Kontextus {
  * Az ajánlott modulkészlet: minden kötelező, plusz amit a jogviszony adatai
  * indokolnak (óvadék van, több bérlő van). A bérbeadó ezen szabadon változtat.
  */
-export function ajanlottModulok(bemenet: Omit<Bemenet, "valasztottModulok" | "parameterek">): string[] {
+export function ajanlottModulok(
+  bemenet: Omit<Bemenet, "valasztottModulok" | "parameterek">,
+): string[] {
   const kontextus = kontextustKeszit({ ...bemenet, valasztottModulok: [], parameterek: {} });
   return MODULOK.filter(
     (modul) => modul.kotelezo || (modul.ajanlott ? modul.ajanlott(kontextus) : false),
@@ -107,8 +120,13 @@ export function szakaszok(bemenet: Bemenet): Szakasz[] {
   const valasztott = new Set(bemenet.valasztottModulok);
   const kesz: Szakasz[] = [];
 
+  const zaradek = bemenet.fajta === "zaradek";
+
   for (const modul of MODULOK) {
-    if (!modul.kotelezo && !valasztott.has(modul.kulcs)) continue;
+    // Záradéknál a kötelezőség nem húz be semmit: amit a felek már aláírtak,
+    // azt nem írjuk le újra, különben a záradék egy második, részben eltérő
+    // szerződés lenne.
+    if ((zaradek || !modul.kotelezo) && !valasztott.has(modul.kulcs)) continue;
     const bekezdesek = modul.szoveg(kontextus).filter((sor) => sor.trim() !== "");
     if (bekezdesek.length === 0) continue;
     kesz.push({
@@ -160,10 +178,14 @@ export function hianyzoAdatok(bemenet: Bemenet): Uzenet[] {
 }
 
 /**
- * A záradék: kelt, aláírók, tanúk. Külön függvény, mert a szerkesztő is ezt
- * mutatja a pontok alatt — enélkül a bérbeadó nem látná, mit állított be.
+ * Az aláírási rész: kelt, aláírók, tanúk. Külön függvény, mert a szerkesztő is
+ * ezt mutatja a pontok alatt — enélkül a bérbeadó nem látná, mit állított be.
+ *
+ * A neve korábban `zaradekSorok` volt. A „záradék" viszont a hatályos
+ * szerződést kiegészítő külön okirat neve lett (`Szerzodes.fajta`), és két
+ * különböző dolgot nem hívhat ugyanaz a szó a kódban.
  */
-export function zaradekSorok(bemenet: Bemenet): string[] {
+export function alairasSorok(bemenet: Bemenet): string[] {
   const kontextus = kontextustKeszit(bemenet);
   const hely = (bemenet.kelteHelye ?? "").trim();
   const nap = bemenet.kelte ? hosszuDatum(bemenet.kelte) : "";
@@ -210,7 +232,70 @@ export function szerzodesSzovege(bemenet: Bemenet): string {
     }
   }
 
-  sorok.push(...zaradekSorok(bemenet));
+  sorok.push(...alairasSorok(bemenet));
 
   return sorok.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+}
+
+/**
+ * A záradék szövege.
+ *
+ * Hatályos szerződést csak külön okirattal lehet kiegészíteni: az aláírt
+ * szöveget nem írjuk át (a `veglegesSzoveg` be is fagyasztja), az új
+ * megállapodás pedig magában nem értelmezhető. Ezért a záradék megnevezi,
+ * melyik szerződéshez tartozik, és kimondja, hogy a többi rendelkezés
+ * változatlanul hatályban marad — enélkül vitatható lenne, mi maradt érvényben.
+ */
+/**
+ * A záradék bevezetője. Külön függvény, mert a szerkesztő is ezt mutatja a
+ * pontok fölött: a bérbeadónak a tervezetben is látnia kell, mihez képest
+ * kiegészítés, amit készít.
+ */
+export function zaradekBevezeto(bemenet: Bemenet): string {
+  const alap = bemenet.alap;
+  const hivatkozas = alap
+    ? `a Felek között ${alap.kelte ? `${hosszuDatum(alap.kelte)} napján ` : ""}létrejött ` +
+      `„${alap.megnevezes}” megnevezésű lakásbérleti szerződéshez (a továbbiakban: Bérleti szerződés)`
+    : "a Felek között létrejött lakásbérleti szerződéshez (a továbbiakban: Bérleti szerződés)";
+  return `amely létrejött ${hivatkozas}, az alulírott helyen és időben, a következők szerint:`;
+}
+
+/**
+ * A záradék záró mondata.
+ *
+ * Enélkül vitatható lenne, mi maradt hatályban az eredeti szerződésből, és
+ * hogy a záradék a szerződés része-e. Ezért nem modul, hanem a záradék
+ * elhagyhatatlan része.
+ */
+export const ZARADEK_ZARO =
+  "A Bérleti szerződés e záradékkal nem érintett rendelkezései változatlanul hatályban maradnak. " +
+  "A záradék a Bérleti szerződés elválaszthatatlan részét képezi.";
+
+export function zaradekSzovege(bemenet: Bemenet): string {
+  const sorok: string[] = [
+    "ZÁRADÉK A LAKÁSBÉRLETI SZERZŐDÉSHEZ",
+    "",
+    zaradekBevezeto(bemenet),
+    "",
+  ];
+
+  for (const szakasz of szakaszok({ ...bemenet, fajta: "zaradek" })) {
+    sorok.push(`${szakasz.sorszam}. ${szakasz.cim}`);
+    sorok.push("");
+    for (const bekezdes of szakasz.bekezdesek) {
+      sorok.push(bekezdes);
+      sorok.push("");
+    }
+  }
+
+  sorok.push(ZARADEK_ZARO, "");
+
+  sorok.push(...alairasSorok(bemenet));
+
+  return sorok.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+}
+
+/** A megfelelő szöveg a fajta szerint, hogy a hívónak ne kelljen elágaznia. */
+export function okiratSzovege(bemenet: Bemenet): string {
+  return bemenet.fajta === "zaradek" ? zaradekSzovege(bemenet) : szerzodesSzovege(bemenet);
 }

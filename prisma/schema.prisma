@@ -44,6 +44,7 @@ model Felhasznalo {
   megerositettKepei   JegyzokonyvKep[]    @relation("KepMegerositoje")
   beszelgetesei       BeszelgetesResztvevo[]
   kuldottUzenetei     BeszelgetesUzenet[]  @relation("UzenetSzerzoje")
+  elofizetesNyilatkozatai ElofizetesJovahagyas[]
 }
 
 /// Bérbeadónkénti egyeztetési beállítások. Az összegtolerancia szándékosan nincs
@@ -169,8 +170,60 @@ model Jogviszony {
   hibabejelentesek    Hibabejelentes[]
   betekintok          Betekinto[]
   beszelgetesek       Beszelgetes[]
+  elofizetesek        Elofizetes[]
 
   @@index([ingatlanId])
+}
+
+/// Vezetékes tv-, telefon- vagy internetelőfizetés a bérleményhez.
+///
+/// Opcionális: egy albérlethez lehet nulla és lehet három is. Az előfizető
+/// kétféle lehet, és a kettő nem ugyanaz. Ha a bérbeadó az előfizető, a
+/// szolgáltatóval ő szerződik, a számla az ő nevére jön, és a bérlő neki
+/// téríti meg: ez havi előírás lesz. Ha a bérlő az előfizető, ő maga
+/// szerződik és maga fizet, a bérbeadó csak hozzájárul — ilyenkor pénz nem
+/// megy át az alkalmazáson, de a szerződésbe attól még be kell kerülnie,
+/// mert a létesítés és a megszüntetés a bérleményt érinti.
+///
+/// A megnevezés szabad szöveg, mert a csomagok neve kimeríthetetlen
+/// („Telekom 500/100 + tévé"), és a bérbeadó úgyis a számláról másolja.
+model Elofizetes {
+  id           String    @id @default(cuid())
+  jogviszonyId String
+  fajta        String // "tv" | "telefon" | "internet" | "egyeb"
+  megnevezes   String
+  szolgaltato  String?
+  elofizeto    String // "berbeado" | "berlo"
+  haviDijFt    Int       @default(0)
+  kezdete      DateTime
+  vege         DateTime?
+  letrehozva   DateTime  @default(now())
+
+  jogviszony   Jogviszony             @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  jovahagyasok ElofizetesJovahagyas[]
+
+  @@index([jogviszonyId])
+}
+
+/// A bérlő nyilatkozata egy előfizetésről.
+///
+/// Ugyanaz a kétoldali elv, mint a befizetésnél és a fényképnél: a bérbeadó
+/// beállítja, a bérlő pedig a saját adatával mondja rá, hogy rendben van-e.
+/// A kifogás nem törli az előfizetést, és indoklás nélkül nincs: abból a
+/// bérbeadó nem tudna kiindulni.
+model ElofizetesJovahagyas {
+  id           String   @id @default(cuid())
+  elofizetesId String
+  berloId      String
+  allapot      String // "jovahagyva" | "kifogasolt"
+  indoklas     String?
+  letrehozva   DateTime @default(now())
+
+  elofizetes Elofizetes  @relation(fields: [elofizetesId], references: [id], onDelete: Cascade)
+  berlo      Felhasznalo @relation(fields: [berloId], references: [id], onDelete: Cascade)
+
+  @@unique([elofizetesId, berloId])
+  @@index([berloId])
 }
 
 /// Egy jogviszonyhoz több bérlő is tartozhat: diáktársak, élettársak, házaspár.
@@ -253,8 +306,12 @@ model Meghivo {
 model EloirtTetel {
   id           String   @id @default(cuid())
   jogviszonyId String
-  tipus        String // "berleti_dij" | "kozos_koltseg" | "rezsi_atalany" | "egyeb"
+  tipus        String // "berleti_dij" | "kozos_koltseg" | "rezsi_atalany" | "elofizetes" | "egyeb"
   idoszak      String // "2026-09"
+  // Melyik sorból jön az előírás, ha egy típusból több is lehet egy hónapban.
+  // Üres szöveg, nem null: a null az egyediségi kulcsban külön értéknek
+  // számítana, és ugyanarra a hónapra kétszer is beengedné a bérleti díjat.
+  forrasId     String   @default("")
   esedekesseg  DateTime
   osszegFt     Int
   // Miért ennyi, ha nem a teljes havi összeg (töredékhónap). Szótárkulcs és
@@ -267,7 +324,7 @@ model EloirtTetel {
   berbeadoiIgazolasok BerbeadoiIgazolas[]
   bizonylatok         Bizonylat[]
 
-  @@unique([jogviszonyId, tipus, idoszak])
+  @@unique([jogviszonyId, tipus, idoszak, forrasId])
   @@index([esedekesseg])
 }
 
@@ -420,10 +477,20 @@ model Teendo {
 ///
 /// Véglegesítéskor viszont a teljes szöveget befagyasztjuk: amit a felek
 /// aláírtak, azt egy későbbi modulfrissítés nem írhatja át.
+/// A szerződés és a záradéka ugyanaz a tábla.
+///
+/// A záradék egy hatályos szerződést kiegészítő külön okirat: ugyanabból a
+/// modulkatalógusból épül, ugyanúgy véglegesül és fagy be, ugyanúgy kerül a
+/// dokumentumtárba, és a bérlő ugyanúgy csak véglegesítés után látja. Külön
+/// táblában ugyanez a viselkedés még egyszer meg lenne írva, és a második
+/// példány előbb-utóbb elmaradna az elsőtől.
 model Szerzodes {
   id             String    @id @default(cuid())
   jogviszonyId   String
   megnevezes     String
+  fajta          String    @default("szerzodes") // "szerzodes" | "zaradek"
+  /// Melyik véglegesített szerződést egészíti ki. Csak záradéknál van kitöltve.
+  alapSzerzodesId String?
   allapot        String    @default("tervezet") // "tervezet" | "veglegesitve"
   kelteHelye     String    @default("")
   kelte          DateTime?
@@ -435,8 +502,11 @@ model Szerzodes {
   jogviszony  Jogviszony           @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
   modulok     SzerzodesModul[]
   parameterek SzerzodesParameter[]
+  alap        Szerzodes?           @relation("Zaradekai", fields: [alapSzerzodesId], references: [id], onDelete: Cascade)
+  zaradekai   Szerzodes[]          @relation("Zaradekai")
 
   @@index([jogviszonyId])
+  @@index([alapSzerzodesId])
 }
 
 /// Egy szerződésbe bekapcsolt modul. Csak a bekapcsoltak kerülnek sorba; a

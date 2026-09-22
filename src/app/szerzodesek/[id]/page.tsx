@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MODULOK } from "@/domain/szerzodes-modulok";
-import { hianyzoAdatok, szakaszok, zaradekSorok } from "@/domain/szerzodes-keszites";
+import {
+  hianyzoAdatok,
+  szakaszok,
+  alairasSorok,
+  zaradekBevezeto,
+  ZARADEK_ZARO,
+} from "@/domain/szerzodes-keszites";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { szerzodesBemenet } from "@/lib/szerzodes";
@@ -10,6 +16,7 @@ import {
   ParameterUrlap,
   VeglegesitesUrlap,
   VisszavonasUrlap,
+  ZaradekUrlap,
   type ModulCimkek,
   type ParameterNezet,
 } from "./Urlapok";
@@ -32,9 +39,12 @@ export default async function SzerzodesOldal({
   const betoltott = await szerzodesBemenet(id, berbeado.id);
   if (!betoltott) notFound();
 
-  const { bemenet, megnevezes, allapot, veglegesSzoveg } = betoltott;
-  const kotelezoek = MODULOK.filter((modul) => modul.kotelezo);
-  const valaszthato = MODULOK.filter((modul) => !modul.kotelezo);
+  const { bemenet, megnevezes, allapot, veglegesSzoveg, fajta } = betoltott;
+  // A záradék nem egy második teljes szerződés: kötelező pontja nincs, és
+  // amit a felek már aláírtak, azt nem írjuk le újra.
+  const zaradek = fajta === "zaradek";
+  const kotelezoek = zaradek ? [] : MODULOK.filter((modul) => modul.kotelezo);
+  const valaszthato = zaradek ? MODULOK : MODULOK.filter((modul) => !modul.kotelezo);
   const szerkesztheto = allapot === "tervezet";
   const valasztott = new Set(bemenet.valasztottModulok);
   const hianyok = hianyzoAdatok(bemenet);
@@ -42,7 +52,7 @@ export default async function SzerzodesOldal({
   // Csak a bekerülő modulok paramétereit kérjük be: a kikapcsolt modul kérdései
   // csak zavarnának.
   const parameterek: ParameterNezet[] = MODULOK.filter(
-    (modul) => modul.kotelezo || valasztott.has(modul.kulcs),
+    (modul) => (modul.kotelezo && !zaradek) || valasztott.has(modul.kulcs),
   ).flatMap((modul) =>
     modul.parameterek.map((parameter) => ({
       kulcs: parameter.kulcs,
@@ -80,6 +90,17 @@ export default async function SzerzodesOldal({
         <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
           {sz(szerkesztheto ? "szerzodes.tervezet_sugo" : "szerzodes.vegleges_sugo")}
         </p>
+        {/*
+          A záradék önmagában nem értelmezhető: az olvasónak tudnia kell, melyik
+          szerződéshez tartozik, és hogy a többi pont változatlanul hatályban marad.
+        */}
+        {zaradek ? (
+          <p className="mt-2 rounded border border-stone-300 bg-stone-50 p-3 text-sm dark:border-stone-700 dark:bg-stone-900">
+            {bemenet.alap
+              ? sz("szerzodes.zaradek_alapja", { nev: bemenet.alap.megnevezes })
+              : sz("szerzodes.zaradek_sugo")}
+          </p>
+        ) : null}
       </section>
 
       <section className="rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
@@ -233,6 +254,14 @@ export default async function SzerzodesOldal({
           </pre>
         ) : (
           <div className="mt-3 grid gap-4 text-sm leading-relaxed">
+            {/*
+              A záradék bevezetője és záró mondata nem modul, hanem a záradék
+              elhagyhatatlan része; a tervezetben is látszania kell, különben a
+              bérbeadó csak a véglegesítés után látná, mit ír alá.
+            */}
+            {zaradek ? (
+              <p className="text-stone-700 dark:text-stone-300">{zaradekBevezeto(bemenet)}</p>
+            ) : null}
             {kesz.map((szakasz) => (
               <article key={szakasz.kulcs}>
                 <h3 className="font-medium">
@@ -245,8 +274,11 @@ export default async function SzerzodesOldal({
                 ))}
               </article>
             ))}
+            {zaradek ? (
+              <p className="text-stone-700 dark:text-stone-300">{ZARADEK_ZARO}</p>
+            ) : null}
             <pre className="whitespace-pre-wrap border-t border-stone-200 pt-4 text-stone-700 dark:border-stone-800 dark:text-stone-300">
-              {zaradekSorok(bemenet).join("\n")}
+              {alairasSorok(bemenet).join("\n")}
             </pre>
           </div>
         )}
@@ -264,13 +296,26 @@ export default async function SzerzodesOldal({
             }}
           />
         ) : (
-          <VisszavonasUrlap
-            szerzodesId={id}
-            cimkek={{
-              gomb: sz("szerzodes.vissza_tervezetre"),
-              folyamatban: sz("szerzodes.visszaallitom"),
-            }}
-          />
+          <>
+            <VisszavonasUrlap
+              szerzodesId={id}
+              cimkek={{
+                gomb: sz("szerzodes.vissza_tervezetre"),
+                folyamatban: sz("szerzodes.visszaallitom"),
+              }}
+            />
+            {/* Záradékot csak szerződéshez lehet készíteni, záradékhoz nem. */}
+            {zaradek ? null : (
+              <ZaradekUrlap
+                szerzodesId={id}
+                cimkek={{
+                  sugo: sz("szerzodes.zaradek_miert"),
+                  gomb: sz("szerzodes.zaradek_gomb"),
+                  folyamatban: sz("szerzodes.zaradekot_keszitek"),
+                }}
+              />
+            )}
+          </>
         )}
       </section>
     </div>
