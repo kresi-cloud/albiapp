@@ -10,6 +10,7 @@ import {
   hatralevoNap,
   irhato,
   nezet,
+  parosaEnnek,
   pontja,
   szempontNeve,
   allapotMondata,
@@ -29,9 +30,9 @@ function ertekeles(szerzoId: string, alanyId: string): ErtekelesAdat {
     alanyId,
     irany: szerzoId === "berbeado" ? "berlorol" : "berbeadorol",
     szoveg: "Rendben ment.",
-    pontok: SZEMPONTOK[szerzoId === "berbeado" ? "berlorol" : "berbeadorol"].map(
-      (szempont) => ({ szempont, pont: 4 }),
-    ),
+    pontok: SZEMPONTOK[
+      szerzoId === "berbeado" ? "berlorol" : "berbeadorol"
+    ].map((szempont) => ({ szempont, pont: 4 })),
     letrehozva: nappal(1),
   };
 }
@@ -67,7 +68,10 @@ describe("az értékelés ideje", () => {
 
 describe("a vakság", () => {
   it("egy megírt értékeléstől még nem fedjük fel a másikat", () => {
-    const paros: Paros = { sajat: ertekeles("berbeado", "berlo"), masike: null };
+    const paros: Paros = {
+      sajat: ertekeles("berbeado", "berlo"),
+      masike: null,
+    };
     expect(felfedve(paros, VEGE, nappal(2))).toBe(false);
     expect(allapota(paros, VEGE, nappal(2))).toBe("varakozik");
   });
@@ -81,7 +85,10 @@ describe("a vakság", () => {
     expect(nezet(paros, VEGE, nappal(2)).masike).not.toBeNull();
 
     // De ha csak a másiké van meg, azt nem adjuk ki.
-    const csakMasike: Paros = { sajat: null, masike: ertekeles("berlo", "berbeado") };
+    const csakMasike: Paros = {
+      sajat: null,
+      masike: ertekeles("berlo", "berbeado"),
+    };
     const lathato = nezet(csakMasike, VEGE, nappal(2));
     expect(lathato.allapot).toBe("irhato");
     expect(lathato.masike).toBeNull();
@@ -96,7 +103,10 @@ describe("a vakság", () => {
   });
 
   it("az ablak letelte a hallgatást is felfedi", () => {
-    const paros: Paros = { sajat: null, masike: ertekeles("berlo", "berbeado") };
+    const paros: Paros = {
+      sajat: null,
+      masike: ertekeles("berlo", "berbeado"),
+    };
     expect(allapota(paros, VEGE, nappal(ABLAK_NAP + 1))).toBe("lathato");
     expect(nezet(paros, VEGE, nappal(ABLAK_NAP + 1)).masike).not.toBeNull();
   });
@@ -108,7 +118,10 @@ describe("a vakság", () => {
 
 describe("a módosíthatóság", () => {
   it("felfedésig a saját értékelés módosítható", () => {
-    const paros: Paros = { sajat: ertekeles("berbeado", "berlo"), masike: null };
+    const paros: Paros = {
+      sajat: ertekeles("berbeado", "berlo"),
+      masike: null,
+    };
     expect(irhato(paros, VEGE, nappal(5))).toBe(true);
   });
 
@@ -145,24 +158,38 @@ describe("az ellenőrzés", () => {
   });
 
   it("minden szempontot meg kell adni", () => {
-    expect(ellenoriz({ ...jo, pontok: jo.pontok.slice(1) })).toContain("hianyzo_szempont");
+    expect(ellenoriz({ ...jo, pontok: jo.pontok.slice(1) })).toContain(
+      "hianyzo_szempont",
+    );
   });
 
   it("a másik irány szempontja ide nem való", () => {
     expect(
-      ellenoriz({ ...jo, pontok: [...jo.pontok, { szempont: "elszamolas", pont: 3 }] }),
+      ellenoriz({
+        ...jo,
+        pontok: [...jo.pontok, { szempont: "elszamolas", pont: 3 }],
+      }),
     ).toContain("ismeretlen_szempont");
   });
 
   it("a tartományon kívüli pont nem megy át", () => {
     expect(
-      ellenoriz({ ...jo, pontok: jo.pontok.map((sor) => ({ ...sor, pont: 6 })) }),
+      ellenoriz({
+        ...jo,
+        pontok: jo.pontok.map((sor) => ({ ...sor, pont: 6 })),
+      }),
     ).toContain("tartomanyon_kivul");
     expect(
-      ellenoriz({ ...jo, pontok: jo.pontok.map((sor) => ({ ...sor, pont: 0 })) }),
+      ellenoriz({
+        ...jo,
+        pontok: jo.pontok.map((sor) => ({ ...sor, pont: 0 })),
+      }),
     ).toContain("tartomanyon_kivul");
     expect(
-      ellenoriz({ ...jo, pontok: jo.pontok.map((sor) => ({ ...sor, pont: 4.5 })) }),
+      ellenoriz({
+        ...jo,
+        pontok: jo.pontok.map((sor) => ({ ...sor, pont: 4.5 })),
+      }),
     ).toContain("tartomanyon_kivul");
   });
 });
@@ -184,12 +211,18 @@ describe("a szempontok", () => {
     expect(szempontNeve("berlorol", "fizetes").kulcs).toBe(
       "ertekeles.szempont.berlorol.fizetes",
     );
-    expect(allapotMondata("varakozik").kulcs).toBe("ertekeles.allapot.varakozik");
+    expect(allapotMondata("varakozik").kulcs).toBe(
+      "ertekeles.allapot.varakozik",
+    );
   });
 });
 
 describe("az értékelés teendője", () => {
-  const alap = { jogviszonyId: "jv1", masikFelId: "berlo", cimke: "Ferencvárosi garzon" };
+  const alap = {
+    jogviszonyId: "jv1",
+    masikFelId: "berlo",
+    cimke: "Ferencvárosi garzon",
+  };
 
   it("amíg nincs megírva és nyitva az ablak, teendő van belőle", () => {
     const teendok = ertekelesTeendoi(
@@ -203,21 +236,32 @@ describe("az értékelés teendője", () => {
   });
 
   it("a megírt értékelés után eltűnik", () => {
-    const paros: Paros = { sajat: ertekeles("berbeado", "berlo"), masike: null };
-    expect(ertekelesTeendoi([{ ...alap, vege: VEGE, paros }], "berbeado", nappal(2))).toEqual(
-      [],
-    );
+    const paros: Paros = {
+      sajat: ertekeles("berbeado", "berlo"),
+      masike: null,
+    };
+    expect(
+      ertekelesTeendoi([{ ...alap, vege: VEGE, paros }], "berbeado", nappal(2)),
+    ).toEqual([]);
   });
 
   it("a futó jogviszonyból nincs teendő", () => {
-    expect(ertekelesTeendoi([{ ...alap, vege: null, paros: URES }], "berbeado", nappal(2))).toEqual(
-      [],
-    );
+    expect(
+      ertekelesTeendoi(
+        [{ ...alap, vege: null, paros: URES }],
+        "berbeado",
+        nappal(2),
+      ),
+    ).toEqual([]);
   });
 
   it("az ablak letelte után sincs", () => {
     expect(
-      ertekelesTeendoi([{ ...alap, vege: VEGE, paros: URES }], "berbeado", nappal(ABLAK_NAP + 1)),
+      ertekelesTeendoi(
+        [{ ...alap, vege: VEGE, paros: URES }],
+        "berbeado",
+        nappal(ABLAK_NAP + 1),
+      ),
     ).toEqual([]);
   });
 
@@ -228,5 +272,82 @@ describe("az értékelés teendője", () => {
       nappal(2),
     );
     expect(teendok[0].esedekesseg.getTime()).toBe(nappal(ABLAK_NAP).getTime());
+  });
+});
+
+describe("a páros összeállítása", () => {
+  const ma = new Date("2026-09-22T00:00:00Z");
+  const vege = new Date("2026-09-12T00:00:00Z");
+
+  function sor(
+    szerzoId: string,
+    alanyId: string,
+    szoveg: string,
+  ): ErtekelesAdat {
+    return {
+      szerzoId,
+      alanyId,
+      irany: szerzoId === "berbeado" ? "berlorol" : "berbeadorol",
+      szoveg,
+      pontok: [],
+      letrehozva: new Date("2026-09-15T00:00:00Z"),
+    };
+  }
+
+  it("a szerző és az alany együtt azonosít, nem a szerző egymagában", () => {
+    // Két fiókos lakótárs egy jogviszonyon: a bérbeadó mindkettőről írt.
+    const sorok = [
+      sor("berbeado", "anna", "Anna mindig időben fizetett."),
+      sor("berbeado", "panna", "Pannával nehéz volt egyeztetni."),
+    ];
+
+    const annae = parosaEnnek(sorok, "anna", "berbeado");
+    expect(annae.masike?.szoveg).toBe("Anna mindig időben fizetett.");
+
+    const pannae = parosaEnnek(sorok, "panna", "berbeado");
+    expect(pannae.masike?.szoveg).toBe("Pannával nehéz volt egyeztetni.");
+  });
+
+  it("a lakótársról szóló értékelés nem zárja le a másik űrlapját", () => {
+    // A hiba ez volt: csak a szerzőre szűrve Anna párosa késznek látszott a
+    // Pannáról szóló értékeléstől, és Anna nem tudott írni.
+    const sorok = [sor("berbeado", "panna", "Pannáról szól, nem Annáról.")];
+    const annae = parosaEnnek(sorok, "anna", "berbeado");
+
+    expect(annae.sajat).toBeNull();
+    expect(annae.masike).toBeNull();
+    expect(irhato(annae, vege, ma)).toBe(true);
+    expect(felfedve(annae, vege, ma)).toBe(false);
+  });
+
+  it("a saját értékelés is a másik félről szóló, nem akármelyik sajátom", () => {
+    // A bérbeadó mindkét lakótársról írt: az „Annáról szóló" az ő párosa.
+    const sorok = [
+      sor("berbeado", "anna", "Annáról."),
+      sor("berbeado", "panna", "Pannáról."),
+    ];
+    expect(parosaEnnek(sorok, "berbeado", "panna").sajat?.szoveg).toBe(
+      "Pannáról.",
+    );
+  });
+
+  it("fiók nélküli bérlőnél nincs páros", () => {
+    const sorok = [sor("berbeado", "anna", "Annáról.")];
+    expect(parosaEnnek(sorok, "berbeado", null)).toEqual({
+      sajat: null,
+      masike: null,
+    });
+  });
+
+  it("teljes páros esetén mindkét oldal megvan", () => {
+    const sorok = [
+      sor("berbeado", "anna", "Annáról."),
+      sor("anna", "berbeado", "A bérbeadóról."),
+      sor("berbeado", "panna", "Pannáról."),
+    ];
+    const annae = parosaEnnek(sorok, "anna", "berbeado");
+    expect(annae.sajat?.szoveg).toBe("A bérbeadóról.");
+    expect(annae.masike?.szoveg).toBe("Annáról.");
+    expect(felfedve(annae, vege, ma)).toBe(true);
   });
 });

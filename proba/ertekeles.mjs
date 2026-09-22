@@ -23,6 +23,20 @@ export const nev = "Kölcsönös értékelés";
 const ESZTER_MONDATA = "A csöpögő csapot két napon belül megcsinálta";
 const BERBEADO_SZOVEGE =
   "Pontosan fizetett, a lakást tisztán adta vissza, és mindenről előre szólt.";
+/** A lakótársról szóló értékelés egy darabja. Ez Eszter lapján hiba lenne. */
+const MARTON_MONDATA = "Mártonnal a közös költség elszámolása körül";
+
+/**
+ * Egy bérlő kártyája a lapon. Két fiókos lakótársnál **két** kártya van
+ * ugyanarra a bérletre, és a lap egészére szűrni félrevezet: a lakótárs
+ * kártyáján is ott a saját értékelés meg az űrlap.
+ */
+function kartyaja(oldal, nev) {
+  return oldal
+    .locator("section")
+    .filter({ hasText: `A másik fél: ${nev}` })
+    .first();
+}
 
 async function lap(oldal) {
   await oldal.goto(`${ALAP}/ertekelesek`);
@@ -52,7 +66,10 @@ async function berbeadoOldal(oldal) {
   // Önpróba: a keresett mondat egyáltalán megtalálható-e, ha ott van. Enélkül
   // a „nincs ott" állítás akkor is igaz lenne, ha a keresés mindig üres.
   const vanEszterAdatban = (await forras(oldal)).includes("Tóth Eszter");
-  all(vanEszterAdatban, "a másik fél neve ott áll a lapon (tehát a keresés működik)");
+  all(
+    vanEszterAdatban,
+    "a másik fél neve ott áll a lapon (tehát a keresés működik)",
+  );
 
   return oldal;
 }
@@ -80,7 +97,11 @@ async function pontot(urlap, szempont, pont) {
 }
 
 async function urlapotKitolt(oldal) {
-  const urlap = oldal.locator('form:has(textarea[name="szoveg"])').first();
+  // Eszter kártyájának űrlapja, nem a lap első űrlapja: a lakótárs kártyáján
+  // is áll egy, és a kettő nem cserélhető fel.
+  const urlap = kartyaja(oldal, "Tóth Eszter")
+    .locator('form:has(textarea[name="szoveg"])')
+    .first();
   all((await urlap.count()) > 0, "van űrlap a saját értékelés megírásához");
 
   // A pontot a feliratára koppintva adjuk meg, ahogy a felhasználó is: a
@@ -94,14 +115,18 @@ async function urlapotKitolt(oldal) {
   await oldal.waitForLoadState("networkidle");
   await oldal.waitForTimeout(400);
 
-  const elutasitas = oldal.locator('form:has(textarea[name="szoveg"])').first();
+  const elutasitas = kartyaja(oldal, "Tóth Eszter")
+    .locator('form:has(textarea[name="szoveg"])')
+    .first();
   all(
-    (await elutasitas.getByText("pontszám magyarázat nélkül nincs").count()) > 0 ||
-      (await elutasitas.getByText(/magyarázat nélkül/).count()) > 0,
+    (await elutasitas.getByText("pontszám magyarázat nélkül nincs").count()) >
+      0 || (await elutasitas.getByText(/magyarázat nélkül/).count()) > 0,
     "magyarázat nélkül a kiszolgáló nem menti el az értékelést",
   );
   all(
-    (await elutasitas.locator('input[name="pont_fizetes"][value="5"]').isChecked()) === true,
+    (await elutasitas
+      .locator('input[name="pont_fizetes"][value="5"]')
+      .isChecked()) === true,
     "az elutasított mentés nem viszi el a bejelölt pontokat",
   );
 
@@ -118,7 +143,13 @@ export async function futtat(oldal) {
   // szövege: pont az a kérdés. A saját értékelés megléte a jele, és az a
   // szivárgástól független. Enélkül egy szivárgó kiszolgáló csak kihagyatná a
   // vakságpróbát, és a kapu zöld maradna arra, amit mérni akarunk vele.
-  const sajatMegvan = (await oldal.getByText("Amit te írtál").count()) > 0;
+  const eszterKartya = kartyaja(oldal, "Tóth Eszter");
+  all(
+    (await eszterKartya.count()) > 0,
+    "Eszter kártyája megvan a bérbeadó lapján",
+  );
+  const sajatMegvan =
+    (await eszterKartya.getByText("Amit te írtál").count()) > 0;
   if (!sajatMegvan) {
     await vakEllenorzes(oldal);
     all(
@@ -131,8 +162,14 @@ export async function futtat(oldal) {
 
   // A saját értékelés megírása után mindkettő ott van.
   const tartalom = await forras(oldal);
-  all(tartalom.includes(ESZTER_MONDATA), "a saját értékelés megírása felfedi a másikét");
-  all(tartalom.includes(BERBEADO_SZOVEGE), "a saját értékelés is ott marad a lapon");
+  all(
+    tartalom.includes(ESZTER_MONDATA),
+    "a saját értékelés megírása felfedi a másikét",
+  );
+  all(
+    tartalom.includes(BERBEADO_SZOVEGE),
+    "a saját értékelés is ott marad a lapon",
+  );
   all(
     (await oldal.getByText("Felfedve").count()) > 0,
     "a lap kiírja, hogy az értékelések felfedődtek",
@@ -141,7 +178,9 @@ export async function futtat(oldal) {
   // Felfedés után az űrlap eltűnik: amit a másik fél elolvasott, azt nem
   // írjuk át. Ez a kiszolgálón is áll, de a lapnak sem szabad felkínálnia.
   all(
-    (await oldal.locator('form:has(textarea[name="szoveg"])').count()) === 0,
+    (await kartyaja(oldal, "Tóth Eszter")
+      .locator('form:has(textarea[name="szoveg"])')
+      .count()) === 0,
     "felfedés után nincs mit módosítani az űrlapon",
   );
 
@@ -149,11 +188,47 @@ export async function futtat(oldal) {
   await belep(oldal, "eszter@pelda.hu");
   await magyarra(oldal);
   await lap(oldal);
-  all((await tullogas(oldal)) <= 1, "a bérlő értékeléslapja is elfér 360 képponton");
+  all(
+    (await tullogas(oldal)) <= 1,
+    "a bérlő értékeléslapja is elfér 360 képponton",
+  );
 
   const berloTartalom = await forras(oldal);
-  all(berloTartalom.includes(ESZTER_MONDATA), "a bérlő látja a saját értékelését");
-  all(berloTartalom.includes(BERBEADO_SZOVEGE), "a bérlő látja a róla szólót is");
+  all(
+    berloTartalom.includes(ESZTER_MONDATA),
+    "a bérlő látja a saját értékelését",
+  );
+  all(
+    berloTartalom.includes(BERBEADO_SZOVEGE),
+    "a bérlő látja a róla szólót is",
+  );
+  // A lényeg, amiért a lakótárs egyáltalán a példaadatban van: a bérbeadónak
+  // ugyanerre a bérletre két értékelése van, és a másikról szóló nem kerülhet
+  // ide. Csak a szerzőre párosítva pont ez történt.
+  all(
+    !berloTartalom.includes(MARTON_MONDATA),
+    "a lakótársról szóló értékelés nem jelenik meg a másik bérlő lapján",
+  );
+
+  // A lakótárs oldala: ő még nem írt, tehát a róla szólót sem látja, és az
+  // űrlapja nyitva van. Ez a hiba másik fele volt: Eszter űrlapja lezárult,
+  // mert a páros a lakótárs értékelésétől késznek látszott.
+  await belep(oldal, "marton@pelda.hu");
+  await magyarra(oldal);
+  await lap(oldal);
+  const martonTartalom = await forras(oldal);
+  all(
+    !martonTartalom.includes(MARTON_MONDATA),
+    "a lakótárs sem látja a róla szólót, amíg nem írta meg a sajátját",
+  );
+  all(
+    !martonTartalom.includes(ESZTER_MONDATA),
+    "és a lakótárs értékelése sem szivárog át hozzá",
+  );
+  all(
+    (await oldal.locator('form:has(textarea[name="szoveg"])').count()) > 0,
+    "a lakótárs űrlapja nyitva van: a másik értékelése nem zárja le",
+  );
 
   // Anna futó bérlete nem kerül ide: értékelni a lezárás után lehet.
   await belep(oldal, "anna@pelda.hu");
