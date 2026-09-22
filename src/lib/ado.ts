@@ -46,8 +46,8 @@ function evbenVan(nap: Date, ev: number): boolean {
 
 /**
  * Az év adóösszesítője. A bevétel pénzforgalmi: az számít, ami tényleg
- * megérkezett, ezért a kivonattételekből indulunk ki, és az egyeztetés mondja
- * meg, melyik előíráshoz tartoznak.
+ * megérkezett, ezért a bérbeadó által igazolt beérkezésekből indulunk ki, és az
+ * egyeztetés mondja meg, melyik előíráshoz tartoznak.
  */
 export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
   const beallitasok = await egyeztetesBeallitasok(tulajdonosId);
@@ -59,7 +59,7 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
       ingatlan: true,
       eloirtTetelek: { orderBy: { esedekesseg: "asc" } },
       berloiIgazolasok: { orderBy: { utalasDatuma: "asc" } },
-      kivonattetelek: { orderBy: { konyvelesDatuma: "asc" } },
+      berbeadoiIgazolasok: { orderBy: { erkezesDatuma: "asc" } },
       elszamolasok: { include: { tetelek: true } },
     },
   });
@@ -71,13 +71,15 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
     const eredmeny = egyeztet(
       jogviszony.eloirtTetelek,
       jogviszony.berloiIgazolasok,
-      jogviszony.kivonattetelek,
+      jogviszony.berbeadoiIgazolasok,
       evVege,
       beallitasok,
     );
 
     const eloirasok = new Map(jogviszony.eloirtTetelek.map((tetel) => [tetel.id, tetel]));
-    const kivonatok = new Map(jogviszony.kivonattetelek.map((tetel) => [tetel.id, tetel]));
+    const berbeadoiak = new Map(
+      jogviszony.berbeadoiIgazolasok.map((tetel) => [tetel.id, tetel]),
+    );
 
     // Előírt tételenként: mennyi volt az elszámolásban a mért fogyasztás, és
     // mennyi az egész. Ebből osztjuk meg a befizetést.
@@ -100,18 +102,20 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
     }
 
     for (const sor of eredmeny) {
-      if (!sor.kivonattetelId) continue;
-      const kivonat = kivonatok.get(sor.kivonattetelId);
-      if (!kivonat || !evbenVan(kivonat.konyvelesDatuma, ev)) continue;
+      if (!sor.berbeadoiIgazolasId) continue;
+      const beerkezes = berbeadoiak.get(sor.berbeadoiIgazolasId);
+      // A tagadás nem pénzmozgás: abból nem lesz bevétel.
+      if (!beerkezes || !beerkezes.megerkezett) continue;
+      if (!evbenVan(beerkezes.erkezesDatuma, ev)) continue;
 
       const eloiras = sor.eloirtTetelId ? eloirasok.get(sor.eloirtTetelId) : undefined;
 
       if (!eloiras) {
         besorolatlan.push({
-          datum: kivonat.konyvelesDatuma,
-          osszegFt: kivonat.osszegFt,
+          datum: beerkezes.erkezesDatuma,
+          osszegFt: beerkezes.osszegFt,
           megjegyzes:
-            kivonat.kozlemeny?.trim() ||
+            beerkezes.kozlemeny?.trim() ||
             "Beérkezett utalás, amihez nem tartozik előírt tétel. Döntsd el, bevétel-e.",
         });
         continue;
@@ -126,13 +130,13 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
           csakKozosKoltseg: false,
         };
         const { mertReszFt, egyebReszFt } = rezsitMegoszt(
-          kivonat.osszegFt,
+          beerkezes.osszegFt,
           arany.mertFt,
           arany.osszesFt,
         );
         if (mertReszFt > 0) {
           beerkezett.push({
-            datum: kivonat.konyvelesDatuma,
+            datum: beerkezes.erkezesDatuma,
             osszegFt: mertReszFt,
             fajta: "rezsi",
             megnevezes: `${megnevezes} · mért fogyasztás`,
@@ -141,7 +145,7 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
         }
         if (egyebReszFt > 0) {
           beerkezett.push({
-            datum: kivonat.konyvelesDatuma,
+            datum: beerkezes.erkezesDatuma,
             osszegFt: egyebReszFt,
             fajta: arany.csakKozosKoltseg ? "kozos_koltseg" : "rezsi",
             megnevezes: `${megnevezes} · ${arany.csakKozosKoltseg ? "közös költség" : "átalány és közös költség"}`,
@@ -159,8 +163,8 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
             : "egyeb";
 
       beerkezett.push({
-        datum: kivonat.konyvelesDatuma,
-        osszegFt: kivonat.osszegFt,
+        datum: beerkezes.erkezesDatuma,
+        osszegFt: beerkezes.osszegFt,
         fajta,
         megnevezes,
       });
@@ -227,11 +231,11 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
 
 /** Mely évekre van egyáltalán adatunk. */
 export async function adoEvek(tulajdonosId: string): Promise<number[]> {
-  const tetelek = await prisma.kivonattetel.findMany({
-    where: { tulajdonosId },
-    select: { konyvelesDatuma: true },
+  const tetelek = await prisma.berbeadoiIgazolas.findMany({
+    where: { tulajdonosId, megerkezett: true },
+    select: { erkezesDatuma: true },
   });
-  const evek = new Set(tetelek.map((tetel) => tetel.konyvelesDatuma.getUTCFullYear()));
+  const evek = new Set(tetelek.map((tetel) => tetel.erkezesDatuma.getUTCFullYear()));
   evek.add(new Date().getUTCFullYear());
   return [...evek].sort((a, b) => b - a);
 }

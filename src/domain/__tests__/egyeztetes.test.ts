@@ -4,9 +4,10 @@ import {
   ablakotEllenoriz,
   ALAPERTELMEZETT_BEALLITASOK,
   egyeztet,
+  KET_OLDAL_NAP_ELTERES,
+  type BerbeadoiIgazolas,
   type BerloiIgazolas,
   type EloirtTetel,
-  type Kivonattetel,
 } from "../egyeztetes";
 
 const MA = new Date(Date.UTC(2026, 8, 20)); // 2026. szeptember 20.
@@ -22,193 +23,324 @@ function eloiras(reszlet: Partial<EloirtTetel> = {}): EloirtTetel {
   };
 }
 
-function kivonat(reszlet: Partial<Kivonattetel> = {}): Kivonattetel {
+/** Amit a bérbeadó mond: megérkezett, ekkor, ennyi. */
+function berbeadoi(reszlet: Partial<BerbeadoiIgazolas> = {}): BerbeadoiIgazolas {
   return {
-    id: "kivonat-1",
-    konyvelesDatuma: new Date(Date.UTC(2026, 8, 5)),
+    id: "berbeadoi-1",
+    megerkezett: true,
+    erkezesDatuma: new Date(Date.UTC(2026, 8, 5)),
     osszegFt: 180000,
     ...reszlet,
   };
 }
 
-function igazolas(reszlet: Partial<BerloiIgazolas> = {}): BerloiIgazolas {
+/** A bérbeadó tagadása: erre az előírásra nem jött pénz. */
+function tagadas(eloirtTetelId = "eloiras-1"): BerbeadoiIgazolas {
   return {
-    id: "igazolas-1",
+    id: "tagadas-1",
+    megerkezett: false,
+    eloirtTetelId,
+    erkezesDatuma: new Date(Date.UTC(2026, 8, 5)),
+    osszegFt: 0,
+  };
+}
+
+/** Amit a bérlő mond: ekkor ennyit utalt. */
+function berloi(reszlet: Partial<BerloiIgazolas> = {}): BerloiIgazolas {
+  return {
+    id: "berloi-1",
     utalasDatuma: new Date(Date.UTC(2026, 8, 4)),
     osszegFt: 180000,
     ...reszlet,
   };
 }
 
-describe("egyeztet", () => {
+describe("egyeztet — a két oldal egyetért", () => {
   it("határidőre érkezett pontos összeget egyezésnek lát", () => {
-    const [eredmeny] = egyeztet([eloiras()], [igazolas()], [kivonat()], MA);
+    const [eredmeny] = egyeztet([eloiras()], [berloi()], [berbeadoi()], MA);
+
     expect(eredmeny.allapot).toBe("egyezik");
-    expect(eredmeny.keses).toBe(0);
-    expect(eredmeny.kivonattetelId).toBe("kivonat-1");
-    expect(eredmeny.berloiIgazolasId).toBe("igazolas-1");
+    expect(eredmeny.elteresFt).toBe(0);
+    expect(eredmeny.magyarazat.kulcs).toBe("egyeztetes.hataridore");
   });
 
-  it("a késve érkezett befizetés egyezik, de a késést megjegyzi", () => {
+  it("egyező tételnél nem kér bizonylatot", () => {
+    const [eredmeny] = egyeztet([eloiras()], [berloi()], [berbeadoi()], MA);
+
+    expect(eredmeny.bizonylatKell).toBe(false);
+  });
+
+  it("a késést napra megmondja", () => {
     const [eredmeny] = egyeztet(
       [eloiras()],
-      [],
-      [kivonat({ konyvelesDatuma: new Date(Date.UTC(2026, 8, 12)) })],
+      [berloi({ utalasDatuma: new Date(Date.UTC(2026, 8, 12)) })],
+      [berbeadoi({ erkezesDatuma: new Date(Date.UTC(2026, 8, 12)) })],
       MA,
     );
+
     expect(eredmeny.allapot).toBe("egyezik");
     expect(eredmeny.keses).toBe(7);
     expect(eredmeny.magyarazat).toEqual({ kulcs: "egyeztetes.keson", adatok: { nap: 7 } });
   });
 
-  it("a kevesebb összeget eltérésként jelzi, és megmondja a különbséget", () => {
-    const [eredmeny] = egyeztet([eloiras()], [], [kivonat({ osszegFt: 175000 })], MA);
+  it("néhány nap dátumeltérést a két fél közt még ugyanannak az utalásnak vesz", () => {
+    const [eredmeny] = egyeztet(
+      [eloiras()],
+      [berloi({ utalasDatuma: new Date(Date.UTC(2026, 8, 4)) })],
+      [berbeadoi({ erkezesDatuma: new Date(Date.UTC(2026, 8, 4 + KET_OLDAL_NAP_ELTERES)) })],
+      MA,
+    );
+
+    expect(eredmeny.allapot).toBe("egyezik");
+  });
+
+  it("ha mindkét fél ugyanazt mondja, de nem az előírt összeget, az eltér, nem vita", () => {
+    const [eredmeny] = egyeztet(
+      [eloiras()],
+      [berloi({ osszegFt: 175000 })],
+      [berbeadoi({ osszegFt: 175000 })],
+      MA,
+    );
+
     expect(eredmeny.allapot).toBe("elter");
     expect(eredmeny.elteresOka).toBe("osszeg");
     expect(eredmeny.elteresFt).toBe(-5000);
+    // A felek egyetértenek abban, mi történt: nincs mit bizonyítani.
+    expect(eredmeny.bizonylatKell).toBe(false);
+    expect(eredmeny.magyarazat).toEqual({
+      kulcs: "egyeztetes.kevesebb",
+      adatok: { osszeg: 5000 },
+    });
   });
 
-  it("ha a bérlő igazolta a befizetést, de a kivonaton nincs, az is eltérés", () => {
-    const [eredmeny] = egyeztet([eloiras()], [igazolas()], [], MA);
+  it("a többletet is jelzi", () => {
+    const [eredmeny] = egyeztet(
+      [eloiras()],
+      [berloi({ osszegFt: 185000 })],
+      [berbeadoi({ osszegFt: 185000 })],
+      MA,
+    );
+
     expect(eredmeny.allapot).toBe("elter");
-    expect(eredmeny.elteresOka).toBe("nincs_kivonattetel");
-    expect(eredmeny.berloiIgazolasId).toBe("igazolas-1");
+    expect(eredmeny.magyarazat).toEqual({ kulcs: "egyeztetes.tobb", adatok: { osszeg: 5000 } });
+  });
+});
+
+describe("egyeztet — a két oldal nem egyezik", () => {
+  it("eltérő összegnél vitás lesz, és bizonylatot kér", () => {
+    const [eredmeny] = egyeztet(
+      [eloiras()],
+      [berloi({ osszegFt: 180000 })],
+      [berbeadoi({ osszegFt: 175000 })],
+      MA,
+    );
+
+    expect(eredmeny.allapot).toBe("vitas");
+    expect(eredmeny.elteresOka).toBe("ket_oldal_elter");
+    expect(eredmeny.bizonylatKell).toBe(true);
+    expect(eredmeny.magyarazat).toEqual({
+      kulcs: "egyeztetes.ket_oldal_elter",
+      adatok: { berlo: 180000, berbeado: 175000 },
+    });
   });
 
-  it("lejárt esedékességre, befizetés nélkül, hiányzik", () => {
+  it("túl távoli dátumnál sem mondjuk ugyanannak a két utalást", () => {
+    const [eredmeny] = egyeztet(
+      [eloiras()],
+      [berloi({ utalasDatuma: new Date(Date.UTC(2026, 8, 1)) })],
+      [berbeadoi({ erkezesDatuma: new Date(Date.UTC(2026, 8, 1 + KET_OLDAL_NAP_ELTERES + 1)) })],
+      MA,
+    );
+
+    expect(eredmeny.allapot).toBe("vitas");
+    expect(eredmeny.elteresOka).toBe("ket_oldal_elter");
+  });
+
+  it("ha a bérlő szerint elment, a bérbeadó szerint nem jött meg, az vitás", () => {
+    const [eredmeny] = egyeztet([eloiras()], [berloi()], [tagadas()], MA);
+
+    expect(eredmeny.allapot).toBe("vitas");
+    expect(eredmeny.elteresOka).toBe("nem_erkezett_meg");
+    expect(eredmeny.bizonylatKell).toBe(true);
+    expect(eredmeny.magyarazat.kulcs).toBe("egyeztetes.nem_erkezett_meg");
+  });
+});
+
+describe("egyeztet — csak az egyik fél nyilatkozott", () => {
+  it("a bérlő megadta, a bérbeadó még nem: várakozik, és nincs bizonylatkérés", () => {
+    const [eredmeny] = egyeztet([eloiras()], [berloi()], [], MA);
+
+    expect(eredmeny.allapot).toBe("varakozik");
+    expect(eredmeny.elteresOka).toBe("nincs_berbeadoi_igazolas");
+    expect(eredmeny.bizonylatKell).toBe(false);
+  });
+
+  it("a bérbeadó megadta, a bérlő még nem: szintén várakozik", () => {
+    const [eredmeny] = egyeztet([eloiras()], [], [berbeadoi()], MA);
+
+    expect(eredmeny.allapot).toBe("varakozik");
+    expect(eredmeny.elteresOka).toBe("nincs_berloi_igazolas");
+    expect(eredmeny.bizonylatKell).toBe(false);
+  });
+});
+
+describe("egyeztet — hiányzó és besorolatlan", () => {
+  it("lejárt esedékességnél, ha egyik fél sem szólt, hiányzik", () => {
     const [eredmeny] = egyeztet([eloiras()], [], [], MA);
+
     expect(eredmeny.allapot).toBe("hianyzik");
     expect(eredmeny.elteresFt).toBe(-180000);
+    expect(eredmeny.keses).toBe(15);
   });
 
-  it("a jövőbeli esedékességből még nem csinál hiányt", () => {
+  it("a bérbeadó tagadása magában is hiányzó tételt jelent", () => {
+    const korai = new Date(Date.UTC(2026, 8, 1)); // az esedékesség előtt
+    const [eredmeny] = egyeztet([eloiras()], [], [tagadas()], korai);
+
+    expect(eredmeny.allapot).toBe("hianyzik");
+    expect(eredmeny.bizonylatKell).toBe(false);
+  });
+
+  it("jövőbeli esedékességnél nem csinál hiányzó tételt", () => {
     const eredmeny = egyeztet(
-      [eloiras({ esedekesseg: new Date(Date.UTC(2026, 9, 5)), idoszak: "2026-10" })],
+      [eloiras({ esedekesseg: new Date(Date.UTC(2026, 9, 5)) })],
       [],
       [],
       MA,
     );
-    expect(eredmeny).toEqual([]);
+
+    expect(eredmeny).toHaveLength(0);
   });
 
-  it("az előírás nélküli beérkezett utalást is a bérbeadó elé viszi", () => {
+  it("előírás nélkül beérkezett pénzt külön sorban mutat, és nem tippel", () => {
     const eredmeny = egyeztet(
       [],
       [],
-      [kivonat({ id: "kivonat-x", osszegFt: 250000 })],
+      [berbeadoi({ id: "berbeadoi-9", osszegFt: 50000 })],
       MA,
     );
+
     expect(eredmeny).toHaveLength(1);
     expect(eredmeny[0].allapot).toBe("elter");
     expect(eredmeny[0].elteresOka).toBe("nincs_eloiras");
     expect(eredmeny[0].eloirtTetelId).toBeNull();
+    expect(eredmeny[0].bizonylatKell).toBe(false);
   });
 
-  it("egy kivonattételt nem használ fel két előíráshoz", () => {
-    const eredmeny = egyeztet(
-      [
-        eloiras({ id: "szept", idoszak: "2026-09", esedekesseg: new Date(Date.UTC(2026, 8, 5)) }),
-        eloiras({ id: "aug", idoszak: "2026-08", esedekesseg: new Date(Date.UTC(2026, 7, 5)) }),
-      ],
-      [],
-      [kivonat({ id: "egyetlen", konyvelesDatuma: new Date(Date.UTC(2026, 8, 5)) })],
-      MA,
-    );
-    const parositott = eredmeny.filter((sor) => sor.kivonattetelId === "egyetlen");
-    expect(parositott).toHaveLength(1);
-    const hianyzo = eredmeny.filter((sor) => sor.allapot === "hianyzik");
-    expect(hianyzo).toHaveLength(1);
-  });
+  it("a tagadásból nem lesz besorolatlan pénz", () => {
+    const eredmeny = egyeztet([eloiras()], [], [tagadas()], MA);
 
-  it("a pontos összeget választja a időben közelebbi, de rossz összegű helyett", () => {
-    const eredmeny = egyeztet(
-      [eloiras()],
-      [],
-      [
-        kivonat({ id: "rossz-osszeg", konyvelesDatuma: new Date(Date.UTC(2026, 8, 5)), osszegFt: 100000 }),
-        kivonat({ id: "pontos", konyvelesDatuma: new Date(Date.UTC(2026, 8, 9)), osszegFt: 180000 }),
-      ],
-      MA,
-    );
-    const eloirashozTartozo = eredmeny.find((sor) => sor.eloirtTetelId === "eloiras-1");
-    expect(eloirashozTartozo?.kivonattetelId).toBe("pontos");
-    expect(eloirashozTartozo?.allapot).toBe("egyezik");
-  });
-
-  it("az ablakon kívüli tételt nem köti az előíráshoz", () => {
-    const eredmeny = egyeztet(
-      [eloiras()],
-      [],
-      [kivonat({ konyvelesDatuma: new Date(Date.UTC(2026, 6, 1)) })],
-      MA,
-    );
-    const eloirashozTartozo = eredmeny.find((sor) => sor.eloirtTetelId === "eloiras-1");
-    expect(eloirashozTartozo?.allapot).toBe("hianyzik");
+    expect(eredmeny).toHaveLength(1);
   });
 });
 
-describe("állítható párosítási ablak", () => {
-  // Az alapértelmezett ablak 10/25 nap; a bérbeadó ezt átállíthatja.
-  const kesei = kivonat({ konyvelesDatuma: new Date(Date.UTC(2026, 9, 2)) }); // 27 nappal az esedékesség után
+describe("egyeztet — párosítás", () => {
+  it("az időablakon kívüli befizetést nem köti az előíráshoz", () => {
+    const eredmeny = egyeztet(
+      [eloiras()],
+      [],
+      [berbeadoi({ erkezesDatuma: new Date(Date.UTC(2026, 6, 5)) })],
+      MA,
+    );
 
-  it("az alapértelmezett ablakon kívüli befizetést nem köti az előíráshoz", () => {
-    const eredmeny = egyeztet([eloiras()], [], [kesei], MA);
-    const eloirashozTartozo = eredmeny.find((sor) => sor.eloirtTetelId === "eloiras-1");
-    expect(eloirashozTartozo?.allapot).toBe("hianyzik");
+    const eloirasSor = eredmeny.find((sor) => sor.eloirtTetelId === "eloiras-1");
+    expect(eloirasSor?.allapot).toBe("hianyzik");
+    expect(eredmeny.some((sor) => sor.elteresOka === "nincs_eloiras")).toBe(true);
   });
 
-  it("szélesebb ablakkal ugyanaz a befizetés már párosul", () => {
-    const eredmeny = egyeztet([eloiras()], [], [kesei], MA, {
-      ...ALAPERTELMEZETT_BEALLITASOK,
-      kesobbiAblakNap: 30,
-    });
-    const eloirashozTartozo = eredmeny.find((sor) => sor.eloirtTetelId === "eloiras-1");
-    expect(eloirashozTartozo?.allapot).toBe("egyezik");
-    expect(eloirashozTartozo?.keses).toBe(27);
+  it("egy befizetést csak egy előíráshoz köt", () => {
+    const eredmeny = egyeztet(
+      [
+        eloiras({ id: "eloiras-1", idoszak: "2026-08", esedekesseg: new Date(Date.UTC(2026, 7, 5)) }),
+        eloiras({ id: "eloiras-2", idoszak: "2026-09" }),
+      ],
+      [],
+      [berbeadoi({ erkezesDatuma: new Date(Date.UTC(2026, 7, 5)) })],
+      MA,
+    );
+
+    const kotesek = eredmeny.filter((sor) => sor.berbeadoiIgazolasId === "berbeadoi-1");
+    expect(kotesek).toHaveLength(1);
+    expect(kotesek[0].eloirtTetelId).toBe("eloiras-1");
   });
 
-  it("szűkebb ablak az előre fizetett bérleti díjat is kiszedi a párosításból", () => {
-    const korai = kivonat({ konyvelesDatuma: new Date(Date.UTC(2026, 7, 29)) }); // 7 nappal korábban
-    const alap = egyeztet([eloiras()], [], [korai], MA);
-    expect(alap.find((sor) => sor.eloirtTetelId === "eloiras-1")?.allapot).toBe("egyezik");
+  it("a pontos összeg erősebb jelölt, mint az időben közelebbi", () => {
+    const eredmeny = egyeztet(
+      [eloiras()],
+      [],
+      [
+        berbeadoi({ id: "kozeli", erkezesDatuma: new Date(Date.UTC(2026, 8, 5)), osszegFt: 90000 }),
+        berbeadoi({ id: "pontos", erkezesDatuma: new Date(Date.UTC(2026, 8, 9)), osszegFt: 180000 }),
+      ],
+      MA,
+    );
 
-    const szuk = egyeztet([eloiras()], [], [korai], MA, {
-      ...ALAPERTELMEZETT_BEALLITASOK,
-      korabbiAblakNap: 3,
-    });
-    expect(szuk.find((sor) => sor.eloirtTetelId === "eloiras-1")?.allapot).toBe("hianyzik");
+    const eloirasSor = eredmeny.find((sor) => sor.eloirtTetelId === "eloiras-1");
+    expect(eloirasSor?.berbeadoiIgazolasId).toBe("pontos");
+  });
+
+  it("a kisebb összegű befizetést nem viszi el egy nagyobb előírás", () => {
+    // Korábban a hónap elején esedékes bérleti díj elvitte a pár nappal később
+    // beérkezett közös költséget, és onnantól minden tétel arrébb csúszott.
+    const eredmeny = egyeztet(
+      [
+        eloiras({ id: "dij", osszegFt: 180000, esedekesseg: new Date(Date.UTC(2026, 8, 5)) }),
+        eloiras({ id: "kk", osszegFt: 14000, esedekesseg: new Date(Date.UTC(2026, 8, 5)) }),
+      ],
+      [],
+      [berbeadoi({ id: "kk-utalas", osszegFt: 14000, erkezesDatuma: new Date(Date.UTC(2026, 8, 6)) })],
+      MA,
+    );
+
+    const dijSor = eredmeny.find((sor) => sor.eloirtTetelId === "dij");
+    const kkSor = eredmeny.find((sor) => sor.eloirtTetelId === "kk");
+    expect(dijSor?.allapot).toBe("hianyzik");
+    expect(kkSor?.berbeadoiIgazolasId).toBe("kk-utalas");
+  });
+
+  it("a tolerancia alapból nulla: egy forint eltérés is eltérés", () => {
+    expect(ALAPERTELMEZETT_BEALLITASOK.toleranciaFt).toBe(0);
+
+    const [eredmeny] = egyeztet(
+      [eloiras()],
+      [berloi({ osszegFt: 179999 })],
+      [berbeadoi({ osszegFt: 179999 })],
+      MA,
+    );
+
+    expect(eredmeny.allapot).toBe("elter");
   });
 });
 
 describe("ablakotEllenoriz", () => {
-  it("elfogadja az egész napszámot", () => {
-    const { ablak, hibak } = ablakotEllenoriz({ korabbiAblakNap: "7", kesobbiAblakNap: "30" });
+  it("elfogad két egész napszámot", () => {
+    const { ablak, hibak } = ablakotEllenoriz({ korabbiAblakNap: "10", kesobbiAblakNap: "25" });
+
     expect(hibak).toEqual([]);
-    expect(ablak).toEqual({ korabbiAblakNap: 7, kesobbiAblakNap: 30 });
+    expect(ablak).toEqual({ korabbiAblakNap: 10, kesobbiAblakNap: 25 });
   });
 
-  it("a nullát is elfogadja: csak a pontos napra párosítunk", () => {
-    const { ablak } = ablakotEllenoriz({ korabbiAblakNap: "0", kesobbiAblakNap: "0" });
-    expect(ablak).toEqual({ korabbiAblakNap: 0, kesobbiAblakNap: 0 });
+  it("üres mezőre hibát ad", () => {
+    const { ablak, hibak } = ablakotEllenoriz({ korabbiAblakNap: "", kesobbiAblakNap: "25" });
+
+    expect(ablak).toBeNull();
+    expect(hibak).toHaveLength(1);
   });
 
-  it("az üres, a nem szám és a negatív értéket elutasítja", () => {
-    expect(ablakotEllenoriz({ korabbiAblakNap: "", kesobbiAblakNap: "25" }).ablak).toBeNull();
-    expect(ablakotEllenoriz({ korabbiAblakNap: "tíz", kesobbiAblakNap: "25" }).ablak).toBeNull();
-    expect(ablakotEllenoriz({ korabbiAblakNap: "-3", kesobbiAblakNap: "25" }).ablak).toBeNull();
+  it("nem számot nem fogad el", () => {
+    const { ablak, hibak } = ablakotEllenoriz({ korabbiAblakNap: "tíz", kesobbiAblakNap: "25" });
+
+    expect(ablak).toBeNull();
+    expect(hibak[0]).toContain("egész napszám");
   });
 
-  it("a felső határon túli napszámot elutasítja, és megmondja a határt", () => {
+  it("a felső határon túl nem enged", () => {
     const { ablak, hibak } = ablakotEllenoriz({
       korabbiAblakNap: "10",
       kesobbiAblakNap: String(ABLAK_MAX_NAP + 1),
     });
-    expect(ablak).toBeNull();
-    expect(hibak.join(" ")).toContain(String(ABLAK_MAX_NAP));
-  });
 
-  it("mindkét mező hibáját egyszerre jelenti", () => {
-    const { hibak } = ablakotEllenoriz({ korabbiAblakNap: "x", kesobbiAblakNap: "y" });
-    expect(hibak).toHaveLength(2);
+    expect(ablak).toBeNull();
+    expect(hibak[0]).toContain(String(ABLAK_MAX_NAP));
   });
 });

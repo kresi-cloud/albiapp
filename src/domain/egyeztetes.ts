@@ -4,10 +4,19 @@
  * Három adat találkozik, és egyik sem írja felül a másikat:
  *  - az előírt tétel: mit kellett volna fizetni és mikorra,
  *  - a bérlő által igazolt befizetés: mit mond a bérlő, mikor mennyit utalt,
- *  - a kivonattétel: mit mutat a bérbeadó bankszámlakivonata.
+ *  - a bérbeadó által igazolt beérkezés: mit mond a bérbeadó, mikor mennyi jött.
  *
- * Az eredmény mindkét fél számára ugyanaz a három állapot: egyezik, eltér,
- * hiányzik.
+ * A két fél a saját oldalát adja meg, és ha a kettő egyezik, a kérdés le van
+ * zárva: bizonylatot ilyenkor nem kérünk, mert nincs mit bizonyítani. Teljes
+ * bankszámlakivonatot pedig soha: az a bérbeadó összes pénzmozgását megmutatná,
+ * a bérlőét pedig az övét — ahhoz egyik félnek sincs köze.
+ *
+ * Ha a két oldal nem egyezik, az vitás: onnantól van értelme az adott utalás
+ * küldő és fogadó oldali bizonylatának.
+ *
+ * Az összeg és az előírás viszonya külön kérdés. Ha mindkét fél ugyanazt mondja,
+ * csak nem annyit, amennyi elő volt írva, az nem vita: a felek egyetértenek
+ * abban, mi történt. Ezért ennek külön állapota van.
  */
 
 import { uzenet, type Uzenet } from "./nyelv";
@@ -21,6 +30,7 @@ export type EloirtTetel = {
   osszegFt: number;
 };
 
+/** Amit a bérlő mond: mikor mennyit utalt, milyen közleménnyel. */
 export type BerloiIgazolas = {
   id: string;
   utalasDatuma: Date;
@@ -28,30 +38,57 @@ export type BerloiIgazolas = {
   kozlemeny?: string | null;
 };
 
-export type Kivonattetel = {
+/**
+ * Amit a bérbeadó mond. Kétféle lehet: "ennyi érkezett ekkor", vagy egy adott
+ * előírásra az, hogy "erre nem érkezett pénz". A tagadás nélkül egy elmaradt
+ * utalás örökké a másik fél adatára várna.
+ */
+export type BerbeadoiIgazolas = {
   id: string;
-  konyvelesDatuma: Date;
+  megerkezett: boolean;
+  /** Csak a tagadásnál van kitöltve: melyik előírásra mondja, hogy nem jött. */
+  eloirtTetelId?: string | null;
+  erkezesDatuma: Date;
   osszegFt: number;
   kozlemeny?: string | null;
-  partnerNev?: string | null;
 };
 
-export type Allapot = "egyezik" | "elter" | "hianyzik";
+export type Allapot =
+  /** Mindkét fél megadta, egyeznek egymással és az előírt összeggel. */
+  | "egyezik"
+  /** Mindkét fél ugyanazt mondja, de nem az előírt összeget. Nem vita. */
+  | "elter"
+  /** A két fél adata nem fedi egymást. Innen van értelme a bizonylatnak. */
+  | "vitas"
+  /** Csak az egyik fél adta meg: a másikra várunk. */
+  | "varakozik"
+  /** Egyik fél sem adott meg semmit, és az esedékesség elmúlt. */
+  | "hianyzik";
 
 export type ElteresOka =
+  /** A felek egyetértenek, de nem az előírt összeg jött. */
   | "osszeg"
-  | "nincs_kivonattetel"
+  /** A bérlő és a bérbeadó mást mond ugyanarról az utalásról. */
+  | "ket_oldal_elter"
+  /** A bérbeadó azt mondja, nem érkezett meg, a bérlő szerint elutalta. */
+  | "nem_erkezett_meg"
+  /** A bérlő megadta, a bérbeadó még nem. */
+  | "nincs_berbeadoi_igazolas"
+  /** A bérbeadó megadta, a bérlő még nem. */
   | "nincs_berloi_igazolas"
+  /** Pénz érkezett, amihez nincs előírás. */
   | "nincs_eloiras";
 
 export type Egyeztetes = {
   eloirtTetelId: string | null;
   berloiIgazolasId: string | null;
-  kivonattetelId: string | null;
+  berbeadoiIgazolasId: string | null;
   allapot: Allapot;
   elteresOka: ElteresOka | null;
   elteresFt: number;
   keses: number;
+  /** Kérünk-e bizonylatot: csak akkor, ha a két oldal nem fedi egymást. */
+  bizonylatKell: boolean;
   /** Fordítható magyarázat: kulcs és behelyettesítendő adatok. */
   magyarazat: Uzenet;
 };
@@ -77,6 +114,14 @@ export const ALAPERTELMEZETT_BEALLITASOK: EgyeztetesBeallitasok = {
 
 /** Ennél hosszabb ablaknak nincs értelme: átcsúszna a szomszédos hónapokra. */
 export const ABLAK_MAX_NAP = 90;
+
+/**
+ * Ennyi nap eltérést fogadunk el a két fél dátuma közt. A forintutalás ma
+ * másodpercek alatt megérkezik, de a bérlő gyakran az indítás napját írja, a
+ * bérbeadó pedig azt, amikor észrevette. Ennél nagyobb csúszásnál már érdemes
+ * ránézni, tényleg ugyanarról az utalásról beszél-e a két fél.
+ */
+export const KET_OLDAL_NAP_ELTERES = 3;
 
 /**
  * Az űrlapról szabad szöveg érkezik. Itt lesz belőle beállítás, vagy itt derül
@@ -117,92 +162,158 @@ export function ablakotEllenoriz(nyers: {
 
 type Jelolt<T> = { tetel: T; tavolsag: number; osszegElteres: number };
 
-function legjobbJelolt<T extends { osszegFt: number }>(
-  jeloltek: Jelolt<T>[],
-): Jelolt<T> | null {
+function legjobbJelolt<T>(jeloltek: Jelolt<T>[]): Jelolt<T> | null {
   if (jeloltek.length === 0) return null;
-  // Először a pontos összeg számít, utána az időbeli közelség. Így egy
-  // pontosan stimmelő, de később érkezett utalás erősebb jelölt, mint egy
-  // időben közeli, de rossz összegű.
+  // Azonos körön belül az időbeli közelség dönt — abszolút értékben, mert egy
+  // két nappal korábbi utalás közelebb van, mint egy húsz nappal későbbi —,
+  // utána a kisebb összegeltérés.
   return [...jeloltek].sort((a, b) => {
-    const aPontos = a.osszegElteres === 0 ? 0 : 1;
-    const bPontos = b.osszegElteres === 0 ? 0 : 1;
-    if (aPontos !== bPontos) return aPontos - bPontos;
-    if (a.tavolsag !== b.tavolsag) return a.tavolsag - b.tavolsag;
+    const aTav = Math.abs(a.tavolsag);
+    const bTav = Math.abs(b.tavolsag);
+    if (aTav !== bTav) return aTav - bTav;
     return Math.abs(a.osszegElteres) - Math.abs(b.osszegElteres);
   })[0];
+}
+
+/**
+ * Befizetések párosítása az előírásokhoz, két körben.
+ *
+ * Az első kör csak a pontosan stimmelő összegeket köti. Enélkül egy korábbi
+ * előírás elvinné a rá nem illő befizetést pusztán azért, mert időben az van
+ * elöl — és onnantól minden következő tétel egy tétellel arrébb csúszna. Egy
+ * 14 000 forintos közös költség nem a 180 000 forintos bérleti díj befizetése,
+ * akkor sem, ha az esedékességi ablakba beleesik.
+ *
+ * A második kör köti a maradékot időbeli közelség szerint: ott már tényleg csak
+ * az eltérő összegű befizetések maradtak, és azokból lesz az egyeztetés.
+ */
+function parosit<T extends { id: string; osszegFt: number }>(
+  eloirasok: EloirtTetel[],
+  tetelek: T[],
+  datumot: (tetel: T) => Date,
+  beallitasok: EgyeztetesBeallitasok,
+): Map<string, Jelolt<T>> {
+  const parok = new Map<string, Jelolt<T>>();
+  const felhasznalt = new Set<string>();
+
+  const jeloltek = (eloiras: EloirtTetel, csakPontos: boolean): Jelolt<T>[] =>
+    tetelek
+      .filter((tetel) => !felhasznalt.has(tetel.id))
+      .map((tetel) => ({
+        tetel,
+        tavolsag: napKulonbseg(eloiras.esedekesseg, datumot(tetel)),
+        osszegElteres: tetel.osszegFt - eloiras.osszegFt,
+      }))
+      .filter(
+        (jelolt) =>
+          jelolt.tavolsag >= -beallitasok.korabbiAblakNap &&
+          jelolt.tavolsag <= beallitasok.kesobbiAblakNap &&
+          (!csakPontos || jelolt.osszegElteres === 0),
+      );
+
+  for (const csakPontos of [true, false]) {
+    for (const eloiras of eloirasok) {
+      if (parok.has(eloiras.id)) continue;
+      const jelolt = legjobbJelolt(jeloltek(eloiras, csakPontos));
+      if (!jelolt) continue;
+      parok.set(eloiras.id, jelolt);
+      felhasznalt.add(jelolt.tetel.id);
+    }
+  }
+
+  return parok;
+}
+
+/** Ugyanarról az utalásról beszél-e a két fél. */
+function ketOldalEgyezik(berloi: BerloiIgazolas, berbeadoi: BerbeadoiIgazolas): boolean {
+  if (berloi.osszegFt !== berbeadoi.osszegFt) return false;
+  return (
+    Math.abs(napKulonbseg(berloi.utalasDatuma, berbeadoi.erkezesDatuma)) <=
+    KET_OLDAL_NAP_ELTERES
+  );
 }
 
 export function egyeztet(
   eloirtTetelek: EloirtTetel[],
   berloiIgazolasok: BerloiIgazolas[],
-  kivonattetelek: Kivonattetel[],
+  berbeadoiIgazolasok: BerbeadoiIgazolas[],
   ma: Date,
   beallitasok: EgyeztetesBeallitasok = ALAPERTELMEZETT_BEALLITASOK,
 ): Egyeztetes[] {
   const eredmeny: Egyeztetes[] = [];
-  const felhasznaltKivonat = new Set<string>();
-  const felhasznaltIgazolas = new Set<string>();
+
+  // A tagadás nem párosítható tétel: eleve egy előíráshoz tartozik.
+  const tagadasok = new Map(
+    berbeadoiIgazolasok
+      .filter((igazolas) => !igazolas.megerkezett && igazolas.eloirtTetelId)
+      .map((igazolas) => [igazolas.eloirtTetelId as string, igazolas]),
+  );
+  const beerkezesek = berbeadoiIgazolasok.filter((igazolas) => igazolas.megerkezett);
 
   const sorrendben = [...eloirtTetelek].sort(
     (a, b) => a.esedekesseg.getTime() - b.esedekesseg.getTime(),
   );
 
+  const berbeadoiParok = parosit(
+    sorrendben,
+    beerkezesek,
+    (tetel) => tetel.erkezesDatuma,
+    beallitasok,
+  );
+  const berloiParok = parosit(
+    sorrendben,
+    berloiIgazolasok,
+    (tetel) => tetel.utalasDatuma,
+    beallitasok,
+  );
+  const felhasznaltBerbeadoi = new Set(
+    [...berbeadoiParok.values()].map((jelolt) => jelolt.tetel.id),
+  );
+
   for (const eloiras of sorrendben) {
-    const ablakban = <T extends { osszegFt: number }>(
-      tetelek: T[],
-      datumot: (tetel: T) => Date,
-      mar: Set<string>,
-      azonosito: (tetel: T) => string,
-    ): Jelolt<T>[] =>
-      tetelek
-        .filter((tetel) => !mar.has(azonosito(tetel)))
-        .map((tetel) => ({
-          tetel,
-          tavolsag: napKulonbseg(eloiras.esedekesseg, datumot(tetel)),
-          osszegElteres: tetel.osszegFt - eloiras.osszegFt,
-        }))
-        .filter(
-          (jelolt) =>
-            jelolt.tavolsag >= -beallitasok.korabbiAblakNap &&
-            jelolt.tavolsag <= beallitasok.kesobbiAblakNap,
-        );
-
-    const kivonatJelolt = legjobbJelolt(
-      ablakban(
-        kivonattetelek,
-        (tetel) => tetel.konyvelesDatuma,
-        felhasznaltKivonat,
-        (tetel) => tetel.id,
-      ),
-    );
-    const igazolasJelolt = legjobbJelolt(
-      ablakban(
-        berloiIgazolasok,
-        (tetel) => tetel.utalasDatuma,
-        felhasznaltIgazolas,
-        (tetel) => tetel.id,
-      ),
-    );
-
-    if (kivonatJelolt) felhasznaltKivonat.add(kivonatJelolt.tetel.id);
-    if (igazolasJelolt) felhasznaltIgazolas.add(igazolasJelolt.tetel.id);
+    const berbeadoiJelolt = berbeadoiParok.get(eloiras.id) ?? null;
+    const berloiJelolt = berloiParok.get(eloiras.id) ?? null;
 
     const lejart = napKulonbseg(eloiras.esedekesseg, ma) > 0;
+    const tagadas = tagadasok.get(eloiras.id);
 
-    if (kivonatJelolt) {
-      const elteres = kivonatJelolt.osszegElteres;
-      const keses = Math.max(0, kivonatJelolt.tavolsag);
-      const egyezik = Math.abs(elteres) <= beallitasok.toleranciaFt;
+    // --- Mindkét fél nyilatkozott
+    if (berbeadoiJelolt && berloiJelolt) {
+      const egyOldalon = ketOldalEgyezik(berloiJelolt.tetel, berbeadoiJelolt.tetel);
+      const elteres = berbeadoiJelolt.osszegElteres;
+      const keses = Math.max(0, berbeadoiJelolt.tavolsag);
+
+      if (!egyOldalon) {
+        eredmeny.push({
+          eloirtTetelId: eloiras.id,
+          berloiIgazolasId: berloiJelolt.tetel.id,
+          berbeadoiIgazolasId: berbeadoiJelolt.tetel.id,
+          allapot: "vitas",
+          elteresOka: "ket_oldal_elter",
+          elteresFt: berbeadoiJelolt.tetel.osszegFt - berloiJelolt.tetel.osszegFt,
+          keses,
+          bizonylatKell: true,
+          magyarazat: uzenet("egyeztetes.ket_oldal_elter", {
+            berlo: berloiJelolt.tetel.osszegFt,
+            berbeado: berbeadoiJelolt.tetel.osszegFt,
+          }),
+        });
+        continue;
+      }
+
+      const eloirassalEgyezik = Math.abs(elteres) <= beallitasok.toleranciaFt;
       eredmeny.push({
         eloirtTetelId: eloiras.id,
-        berloiIgazolasId: igazolasJelolt?.tetel.id ?? null,
-        kivonattetelId: kivonatJelolt.tetel.id,
-        allapot: egyezik ? "egyezik" : "elter",
-        elteresOka: egyezik ? null : "osszeg",
-        elteresFt: egyezik ? 0 : elteres,
+        berloiIgazolasId: berloiJelolt.tetel.id,
+        berbeadoiIgazolasId: berbeadoiJelolt.tetel.id,
+        allapot: eloirassalEgyezik ? "egyezik" : "elter",
+        elteresOka: eloirassalEgyezik ? null : "osszeg",
+        elteresFt: eloirassalEgyezik ? 0 : elteres,
         keses,
-        magyarazat: egyezik
+        // A felek egyetértenek: nincs mit bizonyítani, akkor sem, ha az összeg
+        // nem az előírt. Az már a bérbeadó és a bérlő megbeszélnivalója.
+        bizonylatKell: false,
+        magyarazat: eloirassalEgyezik
           ? keses > 0
             ? uzenet("egyeztetes.keson", { nap: keses })
             : uzenet("egyeztetes.hataridore")
@@ -213,46 +324,85 @@ export function egyeztet(
       continue;
     }
 
-    if (igazolasJelolt) {
+    // --- Csak a bérlő nyilatkozott
+    if (berloiJelolt) {
+      const keses = Math.max(0, berloiJelolt.tavolsag);
+      if (tagadas) {
+        // A bérlő szerint elment, a bérbeadó szerint nem jött meg. Ez az a
+        // helyzet, amiért a bizonylat létezik.
+        eredmeny.push({
+          eloirtTetelId: eloiras.id,
+          berloiIgazolasId: berloiJelolt.tetel.id,
+          berbeadoiIgazolasId: tagadas.id,
+          allapot: "vitas",
+          elteresOka: "nem_erkezett_meg",
+          elteresFt: -eloiras.osszegFt,
+          keses,
+          bizonylatKell: true,
+          magyarazat: uzenet("egyeztetes.nem_erkezett_meg"),
+        });
+        continue;
+      }
       eredmeny.push({
         eloirtTetelId: eloiras.id,
-        berloiIgazolasId: igazolasJelolt.tetel.id,
-        kivonattetelId: null,
-        allapot: "elter",
-        elteresOka: "nincs_kivonattetel",
-        elteresFt: -eloiras.osszegFt,
-        keses: Math.max(0, igazolasJelolt.tavolsag),
-        magyarazat: uzenet("egyeztetes.nincs_kivonattetel"),
+        berloiIgazolasId: berloiJelolt.tetel.id,
+        berbeadoiIgazolasId: null,
+        allapot: "varakozik",
+        elteresOka: "nincs_berbeadoi_igazolas",
+        elteresFt: 0,
+        keses,
+        bizonylatKell: false,
+        magyarazat: uzenet("egyeztetes.nincs_berbeadoi_igazolas"),
       });
       continue;
     }
 
-    if (lejart) {
+    // --- Csak a bérbeadó nyilatkozott
+    if (berbeadoiJelolt) {
       eredmeny.push({
         eloirtTetelId: eloiras.id,
         berloiIgazolasId: null,
-        kivonattetelId: null,
+        berbeadoiIgazolasId: berbeadoiJelolt.tetel.id,
+        allapot: "varakozik",
+        elteresOka: "nincs_berloi_igazolas",
+        elteresFt: 0,
+        keses: Math.max(0, berbeadoiJelolt.tavolsag),
+        bizonylatKell: false,
+        magyarazat: uzenet("egyeztetes.nincs_berloi_igazolas"),
+      });
+      continue;
+    }
+
+    // --- Egyik fél sem nyilatkozott
+    if (tagadas || lejart) {
+      eredmeny.push({
+        eloirtTetelId: eloiras.id,
+        berloiIgazolasId: null,
+        berbeadoiIgazolasId: tagadas?.id ?? null,
         allapot: "hianyzik",
         elteresOka: null,
         elteresFt: -eloiras.osszegFt,
-        keses: napKulonbseg(eloiras.esedekesseg, ma),
+        keses: Math.max(0, napKulonbseg(eloiras.esedekesseg, ma)),
+        bizonylatKell: false,
         magyarazat: uzenet("egyeztetes.hianyzik"),
       });
     }
   }
 
-  // Ami a kivonaton maradt: beérkezett, de nincs hozzá előírás. Lehet túlfizetés,
-  // kaució vagy egészen más utalás — mindenképp a bérbeadó szeme elé való.
-  for (const kivonattetel of kivonattetelek) {
-    if (felhasznaltKivonat.has(kivonattetel.id)) continue;
+  // Amit a bérbeadó rögzített, de nincs hozzá előírás: lehet túlfizetés,
+  // óvadék vagy egészen más utalás — mindenképp a bérbeadó szeme elé való.
+  // Ezt nem tippeljük meg helyette.
+  for (const igazolas of beerkezesek) {
+    if (felhasznaltBerbeadoi.has(igazolas.id)) continue;
     eredmeny.push({
       eloirtTetelId: null,
       berloiIgazolasId: null,
-      kivonattetelId: kivonattetel.id,
+      berbeadoiIgazolasId: igazolas.id,
       allapot: "elter",
       elteresOka: "nincs_eloiras",
-      elteresFt: kivonattetel.osszegFt,
+      elteresFt: igazolas.osszegFt,
       keses: 0,
+      bizonylatKell: false,
       magyarazat: uzenet("egyeztetes.nincs_eloiras"),
     });
   }

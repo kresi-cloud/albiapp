@@ -70,8 +70,13 @@ export function idoszakCimke(idoszak: string): string {
  * az előírás. Amire nem érkezett semmi, arról nem állítunk ki igazolást.
  */
 export function igazolhatoBefizetesek(befizetesek: Befizetes[]): Befizetes[] {
+  // Csak azt igazoljuk, amiben a két fél egyetért. A vitás és a még félkész
+  // (egyoldalú) tételről nem állítunk ki papírt: az igazolás nem arra való,
+  // hogy eldöntsön egy vitát.
   return befizetesek
-    .filter((sor) => sor.allapot !== "hianyzik" && sor.osszegFt > 0)
+    .filter(
+      (sor) => (sor.allapot === "egyezik" || sor.allapot === "elter") && sor.osszegFt > 0,
+    )
     .sort((a, b) => b.idoszak.localeCompare(a.idoszak));
 }
 

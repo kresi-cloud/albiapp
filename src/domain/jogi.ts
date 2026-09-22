@@ -51,7 +51,7 @@ const ADATKEZELES: Record<Nyelv, JogiOldal> = {
           "Szerződéshez és igazolásokhoz: születési hely és idő, anyja neve, lakcím, " +
             "igazolványszám, adóazonosító jel, bankszámlaszám, telefonszám. Ezek kizárólag a " +
             "kiadott okiratokba kerülnek bele.",
-          "Elszámoláshoz: mérőóraállások, bankszámlakivonat sorai, előírt tételek és a bérlő " +
+          "Elszámoláshoz: mérőóraállások, a két fél saját befizetési adatai, előírt tételek és a bérlő " +
             "által igazolt befizetések.",
           "Hibabejelentéshez: a bejelentés szövege, a hozzá tartozó üzenetek, és hogy ki mikor " +
             "melyik állapotba lépett.",
@@ -191,7 +191,7 @@ const FELTETELEK: Record<Nyelv, JogiOldal> = {
       {
         cim: "Mit csinál az alkalmazás",
         bekezdesek: [
-          "Összeveti az előírt tételt, a bérlő által igazolt befizetést és a bankszámlakivonat " +
+          "Összeveti az előírt tételt, a bérlő által igazolt befizetést és a bérbeadó által igazolt " +
             "sorát, és megmutatja, hol tér el a három.",
           "Kiszámolja a rezsielszámolást a megadott díjszabás és mérőóraállások alapján, " +
             "tételes részletezéssel.",
@@ -215,7 +215,7 @@ const FELTETELEK: Record<Nyelv, JogiOldal> = {
         cim: "Miért felelsz te",
         bekezdesek: [
           "Azért, amit beírsz: a bérleti díjért, a díjszabásért, a mérőóraállásokért és a " +
-            "feltöltött kivonatért. Az alkalmazás ezekből számol, és rossz adatból rossz szám " +
+            "megadott befizetési adatokért. Az alkalmazás ezekből számol, és rossz adatból rossz szám " +
             "lesz.",
           "A jelszavadért és a meghívó linkért. A meghívó egyszer használható, és aki megkapja, " +
             "fiókot tud készíteni vele.",

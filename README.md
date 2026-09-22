@@ -11,9 +11,9 @@ körönként frissülnek.
 **1. mérföldkő: gerinc és befizetés-egyeztetés.** Ez a változat már tudja:
 
 - ingatlan, bérleti jogviszony és előírt tételek adatmodellje,
-- bankszámlakivonat beolvasása CSV-ből, felismert fejléccel és ismétlődésszűréssel,
 - havi előírások a jogviszonyból, töredékhónapra arányosítva, magyarázattal,
-- a háromoldalú egyeztetés: mit írtunk elő, mit igazolt a bérlő, mit mutat a kivonat,
+- kétoldali befizetés-egyeztetés: mit írtunk elő, mit mond a bérlő, mit mond a
+  bérbeadó; bizonylat csak akkor kell, ha a két oldal nem egyezik,
 - állítható párosítási időablak bérbeadónként,
 - teendők a kezdőlapon, lejárt, mai és közeli bontásban,
 - jelszavas belépés mindkét félnek, és bérlői meghívó linkkel,
@@ -82,7 +82,7 @@ hány nap, mennyi ment kedvezményes és mennyi piaci áron. Ez a különbség a
 ## Adóösszesítő
 
 Összesítő, nem bevallás. A bevétel pénzforgalmi: az számít, ami az adott évben
-tényleg megérkezett, ezért a párosított kivonattételekből indul, nem az
+tényleg megérkezett, ezért a bérbeadó által igazolt beérkezésekből indul, nem az
 előírásokból.
 
 Két szabály adja a lényegét. A fogyasztás szerint mért, továbbhárított közüzemi
@@ -105,6 +105,36 @@ src/app/               képernyők (Next.js App Router)
 A `src/domain` szándékosan nem ismeri sem a Next.js-t, sem a Prismát: a
 pénzügyi számítás és az egyeztetés tiszta függvényekben él, így gyorsan
 tesztelhető.
+
+## Befizetés-egyeztetés
+
+Mindkét fél a saját oldalát adja meg. A bérlő azt, mikor mennyit utalt; a
+bérbeadó azt, mikor mennyi érkezett — vagy azt, hogy megnézte, és nem érkezett
+meg. Ha a két adat egyezik, a tétel le van zárva, és **bizonylatot nem kérünk**.
+
+Teljes bankszámlakivonatot pedig soha nem kérünk, és nem is fogadunk el: az a
+bérbeadó összes pénzmozgását megmutatná, a bérlőét pedig az övét, és ahhoz
+egyik félnek sincs köze. Az alkalmazás ezt ki is írja mindkét oldalon.
+
+Ha a két oldal nem egyezik, onnantól van értelme a bizonylatnak — és akkor is
+csak annak az egy utalásnak: a bérlőtől a küldő, a bérbeadótól a fogadó
+oldaliról.
+
+Öt állapot van, és a különbségük szándékos:
+
+| Állapot | Mit jelent |
+| --- | --- |
+| egyezik | mindkét fél ugyanazt mondja, és annyit, amennyi elő volt írva |
+| eltér | mindkét fél ugyanazt mondja, de nem az előírt összeget — ez nem vita |
+| vitás | a két fél adata nem fedi egymást; innen jön a bizonylatkérés |
+| várakozik | csak az egyik fél nyilatkozott, a másikra várunk |
+| hiányzik | egyik fél sem nyilatkozott, és az esedékesség elmúlt |
+
+A párosítási időablak bérbeadónként állítható a `Beállítások` lapon. Az
+összegtolerancia szándékosan fix nulla: bármekkora eltérésnél egyeztetés indul.
+
+Ami beérkezett, de nincs hozzá előírás, azt nem tippeljük meg: külön listán megy
+a bérbeadóhoz.
 
 ## Havi előírások
 
@@ -218,7 +248,7 @@ belépés nélkül nyílik, mert a token maga a jogosultság, és rövid életű
 
 Az oldal tényeket mutat — hány hónapra volt esedékes díj, ebből mennyi érkezett
 határidőre, mennyi késve és átlagosan hány nappal —, pontszámot nem. Az adat a
-bérbeadó által feltöltött kivonatból jön, tehát nem a bérlő bemondása, és az
+bérbeadó saját rögzítéséből jön arról, mi érkezett meg, tehát nem a bérlő bemondása, és az
 oldal ezt ki is mondja. Amit soha nem mutat: bérbeadói nevet, pontos címet (csak
 települést), lakótársat, személyes adatot. A bérleti díj összege csak akkor
 látszik, ha a bérlő külön bekapcsolja.

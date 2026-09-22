@@ -16,11 +16,11 @@ export async function igazolhatoIdoszakok(
   if (!nezet) return [];
 
   const befizetesek: Befizetes[] = nezet.egyeztetesek
-    .filter((sor) => sor.idoszak !== null && sor.kivonatOsszegFt !== null)
+    .filter((sor) => sor.idoszak !== null && sor.berbeadoiOsszegFt !== null)
     .map((sor) => ({
       idoszak: sor.idoszak as string,
-      osszegFt: sor.kivonatOsszegFt ?? 0,
-      napja: sor.kivonatDatuma ?? sor.esedekesseg,
+      osszegFt: sor.berbeadoiOsszegFt ?? 0,
+      napja: sor.berbeadoiDatuma ?? sor.esedekesseg,
       allapot: sor.allapot,
     }));
 

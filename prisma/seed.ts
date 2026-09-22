@@ -25,7 +25,7 @@ async function main() {
   await prisma.meghivo.deleteMany();
   await prisma.teendo.deleteMany();
   await prisma.egyeztetes.deleteMany();
-  await prisma.kivonattetel.deleteMany();
+  await prisma.berbeadoiIgazolas.deleteMany();
   await prisma.berloiIgazolas.deleteMany();
   await prisma.eloirtTetel.deleteMany();
   await prisma.jogviszony.deleteMany();
@@ -246,12 +246,15 @@ async function main() {
     ],
   });
 
-  await prisma.kivonattetel.createMany({
+  // A bérbeadó saját oldala. Szándékosan nem minden tételre van meg: a
+  // próbaadat így mutatja a négy helyzetet — egyezik, eltér az előírástól,
+  // a két oldal mást mond, és a még egyoldalú tétel.
+  await prisma.berbeadoiIgazolas.createMany({
     data: [
-      { tulajdonosId: berbeado.id, jogviszonyId: annaJogviszony.id, konyvelesDatuma: new Date(Date.UTC(2026, 7, 4)), osszegFt: 180000, kozlemeny: "Augusztusi bérleti díj", partnerNev: "Kovács Anna", forrasFajl: "kivonat-2026-08.csv", sorUjjlenyomat: "pelda-01" },
-      { tulajdonosId: berbeado.id, jogviszonyId: annaJogviszony.id, konyvelesDatuma: new Date(Date.UTC(2026, 8, 4)), osszegFt: 175000, kozlemeny: "Szeptemberi bérleti díj", partnerNev: "Kovács Anna", forrasFajl: "kivonat-2026-09.csv", sorUjjlenyomat: "pelda-02" },
-      { tulajdonosId: berbeado.id, jogviszonyId: annaJogviszony.id, konyvelesDatuma: new Date(Date.UTC(2026, 8, 6)), osszegFt: 14000, kozlemeny: "Közös költség", partnerNev: "Kovács Anna", forrasFajl: "kivonat-2026-09.csv", sorUjjlenyomat: "pelda-03" },
-      { tulajdonosId: berbeado.id, jogviszonyId: tamasJogviszony.id, konyvelesDatuma: new Date(Date.UTC(2026, 7, 9)), osszegFt: 240000, kozlemeny: "Augusztus", partnerNev: "Szabó Tamás", forrasFajl: "kivonat-2026-08.csv", sorUjjlenyomat: "pelda-04" },
+      { tulajdonosId: berbeado.id, jogviszonyId: annaJogviszony.id, erkezesDatuma: new Date(Date.UTC(2026, 7, 4)), osszegFt: 180000, kozlemeny: "Augusztusi bérleti díj" },
+      { tulajdonosId: berbeado.id, jogviszonyId: annaJogviszony.id, erkezesDatuma: new Date(Date.UTC(2026, 8, 4)), osszegFt: 175000, kozlemeny: "Szeptemberi bérleti díj" },
+      { tulajdonosId: berbeado.id, jogviszonyId: annaJogviszony.id, erkezesDatuma: new Date(Date.UTC(2026, 8, 6)), osszegFt: 14000, kozlemeny: "Közös költség" },
+      { tulajdonosId: berbeado.id, jogviszonyId: tamasJogviszony.id, erkezesDatuma: new Date(Date.UTC(2026, 7, 9)), osszegFt: 240000, kozlemeny: "Augusztus" },
     ],
   });
 
@@ -287,16 +290,13 @@ async function main() {
     },
   });
 
-  await prisma.kivonattetel.create({
+  await prisma.berbeadoiIgazolas.create({
     data: {
       tulajdonosId: berbeado.id,
       jogviszonyId: annaJogviszony.id,
-      konyvelesDatuma: new Date(Date.UTC(2026, 8, 14)),
+      erkezesDatuma: new Date(Date.UTC(2026, 8, 14)),
       osszegFt: 71513,
       kozlemeny: "Rezsielszámolás 2026 nyár",
-      partnerNev: "Kovács Anna",
-      forrasFajl: "kivonat-2026-09.csv",
-      sorUjjlenyomat: "pelda-05",
     },
   });
 
