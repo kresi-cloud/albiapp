@@ -6,21 +6,30 @@
  * próbálni, mert a felület el is rejtheti a linket, miközben a cím működik.
  */
 
-import Database from "better-sqlite3";
+import pg from "pg";
 import { ALAP, all, belep } from "./kozos.mjs";
 
 export const nev = "Letöltési jogosultságok";
 
-function adatbazisUtja() {
-  const nyers = process.env.DATABASE_URL ?? "file:./dev.db";
-  return nyers.replace(/^file:/, "");
+/**
+ * A próbának egy kiadott elszámolás és egy szerződéstervezet azonosítója kell.
+ * Ezek nem állnak a felületen, viszont az adatbázisban igen: a próba ezért néz
+ * bele, csak olvasásra. A `DATABASE_URL` ugyanaz, amin a kiszolgáló fut.
+ */
+async function azonositok() {
+  const kliens = new pg.Client({ connectionString: process.env.DATABASE_URL });
+  await kliens.connect();
+  try {
+    const elszamolas = await kliens.query('select id from "Elszamolas" limit 1');
+    const szerzodes = await kliens.query('select id from "Szerzodes" limit 1');
+    return { elszamolas: elszamolas.rows[0], szerzodes: szerzodes.rows[0] };
+  } finally {
+    await kliens.end();
+  }
 }
 
 export async function futtat(oldal) {
-  const db = new Database(adatbazisUtja(), { readonly: true });
-  const elszamolas = db.prepare("select id from Elszamolas limit 1").get();
-  const szerzodes = db.prepare("select id from Szerzodes limit 1").get();
-  db.close();
+  const { elszamolas, szerzodes } = await azonositok();
 
   await belep(oldal, "anna@pelda.hu");
   const keres = oldal.context().request;

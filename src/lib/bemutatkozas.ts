@@ -65,7 +65,7 @@ export async function bemutatkozoLapja(
         },
       },
     },
-    orderBy: { letrehozva: "desc" },
+    orderBy: [{ letrehozva: "desc" }, { id: "desc" }],
   });
 
   const lathatoak = rola
@@ -126,7 +126,7 @@ export type AdminSor = {
 export async function bemutatkozoLista(ma: Date): Promise<AdminSor[]> {
   const felhasznalok = await prisma.felhasznalo.findMany({
     select: { id: true, nev: true, szerep: true },
-    orderBy: [{ szerep: "asc" }, { nev: "asc" }],
+    orderBy: [{ szerep: "asc" }, { nev: "asc" }, { id: "asc" }],
   });
 
   const sorok: AdminSor[] = [];

@@ -31,7 +31,7 @@ export async function igazolhatoIdoszakok(
 export async function szerzodesKelte(jogviszonyId: string): Promise<Date | null> {
   const szerzodes = await prisma.szerzodes.findFirst({
     where: { jogviszonyId, allapot: "veglegesitve" },
-    orderBy: { veglegesitve: "desc" },
+    orderBy: [{ veglegesitve: "desc" }, { id: "desc" }],
   });
   return szerzodes?.kelte ?? null;
 }

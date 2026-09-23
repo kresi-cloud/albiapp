@@ -40,46 +40,50 @@ export async function bongeszot() {
   return { bongeszo, oldal: await kontextus.newPage() };
 }
 
+/**
+ * Kilépés, és annak igazolása, hogy tényleg megtörtént.
+ *
+ * Telefonméretben a kilépés a „Több" lapjára került, mert az alsó fülsávra a
+ * négy gyakran használt hely fért ki. A próba 360 képponton fut, tehát előbb ki
+ * kell nyitnia ezt a lapot — ugyanúgy, ahogy a felhasználó is teszi.
+ *
+ * A kilépés sikerét nem hinni kell, hanem megnézni: a `/belepes` e-mail mezője
+ * az egyetlen bizonyíték. Enélkül a próba csendben belépve ment tovább, a
+ * következő `belep` a már belépett felhasználó lapjára futott, és a bukás
+ * harminc másodperces mezőkeresés lett valahol messze onnan, ahol a baj volt.
+ * Ez akkor is előjön, ha a kezdőlap épp hibát adott vissza: hibaoldalon nincs
+ * „Több" gomb.
+ */
 export async function kilep(oldal) {
-  await oldal.goto(`${ALAP}/`);
-  // Telefonméretben a kilépés a „Több" lapjára került, mert az alsó fülsávra a
-  // négy gyakran használt hely fért ki. A próba 360 képponton fut, tehát előbb
-  // ki kell nyitnia ezt a lapot — ugyanúgy, ahogy a felhasználó is teszi.
-  const tobb = oldal.getByRole("button", { name: /^(Több|More)$/ });
-  if (await tobb.count()) {
-    await tobb.first().click();
-  }
-  const kilepes = oldal.getByRole("button", { name: /Kilépés|Sign out/ });
-  // A „Több" panel tartalma a kattintás után jelenik meg. Aki rögtön ránéz,
-  // nullát talál, csendben kihagyja a kilépést, és a következő belépés a már
-  // belépett felhasználó lapjára fut — ott pedig nincs e-mail mező.
-  await kilepes
-    .first()
-    .waitFor({ state: "visible", timeout: 5000 })
-    .catch(() => {});
-  if (await kilepes.count()) {
-    await kilepes.first().click();
+  for (let probalkozas = 0; probalkozas < 5; probalkozas++) {
+    await oldal.goto(`${ALAP}/belepes`);
+    if ((await oldal.locator('input[name="email"]').count()) > 0) return;
+
+    await oldal.goto(`${ALAP}/`);
     await oldal.waitForLoadState("networkidle");
+    const tobb = oldal.getByRole("button", { name: /^(Több|More)$/ });
+    if (await tobb.count()) {
+      await tobb.first().click();
+    }
+    const kilepes = oldal.getByRole("button", { name: /Kilépés|Sign out/ });
+    // A „Több" panel tartalma a kattintás után jelenik meg. Aki rögtön ránéz,
+    // nullát talál.
+    const latszik = await kilepes
+      .first()
+      .waitFor({ state: "visible", timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+    if (latszik) {
+      await kilepes.first().click();
+      await oldal.waitForLoadState("networkidle");
+    }
   }
+  throw new Error(`HIBA: nem sikerült kilépni, a belépőlap nem jött elő (${oldal.url()})`);
 }
 
-/**
- * Belépés. A kilépés után nem azonnal tölt be a belépőlap.
- *
- * A kilépés kiszolgálói művelet, és a `networkidle` hazudik rá, ugyanúgy, ahogy
- * a nyelvváltásra: vissza tud térni azelőtt, hogy a süti tényleg eltűnt volna.
- * Ilyenkor a `/belepes` még a belépett felhasználót látja, és átirányít — a
- * próba pedig e-mail mezőt keres olyan lapon, ahol nincs. Ezért nem a hálózatra
- * várunk, hanem az eredményre: addig töltjük újra a belépőlapot, amíg a mező
- * meg nem jelenik.
- */
+/** Belépés. A kilépés után a `kilep` már a belépőlapon hagyta a böngészőt. */
 export async function belep(oldal, email) {
   await kilep(oldal);
-  for (let probalkozas = 0; probalkozas < 20; probalkozas++) {
-    await oldal.goto(`${ALAP}/belepes`);
-    if ((await oldal.locator('input[name="email"]').count()) > 0) break;
-    await oldal.waitForTimeout(500);
-  }
   await oldal.fill('input[name="email"]', email);
   await oldal.fill('input[name="jelszo"]', JELSZO);
   await oldal.getByRole("button", { name: /Belépés|Sign in/ }).click();

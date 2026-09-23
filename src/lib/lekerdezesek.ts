@@ -1,3 +1,4 @@
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import {
   eloirasokatPotol,
@@ -67,13 +68,16 @@ type BetoltottJogviszony = {
   berbeadoiIgazolasok: BerbeadoiIgazolas[];
 };
 
+// `satisfies` és nem `as const`: az `as const` a rendezési tömböket is
+// readonly-vá teszi, a Prisma pedig azt nem fogadja el. Így a literálok
+// megmaradnak — a származtatott típusok ebből jönnek —, a tömbök viszont nem.
 const BETOLTES = {
   ingatlan: true,
-  berlok: { orderBy: { sorrend: "asc" } },
-  eloirtTetelek: { orderBy: { esedekesseg: "asc" } },
-  berloiIgazolasok: { orderBy: { utalasDatuma: "asc" } },
-  berbeadoiIgazolasok: { orderBy: { erkezesDatuma: "asc" } },
-} as const;
+  berlok: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
+  eloirtTetelek: { orderBy: [{ esedekesseg: "asc" }, { id: "asc" }] },
+  berloiIgazolasok: { orderBy: [{ utalasDatuma: "asc" }, { id: "asc" }] },
+  berbeadoiIgazolasok: { orderBy: [{ erkezesDatuma: "asc" }, { id: "asc" }] },
+} satisfies Prisma.JogviszonyInclude;
 
 /**
  * A párosítási időablak bérbeadónként állítható. Akinek még nincs mentett
@@ -154,7 +158,7 @@ export async function jogviszonyNezetek(
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { ingatlan: { tulajdonosId } },
     include: BETOLTES,
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
   });
 
   return jogviszonyok.map((jogviszony) => nezetteAlakit(jogviszony, ma, beallitasok));
@@ -170,7 +174,7 @@ export async function berloNezetei(
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { berlok: { some: { berloId } } },
     include: BETOLTES,
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
   });
 
   const nezetek: JogviszonyNezet[] = [];
@@ -220,7 +224,7 @@ async function tarolt(
 ): Promise<Teendo[]> {
   const sorok = await prisma.teendo.findMany({
     where: { cimzettId, statusz },
-    orderBy: { esedekesseg: "asc" },
+    orderBy: [{ esedekesseg: "asc" }, { id: "asc" }],
   });
 
   return sorok.map((sor) => ({

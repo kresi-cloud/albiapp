@@ -7,6 +7,7 @@
  * azonosítója nem titok, csak azonosító.
  */
 
+import type { Prisma } from "@/generated/prisma/client";
 import {
   archivalt,
   beszelgetesNeve,
@@ -61,9 +62,9 @@ export async function tarsasagai(ki: Ki, most: Date): Promise<JogviszonyTarsasag
         : { berlok: { some: { berloId: ki.id } } },
     include: {
       ingatlan: { include: { tulajdonos: true } },
-      berlok: { include: { berlo: true }, orderBy: { sorrend: "asc" } },
+      berlok: { include: { berlo: true }, orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
     },
-    orderBy: { kezdete: "desc" },
+    orderBy: [{ kezdete: "desc" }, { id: "desc" }],
   });
 
   return jogviszonyok.map((jogviszony) => {
@@ -126,12 +127,15 @@ function nezette(
   };
 }
 
+// `satisfies` és nem `as const`: az `as const` a rendezési tömböket is
+// readonly-vá teszi, a Prisma pedig azt nem fogadja el. Így a literálok
+// megmaradnak — a származtatott típusok ebből jönnek —, a tömbök viszont nem.
 const TELJES = {
   resztvevok: { include: { felhasznalo: true } },
-  uzenetek: { orderBy: { kuldve: "desc" }, take: 1 },
+  uzenetek: { orderBy: [{ kuldve: "desc" }, { id: "desc" }], take: 1 },
   _count: { select: { uzenetek: true } },
   jogviszony: { include: { ingatlan: true } },
-} as const;
+} satisfies Prisma.BeszelgetesInclude;
 
 /**
  * Kié a beszélgetés. A résztvevői sor egymagában nem elég: a jogviszonyról
@@ -154,7 +158,7 @@ export async function beszelgetesei(ki: Ki, most: Date): Promise<BeszelgetesNeze
   const sorok = await prisma.beszelgetes.findMany({
     where: ove(ki),
     include: TELJES,
-    orderBy: { utolsoUzenet: "desc" },
+    orderBy: [{ utolsoUzenet: "desc" }, { id: "desc" }],
   });
 
   return sorok.map((sor) => nezette(sor, ki, most));
@@ -178,7 +182,7 @@ export async function beszelgetes(
   const uzenetek = await prisma.beszelgetesUzenet.findMany({
     where: { beszelgetesId },
     include: { szerzo: true },
-    orderBy: { kuldve: "asc" },
+    orderBy: [{ kuldve: "asc" }, { id: "asc" }],
   });
 
   return {
@@ -297,7 +301,7 @@ export async function beszelgetestIndit(
 export async function valaszraVaroDarab(ki: Ki): Promise<number> {
   const sorok = await prisma.beszelgetes.findMany({
     where: ove(ki),
-    include: { uzenetek: { orderBy: { kuldve: "desc" }, take: 1 } },
+    include: { uzenetek: { orderBy: [{ kuldve: "desc" }, { id: "desc" }], take: 1 } },
   });
   return sorok.filter((sor) => sor.uzenetek[0] && sor.uzenetek[0].szerzoId !== ki.id).length;
 }

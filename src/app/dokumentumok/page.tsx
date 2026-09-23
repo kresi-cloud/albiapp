@@ -27,13 +27,13 @@ export default async function Dokumentumok() {
     include: {
       ingatlan: true,
       berlok: {
-        orderBy: { sorrend: "asc" },
-        include: { igazolasok: { orderBy: { kiallitva: "desc" } } },
+        orderBy: [{ sorrend: "asc" }, { id: "asc" }],
+        include: { igazolasok: { orderBy: [{ kiallitva: "desc" }, { id: "desc" }] } },
       },
-      szerzodesek: { orderBy: { letrehozva: "desc" } },
-      jegyzokonyvek: { orderBy: { idopont: "desc" } },
+      szerzodesek: { orderBy: [{ letrehozva: "desc" }, { id: "desc" }] },
+      jegyzokonyvek: { orderBy: [{ idopont: "desc" }, { id: "desc" }] },
     },
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
   });
 
   const tar = await berbeadoTara(berbeado.id);

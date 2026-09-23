@@ -60,8 +60,8 @@ function token(): string {
 export async function berloBetekintoi(berloId: string, most = new Date()): Promise<BetekintoSor[]> {
   const sorok = await prisma.betekinto.findMany({
     where: { berloId },
-    orderBy: { letrehozva: "desc" },
-    include: { megnyitasok: { orderBy: { mikor: "desc" }, take: 1 }, _count: { select: { megnyitasok: true } } },
+    orderBy: [{ letrehozva: "desc" }, { id: "desc" }],
+    include: { megnyitasok: { orderBy: [{ mikor: "desc" }, { id: "desc" }], take: 1 }, _count: { select: { megnyitasok: true } } },
   });
 
   return sorok.map((sor) => ({
@@ -82,7 +82,7 @@ export async function berloJogviszonyai(berloId: string) {
   const sorok = await prisma.jogviszonyBerlo.findMany({
     where: { berloId },
     include: { jogviszony: { include: { ingatlan: true } } },
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
   });
 
   return sorok.map((sor) => ({

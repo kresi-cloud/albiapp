@@ -162,8 +162,14 @@ visszaállítja.
 
 ## Adatbázis
 
-Fejlesztéshez és a próbakörnyezethez SQLite, az éles adatbázis PostgreSQL lesz
-EU-s régióban. Amíg nincs éles adat, a váltás egyetlen migráció újrafuttatása.
+PostgreSQL, mindenhol: fejlesztésben, a CI-ban és élesben is. Az éles példány
+Supabase, EU-s régióban. Korábban helyben SQLite futott, de a Prisma migrációi
+nyelvjárásfüggőek, tehát két motorral a helyi próba nem azt mérte volna, ami
+élesben fut.
+
+Helyi indulás: egy futó Postgres, a kapcsolati címe a `.env`-ben
+(`DATABASE_URL`, minta a `.env.example`-ben), utána `npx prisma migrate deploy`
+és `npm run db:seed`.
 
 Pénzösszegek egész forintban (`Int`). A forintnak nincs gyakorlati váltópénze,
 így nincs lebegőpontos kerekítési hiba sem.

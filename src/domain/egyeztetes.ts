@@ -169,19 +169,6 @@ export function ablakotEllenoriz(nyers: {
 
 type Jelolt<T> = { tetel: T; tavolsag: number; osszegElteres: number };
 
-function legjobbJelolt<T>(jeloltek: Jelolt<T>[]): Jelolt<T> | null {
-  if (jeloltek.length === 0) return null;
-  // Azonos körön belül az időbeli közelség dönt — abszolút értékben, mert egy
-  // két nappal korábbi utalás közelebb van, mint egy húsz nappal későbbi —,
-  // utána a kisebb összegeltérés.
-  return [...jeloltek].sort((a, b) => {
-    const aTav = Math.abs(a.tavolsag);
-    const bTav = Math.abs(b.tavolsag);
-    if (aTav !== bTav) return aTav - bTav;
-    return Math.abs(a.osszegElteres) - Math.abs(b.osszegElteres);
-  })[0];
-}
-
 /**
  * Befizetések párosítása az előírásokhoz, két körben.
  *
@@ -191,8 +178,26 @@ function legjobbJelolt<T>(jeloltek: Jelolt<T>[]): Jelolt<T> | null {
  * 14 000 forintos közös költség nem a 180 000 forintos bérleti díj befizetése,
  * akkor sem, ha az esedékességi ablakba beleesik.
  *
- * A második kör köti a maradékot időbeli közelség szerint: ott már tényleg csak
- * az eltérő összegű befizetések maradtak, és azokból lesz az egyeztetés.
+ * A második kör köti a maradékot: ott már tényleg csak az eltérő összegű
+ * befizetések maradtak, és azokból lesz az egyeztetés.
+ *
+ * Egy körön belül **nem az előírások sorrendje dönt, hanem az illeszkedés**:
+ * az összes még szabad pár közül mindig a legjobb köttetik meg. Két dolog
+ * miatt így helyes:
+ *
+ *  - Egy hónapban több előírás esedékes ugyanazon a napon (bérleti díj, közös
+ *    költség, rezsiátalány, előfizetések). Ha a sorrend döntene, egy be nem
+ *    azonosítható összegű befizetést az vinne el, amelyik éppen elöl áll — és
+ *    az „éppen" itt szó szerint értendő: a sorrend az adatbázistól jött, azonos
+ *    esedékességnél pedig Postgresen nincs garantált sorrend. Ugyanaz a lap két
+ *    megnyitásra másik előíráshoz kötötte volna ugyanazt az utalást.
+ *  - Ha mégis illeszkedés szerint megy, egy 13 500 forintos utalás a 14 000
+ *    forintos közös költséghez kerül, nem a 180 000 forintos bérleti díjhoz.
+ *    Ez nemcsak eldöntött, hanem jobb is.
+ *
+ * A sorrend így teljes: időbeli közelség, majd összegeltérés, majd az
+ * esedékesség, végül az azonosítók. Az utolsó két kulcs nem szépészeti: nélkülük
+ * két egyformán jó pár közül megint a bemeneti sorrend választana.
  */
 function parosit<T extends { id: string; osszegFt: number }>(
   eloirasok: EloirtTetel[],
@@ -219,10 +224,28 @@ function parosit<T extends { id: string; osszegFt: number }>(
       );
 
   for (const csakPontos of [true, false]) {
+    const lehetosegek: { eloiras: EloirtTetel; jelolt: Jelolt<T> }[] = [];
     for (const eloiras of eloirasok) {
       if (parok.has(eloiras.id)) continue;
-      const jelolt = legjobbJelolt(jeloltek(eloiras, csakPontos));
-      if (!jelolt) continue;
+      for (const jelolt of jeloltek(eloiras, csakPontos)) lehetosegek.push({ eloiras, jelolt });
+    }
+
+    lehetosegek.sort((a, b) => {
+      const aTav = Math.abs(a.jelolt.tavolsag);
+      const bTav = Math.abs(b.jelolt.tavolsag);
+      if (aTav !== bTav) return aTav - bTav;
+      const aElteres = Math.abs(a.jelolt.osszegElteres);
+      const bElteres = Math.abs(b.jelolt.osszegElteres);
+      if (aElteres !== bElteres) return aElteres - bElteres;
+      const esedekesseg =
+        a.eloiras.esedekesseg.getTime() - b.eloiras.esedekesseg.getTime();
+      if (esedekesseg !== 0) return esedekesseg;
+      if (a.eloiras.id !== b.eloiras.id) return a.eloiras.id < b.eloiras.id ? -1 : 1;
+      return a.jelolt.tetel.id < b.jelolt.tetel.id ? -1 : 1;
+    });
+
+    for (const { eloiras, jelolt } of lehetosegek) {
+      if (parok.has(eloiras.id) || felhasznalt.has(jelolt.tetel.id)) continue;
       parok.set(eloiras.id, jelolt);
       felhasznalt.add(jelolt.tetel.id);
     }
@@ -257,9 +280,16 @@ export function egyeztet(
   );
   const beerkezesek = berbeadoiIgazolasok.filter((igazolas) => igazolas.megerkezett);
 
-  const sorrendben = [...eloirtTetelek].sort(
-    (a, b) => a.esedekesseg.getTime() - b.esedekesseg.getTime(),
-  );
+  // Az eredmény sorrendje is a lapé: ez adja a befizetések listáját. Egy
+  // hónapon belül több előírás esedékes ugyanazon a napon, és pusztán a
+  // dátumra rendezve a sorrendjüket a bemenet döntené el — Postgresen pedig
+  // azonos kulcsnál nincs garantált sorrend, tehát a lap két megnyitásra
+  // másképp állhatna. A másodlagos kulcs ezért nem szépészeti.
+  const sorrendben = [...eloirtTetelek].sort((a, b) => {
+    const esedekesseg = a.esedekesseg.getTime() - b.esedekesseg.getTime();
+    if (esedekesseg !== 0) return esedekesseg;
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  });
 
   const berbeadoiParok = parosit(
     sorrendben,

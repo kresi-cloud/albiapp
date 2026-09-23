@@ -20,7 +20,7 @@ export default async function Hibak() {
     prisma.jogviszony.findMany({
       where: { ingatlan: { tulajdonosId: berbeado.id } },
       include: { ingatlan: true },
-      orderBy: { letrehozva: "asc" },
+      orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
     }),
   ]);
 

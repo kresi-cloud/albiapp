@@ -26,13 +26,9 @@ const FEJLECEK = [
 ];
 
 const nextConfig: NextConfig = {
-  // A better-sqlite3 natív modul, ezért nem szabad a szerveroldali csomagba
-  // fordítani: futásidőben kell betöltődnie.
-  serverExternalPackages: [
-    "better-sqlite3",
-    "@prisma/adapter-better-sqlite3",
-    "@prisma/client",
-  ],
+  // A pg a hálózati kapcsolatot natív modulokra is bízhatja, ezért nem szabad a
+  // szerveroldali csomagba fordítani: futásidőben kell betöltődnie.
+  serverExternalPackages: ["pg", "@prisma/adapter-pg", "@prisma/client"],
   async headers() {
     return [{ source: "/:path*", headers: FEJLECEK }];
   },

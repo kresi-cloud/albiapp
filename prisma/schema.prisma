@@ -3,8 +3,10 @@
 // Pénzösszegek egész forintban (Int). A forintnak nincs gyakorlati váltópénze,
 // így nincs lebegőpontos kerekítési hiba sem.
 //
-// Fejlesztéshez és a próbakörnyezethez SQLite. Az éles adatbázis PostgreSQL lesz
-// EU-s régióban; amíg nincs éles adat, a váltás egyetlen migráció újrafuttatása.
+// Az adatbázis PostgreSQL, fejlesztésben, a CI-ban és élesben egyaránt. Az éles
+// példány Supabase, EU-s régióban. Korábban helyben SQLite futott, de a Prisma
+// migrációi nyelvjárásfüggőek: két adatbázismotorral a helyi próba nem azt mérte
+// volna, ami élesben fut.
 
 generator client {
   provider = "prisma-client"
@@ -12,7 +14,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Felhasznalo {

@@ -58,9 +58,9 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
     where: { ingatlan: { tulajdonosId } },
     include: {
       ingatlan: true,
-      eloirtTetelek: { orderBy: { esedekesseg: "asc" } },
-      berloiIgazolasok: { orderBy: { utalasDatuma: "asc" } },
-      berbeadoiIgazolasok: { orderBy: { erkezesDatuma: "asc" } },
+      eloirtTetelek: { orderBy: [{ esedekesseg: "asc" }, { id: "asc" }] },
+      berloiIgazolasok: { orderBy: [{ utalasDatuma: "asc" }, { id: "asc" }] },
+      berbeadoiIgazolasok: { orderBy: [{ erkezesDatuma: "asc" }, { id: "asc" }] },
       elszamolasok: { include: { tetelek: true } },
     },
   });
@@ -189,7 +189,7 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
         where: {
           datum: { gte: new Date(Date.UTC(ev, 0, 1)), lt: evVege },
         },
-        orderBy: { datum: "asc" },
+        orderBy: [{ datum: "asc" }, { id: "asc" }],
       },
     },
   });

@@ -28,101 +28,113 @@ function honapKulcs(nap: Date): string {
   return `${nap.getUTCFullYear()}-${String(nap.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
+/**
+ * A lezárás egyetlen tranzakcióban fut.
+ *
+ * Három írás tartozik össze: a kiköltözés utáni előírások törlése, a státusz
+ * átállítása és a záró hónap arányosítása. Ezek között egy másik kérés
+ * féligkész állapotot látna — lezárt jogviszonyt teljes havi bérleti díjjal,
+ * vagy élőt már arányosított összeggel —, és abból a bérlőnek kiírt összeg
+ * lenne rossz. SQLite-on ez rejtve maradt, mert ott az írás sorosítva van;
+ * Postgresen a lapok tényleg egyszerre futnak.
+ */
 export async function jogviszonytLezar(
   tulajdonosId: string,
   jogviszonyId: string,
   vege: Date,
 ): Promise<LezarasEredmeny> {
-  const jogviszony = await prisma.jogviszony.findFirst({
-    where: { id: jogviszonyId, ingatlan: { tulajdonosId } },
-    include: { eloirtTetelek: true },
-  });
-  if (!jogviszony) return { allapot: "nincs_jogosultsag" };
-
-  // A lezárás a nyitott jogviszony művelete. Lezártat újra lezárni azért nem
-  // lehet, mert a második lezárás korábbi véget is kaphatna: az már egyeztetett
-  // előírt tételeket törölne, és a záró hónapot újraarányosítaná. Aki a
-  // dátumot javítani akarja, előbb visszavonja a lezárást — az vissza is
-  // számolja, amit az első elvett —, és utána zár le újra.
-  if (jogviszony.statusz !== "elo") return { allapot: "mar_lezart" };
-
-  const zaroHonap = honapKulcs(vege);
-
-  // A kiköltözés hónapja utáni előírások: az az időszak már nincs.
-  const torlendo = jogviszony.eloirtTetelek.filter((tetel) => tetel.idoszak > zaroHonap);
-  if (torlendo.length > 0) {
-    await prisma.eloirtTetel.deleteMany({
-      where: { id: { in: torlendo.map((tetel) => tetel.id) } },
+  return prisma.$transaction(async (tx) => {
+    const jogviszony = await tx.jogviszony.findFirst({
+      where: { id: jogviszonyId, ingatlan: { tulajdonosId } },
+      include: { eloirtTetelek: true },
     });
-  }
+    if (!jogviszony) return { allapot: "nincs_jogosultsag" };
 
-  // Az értékelési ablak kezdetét itt tároljuk el, és **csak egyszer**.
-  //
-  // Nem a `vege` a kezdete: az a kiköltözés beírt napja, a bérlő viszont addig
-  // nem is látta, hogy a bérlet lezárult, amíg a bérbeadó nem rögzítette. Egy
-  // visszakeltezett lezárás enélkül azonnal felfedné a másik fél addig rejtett
-  // szövegét. Előre rögzített lezárásnál viszont a kiköltözés napja a későbbi,
-  // és akkor az a kezdet: a bérlet addig még fut.
-  //
-  // És nem számoljuk újra: a lezárás visszavonható, utána újra le lehet zárni,
-  // és ha az ablak ilyenkor újraindulna, a bérbeadó egy visszavonással új
-  // harminc napot adhatna annak, aki a másik szövegét már elolvasta.
-  const ablak = ablakotKezd(jogviszony.ertekelesAblak, vege, new Date());
+    // A lezárás a nyitott jogviszony művelete. Lezártat újra lezárni azért nem
+    // lehet, mert a második lezárás korábbi véget is kaphatna: az már egyeztetett
+    // előírt tételeket törölne, és a záró hónapot újraarányosítaná. Aki a
+    // dátumot javítani akarja, előbb visszavonja a lezárást — az vissza is
+    // számolja, amit az első elvett —, és utána zár le újra.
+    if (jogviszony.statusz !== "elo") return { allapot: "mar_lezart" };
 
-  await prisma.jogviszony.update({
-    where: { id: jogviszonyId },
-    data: { statusz: "lezart", vege, ertekelesAblak: ablak },
-  });
+    const zaroHonap = honapKulcs(vege);
 
-  // A záró hónap arányosítása: a domain mondja meg, mennyi jár.
-  const frissitett = await prisma.jogviszony.findUniqueOrThrow({
-    where: { id: jogviszonyId },
-    include: {
-      elofizetesek: { include: { jovahagyasok: true } },
-      berlok: { select: { berloId: true } },
-    },
-  });
-  const kellene = eloirasok(adatta(frissitett), vege).filter(
-    (eloiras) => eloiras.idoszak === zaroHonap,
-  );
+    // A kiköltözés hónapja utáni előírások: az az időszak már nincs.
+    const torlendo = jogviszony.eloirtTetelek.filter((tetel) => tetel.idoszak > zaroHonap);
+    if (torlendo.length > 0) {
+      await tx.eloirtTetel.deleteMany({
+        where: { id: { in: torlendo.map((tetel) => tetel.id) } },
+      });
+    }
 
-  let aranyositott = 0;
-  for (const eloiras of kellene) {
-    const meglevo = jogviszony.eloirtTetelek.find(
-      (tetel) =>
-        tetel.tipus === eloiras.tipus &&
-        tetel.idoszak === zaroHonap &&
-        tetel.forrasId === eloiras.forrasId,
-    );
-    if (!meglevo || meglevo.osszegFt === eloiras.osszegFt) continue;
+    // Az értékelési ablak kezdetét itt tároljuk el, és **csak egyszer**.
+    //
+    // Nem a `vege` a kezdete: az a kiköltözés beírt napja, a bérlő viszont addig
+    // nem is látta, hogy a bérlet lezárult, amíg a bérbeadó nem rögzítette. Egy
+    // visszakeltezett lezárás enélkül azonnal felfedné a másik fél addig rejtett
+    // szövegét. Előre rögzített lezárásnál viszont a kiköltözés napja a későbbi,
+    // és akkor az a kezdet: a bérlet addig még fut.
+    //
+    // És nem számoljuk újra: a lezárás visszavonható, utána újra le lehet zárni,
+    // és ha az ablak ilyenkor újraindulna, a bérbeadó egy visszavonással új
+    // harminc napot adhatna annak, aki a másik szövegét már elolvasta.
+    const ablak = ablakotKezd(jogviszony.ertekelesAblak, vege, new Date());
 
-    // Csak a generált, teljes havi összeget igazítjuk. Amit ember írt át,
-    // ahhoz nem nyúlunk: az a bérbeadó döntése volt.
-    const teljesHavi =
-      eloiras.tipus === "berleti_dij"
-        ? frissitett.berletiDijFt
-        : eloiras.tipus === "kozos_koltseg"
-          ? frissitett.kozosKoltsegFt
-          : eloiras.tipus === "elofizetes"
-            ? (frissitett.elofizetesek.find((sor) => sor.id === eloiras.forrasId)?.haviDijFt ?? 0)
-            : frissitett.rezsiAtalanyFt;
-    if (meglevo.osszegFt !== teljesHavi) continue;
+    await tx.jogviszony.update({
+      where: { id: jogviszonyId },
+      data: { statusz: "lezart", vege, ertekelesAblak: ablak },
+    });
 
-    await prisma.eloirtTetel.update({
-      where: { id: meglevo.id },
-      data: {
-        osszegFt: eloiras.osszegFt,
-        reszletezes: eloiras.reszletezes ? JSON.stringify(eloiras.reszletezes) : null,
+    // A záró hónap arányosítása: a domain mondja meg, mennyi jár.
+    const frissitett = await tx.jogviszony.findUniqueOrThrow({
+      where: { id: jogviszonyId },
+      include: {
+        elofizetesek: { include: { jovahagyasok: true } },
+        berlok: { select: { berloId: true } },
       },
     });
-    aranyositott += 1;
-  }
+    const kellene = eloirasok(adatta(frissitett), vege).filter(
+      (eloiras) => eloiras.idoszak === zaroHonap,
+    );
 
-  return {
-    allapot: "kesz",
-    toroltEloirasok: torlendo.length,
-    aranyositottEloirasok: aranyositott,
-  };
+    let aranyositott = 0;
+    for (const eloiras of kellene) {
+      const meglevo = jogviszony.eloirtTetelek.find(
+        (tetel) =>
+          tetel.tipus === eloiras.tipus &&
+          tetel.idoszak === zaroHonap &&
+          tetel.forrasId === eloiras.forrasId,
+      );
+      if (!meglevo || meglevo.osszegFt === eloiras.osszegFt) continue;
+
+      // Csak a generált, teljes havi összeget igazítjuk. Amit ember írt át,
+      // ahhoz nem nyúlunk: az a bérbeadó döntése volt.
+      const teljesHavi =
+        eloiras.tipus === "berleti_dij"
+          ? frissitett.berletiDijFt
+          : eloiras.tipus === "kozos_koltseg"
+            ? frissitett.kozosKoltsegFt
+            : eloiras.tipus === "elofizetes"
+              ? (frissitett.elofizetesek.find((sor) => sor.id === eloiras.forrasId)?.haviDijFt ?? 0)
+              : frissitett.rezsiAtalanyFt;
+      if (meglevo.osszegFt !== teljesHavi) continue;
+
+      await tx.eloirtTetel.update({
+        where: { id: meglevo.id },
+        data: {
+          osszegFt: eloiras.osszegFt,
+          reszletezes: eloiras.reszletezes ? JSON.stringify(eloiras.reszletezes) : null,
+        },
+      });
+      aranyositott += 1;
+    }
+
+    return {
+      allapot: "kesz",
+      toroltEloirasok: torlendo.length,
+      aranyositottEloirasok: aranyositott,
+    };
+  });
 }
 
 /**
@@ -141,49 +153,53 @@ export async function jogviszonytUjranyit(
   tulajdonosId: string,
   jogviszonyId: string,
 ): Promise<boolean> {
-  // Az értékelési ablak kezdetét csak akkor felejtjük el, ha még senki nem
-  // írt ezen a jogviszonyon: egy elkattintott lezárásnak ne maradjon nyoma.
-  // Ha viszont már van értékelés, a kezdet marad, mert a visszavonás
-  // különben új harminc napot adna annak, aki a másikét már elolvasta.
-  const irtakMar = await prisma.ertekeles.count({ where: { jogviszonyId } });
+  // Ugyanaz a tranzakciós szabály, mint a lezárásnál: a státusz visszaállítása
+  // és a visszaszámolás együtt érvényes, vagy sehogy.
+  return prisma.$transaction(async (tx) => {
+    // Az értékelési ablak kezdetét csak akkor felejtjük el, ha még senki nem
+    // írt ezen a jogviszonyon: egy elkattintott lezárásnak ne maradjon nyoma.
+    // Ha viszont már van értékelés, a kezdet marad, mert a visszavonás
+    // különben új harminc napot adna annak, aki a másikét már elolvasta.
+    const irtakMar = await tx.ertekeles.count({ where: { jogviszonyId } });
 
-  const eredmeny = await prisma.jogviszony.updateMany({
-    where: { id: jogviszonyId, ingatlan: { tulajdonosId }, statusz: "lezart" },
-    data:
-      irtakMar > 0
-        ? { statusz: "elo", vege: null }
-        : { statusz: "elo", vege: null, ertekelesAblak: null },
-  });
-  if (eredmeny.count === 0) return false;
+    const eredmeny = await tx.jogviszony.updateMany({
+      where: { id: jogviszonyId, ingatlan: { tulajdonosId }, statusz: "lezart" },
+      data:
+        irtakMar > 0
+          ? { statusz: "elo", vege: null }
+          : { statusz: "elo", vege: null, ertekelesAblak: null },
+    });
+    if (eredmeny.count === 0) return false;
 
-  const jogviszony = await prisma.jogviszony.findUniqueOrThrow({
-    where: { id: jogviszonyId },
-    include: {
-      eloirtTetelek: true,
-      elofizetesek: { include: { jovahagyasok: true } },
-      berlok: { select: { berloId: true } },
-    },
-  });
-
-  const kellene = new Map(
-    eloirasok(adatta(jogviszony), new Date()).map((eloiras) => [
-      `${eloiras.tipus}|${eloiras.idoszak}|${eloiras.forrasId}`,
-      eloiras,
-    ]),
-  );
-
-  for (const tetel of jogviszony.eloirtTetelek) {
-    if (tetel.reszletezes === null) continue;
-    const eloiras = kellene.get(`${tetel.tipus}|${tetel.idoszak}|${tetel.forrasId}`);
-    if (!eloiras || eloiras.osszegFt === tetel.osszegFt) continue;
-    await prisma.eloirtTetel.update({
-      where: { id: tetel.id },
-      data: {
-        osszegFt: eloiras.osszegFt,
-        reszletezes: eloiras.reszletezes ? JSON.stringify(eloiras.reszletezes) : null,
+    const jogviszony = await tx.jogviszony.findUniqueOrThrow({
+      where: { id: jogviszonyId },
+      include: {
+        eloirtTetelek: true,
+        elofizetesek: { include: { jovahagyasok: true } },
+        berlok: { select: { berloId: true } },
       },
     });
-  }
 
-  return true;
+    const kellene = new Map(
+      eloirasok(adatta(jogviszony), new Date()).map((eloiras) => [
+        `${eloiras.tipus}|${eloiras.idoszak}|${eloiras.forrasId}`,
+        eloiras,
+      ]),
+    );
+
+    for (const tetel of jogviszony.eloirtTetelek) {
+      if (tetel.reszletezes === null) continue;
+      const eloiras = kellene.get(`${tetel.tipus}|${tetel.idoszak}|${tetel.forrasId}`);
+      if (!eloiras || eloiras.osszegFt === tetel.osszegFt) continue;
+      await tx.eloirtTetel.update({
+        where: { id: tetel.id },
+        data: {
+          osszegFt: eloiras.osszegFt,
+          reszletezes: eloiras.reszletezes ? JSON.stringify(eloiras.reszletezes) : null,
+        },
+      });
+    }
+
+    return true;
+  });
 }

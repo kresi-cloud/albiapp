@@ -3,6 +3,7 @@
  * az összefésülés és a szűrés a domainben.
  */
 
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import {
   berloDokumentumai,
@@ -12,16 +13,19 @@ import {
 } from "@/domain/dokumentumtar";
 import { nevsor } from "@/domain/szerzodes";
 
+// `satisfies` és nem `as const`: az `as const` a rendezési tömböket is
+// readonly-vá teszi, a Prisma pedig azt nem fogadja el. Így a literálok
+// megmaradnak — a származtatott típusok ebből jönnek —, a tömbök viszont nem.
 const BETOLTES = {
   ingatlan: true,
   berlok: {
-    orderBy: { sorrend: "asc" },
-    include: { igazolasok: { orderBy: { kiallitva: "desc" } } },
+    orderBy: [{ sorrend: "asc" }, { id: "asc" }],
+    include: { igazolasok: { orderBy: [{ kiallitva: "desc" }, { id: "desc" }] } },
   },
-  szerzodesek: { orderBy: { letrehozva: "desc" } },
-  jegyzokonyvek: { orderBy: { idopont: "desc" } },
-  elszamolasok: { orderBy: { idoszakVege: "desc" } },
-} as const;
+  szerzodesek: { orderBy: [{ letrehozva: "desc" }, { id: "desc" }] },
+  jegyzokonyvek: { orderBy: [{ idopont: "desc" }, { id: "desc" }] },
+  elszamolasok: { orderBy: [{ idoszakVege: "desc" }, { id: "desc" }] },
+} satisfies Prisma.JogviszonyInclude;
 
 type Betoltott = Awaited<
   ReturnType<typeof prisma.jogviszony.findMany<{ include: typeof BETOLTES }>>
@@ -76,7 +80,7 @@ export async function berbeadoTara(berbeadoId: string): Promise<Dokumentum[]> {
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { ingatlan: { tulajdonosId: berbeadoId } },
     include: BETOLTES,
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
   });
   return dokumentumtar(jogviszonyok.map((jogviszony) => tarra(jogviszony)));
 }
@@ -86,7 +90,7 @@ export async function berloTara(berloId: string): Promise<Dokumentum[]> {
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { berlok: { some: { berloId } } },
     include: BETOLTES,
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
   });
   return berloDokumentumai(
     dokumentumtar(jogviszonyok.map((jogviszony) => tarra(jogviszony, berloId))),
@@ -162,9 +166,9 @@ export async function elszamolasIrat(
           : { ingatlan: { tulajdonosId: nezo.id } },
     },
     include: {
-      tetelek: { orderBy: { sorrend: "asc" } },
+      tetelek: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
       jogviszony: {
-        include: { ingatlan: true, berlok: { orderBy: { sorrend: "asc" } } },
+        include: { ingatlan: true, berlok: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] } },
       },
     },
   });

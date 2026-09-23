@@ -266,7 +266,7 @@ export async function igazolastKiallit(_elozo: Eredmeny, urlap: FormData): Promi
       jogviszony: { ingatlan: { tulajdonosId: berbeado.id } },
     },
     include: {
-      jogviszony: { include: { ingatlan: true, berlok: { orderBy: { sorrend: "asc" } } } },
+      jogviszony: { include: { ingatlan: true, berlok: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] } } },
     },
   });
   if (!berlo) return hiba(sz("igazolas.hiba.nem_tied"));

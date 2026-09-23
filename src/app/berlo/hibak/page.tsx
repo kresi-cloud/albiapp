@@ -22,7 +22,7 @@ export default async function BerloiHibak() {
     prisma.jogviszony.findMany({
       where: { berlok: { some: { berloId: berlo.id } } },
       include: { ingatlan: true },
-      orderBy: { letrehozva: "asc" },
+      orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
     }),
   ]);
 

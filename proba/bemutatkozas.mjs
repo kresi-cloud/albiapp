@@ -45,8 +45,17 @@ export async function futtat(oldal) {
   const mezo = oldal.locator('textarea[name="bemutatkozas"]');
   all((await mezo.count()) > 0, "van bemutatkozó mező");
   await mezo.fill(SAJAT_SZOVEG);
+  // A mentés válaszára várunk, nem a hálózat elcsendesedésére: a `networkidle`
+  // visszatér azelőtt, hogy a kiszolgálói művelet lefutna, a következő `goto`
+  // pedig elvágja a függőben lévő kérést — ilyenkor a mentés meg sem történik.
+  // A visszajelző sávra sem várhatunk itt: a `revalidatePath` az űrlappal
+  // együtt kicserélheti, mielőtt a próba ránézne.
+  const mentesValasza = oldal.waitForResponse(
+    (v) => v.url().includes("/bemutatkozas") && v.request().method() === "POST",
+    { timeout: 15000 },
+  );
   await oldal.getByRole("button", { name: /^(Mentés|Save)$/ }).click();
-  await oldal.waitForLoadState("networkidle");
+  await mentesValasza;
   await all_(oldal, "/bemutatkozas");
   all(
     (await forras(oldal)).includes(SAJAT_SZOVEG),

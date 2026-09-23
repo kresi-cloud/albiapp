@@ -36,16 +36,16 @@ export default async function BerloiNezet() {
       include: {
         ingatlan: {
           include: {
-            meroorak: { include: { oraallasok: { orderBy: { datum: "desc" }, take: 1 } } },
+            meroorak: { include: { oraallasok: { orderBy: [{ datum: "desc" }, { id: "desc" }], take: 1 } } },
           },
         },
         elszamolasok: {
           where: { allapot: { not: "tervezet" } },
-          orderBy: { idoszakVege: "desc" },
-          include: { tetelek: { orderBy: { sorrend: "asc" } } },
+          orderBy: [{ idoszakVege: "desc" }, { id: "desc" }],
+          include: { tetelek: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] } },
         },
       },
-      orderBy: { letrehozva: "asc" },
+      orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
     }),
   ]);
 

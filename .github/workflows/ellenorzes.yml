@@ -9,7 +9,10 @@ jobs:
   ellenorzes:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: "file:./ci.db"
+      # Ez a munka nem nyúl adatbázishoz: a kapuk a forrást olvassák, a fordítás
+      # nem kérdez le semmit. A cím csak azért kell, mert a Prisma CLI és a
+      # `lib/db` elvárja.
+      DATABASE_URL: "postgresql://albi:albi@127.0.0.1:5432/albi"
       MUNKAMENET_TITOK: "ellenorzeshez-hasznalt-titok"
     steps:
       - uses: actions/checkout@v4
@@ -47,8 +50,22 @@ jobs:
   bongeszo:
     name: Böngészős próba
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: albi
+          POSTGRES_PASSWORD: albi
+          POSTGRES_DB: albi
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
-      DATABASE_URL: "file:./ci.db"
+      DATABASE_URL: "postgresql://albi:albi@127.0.0.1:5432/albi"
       MUNKAMENET_TITOK: "ellenorzeshez-hasznalt-titok"
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "0"
     steps:

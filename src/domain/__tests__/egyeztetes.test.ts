@@ -449,3 +449,67 @@ describe("csoportosítás", () => {
     expect(soronVan.length + rendezett.length).toBe(sorok.length);
   });
 });
+
+/**
+ * A párosítás nem függhet attól, milyen sorrendben kapja az előírásokat.
+ *
+ * Egy hónapban több előírás esedékes ugyanazon a napon: a bérleti díj, a közös
+ * költség, a rezsiátalány és minden előfizetés. Ezeket az adatbázis dátumra
+ * rendezve adja vissza, azonos dátumnál viszont Postgresen nincs garantált
+ * sorrend — ugyanaz a lap két megnyitásra másik sorrendet kaphat. Ha a
+ * párosítás a sorrendre támaszkodik, akkor ugyanaz az utalás egyszer a bérleti
+ * díjhoz kerül, máskor egy ezerforintos előfizetéshez, és a bérleti díj sora
+ * hol vitás, hol várakozó. Ez nem elméleti: pontosan ezen bukott el a
+ * böngészős próba a Postgresre váltás után.
+ */
+describe("egyeztet — a bemenet sorrendje nem számít", () => {
+  const AZONOS_NAP = new Date(Date.UTC(2026, 8, 5));
+
+  const berletiDij = eloiras({ id: "berleti", osszegFt: 180000, esedekesseg: AZONOS_NAP });
+  const elofizetes = eloiras({
+    id: "elofizetes",
+    tipus: "elofizetes",
+    osszegFt: 1152,
+    esedekesseg: AZONOS_NAP,
+  });
+
+  // A bérlő 180 000-et mond, a bérbeadó 150 000-et: a bérleti díj vitás.
+  const berloiSor = [berloi({ id: "berloi-berleti", osszegFt: 180000, utalasDatuma: AZONOS_NAP })];
+  const berbeadoiSor = [
+    berbeadoi({ id: "berbeadoi-berleti", osszegFt: 150000, erkezesDatuma: AZONOS_NAP }),
+  ];
+
+  function berletiSoraEbben(eloirasok: EloirtTetel[]) {
+    return egyeztet(eloirasok, berloiSor, berbeadoiSor, MA).find(
+      (sor) => sor.eloirtTetelId === "berleti",
+    );
+  }
+
+  it("a bérleti díj vitás, akárhogy jönnek az előírások", () => {
+    expect(berletiSoraEbben([berletiDij, elofizetes])?.allapot).toBe("vitas");
+    expect(berletiSoraEbben([elofizetes, berletiDij])?.allapot).toBe("vitas");
+  });
+
+  it("a be nem azonosítható összeg a hozzá közelebbi előíráshoz kerül", () => {
+    // 13 500 forint a 14 000-es közös költségé, nem a 180 000-es bérleti díjé,
+    // akkor sem, ha a bérleti díj áll elöl.
+    const kozosKoltseg = eloiras({
+      id: "kozos",
+      tipus: "kozos_koltseg",
+      osszegFt: 14000,
+      esedekesseg: AZONOS_NAP,
+    });
+    const utalas = [berbeadoi({ id: "utalas", osszegFt: 13500, erkezesDatuma: AZONOS_NAP })];
+
+    const sorok = egyeztet([berletiDij, kozosKoltseg], [], utalas, MA);
+    expect(sorok.find((sor) => sor.eloirtTetelId === "kozos")?.berbeadoiIgazolasId).toBe("utalas");
+    expect(sorok.find((sor) => sor.eloirtTetelId === "berleti")?.berbeadoiIgazolasId).toBe(null);
+  });
+
+  it("a sorok sorrendje is ugyanaz, bármilyen sorrendben érkeznek", () => {
+    const egyik = egyeztet([berletiDij, elofizetes], berloiSor, berbeadoiSor, MA);
+    const masik = egyeztet([elofizetes, berletiDij], berloiSor, berbeadoiSor, MA);
+
+    expect(masik.map((sor) => sor.eloirtTetelId)).toEqual(egyik.map((sor) => sor.eloirtTetelId));
+  });
+});

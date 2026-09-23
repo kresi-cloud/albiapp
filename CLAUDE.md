@@ -114,6 +114,14 @@ törli, a záró hónapét arányosítja, a múlthoz nem nyúl. A lezárás viss
 ezt vissza is számolja, mert egy elkattintott lezárás egyébként csendben
 kevesebb bérleti díjat írna elő.
 
+**A lezárás egyetlen tranzakcióban fut**: a kiköltözés utáni előírások törlése,
+a státusz átállítása és a záró hónap arányosítása összetartozik. Közöttük egy
+másik kérés féligkész állapotot látna — lezárt jogviszonyt teljes havi bérleti
+díjjal —, és abból a bérlőnek kiírt összeg lenne rossz. SQLite-on ez rejtve
+maradt, mert ott az írás sorosítva van; Postgresen a lapok tényleg egyszerre
+futnak, és a böngészős próba minden harmadik futáson elbukott rajta. A
+visszavonásra ugyanez áll.
+
 **A lezárás a nyitott jogviszony művelete**, és ezt a kiszolgáló tartja be, nem
 a gomb elrejtése. Lezártat újra lezárni azért nem lehet, mert a második lezárás
 korábbi véget is kaphatna: az már egyeztetett előírt tételeket törölne, és a
@@ -725,6 +733,70 @@ elérhetővé teszi. Az üzemeltető adatai szögletes zárójellel kitöltendő
 állnak benne: az adatkezelő megnevezése jogi nyilatkozat, nem találjuk ki a
 bérbeadó helyett. Élesítés előtt ezeket ki kell tölteni.
 
+## Az adatbázis alapelve
+
+PostgreSQL, mindenhol ugyanaz: fejlesztésben, a CI-ban és élesben is. Az éles
+példány Supabase, EU-s régióban.
+
+Korábban helyben SQLite futott, és csak az éles lett volna Postgres. Ez azért
+nem megy, mert a Prisma migrációi nyelvjárásfüggőek: az SQLite oszlopot úgy
+módosít, hogy újraépíti a táblát, a `DATETIME` nem `TIMESTAMP`, és az egyediségi
+kulcsok viselkedése is más. Két motorral tehát a helyi próba és a CI nem azt
+mérte volna, ami élesben fut — és pont az a hibafajta maradt volna őrizetlen,
+ami csak élesben derül ki.
+
+A váltáskor az SQLite huszonhat migrációját nem átírtuk, hanem eldobtuk: éles
+adat még sehol nem volt, tehát egyetlen alapmigráció elő tudja állítani a
+mostani sémát. Ami ezután jön, az megint rendes, egymásra épülő migráció; ez az
+egyszeri kivétel az utolsó pillanat volt, amikor megtehettük.
+
+A kapcsolati cím kizárólag környezeti változóból jön (`DATABASE_URL`), és nincs
+alapértelmezése. Volt: `file:./dev.db`. Az SQLite-nál ez ártalmatlan volt,
+legfeljebb egy üres fájl keletkezett; Postgresnél viszont a hiányzó cím néma
+kapcsolódási hiba lenne kérésenként, futásidőben. Inkább induláskor állunk meg.
+
+A váltás egy valódi hibát hozott elő, amit SQLite soha nem mutatott volna meg.
+A hiányzó előírások pótlása `upsert`-tel ment, üres `update`-tel, azzal a
+megjegyzéssel, hogy ez kizárja a versenyt — de üres `update`-ből a Prisma nem
+tud `ON CONFLICT` utasítást fordítani, tehát keres, majd beszúr. SQLite-on az
+írás sorosítva van, így a rés soha nem nyílt ki; Postgresen a bérlő és a
+bérbeadó egyidejű oldalletöltése azonnal egyediségi hibát adott, és a
+befizetések lapja 500-zal szállt el. Azóta `create`, és aki az egyediségi
+kulcsba ütközik, nem csinál semmit: a tétel létrejött, csak nem ő hozta létre.
+**Ahol a jó viselkedés az, hogy a vesztes ág nem ír, ott az egyediségi kulcs a
+fék, és a hibáját le kell kezelni** — nem az `upsert` az.
+
+A másik valódi hiba a rendezésé. **Postgresen azonos rendezőkulcsú sorok
+sorrendje nincs garantálva**: ugyanaz a lekérdezés két futásra másik sorrendet
+adhat. SQLite-on a beszúrás sorrendje döntött, tehát a sorrend stabilnak
+*látszott*, és a kód rá is támaszkodott. Nálunk a holtverseny nem kivétel, hanem
+a rendes eset: egy hónap előírásai ugyanazon a napon esedékesek, a példaadat
+jogviszonyai ugyanabban az ezredmásodpercben jönnek létre, a `take: 1`
+lekérdezések pedig pont a holtversenyből választanak egyet.
+
+Ebből két szabály lett:
+
+- **Minden lekérdezés rendezése az `id`-vel zárul**, és az irány az elsődleges
+  kulcsét követi: egy „legutóbbi" lekérdezésnél a holtversenyből is a legutóbbi
+  kell. Ezt a `rendezes` kapu tartja be.
+- **A párosítás nem támaszkodhat a bemenet sorrendjére.** Az `egyeztet` korábban
+  előírásonként haladt, és amelyik elöl állt, az vitte el a rá nem pontosan
+  illő befizetést. Most minden körben az összes szabad pár közül a legjobb
+  illeszkedés köttetik meg: előbb az időbeli közelség, aztán az összegeltérés,
+  végül az azonosítók. Ez nemcsak eldöntött, hanem jobb is — egy 13 500
+  forintos utalás a 14 000 forintos közös költséghez kerül, nem a 180 000
+  forintos bérleti díjhoz.
+
+A hiba onnan derült ki, hogy a böngészős próba a bérbeadó oldalán vitásnak várt
+egy tételt, a lap viszont várakozót mutatott: ugyanazt az utalást a lap hol a
+bérleti díjhoz, hol egy ezerforintos előfizetéshez kötötte.
+
+A Supabase két címet ad. A **session pooler** (5432) tartós kapcsolatot ad, ez
+kell a migrációhoz; a **transaction pooler** (6543) rövid kapcsolatokra való, ez
+kell a futó alkalmazásnak, mert a szerver nélküli környezet kérésenként nyit
+újat. A kettő felcserélve elfogy a kapcsolatok száma, és az a terhelés alatt
+derül ki.
+
 ## A példaadat
 
 A seed (`prisma/seed.ts`) minden időérzékeny dátuma a **mostani hónaphoz** igazodik,
@@ -880,7 +952,8 @@ bérlő különben joggal hinné, hogy előbb-utóbb mégis kérünk bankszámla
 A böngészős próbák ne a képernyőn látható szövegre szűrjenek ott, ahol a
 megjelenés változhat: a befizetési kártyán `data-idoszak` és `data-osszeg`
 van, a bizonylatblokkon `data-oldal`, az összecsukható szakaszokon
-`data-szakasz`. A szakasznál ez nem stíluskérdés: a Playwright `hasText`
+`data-szakasz`, a visszajelző sávon `data-uzenet`. A szakasznál ez nem
+stíluskérdés: a Playwright `hasText`
 szűrése kis-nagybetűre érzéketlen részszó-keresés a **teljes** részfán, tehát a
 szakaszban álló tételek szövegébe is belefut. A „Lezárt" szakaszra szűrő
 teendőpróba így az értékelős teendőt („Értékeld a lezárt bérletet") találta meg
@@ -890,6 +963,22 @@ másik felére hasonló mondatot. A nyelvváltásra pedig nem a
 `networkidle`-re várunk, hanem a `lang` attribútumra (`nyelvre()` a
 `proba/kozos.mjs`-ben): a kiszolgálói művelet válasza később jön, mint ahogy a
 hálózat elcsendesedik, és a következő `goto` elvágja.
+
+**Ez minden mentésre igaz, nem csak a nyelvváltásra**, és a Postgresre váltás
+meg is mutatta: SQLite-on a mentés beleért abba a résbe, Postgresen nem, és a
+bemutatkozás próbája úgy bukott el, hogy a mentés maga hibátlan volt.
+
+Amire ilyenkor várni kell, az a **művelet válasza** (`waitForResponse` a lap
+POST-jára), nem a hálózat csendje. A visszajelző sáv erre csak ott jó, ahol a
+`revalidatePath` nem cseréli ki az űrlapot — ahol kicseréli, ott az `Uzenetsav`
+az űrlappal együtt tűnik el, és a próba olyasmire vár, ami már nincs ott. Ezért
+a sávon van ugyan `data-uzenet` (`ures` / `kesz` / `hiba`), de a mentés
+megtörténtét a **hatásán** kell mérni: a lap újratöltve mutatja-e az új adatot.
+
+A kilépés ugyanígy megnézi a saját eredményét — a `kilep()` addig próbálkozik,
+amíg a belépőlap tényleg elő nem jön, és ha nem jön, kimondja; korábban
+csendben belépve ment tovább, és a bukás harminc másodperces mezőkeresés lett
+valahol messze onnan, ahol a baj volt.
 
 ## Mit jelent, hogy kész
 
@@ -918,6 +1007,8 @@ forráskódot olvassák, nem futtatják:
 - `formatum`: számot és dátumot egyedül a `domain/nyelv.ts` formáz. Így nem
   csúszik el a magyar alak oldalanként, és nem marad beégetett `hu-HU` az angol
   felületen.
+- `rendezes`: minden `orderBy` utolsó kulcsa az `id`. Postgresen az azonos
+  kulcsú sorok sorrendje nincs garantálva, és nálunk a holtverseny a rendes eset.
 - `teszteltseg`: minden domain modult importál legalább egy teszt.
 
 Mindegyik kapu első tesztje azt próbálja ki, hogy a kapu tényleg elutasítja a

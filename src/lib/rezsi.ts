@@ -32,7 +32,7 @@ export async function elszamolastOsszeallit(
           meroorak: {
             include: {
               dijszabasok: true,
-              oraallasok: { orderBy: { datum: "asc" } },
+              oraallasok: { orderBy: [{ datum: "asc" }, { id: "asc" }] },
             },
           },
         },

@@ -33,14 +33,14 @@ export default async function Berlok() {
     include: {
       ingatlan: true,
       berlok: {
-        orderBy: { sorrend: "asc" },
+        orderBy: [{ sorrend: "asc" }, { id: "asc" }],
         include: {
           berlo: true,
-          meghivok: { orderBy: { letrehozva: "desc" } },
+          meghivok: { orderBy: [{ letrehozva: "desc" }, { id: "desc" }] },
         },
       },
     },
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
   });
 
   return (
