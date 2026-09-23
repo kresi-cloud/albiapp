@@ -6,6 +6,7 @@
  * betöltött szöveg a lap forrásában ott állna.
  */
 
+import type { Prisma } from "@/generated/prisma/client";
 import {
   ablakKezdete,
   irhato,
@@ -104,6 +105,9 @@ function nezette(
   };
 }
 
+// `satisfies` és nem `as const`: az `as const` a rendezési tömböket is
+// readonly-vá teszi, a Prisma pedig azt nem fogadja el. Így a literálok
+// megmaradnak — a származtatott típusok ebből jönnek —, a tömbök viszont nem.
 const BETOLTES = {
   ingatlan: {
     select: {
@@ -112,9 +116,9 @@ const BETOLTES = {
       tulajdonos: { select: { nev: true } },
     },
   },
-  berlok: { select: { berloId: true, nev: true }, orderBy: { sorrend: "asc" } },
+  berlok: { select: { berloId: true, nev: true }, orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
   ertekelesek: { include: PONTOKKAL },
-} as const;
+} satisfies Prisma.JogviszonyInclude;
 
 /**
  * A bérbeadó értékelései. Jogviszonyonként annyi sor, ahány fiókos bérlő van:
@@ -128,7 +132,7 @@ export async function berbeadoErtekelesei(
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { ingatlan: { tulajdonosId: berbeadoId }, vege: { not: null } },
     include: BETOLTES,
-    orderBy: { vege: "desc" },
+    orderBy: [{ vege: "desc" }, { id: "desc" }],
   });
 
   return jogviszonyok.flatMap((jogviszony) =>
@@ -166,7 +170,7 @@ export async function berloErtekelesei(
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { berlok: { some: { berloId } }, vege: { not: null } },
     include: BETOLTES,
-    orderBy: { vege: "desc" },
+    orderBy: [{ vege: "desc" }, { id: "desc" }],
   });
 
   return jogviszonyok.map((jogviszony) =>

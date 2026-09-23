@@ -49,7 +49,7 @@ export async function szerzodestKeszit(_elozo: Eredmeny, urlap: FormData): Promi
     where: { id: jogviszonyId, ingatlan: { tulajdonosId: berbeado.id } },
     include: {
       ingatlan: true,
-      berlok: { orderBy: { sorrend: "asc" } },
+      berlok: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
       elofizetesek: { include: { jovahagyasok: true } },
     },
   });

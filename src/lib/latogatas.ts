@@ -3,19 +3,23 @@
  * saját ingatlanjainak látogatásait látja, a bérlő a saját jogviszonyaiét.
  */
 
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import type { Fajta, Latogatas, Valasz } from "@/domain/latogatas";
 
+// `satisfies` és nem `as const`: az `as const` a rendezési tömböket is
+// readonly-vá teszi, a Prisma pedig azt nem fogadja el. Így a literálok
+// megmaradnak — a származtatott típusok ebből jönnek —, a tömbök viszont nem.
 const BETOLTES = {
   bejelento: { select: { nev: true } },
   valaszok: { include: { berlo: { select: { nev: true } } } },
   jogviszony: {
     include: {
       ingatlan: { select: { megnevezes: true } },
-      berlok: { orderBy: { sorrend: "asc" } },
+      berlok: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
     },
   },
-} as const;
+} satisfies Prisma.SzolgaltatoiLatogatasInclude;
 
 type Betoltott = Awaited<
   ReturnType<
@@ -70,7 +74,7 @@ export async function berbeadoLatogatasai(
   const sorok = await prisma.szolgaltatoiLatogatas.findMany({
     where: { jogviszony: { ingatlan: { tulajdonosId: berbeadoId } } },
     include: BETOLTES,
-    orderBy: { nap: "asc" },
+    orderBy: [{ nap: "asc" }, { id: "asc" }],
   });
   return sorok.map(nezette);
 }
@@ -81,7 +85,7 @@ export async function berloLatogatasai(
   const sorok = await prisma.szolgaltatoiLatogatas.findMany({
     where: { jogviszony: { berlok: { some: { berloId } } } },
     include: BETOLTES,
-    orderBy: { nap: "asc" },
+    orderBy: [{ nap: "asc" }, { id: "asc" }],
   });
   return sorok.map(nezette);
 }

@@ -67,7 +67,7 @@ export async function bizonylatokTetelekhez(
       feltoltve: true,
       feltoltoId: true,
     },
-    orderBy: { feltoltve: "asc" },
+    orderBy: [{ feltoltve: "asc" }, { id: "asc" }],
   });
 
   for (const sor of sorok) {

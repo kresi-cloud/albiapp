@@ -60,7 +60,7 @@ export async function oraallastRogzit(_elozo: Eredmeny, urlap: FormData): Promis
               },
             },
     },
-    include: { oraallasok: { orderBy: { datum: "desc" }, take: 1 } },
+    include: { oraallasok: { orderBy: [{ datum: "desc" }, { id: "desc" }], take: 1 } },
   });
   if (!meroora) return hiba(sz("rezsi.hiba.meroora_nem_tied"));
 

@@ -97,7 +97,7 @@ async function valaszidok(
 
   const hibak = await prisma.hibabejelentes.findMany({
     where: { jogviszonyId: { in: jogviszonyIdk } },
-    include: { uzenetek: { orderBy: { letrehozva: "asc" } } },
+    include: { uzenetek: { orderBy: [{ letrehozva: "asc" }, { id: "asc" }] } },
   });
 
   for (const hiba of hibak) {
@@ -136,7 +136,7 @@ async function valaszidok(
       jogviszonyId: { in: jogviszonyIdk },
       resztvevok: { some: { felhasznaloId } },
     },
-    include: { uzenetek: { orderBy: { kuldve: "asc" } } },
+    include: { uzenetek: { orderBy: [{ kuldve: "asc" }, { id: "asc" }] } },
   });
 
   for (const beszelgetes of beszelgetesek) {

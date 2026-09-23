@@ -15,7 +15,7 @@ export default async function Ingatlanok() {
   const ingatlanok = await prisma.ingatlan.findMany({
     where: { tulajdonosId: berbeado.id },
     include: { meroorak: true, jogviszonyok: true },
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
   });
 
   const ures = ingatlanok.length === 0;

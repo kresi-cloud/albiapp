@@ -3,6 +3,7 @@
  * ingatlanjainak bejelentéseit látja, a bérlő a saját jogviszonyaiét.
  */
 
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { nevsor } from "@/domain/szerzodes";
 import type { HibaAllapot, HibaSurgosseg, HibaTeendohoz, Ok, Terulet } from "@/domain/hibabejelentes";
@@ -34,16 +35,19 @@ export type HibaNezet = {
   uzenetek: HibaUzenetNezet[];
 };
 
+// `satisfies` és nem `as const`: az `as const` a rendezési tömböket is
+// readonly-vá teszi, a Prisma pedig azt nem fogadja el. Így a literálok
+// megmaradnak — a származtatott típusok ebből jönnek —, a tömbök viszont nem.
 const BETOLTES = {
   bejelento: true,
-  uzenetek: { orderBy: { letrehozva: "asc" }, include: { szerzo: true } },
+  uzenetek: { orderBy: [{ letrehozva: "asc" }, { id: "asc" }], include: { szerzo: true } },
   jogviszony: {
     include: {
       ingatlan: true,
-      berlok: { orderBy: { sorrend: "asc" } },
+      berlok: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
     },
   },
-} as const;
+} satisfies Prisma.HibabejelentesInclude;
 
 type Betoltott = Awaited<
   ReturnType<typeof prisma.hibabejelentes.findMany<{ include: typeof BETOLTES }>>
@@ -80,7 +84,7 @@ export async function berbeadoHibai(berbeadoId: string): Promise<HibaNezet[]> {
   const sorok = await prisma.hibabejelentes.findMany({
     where: { jogviszony: { ingatlan: { tulajdonosId: berbeadoId } } },
     include: BETOLTES,
-    orderBy: { bejelentve: "desc" },
+    orderBy: [{ bejelentve: "desc" }, { id: "desc" }],
   });
   return sorok.map((hiba) => nezette(hiba, berbeadoId));
 }
@@ -89,7 +93,7 @@ export async function berloHibai(berloId: string): Promise<HibaNezet[]> {
   const sorok = await prisma.hibabejelentes.findMany({
     where: { jogviszony: { berlok: { some: { berloId } } } },
     include: BETOLTES,
-    orderBy: { bejelentve: "desc" },
+    orderBy: [{ bejelentve: "desc" }, { id: "desc" }],
   });
   return sorok.map((hiba) => nezette(hiba, berloId));
 }

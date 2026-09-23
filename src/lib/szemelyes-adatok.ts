@@ -105,7 +105,7 @@ const BERLOI_MEZOK = {
 export async function berloSajatSorai(berloId: string): Promise<BerloiSor[]> {
   const sorok = await prisma.jogviszonyBerlo.findMany({
     where: { berloId },
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
     ...BERLOI_MEZOK,
   });
   return sorok.map(berloiSor);
@@ -118,7 +118,7 @@ export async function jogviszonyBerloi(
 ): Promise<BerloiSor[]> {
   const sorok = await prisma.jogviszonyBerlo.findMany({
     where: { jogviszonyId, jogviszony: { ingatlan: { tulajdonosId } } },
-    orderBy: { sorrend: "asc" },
+    orderBy: [{ sorrend: "asc" }, { id: "asc" }],
     ...BERLOI_MEZOK,
   });
   return sorok.map(berloiSor);

@@ -71,10 +71,10 @@ export async function berbeadoElofizetesei(tulajdonosId: string): Promise<Nezet[
     where: { ingatlan: { tulajdonosId } },
     include: {
       ingatlan: { select: { megnevezes: true } },
-      berlok: { select: { berloId: true, nev: true }, orderBy: { sorrend: "asc" } },
-      elofizetesek: { include: TELJES, orderBy: { kezdete: "asc" } },
+      berlok: { select: { berloId: true, nev: true }, orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
+      elofizetesek: { include: TELJES, orderBy: [{ kezdete: "asc" }, { id: "asc" }] },
     },
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
   });
 
   return jogviszonyok.flatMap((jogviszony) =>
@@ -91,9 +91,9 @@ export async function berbeadoJogviszonyai(tulajdonosId: string) {
     select: {
       id: true,
       ingatlan: { select: { megnevezes: true } },
-      berlok: { select: { berloId: true, nev: true }, orderBy: { sorrend: "asc" } },
+      berlok: { select: { berloId: true, nev: true }, orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
     },
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
   });
 }
 
@@ -103,10 +103,10 @@ export async function berloElofizetesei(berloId: string): Promise<Nezet[]> {
     where: { berlok: { some: { berloId } } },
     include: {
       ingatlan: { select: { megnevezes: true } },
-      berlok: { select: { berloId: true, nev: true }, orderBy: { sorrend: "asc" } },
-      elofizetesek: { include: TELJES, orderBy: { kezdete: "asc" } },
+      berlok: { select: { berloId: true, nev: true }, orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
+      elofizetesek: { include: TELJES, orderBy: [{ kezdete: "asc" }, { id: "asc" }] },
     },
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
   });
 
   return jogviszonyok.flatMap((jogviszony) =>

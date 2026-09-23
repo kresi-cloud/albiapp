@@ -31,9 +31,9 @@ export async function jegyzokonyvBetoltes(
   const jegyzokonyv = await prisma.jegyzokonyv.findFirst({
     where: { id: jegyzokonyvId, jogviszony: { ingatlan: { tulajdonosId } } },
     include: {
-      tetelek: { orderBy: { sorrend: "asc" } },
+      tetelek: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
       jogviszony: {
-        include: { ingatlan: true, berlok: { orderBy: { sorrend: "asc" } } },
+        include: { ingatlan: true, berlok: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] } },
       },
     },
   });

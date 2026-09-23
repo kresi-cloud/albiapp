@@ -104,7 +104,7 @@ export async function kepekJegyzokonyvhoz(ki: Ki, jegyzokonyvId: string): Promis
   const sorok = await prisma.jegyzokonyvKep.findMany({
     where: { jegyzokonyvId },
     select: VALASZTAS,
-    orderBy: { feltoltve: "asc" },
+    orderBy: [{ feltoltve: "asc" }, { id: "asc" }],
   });
 
   return sorok.map((sor) => nezet(sor, ki));
@@ -126,7 +126,7 @@ export async function birtokbaadasiKepek(ki: Ki, jogviszonyId: string): Promise<
       },
     },
     select: VALASZTAS,
-    orderBy: { feltoltve: "asc" },
+    orderBy: [{ feltoltve: "asc" }, { id: "asc" }],
   });
 
   return sorok.map((sor) => nezet(sor, ki));
@@ -289,9 +289,9 @@ export async function berloJegyzokonyvei(berloId: string): Promise<BerloiJegyzok
     where: { jogviszony: { berlok: { some: { berloId } } } },
     include: {
       jogviszony: { include: { ingatlan: { select: { megnevezes: true } } } },
-      kepek: { select: VALASZTAS, orderBy: { feltoltve: "asc" } },
+      kepek: { select: VALASZTAS, orderBy: [{ feltoltve: "asc" }, { id: "asc" }] },
     },
-    orderBy: { idopont: "desc" },
+    orderBy: [{ idopont: "desc" }, { id: "desc" }],
   });
 
   return sorok.map((sor) => ({

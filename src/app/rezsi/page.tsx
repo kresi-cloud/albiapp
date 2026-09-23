@@ -25,23 +25,23 @@ export default async function Rezsi() {
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { ingatlan: { tulajdonosId: berbeado.id } },
     include: {
-      berlok: { orderBy: { sorrend: "asc" } },
+      berlok: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
       ingatlan: {
         include: {
           meroorak: {
             include: {
-              dijszabasok: { orderBy: { ervenyesTol: "desc" } },
-              oraallasok: { orderBy: { datum: "desc" }, take: 1 },
+              dijszabasok: { orderBy: [{ ervenyesTol: "desc" }, { id: "desc" }] },
+              oraallasok: { orderBy: [{ datum: "desc" }, { id: "desc" }], take: 1 },
             },
           },
         },
       },
       elszamolasok: {
-        orderBy: { idoszakVege: "desc" },
-        include: { tetelek: { orderBy: { sorrend: "asc" } } },
+        orderBy: [{ idoszakVege: "desc" }, { id: "desc" }],
+        include: { tetelek: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] } },
       },
     },
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
   });
 
   const honapElseje = new Date(Date.UTC(ma.getUTCFullYear(), ma.getUTCMonth() - 1, 1));

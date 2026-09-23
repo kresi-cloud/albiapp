@@ -23,14 +23,14 @@ export async function szerzodesBemenet(
   const szerzodes = await prisma.szerzodes.findFirst({
     where: { id: szerzodesId, jogviszony: { ingatlan: { tulajdonosId } } },
     include: {
-      modulok: { orderBy: { sorrend: "asc" } },
+      modulok: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
       parameterek: true,
       alap: { select: { megnevezes: true, kelte: true, veglegesitve: true } },
       jogviszony: {
         include: {
           ingatlan: true,
-          berlok: { orderBy: { sorrend: "asc" } },
-          elofizetesek: { include: { jovahagyasok: true }, orderBy: { kezdete: "asc" } },
+          berlok: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
+          elofizetesek: { include: { jovahagyasok: true }, orderBy: [{ kezdete: "asc" }, { id: "asc" }] },
         },
       },
     },

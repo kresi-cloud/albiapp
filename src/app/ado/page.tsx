@@ -28,7 +28,7 @@ export default async function Ado({
     adoEv(berbeado.id, ev),
     prisma.ingatlan.findMany({
       where: { tulajdonosId: berbeado.id },
-      orderBy: { letrehozva: "asc" },
+      orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
     }),
   ]);
 

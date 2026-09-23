@@ -41,7 +41,7 @@ export async function ingatlantLetrehoz(
 export async function sajatIngatlanok(tulajdonosId: string) {
   return prisma.ingatlan.findMany({
     where: { tulajdonosId },
-    orderBy: { letrehozva: "asc" },
+    orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
     select: { id: true, megnevezes: true, cim: true, kozosKoltsegFt: true },
   });
 }

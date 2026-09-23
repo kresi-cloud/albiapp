@@ -766,6 +766,31 @@ kulcsba ütközik, nem csinál semmit: a tétel létrejött, csak nem ő hozta l
 **Ahol a jó viselkedés az, hogy a vesztes ág nem ír, ott az egyediségi kulcs a
 fék, és a hibáját le kell kezelni** — nem az `upsert` az.
 
+A másik valódi hiba a rendezésé. **Postgresen azonos rendezőkulcsú sorok
+sorrendje nincs garantálva**: ugyanaz a lekérdezés két futásra másik sorrendet
+adhat. SQLite-on a beszúrás sorrendje döntött, tehát a sorrend stabilnak
+*látszott*, és a kód rá is támaszkodott. Nálunk a holtverseny nem kivétel, hanem
+a rendes eset: egy hónap előírásai ugyanazon a napon esedékesek, a példaadat
+jogviszonyai ugyanabban az ezredmásodpercben jönnek létre, a `take: 1`
+lekérdezések pedig pont a holtversenyből választanak egyet.
+
+Ebből két szabály lett:
+
+- **Minden lekérdezés rendezése az `id`-vel zárul**, és az irány az elsődleges
+  kulcsét követi: egy „legutóbbi" lekérdezésnél a holtversenyből is a legutóbbi
+  kell. Ezt a `rendezes` kapu tartja be.
+- **A párosítás nem támaszkodhat a bemenet sorrendjére.** Az `egyeztet` korábban
+  előírásonként haladt, és amelyik elöl állt, az vitte el a rá nem pontosan
+  illő befizetést. Most minden körben az összes szabad pár közül a legjobb
+  illeszkedés köttetik meg: előbb az időbeli közelség, aztán az összegeltérés,
+  végül az azonosítók. Ez nemcsak eldöntött, hanem jobb is — egy 13 500
+  forintos utalás a 14 000 forintos közös költséghez kerül, nem a 180 000
+  forintos bérleti díjhoz.
+
+A hiba onnan derült ki, hogy a böngészős próba a bérbeadó oldalán vitásnak várt
+egy tételt, a lap viszont várakozót mutatott: ugyanazt az utalást a lap hol a
+bérleti díjhoz, hol egy ezerforintos előfizetéshez kötötte.
+
 A Supabase két címet ad. A **session pooler** (5432) tartós kapcsolatot ad, ez
 kell a migrációhoz; a **transaction pooler** (6543) rövid kapcsolatokra való, ez
 kell a futó alkalmazásnak, mert a szerver nélküli környezet kérésenként nyit
@@ -982,6 +1007,8 @@ forráskódot olvassák, nem futtatják:
 - `formatum`: számot és dátumot egyedül a `domain/nyelv.ts` formáz. Így nem
   csúszik el a magyar alak oldalanként, és nem marad beégetett `hu-HU` az angol
   felületen.
+- `rendezes`: minden `orderBy` utolsó kulcsa az `id`. Postgresen az azonos
+  kulcsú sorok sorrendje nincs garantálva, és nálunk a holtverseny a rendes eset.
 - `teszteltseg`: minden domain modult importál legalább egy teszt.
 
 Mindegyik kapu első tesztje azt próbálja ki, hogy a kapu tényleg elutasítja a
