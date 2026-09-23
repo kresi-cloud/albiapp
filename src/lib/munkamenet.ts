@@ -44,7 +44,16 @@ export async function belepettFelhasznalo() {
   const jegy = jegyetOlvas(suti.get(SUTI)?.value, titok(), new Date());
   if (!jegy) return null;
 
-  return prisma.felhasznalo.findUnique({ where: { id: jegy.felhasznaloId } });
+  const felhasznalo = await prisma.felhasznalo.findUnique({
+    where: { id: jegy.felhasznaloId },
+  });
+
+  // A letiltás itt hat, nem csak a belépőlapon. A süti harminc napig él: ha
+  // csak a belépést tiltanánk, a már belépett fiók a letiltás után is tovább
+  // dolgozna — épp az, akitől az üzemeltető el akarta venni a hozzáférést.
+  if (felhasznalo?.letiltva) return null;
+
+  return felhasznalo;
 }
 
 /**

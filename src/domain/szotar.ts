@@ -3820,6 +3820,112 @@ export const SZOTAR: Szotar = {
     hu: "Nincs egyetlen felhasználó sem.",
     en: "There are no users.",
   },
+
+  // --- Üzemeltetői összesítő és rendszerállapot
+  "uzemeltetes.szamok": { hu: "Számok", en: "Numbers" },
+  "uzemeltetes.szamok_miert": {
+    hu: "Csak darabszám. Hogy ki mennyit fizetett, melyik bérleményben, azt ez a lap nem mutatja: az a bérbeadó és a bérlő ügye.",
+    en: "Counts only. Who paid how much, and in which rental, is not shown here: that is between the landlord and the tenant.",
+  },
+  "uzemeltetes.berbeadok": { hu: "Bérbeadó", en: "Landlords" },
+  "uzemeltetes.berlok": { hu: "Bérlő", en: "Tenants" },
+  "uzemeltetes.ingatlanok": { hu: "Bérlemény", en: "Properties" },
+  "uzemeltetes.elo_jogviszonyok": { hu: "Élő bérlet", en: "Live tenancies" },
+  "uzemeltetes.lezart_jogviszonyok": { hu: "Lezárt bérlet", en: "Closed tenancies" },
+  "uzemeltetes.nyitott_hibak": { hu: "Nyitott hiba", en: "Open faults" },
+  "uzemeltetes.varo_meghivok": { hu: "Nyitott meghívó", en: "Pending invites" },
+  "uzemeltetes.varo_elofizetesek": {
+    hu: "Válaszra vár: előfizetés",
+    en: "Awaiting reply: subscriptions",
+  },
+  "uzemeltetes.varo_latogatasok": {
+    hu: "Válaszra vár: látogatás",
+    en: "Awaiting reply: visits",
+  },
+
+  "uzemeltetes.rendszerallapot": { hu: "Rendszerállapot", en: "System status" },
+  "uzemeltetes.valaszido": { hu: "Adatbázis válaszideje", en: "Database response" },
+  "uzemeltetes.ezredmasodperc": { hu: "{szam} ms", en: "{szam} ms" },
+  "uzemeltetes.migraciok": { hu: "Lefutott migráció", en: "Migrations applied" },
+  "uzemeltetes.utolso_migracio": {
+    hu: "Az utolsó migráció: {nev}.",
+    en: "The last migration: {nev}.",
+  },
+  "uzemeltetes.kornyezet": { hu: "Környezet", en: "Environment" },
+  "uzemeltetes.eles": { hu: "Éles", en: "Production" },
+  "uzemeltetes.fejlesztoi": { hu: "Fejlesztői", en: "Development" },
+  "uzemeltetes.valaszido.rendben": {
+    hu: "Az adatbázis {figyelem} ezredmásodpercen belül válaszol. A sávok az alkalmazás alapértelmezései, nem szolgáltatói vállalások.",
+    en: "The database answers within {figyelem} milliseconds. The bands are the application's own defaults, not a provider's commitment.",
+  },
+  "uzemeltetes.valaszido.figyelem": {
+    hu: "Az adatbázis lassabban válaszol, mint {figyelem} ezredmásodperc. Egy lap több lekérdezésből áll össze, tehát ez a kész lapon sokszorosan látszik.",
+    en: "The database is answering slower than {figyelem} milliseconds. A page is built from several queries, so this shows up multiplied on the finished page.",
+  },
+  "uzemeltetes.valaszido.gond": {
+    hu: "Az adatbázis lassabban válaszol, mint {gond} ezredmásodperc. Ennél a lapok érezhetően várnak.",
+    en: "The database is answering slower than {gond} milliseconds. At this point pages visibly wait.",
+  },
+
+  "uzemeltetes.fiokok": { hu: "Fiókok", en: "Accounts" },
+  "uzemeltetes.letiltott": { hu: "Letiltva", en: "Disabled" },
+  "uzemeltetes.letilt": { hu: "Fiók letiltása", en: "Disable account" },
+  "uzemeltetes.visszaenged": { hu: "Fiók visszaengedése", en: "Re-enable account" },
+  "uzemeltetes.folyamatban": { hu: "Mentem…", en: "Saving…" },
+  "uzemeltetes.letiltva": { hu: "A fiókot letiltottad.", en: "You disabled the account." },
+  "uzemeltetes.visszaengedve": {
+    hu: "A fiókot visszaengedted.",
+    en: "You re-enabled the account.",
+  },
+  "uzemeltetes.sajat_fiok": {
+    hu: "Ez a te fiókod: magadat nem tilthatod le.",
+    en: "This is your own account: you cannot disable yourself.",
+  },
+  "uzemeltetes.letiltas_miert": {
+    hu: "A letiltás nem törlés: a jogviszony, a befizetés és a kiadott okirat a másik félé is, azok megmaradnak. A letiltott fiók nem tud belépni, és a már megnyitott munkamenete sem él tovább.",
+    en: "Disabling is not deletion: the tenancy, the payments and the issued documents belong to the other party too, and they remain. A disabled account cannot sign in, and its already-open session stops working as well.",
+  },
+  "uzemeltetes.hiba.nincs_jogosultsag": {
+    hu: "Ehhez nincs jogosultságod.",
+    en: "You are not allowed to do this.",
+  },
+  "uzemeltetes.hiba.hianyos": {
+    hu: "Hiányos kérés: nem derül ki, melyik fiókkal mi történjen.",
+    en: "Incomplete request: it does not say which account, or what should happen to it.",
+  },
+  "uzemeltetes.hiba.nincs_ilyen": { hu: "Nincs ilyen fiók.", en: "No such account." },
+  "uzemeltetes.hiba.sajat_fiok": {
+    hu: "A saját fiókodat nem tilthatod le: az utolsó rendszergazda így kizárná magát az alkalmazásból.",
+    en: "You cannot disable your own account: the last administrator would lock themselves out of the application.",
+  },
+  "uzemeltetes.hiba.mar_letiltva": {
+    hu: "Ez a fiók már le van tiltva.",
+    en: "This account is already disabled.",
+  },
+  "uzemeltetes.hiba.nincs_letiltva": {
+    hu: "Ez a fiók nincs letiltva.",
+    en: "This account is not disabled.",
+  },
+
+  "uzemeltetes.naplo_cim": { hu: "Üzemeltetői napló", en: "Operations log" },
+  "uzemeltetes.naplo_ures": {
+    hu: "Még nem történt üzemeltetői művelet.",
+    en: "No operations have been performed yet.",
+  },
+  "uzemeltetes.naplo_mikor": { hu: "({mikor})", en: "({mikor})" },
+  "uzemeltetes.naplo_miert": {
+    hu: "Minden üzemeltetői művelet bekerül, és a felületről nem törölhető: egy napló, amit az tud kitörölni, akit naplóz, nem napló.",
+    en: "Every operations action is recorded, and cannot be deleted from the interface: a log that can be erased by the person it logs is not a log.",
+  },
+  "uzemeltetes.naplo.torolt_fiok": { hu: "egy azóta megszűnt fiók", en: "an account since removed" },
+  "uzemeltetes.naplo.fiok_letiltas": {
+    hu: "{admin} letiltotta ezt a fiókot: {targy}",
+    en: "{admin} disabled this account: {targy}",
+  },
+  "uzemeltetes.naplo.fiok_visszaengedes": {
+    hu: "{admin} visszaengedte ezt a fiókot: {targy}",
+    en: "{admin} re-enabled this account: {targy}",
+  },
 };
 
 /** Szövegező a beépített szótárral. Kliensoldali komponens is ezt hívja. */

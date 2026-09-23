@@ -114,6 +114,8 @@ export type AdminSor = {
   szerep: "berbeado" | "berlo";
   /** Hány látható értékelés szól róla. A rejtett ebben sem szerepel. */
   ertekelesekSzama: number;
+  /** Letiltott fiók: nem tud belépni. Az üzemeltetői lapon jelöljük. */
+  letiltva: boolean;
 };
 
 /**
@@ -125,7 +127,7 @@ export type AdminSor = {
  */
 export async function bemutatkozoLista(ma: Date): Promise<AdminSor[]> {
   const felhasznalok = await prisma.felhasznalo.findMany({
-    select: { id: true, nev: true, szerep: true },
+    select: { id: true, nev: true, szerep: true, letiltva: true },
     orderBy: [{ szerep: "asc" }, { nev: "asc" }, { id: "asc" }],
   });
 
@@ -137,6 +139,7 @@ export async function bemutatkozoLista(ma: Date): Promise<AdminSor[]> {
       nev: felhasznalo.nev,
       szerep: felhasznalo.szerep === "berlo" ? "berlo" : "berbeado",
       ertekelesekSzama: lap?.ertekelesek.length ?? 0,
+      letiltva: felhasznalo.letiltva !== null,
     });
   }
   return sorok;
