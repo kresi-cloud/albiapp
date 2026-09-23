@@ -131,11 +131,50 @@ async function hibabejelentes(oldal) {
   );
 }
 
+/**
+ * A legördülő azt küldi be, amit mutat.
+ *
+ * A megőrző mező vezérelt: a React a tartott értéket írja az elemre. Ha a hívó
+ * nem adott `defaultValue`-t, az érték üres, és a böngésző semmit nem jelöl ki
+ * — a felhasználó üres legördülőt lát, a beküldés pedig üres értéket visz, amit
+ * a kiszolgáló jogosan utasít el. Sem a típusellenőrzés, sem a fordítás nem
+ * fogja meg, és a kódot olvasva sem látszik: a hiba a böngészőben keletkezik.
+ *
+ * Ezt két lapon nézzük meg, mert a hiba a közös mezőben volt, nem egy lapon.
+ */
+async function legordulokKijeloltek(oldal, lapok) {
+  for (const [utvonal, nev] of lapok) {
+    await oldal.goto(`${ALAP}${utvonal}`);
+    await oldal.waitForLoadState("networkidle");
+    await mindetKinyit(oldal);
+
+    const valaszto = oldal.locator(`select[name="${nev}"]`).first();
+    all((await valaszto.count()) > 0, `${utvonal}: van ${nev} nevű legördülő`);
+
+    // Önpróba: a mérés tényleg lát opciókat. Enélkül egy üres legördülőn is
+    // igazat adna, hiszen ott sincs mit kijelölni.
+    const opciok = await valaszto.evaluate((elem) => elem.options.length);
+    all(opciok > 0, `${utvonal}: a(z) ${nev} legördülőben van opció (${opciok})`);
+
+    const kijelolt = await valaszto.evaluate((elem) => elem.selectedIndex);
+    all(kijelolt >= 0, `${utvonal}: a(z) ${nev} legördülőben ki van jelölve valami`);
+    all(
+      (await valaszto.inputValue()) !== "" ||
+        (await valaszto.evaluate((elem) => elem.options[0].value)) === "",
+      `${utvonal}: a(z) ${nev} legördülő nem üres értéket küldene be`,
+    );
+  }
+}
+
 export async function futtat(oldal) {
   await belep(oldal, "berbeado@pelda.hu");
   await magyarra(oldal);
   await oraallas(oldal);
   await berloiAdatlap(oldal);
+  await legordulokKijeloltek(oldal, [
+    ["/ingatlanok", "ingatlanId"],
+    ["/ado", "ingatlanId"],
+  ]);
 
   await belep(oldal, "anna@pelda.hu");
   await magyarra(oldal);

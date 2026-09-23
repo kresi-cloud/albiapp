@@ -282,14 +282,24 @@ async function szelessegOnprobaja(oldal) {
  * A dinamikus lapok útja nem rögzített, de mérni kell őket: a
  * szerződéstervezet a leghosszabb lapunk, a jegyzőkönyv pedig fényképalbumot
  * hordoz, ami adattal együtt nő.
+ *
+ * Mindegyiket, nem csak az elsőt. Korábban az elsőt mértük, és a példaadatban
+ * csak tervezet volt: a véglegesített szerződés lapja emiatt tudott tizenkilenc
+ * telefonképernyő magas lenni úgy, hogy a kapu végig zöld maradt. Egy okirat
+ * tervezetként és véglegesítve két különböző lap, tehát mindkettőt meg kell
+ * mérni.
  */
-async function dokumentumUtja(oldal, elotag) {
+async function dokumentumUtjai(oldal, elotag) {
   await oldal.goto(`${ALAP}/dokumentumok`);
   await oldal.waitForLoadState("networkidle");
-  const hivatkozas = oldal
-    .locator(`a[href^="${elotag}"]:not([href$="/letoltes"])`)
-    .first();
-  return (await hivatkozas.count()) === 0 ? null : hivatkozas.getAttribute("href");
+  // A letöltés útja is ezzel az előtaggal kezdődik, és nem mindig a
+  // `/letoltes`-re végződik: a fordításé `?nyelv=en`-nel folytatódik. Arra
+  // navigálva a böngésző letöltést indít, nem lapot rajzol.
+  // Egy okirat több helyről is elérhető a lapról; mérni egyszer kell.
+  const utak = await oldal
+    .locator(`a[href^="${elotag}"]:not([href*="/letoltes"])`)
+    .evaluateAll((elemek) => elemek.map((elem) => elem.getAttribute("href")));
+  return [...new Set(utak)];
 }
 
 export async function futtat(oldal) {
@@ -309,13 +319,15 @@ export async function futtat(oldal) {
     await nyelvre(oldal, nyelv);
     await vizsgal(oldal, BERBEADOI, nyelv, cimke);
 
-    const szerzodes = await dokumentumUtja(oldal, "/szerzodesek/");
-    all(szerzodes !== null, `van szerződéslap, amin a hossz mérhető (${cimke})`);
-    if (szerzodes) await vizsgal(oldal, [szerzodes], nyelv, cimke);
+    // A példaadatban egy tervezet és egy véglegesített szerződés van; ha
+    // egyszer csak az egyik marad, ez a két állítás szól, nem a mérés hallgat.
+    const szerzodesek = await dokumentumUtjai(oldal, "/szerzodesek/");
+    all(szerzodesek.length > 1, `több szerződéslap van, amin a hossz mérhető (${szerzodesek.length}, ${cimke})`);
+    await vizsgal(oldal, szerzodesek, nyelv, cimke);
 
-    const jegyzokonyv = await dokumentumUtja(oldal, "/jegyzokonyvek/");
-    all(jegyzokonyv !== null, `van jegyzőkönyvlap, amin a hossz mérhető (${cimke})`);
-    if (jegyzokonyv) await vizsgal(oldal, [jegyzokonyv], nyelv, cimke);
+    const jegyzokonyvek = await dokumentumUtjai(oldal, "/jegyzokonyvek/");
+    all(jegyzokonyvek.length > 0, `van jegyzőkönyvlap, amin a hossz mérhető (${cimke})`);
+    await vizsgal(oldal, jegyzokonyvek, nyelv, cimke);
   }
 
   await belep(oldal, "anna@pelda.hu");

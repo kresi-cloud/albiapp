@@ -547,6 +547,11 @@ model Szerzodes {
   kelteHelye     String    @default("")
   kelte          DateTime?
   veglegesSzoveg String?
+  /// A tájékoztató angol fordítás, véglegesítéskor ugyanúgy befagyasztva.
+  /// Amit aláírtak, annak a fordítása se változzon meg egy későbbi
+  /// modulfrissítéstől; és a fordítás mindig ahhoz a szöveghez tartozzon,
+  /// ami mellette áll.
+  veglegesSzovegEn String?
   veglegesitve   DateTime?
   letrehozva     DateTime  @default(now())
   frissitve      DateTime  @updatedAt

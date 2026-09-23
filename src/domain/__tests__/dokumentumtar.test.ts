@@ -28,6 +28,7 @@ const teli: TarJogviszony = {
       allapot: "veglegesitve",
       veglegesitve: nap("2026-08-29"),
       letrehozva: nap("2026-08-20"),
+      vanForditas: true,
     },
     {
       id: "sz2",
@@ -35,6 +36,7 @@ const teli: TarJogviszony = {
       allapot: "tervezet",
       veglegesitve: null,
       letrehozva: nap("2026-09-15"),
+      vanForditas: false,
     },
   ],
   jegyzokonyvek: [

@@ -18,7 +18,9 @@ import {
   nevsor,
 } from "./szerzodes";
 import { MODULOK } from "./szerzodes-modulok";
-import { uzenet, type Uzenet } from "./nyelv";
+import { uzenet, type Nyelv, type Uzenet } from "./nyelv";
+import { MODULOK_EN } from "./szerzodes-modulok-en";
+import { hosszuDatumEn, nevsorEn } from "./szerzodes-angol";
 
 export type Bemenet = {
   berbeado: Berbeado;
@@ -68,7 +70,7 @@ export function alapertelmezettParameterek(): Record<string, string> {
   return ertekek;
 }
 
-export function kontextustKeszit(bemenet: Bemenet): Kontextus {
+export function kontextustKeszit(bemenet: Bemenet, nyelv: Nyelv = "hu"): Kontextus {
   const tobb = bemenet.berlok.length > 1;
   const p = (kulcs: string): string => {
     const megadott = bemenet.parameterek[kulcs];
@@ -92,8 +94,8 @@ export function kontextustKeszit(bemenet: Bemenet): Kontextus {
       return Number.isFinite(szam) ? szam : 0;
     },
     v: (egyes, tobbes) => (tobb ? tobbes : egyes),
-    B: tobb ? "a Bérlők" : "a Bérlő",
-    BN: tobb ? "A Bérlők" : "A Bérlő",
+    B: nyelv === "en" ? (tobb ? "the Tenants" : "the Tenant") : tobb ? "a Bérlők" : "a Bérlő",
+    BN: nyelv === "en" ? (tobb ? "The Tenants" : "The Tenant") : tobb ? "A Bérlők" : "A Bérlő",
   };
 }
 
@@ -115,8 +117,9 @@ export function ajanlottModulok(
  * szerződés felépítése akkor is ismerős maradjon, ha modulok ki-be kapcsolódnak.
  * Az üres szövegű modul kimarad: egy sorszám nélküli, üres pont zavaró lenne.
  */
-export function szakaszok(bemenet: Bemenet): Szakasz[] {
-  const kontextus = kontextustKeszit(bemenet);
+export function szakaszok(bemenet: Bemenet, nyelv: Nyelv = "hu"): Szakasz[] {
+  const magyarKontextus = kontextustKeszit(bemenet, "hu");
+  const kontextus = nyelv === "en" ? kontextustKeszit(bemenet, "en") : magyarKontextus;
   const valasztott = new Set(bemenet.valasztottModulok);
   const kesz: Szakasz[] = [];
 
@@ -127,12 +130,24 @@ export function szakaszok(bemenet: Bemenet): Szakasz[] {
     // azt nem írjuk le újra, különben a záradék egy második, részben eltérő
     // szerződés lenne.
     if ((zaradek || !modul.kotelezo) && !valasztott.has(modul.kulcs)) continue;
-    const bekezdesek = modul.szoveg(kontextus).filter((sor) => sor.trim() !== "");
-    if (bekezdesek.length === 0) continue;
+
+    // A számozás mindig a magyar szövegből következik, az angolból soha. A két
+    // példány pontjaira a felek hivatkozni fognak egymásnak („a 16. pont
+    // szerint"), és ha egy modul angolul más számú bekezdést adna, a két okirat
+    // számozása elcsúszna. Így a fordítás ugyanazt a pontot ugyanazon a
+    // sorszámon viszi.
+    const magyar = modul.szoveg(magyarKontextus).filter((sor) => sor.trim() !== "");
+    if (magyar.length === 0) continue;
+
+    const angol = nyelv === "en" ? MODULOK_EN[modul.kulcs] : null;
+    const bekezdesek = angol
+      ? angol.szoveg(kontextus).filter((sor) => sor.trim() !== "")
+      : magyar;
+
     kesz.push({
       sorszam: kesz.length + 1,
       kulcs: modul.kulcs,
-      cim: modul.cim,
+      cim: angol ? angol.cim : modul.cim,
       bekezdesek,
     });
   }
@@ -185,45 +200,97 @@ export function hianyzoAdatok(bemenet: Bemenet): Uzenet[] {
  * szerződést kiegészítő külön okirat neve lett (`Szerzodes.fajta`), és két
  * különböző dolgot nem hívhat ugyanaz a szó a kódban.
  */
-export function alairasSorok(bemenet: Bemenet): string[] {
-  const kontextus = kontextustKeszit(bemenet);
+export function alairasSorok(bemenet: Bemenet, nyelv: Nyelv = "hu"): string[] {
+  const kontextus = kontextustKeszit(bemenet, nyelv);
+  const angol = nyelv === "en";
   const hely = (bemenet.kelteHelye ?? "").trim();
-  const nap = bemenet.kelte ? hosszuDatum(bemenet.kelte) : "";
+  const nap = bemenet.kelte
+    ? angol
+      ? hosszuDatumEn(bemenet.kelte)
+      : hosszuDatum(bemenet.kelte)
+    : "";
   const kelt = [hely, nap].filter(Boolean).join(", ");
+  const nevek = bemenet.berlok.map((berlo) => berlo.nev);
 
-  const sorok = [
-    `Kelt: ${kelt || "………………………………"}`,
-    "",
-    "Bérbeadó:",
-    bemenet.berbeado.nev,
-    "",
-    bemenet.berlok.length > 1 ? "Bérlők:" : "Bérlő:",
-    nevsor(bemenet.berlok.map((berlo) => berlo.nev)),
-  ];
+  const sorok = angol
+    ? [
+        `Signed at: ${kelt || "………………………………"}`,
+        "",
+        "Landlord:",
+        bemenet.berbeado.nev,
+        "",
+        bemenet.berlok.length > 1 ? "Tenants:" : "Tenant:",
+        nevsorEn(nevek),
+      ]
+    : [
+        `Kelt: ${kelt || "………………………………"}`,
+        "",
+        "Bérbeadó:",
+        bemenet.berbeado.nev,
+        "",
+        bemenet.berlok.length > 1 ? "Bérlők:" : "Bérlő:",
+        nevsor(nevek),
+      ];
 
   if (kontextus.p("tanuk") === "igen") {
     sorok.push(
       "",
-      "Előttünk, mint tanúk előtt:",
-      "",
-      "1. tanú neve és lakcíme: ………………………………………",
-      "2. tanú neve és lakcíme: ………………………………………",
+      ...(angol
+        ? [
+            "Before us, as witnesses:",
+            "",
+            "Name and address of witness 1: ………………………………………",
+            "Name and address of witness 2: ………………………………………",
+          ]
+        : [
+            "Előttünk, mint tanúk előtt:",
+            "",
+            "1. tanú neve és lakcíme: ………………………………………",
+            "2. tanú neve és lakcíme: ………………………………………",
+          ]),
     );
   }
 
   return sorok;
 }
 
-/** A teljes szerződés sima szövegként: ez kerül a nyomtatásba és a mentett példányba. */
-export function szerzodesSzovege(bemenet: Bemenet): string {
-  const sorok: string[] = [
-    "LAKÁSBÉRLETI SZERZŐDÉS",
-    "",
-    "amely létrejött az alábbi felek között, az alulírott helyen és időben, a következő feltételekkel:",
-    "",
-  ];
+/**
+ * A fordítás fejléce, magában a szövegben.
+ *
+ * Nem elég a lap tetején kiírni, hogy a fordítás tájékoztató: a szöveget
+ * kimásolják, elküldik, kinyomtatják, és onnantól a lap már nincs mellette. Aki
+ * a papírt a kezébe veszi, abból lássa, hogy nem ezt írták alá.
+ */
+export const FORDITAS_FEJLEC = [
+  "INFORMATIVE ENGLISH TRANSLATION",
+  "",
+  "The parties signed the Hungarian text of this document. Only that Hungarian text " +
+    "is authentic; in case of any difference between the two versions, the Hungarian " +
+    "text prevails. This translation is provided for information only, and creates no " +
+    "rights or obligations of its own.",
+];
 
-  for (const szakasz of szakaszok(bemenet)) {
+/** A teljes szerződés sima szövegként: ez kerül a nyomtatásba és a mentett példányba. */
+export function szerzodesSzovege(bemenet: Bemenet, nyelv: Nyelv = "hu"): string {
+  const sorok: string[] =
+    nyelv === "en"
+      ? [
+          "RESIDENTIAL LEASE AGREEMENT",
+          "",
+          ...FORDITAS_FEJLEC,
+          "",
+          "concluded by and between the parties below, at the place and on the date " +
+            "set out at the end of this document, on the following terms:",
+          "",
+        ]
+      : [
+          "LAKÁSBÉRLETI SZERZŐDÉS",
+          "",
+          "amely létrejött az alábbi felek között, az alulírott helyen és időben, a következő feltételekkel:",
+          "",
+        ];
+
+  for (const szakasz of szakaszok(bemenet, nyelv)) {
     sorok.push(`${szakasz.sorszam}. ${szakasz.cim}`);
     sorok.push("");
     for (const bekezdes of szakasz.bekezdesek) {
@@ -232,7 +299,7 @@ export function szerzodesSzovege(bemenet: Bemenet): string {
     }
   }
 
-  sorok.push(...alairasSorok(bemenet));
+  sorok.push(...alairasSorok(bemenet, nyelv));
 
   return sorok.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
 }
@@ -251,8 +318,15 @@ export function szerzodesSzovege(bemenet: Bemenet): string {
  * pontok fölött: a bérbeadónak a tervezetben is látnia kell, mihez képest
  * kiegészítés, amit készít.
  */
-export function zaradekBevezeto(bemenet: Bemenet): string {
+export function zaradekBevezeto(bemenet: Bemenet, nyelv: Nyelv = "hu"): string {
   const alap = bemenet.alap;
+  if (nyelv === "en") {
+    const hivatkozasEn = alap
+      ? `the residential lease agreement titled "${alap.megnevezes}" concluded between the Parties` +
+        `${alap.kelte ? ` on ${hosszuDatumEn(alap.kelte)}` : ""} (hereinafter: the Lease Agreement)`
+      : "the residential lease agreement concluded between the Parties (hereinafter: the Lease Agreement)";
+    return `concluded as an addendum to ${hivatkozasEn}, at the place and on the date set out at the end of this document, as follows:`;
+  }
   const hivatkozas = alap
     ? `a Felek között ${alap.kelte ? `${hosszuDatum(alap.kelte)} napján ` : ""}létrejött ` +
       `„${alap.megnevezes}” megnevezésű lakásbérleti szerződéshez (a továbbiakban: Bérleti szerződés)`
@@ -271,15 +345,29 @@ export const ZARADEK_ZARO =
   "A Bérleti szerződés e záradékkal nem érintett rendelkezései változatlanul hatályban maradnak. " +
   "A záradék a Bérleti szerződés elválaszthatatlan részét képezi.";
 
-export function zaradekSzovege(bemenet: Bemenet): string {
-  const sorok: string[] = [
-    "ZÁRADÉK A LAKÁSBÉRLETI SZERZŐDÉSHEZ",
-    "",
-    zaradekBevezeto(bemenet),
-    "",
-  ];
+export const ZARADEK_ZARO_EN =
+  "All provisions of the Lease Agreement not affected by this addendum remain in force unchanged. " +
+  "This addendum forms an inseparable part of the Lease Agreement.";
 
-  for (const szakasz of szakaszok({ ...bemenet, fajta: "zaradek" })) {
+export function zaradekSzovege(bemenet: Bemenet, nyelv: Nyelv = "hu"): string {
+  const sorok: string[] =
+    nyelv === "en"
+      ? [
+          "ADDENDUM TO THE RESIDENTIAL LEASE AGREEMENT",
+          "",
+          ...FORDITAS_FEJLEC,
+          "",
+          zaradekBevezeto(bemenet, "en"),
+          "",
+        ]
+      : [
+          "ZÁRADÉK A LAKÁSBÉRLETI SZERZŐDÉSHEZ",
+          "",
+          zaradekBevezeto(bemenet),
+          "",
+        ];
+
+  for (const szakasz of szakaszok({ ...bemenet, fajta: "zaradek" }, nyelv)) {
     sorok.push(`${szakasz.sorszam}. ${szakasz.cim}`);
     sorok.push("");
     for (const bekezdes of szakasz.bekezdesek) {
@@ -288,14 +376,16 @@ export function zaradekSzovege(bemenet: Bemenet): string {
     }
   }
 
-  sorok.push(ZARADEK_ZARO, "");
+  sorok.push(nyelv === "en" ? ZARADEK_ZARO_EN : ZARADEK_ZARO, "");
 
-  sorok.push(...alairasSorok(bemenet));
+  sorok.push(...alairasSorok(bemenet, nyelv));
 
   return sorok.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
 }
 
 /** A megfelelő szöveg a fajta szerint, hogy a hívónak ne kelljen elágaznia. */
-export function okiratSzovege(bemenet: Bemenet): string {
-  return bemenet.fajta === "zaradek" ? zaradekSzovege(bemenet) : szerzodesSzovege(bemenet);
+export function okiratSzovege(bemenet: Bemenet, nyelv: Nyelv = "hu"): string {
+  return bemenet.fajta === "zaradek"
+    ? zaradekSzovege(bemenet, nyelv)
+    : szerzodesSzovege(bemenet, nyelv);
 }
