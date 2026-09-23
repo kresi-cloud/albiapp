@@ -94,6 +94,31 @@ export function jogviszonyAdatta(jogviszony: {
  * A hiányzó előírások pótlása egy bérbeadó összes jogviszonyára.
  * A visszatérés a létrehozott sorok száma, hogy a hívó tudjon róla szólni.
  */
+/**
+ * Az egyediségi kulcsba ütköző beszúrás (Prisma P2002).
+ *
+ * A pótlás akkor fut, amikor valaki ránéz a befizetésekre — tehát a bérlő és a
+ * bérbeadó lapja egyszerre is elindíthatja ugyanarra a hiányzó előírásra. Itt
+ * korábban `upsert` állt üres `update`-tel, azzal a megjegyzéssel, hogy ez
+ * kizárja a versenyt. Nem zárta ki: üres `update`-ből a Prisma nem tud
+ * `ON CONFLICT` utasítást fordítani, tehát keres, majd beszúr, és a kettő közé
+ * befér a másik kérés. SQLite-on ez soha nem derült ki, mert ott az írás
+ * sorosítva van; Postgresre váltva a vesztes kérés azonnal egyediségi hibát
+ * kapott, és a befizetések lapja 500-zal szállt el.
+ *
+ * A vesztes ág helyes viselkedése az, hogy nem csinál semmit: a tétel létrejött,
+ * csak nem ő hozta létre. Felülírni semmiképp nem szabad — amire egyszer már
+ * egyeztettünk, azt egy későbbi futás nem változtathatja meg.
+ */
+function mareMegvan(hiba: unknown): boolean {
+  return (
+    typeof hiba === "object" &&
+    hiba !== null &&
+    "code" in hiba &&
+    (hiba as { code?: unknown }).code === "P2002"
+  );
+}
+
 export async function eloirasokatPotol(tulajdonosId: string, ma = new Date()): Promise<number> {
   const jogviszonyok = await prisma.jogviszony.findMany({
     where: { ingatlan: { tulajdonosId } },
@@ -116,39 +141,26 @@ export async function eloirasokatPotol(tulajdonosId: string, ma = new Date()): P
     );
     if (hianyzo.length === 0) continue;
 
-    // Tételenként, `upsert`-tel: az `update: {}` mondja ki, hogy meglévő
-    // előírást soha nem írunk felül. Így két egyidejű oldalletöltés sem tud
-    // duplikátumot vagy felülírást okozni.
+    // Tételenként, `create`-tel: meglévő előírást soha nem írunk felül, tehát
+    // nincs mit frissíteni. Az egyediségi kulcs a fék, és aki beleütközik, az
+    // nem csinál semmit — lásd a `mareMegvan` magyarázatát.
     for (const eloiras of hianyzo) {
-      const elotte = await prisma.eloirtTetel.count({
-        where: {
-          jogviszonyId: jogviszony.id,
-          tipus: eloiras.tipus,
-          idoszak: eloiras.idoszak,
-          forrasId: eloiras.forrasId,
-        },
-      });
-      await prisma.eloirtTetel.upsert({
-        where: {
-          jogviszonyId_tipus_idoszak_forrasId: {
+      try {
+        await prisma.eloirtTetel.create({
+          data: {
             jogviszonyId: jogviszony.id,
             tipus: eloiras.tipus,
             idoszak: eloiras.idoszak,
             forrasId: eloiras.forrasId,
+            esedekesseg: eloiras.esedekesseg,
+            osszegFt: eloiras.osszegFt,
+            reszletezes: reszletezest(eloiras),
           },
-        },
-        update: {},
-        create: {
-          jogviszonyId: jogviszony.id,
-          tipus: eloiras.tipus,
-          idoszak: eloiras.idoszak,
-          forrasId: eloiras.forrasId,
-          esedekesseg: eloiras.esedekesseg,
-          osszegFt: eloiras.osszegFt,
-          reszletezes: reszletezest(eloiras),
-        },
-      });
-      if (elotte === 0) letrejott += 1;
+        });
+        letrejott += 1;
+      } catch (hiba) {
+        if (!mareMegvan(hiba)) throw hiba;
+      }
     }
   }
 

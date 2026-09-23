@@ -12,21 +12,25 @@
  * a futó hónapban pedig szándékosan van egy vitás és egy elmaradt tétel, hogy
  * az egyeztetés összes állapota látszódjon.
  */
+// A `.env` betöltése: a seedet a Prisma CLI-n kívülről is indítjuk
+// (`npm run db:seed`), ott pedig a `prisma.config.ts` nem fut le.
+import "dotenv/config";
 import { deflateSync } from "node:zlib";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { jelszotHashel } from "../src/lib/jelszo";
 import { meghivoLejarata } from "../src/domain/belepes";
 import { meghivoToken } from "../src/lib/meghivo";
 import { eloirasok, type JogviszonyAdat } from "../src/domain/eloirasok";
 
-const url = (process.env.DATABASE_URL ?? "file:./dev.db").replace(/^file:/, "");
-const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url }) });
+const url = process.env.DATABASE_URL;
+if (!url) throw new Error("DATABASE_URL hiányzik");
+const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: url }) });
 
 // A seed néhány okiratot ugyanazokkal a lib-függvényekkel állít elő, amikkel az
 // alkalmazás; azok viszont a `lib/db` kliensét használják, ami a globális
 // objektumon ül. Itt adjuk át a sajátunkat, hogy ne nyíljon egy második
-// kapcsolat ugyanarra az adatbázisfájlra — a lib oldali kliens ugyanis soha nem
+// kapcsolat ugyanarra az adatbázisra — a lib oldali kliens ugyanis soha nem
 // zárulna be, és a seed a végén nem lépne ki.
 (globalThis as unknown as { prisma?: PrismaClient }).prisma = prisma;
 

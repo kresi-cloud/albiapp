@@ -1,4 +1,4 @@
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
 // Fejlesztés közben a Next.js újratölti a modulokat, ezért a klienst a globális
@@ -6,8 +6,14 @@ import { PrismaClient } from "@/generated/prisma/client";
 const globalis = globalThis as unknown as { prisma?: PrismaClient };
 
 function ujKliens(): PrismaClient {
-  const url = process.env.DATABASE_URL ?? "file:./dev.db";
-  const adapter = new PrismaBetterSqlite3({ url: url.replace(/^file:/, "") });
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    // Korábban volt alapértelmezés (`file:./dev.db`), és az SQLite-nál ártalmatlan
+    // volt: legfeljebb üres fájl keletkezett. Postgresnél a hiányzó cím néma
+    // kapcsolódási hiba lenne futásidőben, kérésenként, ezért inkább itt állunk meg.
+    throw new Error("DATABASE_URL hiányzik");
+  }
+  const adapter = new PrismaPg({ connectionString: url });
   return new PrismaClient({ adapter });
 }
 

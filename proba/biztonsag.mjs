@@ -355,7 +355,11 @@ async function oldalatRogzit(lap, ut, visszavonCimke, nyitoCimke, osszeg) {
   const visszavon = berletiSor(lap).getByText(visszavonCimke);
   if ((await visszavon.count()) > 0) {
     await visszavon.first().click();
-    await lap.waitForTimeout(1500);
+    // A visszavonás hatására várunk, nem fix időre. A rögzített kiszolgálói
+    // műveletek Postgresen lassabbak, és egy elkésett visszavonás a frissen
+    // rögzített oldalt törölte: a próba utána olyan helyen bukott, ahol semmi
+    // hiba nem volt. A hatás az, hogy a rögzítő űrlap nyitósora visszajön.
+    await berletiSor(lap).getByText(nyitoCimke).first().waitFor({ timeout: 15000 });
     await lapra(lap, ut);
   }
   const sor = berletiSor(lap);

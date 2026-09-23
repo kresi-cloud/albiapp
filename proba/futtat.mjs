@@ -13,6 +13,10 @@
  * ütközés volt; külön sorokon a git magától összefésüli.
  */
 
+// A letöltéspróbának kell a `DATABASE_URL`: azonosítót olvas az
+// adatbázisból, ami nem áll a felületen. A CI környezeti változóból kapja,
+// helyben a `.env`-ből.
+import "dotenv/config";
 import { mkdirSync } from "node:fs";
 import { bongeszot } from "./kozos.mjs";
 

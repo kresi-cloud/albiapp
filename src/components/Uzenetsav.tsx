@@ -12,6 +12,14 @@ export function Uzenetsav({
 
   return (
     <div
+      /**
+       * Állandó fogódzó a böngészős próbának: a kiszolgálói művelet akkor futott
+       * le, amikor ez a sáv megjelent. A `networkidle` erre nem jó — a válasz
+       * később jön, mint ahogy a hálózat elcsendesedik, és a következő `goto`
+       * elvágja a függőben lévő kérést. Feliratra szűrni pedig azért nem lehet,
+       * mert a felület kétnyelvű.
+       */
+      data-uzenet={allapot}
       className={`rounded-lg border p-3 text-sm ${
         allapot === "hiba"
           ? "border-gond-keret bg-gond-lap text-gond"
