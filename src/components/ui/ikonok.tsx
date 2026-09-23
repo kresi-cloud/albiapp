@@ -222,11 +222,35 @@ export function IkonBeszelgetes(t: IkonTulajdonsagok) {
   );
 }
 
+/** Naptárlap bejelölt nappal: a teendők lapja naptárral kezdődik. */
+export function IkonTeendok(t: IkonTulajdonsagok) {
+  return (
+    <Rajz {...t}>
+      <path d="M4 6.5A1.5 1.5 0 0 1 5.5 5h13A1.5 1.5 0 0 1 20 6.5v12a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-12Z" />
+      <path d="M8 3v4M16 3v4M4 10h16" />
+      <path d="m9 14.5 2 2 4-4" />
+    </Rajz>
+  );
+}
+
+/** Ajtó kilinccsel: a látogatásnál a kérdés az, ki nyit ajtót. */
+export function IkonLatogatas(t: IkonTulajdonsagok) {
+  return (
+    <Rajz {...t}>
+      <path d="M6 3.5h9a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6Z" />
+      <path d="M4 20.5h16" />
+      <circle cx="12.5" cy="12" r="1" />
+    </Rajz>
+  );
+}
+
 export const IKON_UTVONAL: Record<
   string,
   (t: IkonTulajdonsagok) => React.ReactElement
 > = {
   "/": IkonAttekinto,
+  "/teendok": IkonTeendok,
+  "/latogatasok": IkonLatogatas,
   "/ingatlanok": IkonIngatlanok,
   "/berlok": IkonBerlok,
   "/befizetesek": IkonBefizetesek,
@@ -237,6 +261,8 @@ export const IKON_UTVONAL: Record<
   "/ado": IkonAdo,
   "/beallitasok": IkonBeallitasok,
   "/berlo": IkonBerlemenyem,
+  "/berlo/teendok": IkonTeendok,
+  "/berlo/latogatasok": IkonLatogatas,
   "/berlo/hibak": IkonHibabejelentes,
   "/berlo/dokumentumok": IkonDokumentumok,
   "/berlo/jegyzokonyvek": IkonJegyzokonyv,

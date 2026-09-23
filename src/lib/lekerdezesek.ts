@@ -5,11 +5,13 @@ import {
   reszletezesbol,
 } from "@/lib/eloirasok";
 import { nyitottHibak } from "@/lib/hibabejelentes";
+import { nyitottLatogatasok } from "@/lib/latogatas";
 import { ertekelesTeendoAdatai } from "@/lib/ertekeles";
 import { ertekelesTeendoi } from "@/domain/ertekeles";
 import { berbeadoAdatai, berloSajatSorai } from "@/lib/szemelyes-adatok";
 import { BERLOHOZ_KELL, hianyzoMezok } from "@/domain/szemelyes-adatok";
 import { hibakbolTeendok } from "@/domain/hibabejelentes";
+import { latogatasokbolTeendok } from "@/domain/latogatas";
 import { uzenet, type Uzenet } from "@/domain/nyelv";
 import { nevsor } from "@/domain/szerzodes";
 import {
@@ -214,9 +216,10 @@ function rendezettEloirasok(nezetek: JogviszonyNezet[]): Set<string> {
 async function tarolt(
   cimzettId: string,
   cimzett: "berbeado" | "berlo",
+  statusz: "nyitott" | "kesz" = "nyitott",
 ): Promise<Teendo[]> {
   const sorok = await prisma.teendo.findMany({
-    where: { cimzettId, statusz: "nyitott" },
+    where: { cimzettId, statusz },
     orderBy: { esedekesseg: "asc" },
   });
 
@@ -231,6 +234,18 @@ async function tarolt(
     hivatkozas: sor.hivatkozas ?? undefined,
     tarolt: true,
   }));
+}
+
+/**
+ * A lezárt tárolt teendők. Azért külön lekérdezés, és nem a lista egy szűrése,
+ * mert a nyitott teendő a lap tárgya, a lezárt pedig csak a visszavonás útja:
+ * a kezdőlap és a naptár ezt soha nem kéri el.
+ */
+export async function lezartTeendok(
+  cimzettId: string,
+  cimzett: "berbeado" | "berlo",
+): Promise<Teendo[]> {
+  return tarolt(cimzettId, cimzett, "kesz");
 }
 
 async function kozelgok(
@@ -269,6 +284,7 @@ export async function teendok(
       ...nezetekbolTeendok(nezetek),
       ...(await kozelgok(nezetek, jogviszonyIdk, ma)),
       ...hibakbolTeendok(await nyitottHibak(jogviszonyIdk)),
+      ...latogatasokbolTeendok(await nyitottLatogatasok(jogviszonyIdk, ma), ma),
       ...hianyzoAdatokTeendoi(await berbeadoiAdathianyok(tulajdonosId), ma),
       ...ertekelesTeendoi(
         await ertekelesTeendoAdatai(tulajdonosId, "berbeado", ma),
@@ -294,6 +310,7 @@ export async function berloTeendoi(
       ...nezetekbolTeendok(nezetek),
       ...(await kozelgok(nezetek, jogviszonyIdk, ma)),
       ...hibakbolTeendok(await nyitottHibak(jogviszonyIdk)),
+      ...latogatasokbolTeendok(await nyitottLatogatasok(jogviszonyIdk, ma), ma, berloId),
       ...hianyzoAdatokTeendoi(await berloiAdathianyok(berloId), ma),
       ...ertekelesTeendoi(await ertekelesTeendoAdatai(berloId, "berlo", ma), "berlo", ma),
       ...(await tarolt(berloId, "berlo")),

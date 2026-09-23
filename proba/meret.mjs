@@ -105,6 +105,8 @@ async function hosszuOsszegetIr(oldal, nyelv) {
 
 const BERBEADOI = [
   "/",
+  "/teendok",
+  "/latogatasok",
   "/befizetesek",
   "/berlok",
   "/ingatlanok",
@@ -122,6 +124,8 @@ const BERBEADOI = [
 
 const BERLOI = [
   "/berlo",
+  "/berlo/teendok",
+  "/berlo/latogatasok",
   "/berlo/hibak",
   "/elofizetesek",
   "/beszelgetesek",
@@ -157,9 +161,10 @@ async function vizsgal(oldal, utvonalak, nyelv, cimke) {
   for (const utvonal of utvonalak) {
     const valasz = await oldal.goto(`${ALAP}${utvonal}`);
     // Előbb az, hogy a lap egyáltalán létezik. A hibalap rövid és keskeny,
-    // tehát minden méretállítást simán teljesít: a `/teendok` évekig szerepelt
-    // ebben a listában úgy, hogy nincs is ilyen lap, és a kapu végig igent
-    // mondott rá. Egy kapu, ami a semmit is átengedi, rosszabb a semminél.
+    // tehát minden méretállítást simán teljesít: a `/teendok` sokáig szerepelt
+    // ebben a listában úgy, hogy akkor még nem is volt ilyen lap, és a kapu
+    // végig igent mondott rá. Egy kapu, ami a semmit is átengedi, rosszabb a
+    // semminél.
     all(
       (valasz?.status() ?? 0) < 400,
       `${utvonal} létező lap ${cimke} (válasz: ${valasz?.status() ?? "nincs"})`,

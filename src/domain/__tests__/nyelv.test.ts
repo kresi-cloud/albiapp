@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NYELVEK, szovegezo, uzenet, type Szotar } from "../nyelv";
+import { hetNapjaiNyelven, NYELVEK, szovegezo, uzenet, type Szotar } from "../nyelv";
 import { SZOTAR, szovegekNyelvvel } from "../szotar";
 import {
   allapotNeve as betekintoAllapotNeve,
@@ -166,5 +166,19 @@ describe("a domain kulcsai megvannak a szótárban", () => {
         `dokumentum.elszamolas.allapot.${allapot}`,
       );
     }
+  });
+});
+
+describe("a hét napjai", () => {
+  it("hétfővel kezd, és hét nevet ad", () => {
+    const magyar = hetNapjaiNyelven("hu");
+    expect(magyar).toHaveLength(7);
+    expect(magyar[0].toLowerCase()).toContain("h");
+    expect(hetNapjaiNyelven("en")[0]).toBe("Mon");
+    expect(hetNapjaiNyelven("en")[6]).toBe("Sun");
+  });
+
+  it("a két nyelv nevei nem ugyanazok", () => {
+    expect(hetNapjaiNyelven("hu")).not.toEqual(hetNapjaiNyelven("en"));
   });
 });

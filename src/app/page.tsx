@@ -1,6 +1,9 @@
+import Link from "next/link";
+import { Hetsav } from "@/components/Hetsav";
 import { Teendolista } from "@/components/Teendolista";
 import { GombHivatkozas, Jelzo, Osszeg, Szakaszcim, Lapfej } from "@/components/ui/alap";
 import { IkonNyil } from "@/components/ui/ikonok";
+import { kovetkezoHet } from "@/domain/naptar";
 import { jogviszonyNezetek, teendok } from "@/lib/lekerdezesek";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { forintNyelven } from "@/domain/nyelv";
@@ -53,8 +56,25 @@ export default async function Attekinto() {
         sz={sz}
       />
 
+      {/*
+        A hétsáv nem a lista másik alakja: a listából az derül ki, mi van
+        hátra, a sávból az, hogy mikor. Egy bérbeadónak reggel a második
+        kérdés az igazi — nem az, hogy hány dolga van, hanem hogy a héten
+        melyik napra esik. Ehhez az üres nap is adat, azt pedig egy lista nem
+        tudja megmutatni.
+      */}
+      <Hetsav het={kovetkezoHet(sajatTeendok, ma)} nyelv={nyelv} utvonal="/teendok" />
+
       <section>
-        <Szakaszcim>{sz("attekinto.most")}</Szakaszcim>
+        <Szakaszcim
+          mellette={
+            <Link href="/teendok" className="font-semibold text-kiemelt hover:underline">
+              {sz("hetsav.mind")}
+            </Link>
+          }
+        >
+          {sz("attekinto.most")}
+        </Szakaszcim>
         <Teendolista teendok={kozeliek} nyelv={nyelv} />
       </section>
 

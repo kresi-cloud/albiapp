@@ -526,6 +526,88 @@ hibabejelentés válaszhatáridejénél.
 A válaszidő mediánt néz, nem átlagot: egyetlen nyaralás alatt megkapott válasz
 nem minősítheti a többit.
 
+## A teendők és a naptár alapelve
+
+A teendő nem tárolt igazság: a rendszer állapotából származik
+(`src/domain/teendok.ts`), és magától eltűnik, ha az oka megszűnik. Egy nyitott
+hibabejelentés, egy esedékes befizetés, egy hiányzó személyes adat mind teendőt
+ad, és egyiket sem kell lezárni — ha lezárhatóak lennének, a lezárás után is
+megmaradna a baj, csak már nem látszana.
+
+Két kivétel van, és mindkettő ugyanazért: valaki vállalta. A jegyzőkönyvben
+határidővel vállalt javítás és a kézzel felvett saját teendő tárolt
+(`Teendo` tábla), ezért lezárható — **és a lezárás visszavonható**, mert egy
+elkattintott „kész" különben csendben eltüntetné, amit valaki vállalt. Ugyanaz
+az elv, mint a jogviszony lezárásánál.
+
+A kézzel felvett teendő azért kell, mert a bérlet hétköznapja nem következik
+abból, amit az alkalmazás tud: a kéményseprő érkezése, a biztosítás évfordulója,
+a felmondási határidő előtti döntés sehonnan nem vezethető le. A kulcsa külön
+előtagot kap, hogy soha ne üsse ki a származtatottat.
+
+A naptár (`src/domain/naptar.ts`) nem a lista másik rendezése. A listából az
+derül ki, **mi** van hátra, a naptárból az, hogy **mikor** — és ehhez az üres
+nap is adat, amit egy lista nem tud megmutatni. Ezért van a nyitólapon a
+következő hét nap sávja, és ezért van a teendők lapján havi rács.
+
+Mindkettő ugyanabból a számításból jön, tehát nem tud elcsúszni egymástól. Egy
+naptárcellába egy jelzés fér, a legsürgetőbb, és ezt is a domain dönti el, nem a
+megjelenítés: két külön szabályból előbb-utóbb az lenne, hogy a lista pirosat
+mutat, a naptár nem.
+
+A hét hétfővel kezdődik mindkét nyelven, mert a magyar és a brit naptár is
+hétfős. A napnevek a `nyelv.ts`-ből jönnek, nem beégetett tömbből: pont ez az a
+hiba, amit a formátumkapu meg akar fogni.
+
+A lejárt teendő nem csúszik a mai napra. A ma esedékes és a két hete lejárt nem
+ugyanaz, és aki a mai cellában látná mindkettőt, azt hinné, ma keletkezett —
+ezért a hétsáv külön sorban mondja meg, hány lejárt tétel van, a havi rács pedig
+kiírja, ha a lejárt tétel nem ebben a hónapban van.
+
+## A szolgáltatói látogatás alapelve
+
+Kéményseprő, mérőóra-leolvasás, szerelő, bérleménymutatás. Eddig SMS-ben ment,
+és épp az veszett el belőle, ami utólag számít: ki mit vállalt.
+
+A megválaszolandó kérdés **nem az, hogy mikor jön a szerelő** — azt a szolgáltató
+mondja meg —, hanem hogy **ki engedi be**. Ezért a látogatásnak nem „elfogadva"
+és „elutasítva" állapota van, hanem az, hogy a bejutás módja tisztázott-e.
+
+A bérbeadó nem mehet be a bérlő távollétében pusztán azért, mert övé az
+ingatlan. Ha kulccsal megy be, ahhoz a bérlő kimondott hozzájárulása kell — nem
+azért, hogy bizonyíték legyen, hanem mert enélkül a bérlő nem tudná, mibe
+egyezett bele.
+
+Három válasz van, mert ennyi eset van: itthon leszek; nem leszek itthon, de a
+bérbeadó beengedheti a kulccsal; nem jó ez az időpont. A harmadik indoklás
+nélkül nincs, mert abból a másik fél nem tud új időpontot javasolni — ugyanaz,
+mint a fénykép és az előfizetés kifogásánál.
+
+Bejelenteni mindkét fél tud: a kéményseprőt a bérbeadó hívja, a saját szerelőjét
+viszont a bérlő. **Nyilatkozni viszont mindig a bérlő nyilatkozik**, mert a
+kérdés az ő lakásába való bejutásról szól, és ezt a kiszolgáló ellenőrzi, nem az
+űrlap.
+
+Több bérlőnél mindenkitől várunk választ, akinek van fiókja, és **egy kifogás
+egymagában is dönt** — a lakótárs nem szavazhatja le azt, akinek nem jó. Amíg
+valaki nem nyilatkozott, nem mondjuk, hogy eldőlt: a legrosszabb hiba az lenne,
+ha a lap azt írná ki, „rendben, bejut a szerelő", holott a másik lakó még nem is
+válaszolt. Fiók nélküli bérlőt nem lehet megkérdezni, és a felület ezt ki is
+mondja.
+
+Törölni nem lehet, csak lemondani, ugyanúgy, mint az előfizetést: a bérlő már
+nyilatkozott rá, és egy eltűnt sor mellől az ő nyilatkozata is eltűnne. A
+lemondás oka nem formaság — a bérlő ebből tudja meg, hogy nem kell otthon
+maradnia.
+
+Az időablak szabad szöveg, és nem kötelező: sok szolgáltató nem ad meg pontos
+időt, és ezt jobb kiírni, mint kitalálni egyet. Amit megadtak, azt változatlanul
+adjuk vissza, mert a bérlő azt fogja az SMS-sel összevetni.
+
+A látogatásból teendő lesz mindkét félnél, amíg nyitott: a bérlőnél a saját
+nyilatkozata, a bérbeadónál a sürgetés vagy az új időpont keresése. Származtatott
+teendő, tehát eltűnik, amint a látogatás eldőlt vagy elmúlt.
+
 ## A beszélgetés alapelve
 
 A bérlet hétköznapi ügye — mikor jön a kéményseprő, elviheti-e a szekrényt,
@@ -797,7 +879,14 @@ bérlő különben joggal hinné, hogy előbb-utóbb mégis kérünk bankszámla
 
 A böngészős próbák ne a képernyőn látható szövegre szűrjenek ott, ahol a
 megjelenés változhat: a befizetési kártyán `data-idoszak` és `data-osszeg`
-van, a bizonylatblokkon `data-oldal`. A nyelvváltásra pedig nem a
+van, a bizonylatblokkon `data-oldal`, az összecsukható szakaszokon
+`data-szakasz`. A szakasznál ez nem stíluskérdés: a Playwright `hasText`
+szűrése kis-nagybetűre érzéketlen részszó-keresés a **teljes** részfán, tehát a
+szakaszban álló tételek szövegébe is belefut. A „Lezárt" szakaszra szűrő
+teendőpróba így az értékelős teendőt („Értékeld a lezárt bérletet") találta meg
+a „Később" szakaszban, és egy olyan ágon bukott el, amihez semmi köze nem volt.
+Egy szakasz feliratára szűrni ezért csak addig működik, amíg senki nem ír a lap
+másik felére hasonló mondatot. A nyelvváltásra pedig nem a
 `networkidle`-re várunk, hanem a `lang` attribútumra (`nyelvre()` a
 `proba/kozos.mjs`-ben): a kiszolgálói művelet válasza később jön, mint ahogy a
 hálózat elcsendesedik, és a következő `goto` elvágja.

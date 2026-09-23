@@ -182,3 +182,26 @@ export function honapNyelven(idoszak: string, nyelv: Nyelv): string {
     timeZone: "UTC",
   }).format(nap);
 }
+
+/**
+ * A hét napjainak rövid neve, hétfőtől vasárnapig.
+ *
+ * A naptárrács fejléce. Azért itt van, és nem a naptármodulban, mert a
+ * formátumkapu szerint dátumot és számot egyedül ez a modul formáz — a
+ * napnevek nyelvenként mások, és egy beégetett magyar tömb pont az a hiba,
+ * amit a kapu meg akar fogni.
+ *
+ * A hét hétfővel kezdődik: az `Intl` a hét napjait egy konkrét dátumból adja,
+ * ezért egy ismert hétfővel indulunk (2024. január 1.).
+ */
+export function hetNapjaiNyelven(nyelv: Nyelv): string[] {
+  const formazo = new Intl.DateTimeFormat(helyszin(nyelv), {
+    weekday: "short",
+    timeZone: "UTC",
+  });
+  const napok: string[] = [];
+  for (let i = 0; i < 7; i++) {
+    napok.push(formazo.format(new Date(Date.UTC(2024, 0, 1 + i))));
+  }
+  return napok;
+}
