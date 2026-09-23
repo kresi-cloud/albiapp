@@ -5,9 +5,11 @@ import {
   reszletezesbol,
 } from "@/lib/eloirasok";
 import { nyitottHibak } from "@/lib/hibabejelentes";
+import { nyitottLatogatasok } from "@/lib/latogatas";
 import { berbeadoAdatai, berloSajatSorai } from "@/lib/szemelyes-adatok";
 import { BERLOHOZ_KELL, hianyzoMezok } from "@/domain/szemelyes-adatok";
 import { hibakbolTeendok } from "@/domain/hibabejelentes";
+import { latogatasokbolTeendok } from "@/domain/latogatas";
 import { uzenet, type Uzenet } from "@/domain/nyelv";
 import { nevsor } from "@/domain/szerzodes";
 import {
@@ -276,6 +278,7 @@ export async function teendok(
       ...nezetekbolTeendok(nezetek),
       ...(await kozelgok(nezetek, jogviszonyIdk, ma)),
       ...hibakbolTeendok(await nyitottHibak(jogviszonyIdk)),
+      ...latogatasokbolTeendok(await nyitottLatogatasok(jogviszonyIdk, ma), ma),
       ...hianyzoAdatokTeendoi(await berbeadoiAdathianyok(tulajdonosId), ma),
       ...(cimzett === "berbeado" ? await tarolt(tulajdonosId, "berbeado") : []),
     ]
@@ -296,6 +299,7 @@ export async function berloTeendoi(
       ...nezetekbolTeendok(nezetek),
       ...(await kozelgok(nezetek, jogviszonyIdk, ma)),
       ...hibakbolTeendok(await nyitottHibak(jogviszonyIdk)),
+      ...latogatasokbolTeendok(await nyitottLatogatasok(jogviszonyIdk, ma), ma, berloId),
       ...hianyzoAdatokTeendoi(await berloiAdathianyok(berloId), ma),
       ...(await tarolt(berloId, "berlo")),
     ]

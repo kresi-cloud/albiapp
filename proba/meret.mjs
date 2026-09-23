@@ -106,6 +106,7 @@ async function hosszuOsszegetIr(oldal, nyelv) {
 const BERBEADOI = [
   "/",
   "/teendok",
+  "/latogatasok",
   "/befizetesek",
   "/berlok",
   "/ingatlanok",
@@ -121,6 +122,7 @@ const BERBEADOI = [
 const BERLOI = [
   "/berlo",
   "/berlo/teendok",
+  "/berlo/latogatasok",
   "/berlo/hibak",
   "/elofizetesek",
   "/beszelgetesek",

@@ -82,6 +82,7 @@ const BERBEADO_FULEK = [
 
 const BERBEADO_TOBBI = [
   { kulcs: "nav.teendok", utvonal: "/teendok" },
+  { kulcs: "nav.latogatasok", utvonal: "/latogatasok" },
   { kulcs: "nav.dokumentumok", utvonal: "/dokumentumok" },
   { kulcs: "nav.ingatlanok", utvonal: "/ingatlanok" },
   { kulcs: "nav.berlok", utvonal: "/berlok" },
@@ -100,6 +101,7 @@ const BERLO_FULEK = [
 
 const BERLO_TOBBI = [
   { kulcs: "nav.teendok", utvonal: "/berlo/teendok" },
+  { kulcs: "nav.latogatasok", utvonal: "/berlo/latogatasok" },
   { kulcs: "nav.elofizetesek", utvonal: "/elofizetesek" },
   { kulcs: "nav.dokumentumaim", utvonal: "/berlo/dokumentumok" },
   { kulcs: "nav.jegyzokonyveim", utvonal: "/berlo/jegyzokonyvek" },

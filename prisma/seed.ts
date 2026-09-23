@@ -825,6 +825,44 @@ async function main() {
     ],
   });
 
+  // Szolgáltatói látogatások: az egyikre a bérlő már nyilatkozott, a másikra
+  // még nem. Így a demóban mindkét állapot látszik — az is, amikor a bérbeadó
+  // még nem tudja, bejut-e a szerelő.
+  const kemenysepres = await prisma.szolgaltatoiLatogatas.create({
+    data: {
+      jogviszonyId: annaJogviszony.id,
+      bejelentoId: berbeado.id,
+      fajta: "kemenysepro",
+      megnevezes: "Éves kéményellenőrzés",
+      szolgaltato: "Katasztrófavédelem",
+      nap: nap(0, MOST.getUTCDate() + 4),
+      idoablakTol: "9:00",
+      idoablakIg: "11:00",
+      megjegyzes: "A társasház egyben kéri, a lépcsőházban is ki van függesztve.",
+    },
+  });
+
+  await prisma.latogatasValasz.create({
+    data: {
+      latogatasId: kemenysepres.id,
+      berloId: berloAnna.id,
+      valasz: "itthon_leszek",
+    },
+  });
+
+  await prisma.szolgaltatoiLatogatas.create({
+    data: {
+      jogviszonyId: annaJogviszony.id,
+      bejelentoId: berbeado.id,
+      fajta: "meroora",
+      megnevezes: "Vízóra leolvasása",
+      szolgaltato: "Vízművek",
+      nap: nap(1, 8),
+      idoablakTol: "8:00",
+      idoablakIg: "16:00",
+    },
+  });
+
   console.log("Példaadat betöltve.");
   console.log(`Bérbeadó: ${berbeado.email} / ${PROBA_JELSZO}`);
   console.log(`Bérlő: ${berloAnna.email} / ${PROBA_JELSZO}`);
