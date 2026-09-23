@@ -3566,6 +3566,260 @@ export const SZOTAR: Szotar = {
     hu: "Jelöld be, kinek írsz.",
     en: "Tick who you are writing to.",
   },
+
+  // ——— Kölcsönös értékelés a jogviszony végén ———
+  "nav.ertekelesek": { hu: "Értékelés", en: "Reviews" },
+  "befizetesek.lezart_berletek": { hu: "Lezárt bérletek", en: "Closed tenancies" },
+  "ertekeles.cim": { hu: "Értékelés", en: "Reviews" },
+  "ertekeles.alcim": {
+    hu: "A lezárt bérletekről, kölcsönösen.",
+    en: "On closed tenancies, both ways.",
+  },
+  "ertekeles.sugo_cim": { hu: "Miért nem látod rögtön a másikét?", en: "Why can't you see theirs yet?" },
+  "ertekeles.sugo": {
+    hu: "Amíg mindkét fél meg nem írta a sajátját, egyik sem látja a másikét. Enélkül a második értékelés az elsőre adott válasz lenne, nem a bérletről szólna. Ha a másik fél nem ír semmit, {nap} nap után az is felfedődik, ami megvan — különben elég lenne hallgatni ahhoz, hogy eltűnjön a rólad szóló értékelés.",
+    en: "Until both sides have written theirs, neither can see the other's. Otherwise the second review would be a reply to the first, not about the tenancy. If the other side writes nothing, whatever exists is revealed after {nap} days — otherwise staying silent would be enough to make a review of you disappear.",
+  },
+  "ertekeles.nem_meres_cim": { hu: "Ez vélemény, nem mérés", en: "This is an opinion, not a measurement" },
+  "ertekeles.nem_meres": {
+    hu: "Amit itt olvasol, a másik fél saját állítása arról, hogyan ment a bérlet. Az alkalmazás nem ellenőrzi, és nem is von össze egyetlen pontszámmá: a három szempont nem egyenértékű, és az átlaguk mérésnek látszana.",
+    en: "What you read here is the other side's own account of how the tenancy went. The app does not verify it, and does not fold it into a single score: the three aspects are not equivalent, and an average would look like a measurement.",
+  },
+  "ertekeles.nincs": {
+    hu: "Még nincs lezárt bérleted. Értékelni a kiköltözés után lehet.",
+    en: "You have no closed tenancy yet. Reviews open after move-out.",
+  },
+  "ertekeles.nincs_fiok": {
+    hu: "Ennek a bérlőnek nincs fiókja, ezért nem tud értékelni, és értékelni sem lehet: az értékelés két félé, nem egyé.",
+    en: "This tenant has no account, so they cannot review and cannot be reviewed: a review belongs to two sides, not one.",
+  },
+  "ertekeles.masik_fel": { hu: "A másik fél: {nev}", en: "The other side: {nev}" },
+  "ertekeles.lezarva_nap": { hu: "Lezárva: {nap}", en: "Closed: {nap}" },
+  "ertekeles.hatralevo": { hu: "Még {nap} napig írhatsz.", en: "You can still write for {nap} days." },
+
+  "ertekeles.allapot.nem_ideje": {
+    hu: "A bérlet még fut. Értékelni a lezárás után lehet.",
+    en: "The tenancy is still running. Reviews open once it closes.",
+  },
+  "ertekeles.allapot.irhato": {
+    hu: "Rajtad a sor: még nem írtad meg a sajátodat.",
+    en: "Your turn: you have not written yours yet.",
+  },
+  "ertekeles.allapot.varakozik": {
+    hu: "Megvan a tiéd. A másik félét akkor látod, ha ő is megírta.",
+    en: "Yours is in. You will see theirs once they have written it too.",
+  },
+  "ertekeles.allapot.lathato": {
+    hu: "Felfedve: mindkettő látszik.",
+    en: "Revealed: both are visible.",
+  },
+  "ertekeles.allapot.elmaradt": {
+    hu: "Letelt az idő, és egyik fél sem írt értékelést.",
+    en: "The window closed and neither side wrote a review.",
+  },
+
+  // A jelző rövid felirata. A hozzá tartozó magyarázat az `allapot.*` kulcsokon
+  // van: egy mondat nem fér a pirulába, és az nem is törik.
+  "ertekeles.jelzo.nem_ideje": { hu: "Még fut", en: "Still running" },
+  "ertekeles.jelzo.irhato": { hu: "Rajtad a sor", en: "Your turn" },
+  "ertekeles.jelzo.varakozik": { hu: "Vár a másikra", en: "Waiting on them" },
+  "ertekeles.jelzo.lathato": { hu: "Felfedve", en: "Revealed" },
+  "ertekeles.jelzo.elmaradt": { hu: "Elmaradt", en: "Not written" },
+
+  "ertekeles.sajat_cim": { hu: "Amit te írtál", en: "What you wrote" },
+  "ertekeles.masike_cim": { hu: "Amit {nev} írt", en: "What {nev} wrote" },
+  "ertekeles.urlap_cim": { hu: "Értékelés írása", en: "Write a review" },
+  "ertekeles.urlap_modosit": { hu: "Az értékelésed módosítása", en: "Change your review" },
+  "ertekeles.modosithato": {
+    hu: "Felfedésig módosíthatod. Utána nem: amit a másik fél elolvasott, azt nem írjuk át.",
+    en: "You can change it until it is revealed. Not after: what the other side has read is not rewritten.",
+  },
+  "ertekeles.szoveg_cimke": { hu: "Hogyan ment a bérlet?", en: "How did the tenancy go?" },
+  "ertekeles.szoveg_sugo": {
+    hu: "Pontszám magyarázat nélkül nincs: abból a másik fél nem tud kiindulni.",
+    en: "No score without a reason: the other side has nothing to go on otherwise.",
+  },
+  "ertekeles.kuld": { hu: "Értékelés mentése", en: "Save review" },
+  "ertekeles.kuldom": { hu: "Mentem…", en: "Saving…" },
+  "ertekeles.pont_cimke": { hu: "{szempont}: {pont} az 5-ből", en: "{szempont}: {pont} out of 5" },
+
+  "ertekeles.szempont.berlorol.fizetes": { hu: "Fizetés", en: "Payment" },
+  "ertekeles.szempont.berlorol.allapot": { hu: "A lakás állapota", en: "Condition of the flat" },
+  "ertekeles.szempont.berlorol.kommunikacio": { hu: "Kommunikáció", en: "Communication" },
+  "ertekeles.szempont.berbeadorol.hibakezeles": { hu: "Hibák elhárítása", en: "Handling of faults" },
+  "ertekeles.szempont.berbeadorol.elerhetoseg": { hu: "Elérhetőség", en: "Reachability" },
+  "ertekeles.szempont.berbeadorol.elszamolas": { hu: "Elszámolás", en: "Settling up" },
+
+  "ertekeles.kifogas.nincs_szoveg": {
+    hu: "Írd le, hogyan ment: pontszám magyarázat nélkül nincs.",
+    en: "Say how it went: no score without a reason.",
+  },
+  "ertekeles.kifogas.hianyzo_szempont": {
+    hu: "Mind a három szempontra adj pontot.",
+    en: "Give a score for all three aspects.",
+  },
+  "ertekeles.kifogas.tartomanyon_kivul": {
+    hu: "A pont 1 és 5 között lehet.",
+    en: "A score must be between 1 and 5.",
+  },
+  "ertekeles.kifogas.ismeretlen_szempont": {
+    hu: "Ismeretlen szempont került az űrlapra.",
+    en: "The form carried an unknown aspect.",
+  },
+  "ertekeles.kifogas.nem_ideje": {
+    hu: "Ezt a bérletet még nem zárták le, vagy letelt az értékelési idő.",
+    en: "This tenancy is not closed yet, or the review window has passed.",
+  },
+  "ertekeles.kifogas.mar_felfedve": {
+    hu: "Az értékelések már felfedődtek, ezen nem lehet változtatni.",
+    en: "The reviews are already revealed; this can no longer be changed.",
+  },
+  "ertekeles.hiba.nem_tied": {
+    hu: "Ehhez a bérlethez nincs hozzáférésed.",
+    en: "You do not have access to this tenancy.",
+  },
+  "ertekeles.kesz": { hu: "Az értékelésed elmentve.", en: "Your review has been saved." },
+
+  "teendo.ertekeles.cim": { hu: "Értékeld a lezárt bérletet: {cimke}", en: "Review the closed tenancy: {cimke}" },
+  "teendo.ertekeles.leiras": {
+    hu: "Még {nap} napig írhatsz. Amíg nem írsz, a rólad szólót sem látod.",
+    en: "You can still write for {nap} days. Until you do, you cannot see the one about you.",
+  },
+
+  // ——— Bemutatkozó oldal ———
+  "nav.bemutatkozas": { hu: "Bemutatkozás", en: "Profile" },
+  "nav.rendszergazda": { hu: "Üzemeltetés", en: "Operations" },
+
+  "bemutatkozas.cim": { hu: "Bemutatkozás", en: "Profile" },
+  "bemutatkozas.alcim": {
+    hu: "Amit magadról írsz, és a rólad szóló értékelések. Ez az oldal egyelőre nem nyilvános.",
+    en: "What you write about yourself, and the reviews about you. This page is not public yet.",
+  },
+  "bemutatkozas.admin_alcim": {
+    hu: "Bemutatkozó oldal, üzemeltetői nézetben.",
+    en: "Profile page, operator view.",
+  },
+  "bemutatkozas.vissza": { hu: "Vissza a listához", en: "Back to the list" },
+  "bemutatkozas.szerep.berbeado": { hu: "Bérbeadó", en: "Landlord" },
+  "bemutatkozas.szerep.berlo": { hu: "Bérlő", en: "Tenant" },
+  "bemutatkozas.mezo_cimke": { hu: "Amit magadról írsz", en: "About you" },
+  "bemutatkozas.mezo_sugo": {
+    hu: "Néhány mondat arról, ki vagy és mit vársz a bérlettől. Ezt csak te látod és az üzemeltető; a másik félhez nem jut el.",
+    en: "A few sentences about who you are and what you expect from the tenancy. Only you and the operator can see it; it does not reach the other party.",
+  },
+  "bemutatkozas.ment": { hu: "Mentés", en: "Save" },
+  "bemutatkozas.mentem": { hu: "Mentem…", en: "Saving…" },
+  "bemutatkozas.kesz": {
+    hu: "A bemutatkozásod elmentve.",
+    en: "Your profile text has been saved.",
+  },
+  "bemutatkozas.hiba.nincs_belepve": {
+    hu: "Ehhez be kell lépned.",
+    en: "You need to be signed in for this.",
+  },
+  "bemutatkozas.hiba.tul_hosszu": {
+    hu: "A bemutatkozás legfeljebb {jel} karakter lehet.",
+    en: "The profile text can be at most {jel} characters.",
+  },
+  "bemutatkozas.ures_sajat": {
+    hu: "Még nem írtál magadról semmit.",
+    en: "You have not written anything about yourself yet.",
+  },
+  "bemutatkozas.ures_masike": {
+    hu: "Nem írt magáról semmit.",
+    en: "They have not written anything about themselves.",
+  },
+  "bemutatkozas.ertekelesek_cim": { hu: "Értékelések", en: "Reviews" },
+  "bemutatkozas.darab": { hu: "{darab} értékelés", en: "{darab} reviews" },
+  "bemutatkozas.atlag": {
+    hu: "{atlag} ({darab} értékelésből)",
+    en: "{atlag} (from {darab} reviews)",
+  },
+  "bemutatkozas.nincs_sajat": {
+    hu: "Még nincs rólad felfedett értékelés. Ami rejtve van, az ide sem számít bele.",
+    en: "There is no revealed review about you yet. Anything still hidden is not counted here either.",
+  },
+  "bemutatkozas.nincs_masike": {
+    hu: "Még nincs róla felfedett értékelés.",
+    en: "There is no revealed review about them yet.",
+  },
+  "bemutatkozas.nem_nyilvanos_cim": {
+    hu: "Ki látja ezt az oldalt?",
+    en: "Who can see this page?",
+  },
+  "bemutatkozas.nem_nyilvanos": {
+    hu: "Egyelőre csak te magad és az üzemeltető. A másik fél nem látja, és nyilvános hivatkozás sincs hozzá. Hogy a rólad szóló értékelést megmutathasd-e egy leendő bérbeadónak, még nincs eldöntve.",
+    en: "For now only you and the operator. The other party cannot see it, and there is no public link to it. Whether you may show a review about yourself to a prospective landlord is not decided yet.",
+  },
+  "bemutatkozas.rejtett_cim": {
+    hu: "Miért kevesebb, mint amennyit vártál?",
+    en: "Why fewer than you expected?",
+  },
+  "bemutatkozas.rejtett": {
+    hu: "Csak a felfedett értékelés látszik itt, és csak az számít bele a darabszámba. Amíg mindkét fél meg nem írta a sajátját, a rólad szóló rejtve marad — különben a puszta darabszámból is kiderülne, hogy a másik fél már írt.",
+    en: "Only revealed reviews appear here, and only those are counted. Until both parties have written their own, the one about you stays hidden — otherwise the count alone would reveal that the other party has already written.",
+  },
+
+  // ——— A rendszer saját értékelése, csak az üzemeltetőnek ———
+  "gepi.cim": { hu: "A rendszer értékelése", en: "System assessment" },
+  "gepi.alcim": {
+    hu: "Amit az alkalmazás maga mért. Csak az üzemeltető látja, a felhasználó nem.",
+    en: "What the application measured itself. Only the operator sees it, not the user.",
+  },
+  "gepi.szempont.pontossag": { hu: "Pontosság", en: "Accuracy" },
+  "gepi.szempont.valaszido": { hu: "Válaszidő", en: "Response time" },
+  "gepi.szempont.egyuttmukodes": { hu: "Együttműködés", en: "Cooperation" },
+  "gepi.pont": {
+    hu: "{pont} / 5 ({minta} megfigyelésből)",
+    en: "{pont} / 5 (from {minta} observations)",
+  },
+  "gepi.nincs_pont": { hu: "nincs elég adat", en: "not enough data" },
+  "gepi.nincs_eleg": {
+    hu: "{minta} megfigyelés van, és legalább {kell} kellene. Kevesebből a szám magát magyarázná.",
+    en: "There are {minta} observations, and at least {kell} would be needed. Fewer than that and the number would only explain itself.",
+  },
+  "gepi.pontossag": {
+    hu: "{minta} lejárt előírásból {rendben} zárult rendben, {vitas} vitás, {hianyzo} maradt nyilatkozat nélkül. A késés középértéke {keses} nap.",
+    en: "Of {minta} due charges, {rendben} closed cleanly, {vitas} are disputed and {hianyzo} were left without a statement. The median delay is {keses} days.",
+  },
+  "gepi.valaszido": {
+    hu: "{minta} megkeresésre adott válasz középértéke {ora} óra.",
+    en: "The median response to {minta} messages was {ora} hours.",
+  },
+  "gepi.egyuttmukodes": {
+    hu: "{minta} kétoldali kérdésből {megvalaszolt} esetben nyilatkozott, igennel vagy nemmel.",
+    en: "Of {minta} two-sided questions, they gave a statement in {megvalaszolt} cases, whether yes or no.",
+  },
+  "gepi.nincs_semmi": {
+    hu: "A rendszer még semmit nem tud erről a felhasználóról. Ez nem rossz jegy, hanem hiányzó adat.",
+    en: "The system knows nothing about this user yet. That is missing data, not a bad mark.",
+  },
+  "gepi.miert_cim": {
+    hu: "Miből jönnek ezek a számok?",
+    en: "Where do these numbers come from?",
+  },
+  "gepi.miert": {
+    hu: "Abból, amit az alkalmazás magától rögzített: a befizetések egyeztetéséből, a hibabejelentések és az üzenetek időpontjaiból, és abból, hány kétoldali kérdésre nyilatkozott a felhasználó. A három szempontot nem vonjuk össze egyetlen számmá, és amire nincs elég adat, arra nem tippelünk. A válaszidő sávjai az alkalmazás alapértelmezései, nem jogszabályi határidők. A számítás nincs eltárolva: minden megnyitáskor újra fut, tehát követi, ha a viselkedés megváltozik.",
+    en: "From what the application recorded on its own: the payment reconciliation, the timestamps of repair reports and messages, and how many two-sided questions the user answered. The three aspects are never merged into one number, and where there is not enough data we do not guess. The response-time bands are the application's defaults, not statutory deadlines. The calculation is not stored: it runs again on every visit, so it follows changes in behaviour.",
+  },
+
+  "rendszergazda.cim": { hu: "Üzemeltetés", en: "Operations" },
+  "rendszergazda.alcim": {
+    hu: "A felhasználók bemutatkozó oldalai.",
+    en: "The users' profile pages.",
+  },
+  "rendszergazda.sugo_cim": {
+    hu: "Mit látsz itt?",
+    en: "What do you see here?",
+  },
+  "rendszergazda.sugo": {
+    hu: "Minden felhasználó bemutatkozó oldalát, és rajtuk kétféle értékelést: amit a másik fél írt róla, és amit a rendszer mért. A rejtett értékelés itt sem látszik, és a darabszámba sem számít bele: a vakság ígérete a te oldaladon sem törik meg.",
+    en: "Every user's profile page, with two kinds of assessment on it: what the other party wrote about them, and what the system measured. Hidden reviews do not show here either, and are not counted: the promise of blind reviewing does not break on your side either.",
+  },
+  "rendszergazda.nincs": {
+    hu: "Nincs egyetlen felhasználó sem.",
+    en: "There are no users.",
+  },
 };
 
 /** Szövegező a beépített szótárral. Kliensoldali komponens is ezt hívja. */

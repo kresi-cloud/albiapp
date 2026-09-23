@@ -6,6 +6,8 @@ import {
 } from "@/lib/eloirasok";
 import { nyitottHibak } from "@/lib/hibabejelentes";
 import { nyitottLatogatasok } from "@/lib/latogatas";
+import { ertekelesTeendoAdatai } from "@/lib/ertekeles";
+import { ertekelesTeendoi } from "@/domain/ertekeles";
 import { berbeadoAdatai, berloSajatSorai } from "@/lib/szemelyes-adatok";
 import { BERLOHOZ_KELL, hianyzoMezok } from "@/domain/szemelyes-adatok";
 import { hibakbolTeendok } from "@/domain/hibabejelentes";
@@ -38,6 +40,8 @@ export type JogviszonyNezet = {
   ingatlanMegnevezes: string;
   ingatlanCim: string;
   berletiDijFt: number;
+  /** Lezárt-e a jogviszony. A befizetések lapja ebből dönti el, mi kerül előre. */
+  lezart: boolean;
   egyeztetesek: (Egyeztetes & {
     idoszak: string | null;
     osszegFt: number;
@@ -56,6 +60,7 @@ type BetoltottJogviszony = {
   id: string;
   berlok: { nev: string }[];
   berletiDijFt: number;
+  vege: Date | null;
   ingatlan: { megnevezes: string; cim: string; tulajdonosId: string };
   eloirtTetelek: (EloirtTetel & { reszletezes: string | null })[];
   berloiIgazolasok: BerloiIgazolas[];
@@ -114,6 +119,7 @@ function nezetteAlakit(
     ingatlanMegnevezes: jogviszony.ingatlan.megnevezes,
     ingatlanCim: jogviszony.ingatlan.cim,
     berletiDijFt: jogviszony.berletiDijFt,
+    lezart: jogviszony.vege !== null,
     egyeztetesek: eredmeny.map((sor) => {
       const eloiras = sor.eloirtTetelId ? eloirasok.get(sor.eloirtTetelId) : undefined;
       const berbeadoi = sor.berbeadoiIgazolasId
@@ -280,6 +286,11 @@ export async function teendok(
       ...hibakbolTeendok(await nyitottHibak(jogviszonyIdk)),
       ...latogatasokbolTeendok(await nyitottLatogatasok(jogviszonyIdk, ma), ma),
       ...hianyzoAdatokTeendoi(await berbeadoiAdathianyok(tulajdonosId), ma),
+      ...ertekelesTeendoi(
+        await ertekelesTeendoAdatai(tulajdonosId, "berbeado", ma),
+        "berbeado",
+        ma,
+      ),
       ...(cimzett === "berbeado" ? await tarolt(tulajdonosId, "berbeado") : []),
     ]
       .filter((teendo) => teendo.cimzett === cimzett)
@@ -301,6 +312,7 @@ export async function berloTeendoi(
       ...hibakbolTeendok(await nyitottHibak(jogviszonyIdk)),
       ...latogatasokbolTeendok(await nyitottLatogatasok(jogviszonyIdk, ma), ma, berloId),
       ...hianyzoAdatokTeendoi(await berloiAdathianyok(berloId), ma),
+      ...ertekelesTeendoi(await ertekelesTeendoAdatai(berloId, "berlo", ma), "berlo", ma),
       ...(await tarolt(berloId, "berlo")),
     ]
       .filter((teendo) => teendo.cimzett === "berlo")

@@ -120,11 +120,14 @@ korábbi véget is kaphatna: az már egyeztetett előírt tételeket törölne, 
 záró hónapot újraarányosítaná. Aki a dátumot javítani akarja, előbb visszavonja
 a lezárást — az vissza is számolja, amit az első elvett —, és utána zár le újra.
 
-A `vege` és a `lezarva` két külön adat: az egyik a kiköltözés napja, a másik az,
-mikor került be az alkalmazásba. A kettő eltér, ha a bérbeadó utólag rögzíti a
-lezárást, és a különbség nem mindegy: ami a lezárástól számít határidőt, annak a
-rögzítés napjától kell indulnia, mert a bérlő addig nem is látta, hogy a bérlet
-lezárult.
+A lezárás ezért eltárol egy második dátumot is (`ertekelesAblak`): a `vege` a
+kiköltözés beírt napja, ez pedig az, ahonnan a lezáráshoz kötött határidők
+futnak. A kettő eltér, ha a bérbeadó utólag rögzíti a lezárást — a bérlő addig
+nem is látta, hogy a bérlet lezárult —, és akkor a rögzítés napja számít. Előre
+rögzített lezárásnál viszont a kiköltözés napja a későbbi, és az a kezdet: a
+bérlet addig még fut. **Ezt egyszer állítjuk be, és a visszavonás is csak akkor
+törli, ha a jogviszonyon még egy értékelés sem született**; különben egy
+visszavonás-újralezárás tetszőleges sokszor újraindítaná a határidőt.
 
 ## Belépés és jogosultság
 
@@ -392,6 +395,136 @@ ezt meg is mondja, különben a bérbeadó azt hinné, elromlott.
 A teendők többsége származtatott: a rendszer állapotából jön, és magától eltűnik,
 ha az oka megszűnik. A vállalt javítás viszont tárolt teendő (`Teendo`), mert azt
 valaki vállalta, és le is kell tudni zárni.
+
+## A kölcsönös értékelés alapelve
+
+A bérlőszűrés legális megfelelője. Magánszemély bérbeadóként nincs jogszerű
+módja annak, hogy a leendő bérlőről előzményt kérjünk le: bérlői feketelista
+nincs, és nem is lehet. Ami marad, az a két félnek az egymásról tett saját
+állítása — tehát nem mérés, hanem vélemény, és a felület ezt ki is mondja.
+
+Két dolog dönti el, hogy ér-e valamit.
+
+**Mikor.** Csak a jogviszony lezárása után. Amíg a bérlet fut, az óvadék még a
+bérbeadónál van, a következő hibabejelentés még előtte: aki függ a másiktól, az
+nem a véleményét írja le.
+
+**Vakon.** Amíg mindkét fél meg nem írta a sajátját, egyik sem látja a másikét.
+Enélkül a második értékelés az elsőre adott válasz lenne, nem a bérletről
+szólna. Ezt a kiszolgáló tartja be, nem a felület: a másik szövegét nem is
+töltjük be, mert egy elrejtett, de betöltött szöveg ott állna a lap forrásában.
+A böngészős próba ezért a lap **teljes forrásában** keres, nem a látható
+szövegben.
+
+A felfedés két úton jön: mindkettő megvan, vagy letelt az ablak
+(`ABLAK_NAP`, 30 nap). Az ablak nélkül elég lenne hallgatni ahhoz, hogy a rólunk
+szóló értékelés eltűnjön. Felfedés után senki nem ír és nem módosít: amit a
+másik fél elolvasott, azt nem írjuk át — ugyanaz az elv, mint a `veglegesSzoveg`
+befagyasztásánál.
+
+**A harminc nap nem a beírt kiköltözési naptól számít, hanem attól, amit a
+lezárás pillanatában eltároltunk** (`ablakKezdete`, a `Jogviszony.ertekelesAblak`
+mezőből; a kezdetet `ablakotKezd` állítja elő). A kettő rendes esetben
+egybeesik, de ha a bérbeadó utólag rögzíti a lezárást, nem: a bérlő addig nem is
+látta, hogy a bérlet lezárult, tehát értékelni sem tudott. A dátum ráadásul a
+bérbeadó kezében van, és a `vege`-től számolva egy visszakeltezett lezárás
+azonnal felfedné a másik fél addig rejtett szövegét, és elvenné tőle a sajátja
+megírását — vagyis pont az a fél keltezne vissza, akinek ez az érdeke.
+
+**És nem is indul újra.** A lezárás visszavonható, utána újra le lehet zárni; ha
+az ablak minden lezáráskor nulláról indulna, a bérbeadó egy visszavonással új
+harminc napot adhatna magának — akár olyat is, amiben már elolvasta a másik fél
+felfedett szövegét. Ezért a tárolt kezdet csak akkor áll be, ha még nincs, és a
+visszavonás is csak akkor törli, ha ezen a jogviszonyon még egy értékelés sem
+született: egy elkattintott lezárásnak ne maradjon nyoma, egy megírt
+értékelésnek viszont igen.
+
+A harminc nap oka ugyanaz, mint a beszélgetés kilencvenéé, csak rövidebb: az
+óvadék elszámolása és az utolsó rezsiszámla a kiköltözés utáni hetekben derül
+ki, ezek nélkül a bérlet felét nem lehetne értékelni. Fél év múlva viszont már
+senki nem emlékszik rá, mikor jött a szerelő.
+
+Az értékelés személyről szól, nem jogviszonyról: két lakótársnál a bérbeadónak
+két külön értékelése van ugyanazon a jogviszonyon, és a lakótárs nem felel a
+másikért. Fiók nélküli bérlőt nem lehet értékelni, és értékelni sem tud; a
+felület ezt kimondja.
+
+**Pontszámot nem vonunk össze.** Három szempont van irányonként, és az átlaguk
+mérésnek látszana: aki pontosan fizetett, de a lakást tönkretette, nem
+„közepes". A szempontok listája kódban él (`src/domain/ertekeles.ts`), nem az
+adatbázisban, ugyanazért, amiért a szerződésmodulok katalógusa.
+
+Amit az első kiadás **nem** csinál: az értékelést nem viszi ki a két fél közül.
+Hogy egy bérlő a róla szóló értékelést megmutathatja-e egy leendő bérbeadónak,
+az termékdöntés és adatvédelmi kérdés egyszerre, és a betekintő gépezete
+(saját hozzájárulás, visszavonható link) készen áll rá — de ezt a bérbeadónak
+kell eldöntenie, az ügyvédi átnézéssel együtt.
+
+## A bemutatkozó oldal alapelve
+
+Minden felhasználónak van bemutatkozó oldala: amit magáról ír, és a róla szóló
+értékelések egy helyen, több jogviszonyból.
+
+**Csak a felfedett értékelés látszik rajta, és csak az számít bele a
+darabszámba is.** Ha a rejtett is beleszámítana, a puszta szám elárulná, hogy a
+másik fél már írt — abból pedig a vakság maradéka is elveszne: aki látja, hogy
+„1 értékelés” áll a másik oldalán, az tudja, mihez kell igazodnia.
+
+Összevont pontszám itt sincs, ugyanazért, amiért egy értékelésen belül sincs.
+Szempontonként viszont van átlag, mert ott több ember ugyanazt a dolgot mondja
+— és mellé mindig odaírjuk, hány értékelésből jött, mert kettőnek az átlaga nem
+ugyanaz, mint tízé.
+
+**A lap egyelőre nem nyilvános**: csak a felhasználó maga és az üzemeltető
+nyitja meg (`lathatja`), és ezt a kiszolgáló dönti el, nem a hivatkozás
+elrejtése. Hogy egy bérlő megmutathatja-e a róla szóló értékelést egy leendő
+bérbeadónak, termékdöntés és adatvédelmi kérdés egyszerre, és az ügyvédi
+átnézéssel együtt a bérbeadóé. Amíg nincs döntés, a szűkebb kör a helyes
+alapértelmezés: egy tévedésből kiadott értékelést nem lehet visszavenni.
+
+A rendszergazda nem a `szerep` harmadik értéke, hanem külön jelölő
+(`Felhasznalo.rendszergazda`): a szerep azt dönti el, melyik alkalmazást látja
+a felhasználó, az üzemeltetői rálátás pedig erre jön rá. Felületről nem adható
+meg, csak az adatbázisban — egy jogosultság, ami a felületről kérhető,
+előbb-utóbb kikerül oda, ahol nem kellene.
+
+### A rendszer saját értékelése
+
+Az üzemeltető a humán értékelés mellett a rendszerét is látja
+(`src/domain/gepi-ertekeles.ts`): pontosság, válaszidő és együttműködés. Ez
+szándékosan más természetű, mint a kölcsönös értékelés. Az vélemény, amit nem
+mérünk; ez mérés, abból, amit az alkalmazás maga rögzített — az egyeztetésből,
+a hibabejelentések és az üzenetek időpontjaiból, és abból, hány kétoldali
+kérdésre nyilatkozott egyáltalán az illető.
+
+Négy dolog tartja a helyén:
+
+- **Csak a rendszergazda látja.** A felhasználó sem magáról, sem a másik félről
+  nem. Egy gépi pontszám, amit a másik fél is lát, észrevétlenül bérlőszűrő
+  listává válna, és pont az lenne belőle, amit a termék kerül. Egy pontszám,
+  amit a saját tulajdonosa lát, pedig arra ösztönözne, hogy a mutatóra
+  játsszon.
+- **Számot magyarázat nélkül nem adunk.** Minden szemponthoz ott a minta mérete
+  és az egy mondatos indoklás, ugyanúgy, mint a rezsielszámolás tételeinél.
+- **Amiből nincs elég adat, arra nem tippelünk.** A pont ilyenkor `null`, nem
+  nulla és nem hármas, és a lap ki is írja, hogy nincs elég adat: a „nem
+  tudjuk” nem rossz jegy. A határ `LEGKISEBB_MINTA`, mert háromnál kevesebből
+  az arány önmagát magyarázná.
+- **Nincs eltárolva.** Minden lekérdezéskor újraszámol, tehát magától követi, ha
+  a viselkedés megváltozik — ugyanaz az elv, mint a származtatott teendőknél és
+  az archiválásnál.
+
+A pontosság a két szerepnél mást mér, és ez szándékos: a bérlőé az, hogy a pénz
+a kiírt összegben és időben megérkezett-e, a bérbeadóé az, hogy a saját oldalát
+vezette-e. A bérbeadó nem fizet, tehát egy nem fizető bérlő nem ronthatja az ő
+pontosságát. A vitás tétel viszont egyik oldalon sem rontja az
+együttműködést: vitatkozni szabad, és az együttműködés hiánya az, ha valaki nem
+is válaszol. A válaszidő sávjai az alkalmazás alapértelmezései, nem
+jogszabályi határidők, és a felület ezt ki is mondja — ugyanúgy, ahogy a
+hibabejelentés válaszhatáridejénél.
+
+A válaszidő mediánt néz, nem átlagot: egyetlen nyaralás alatt megkapott válasz
+nem minősítheti a többit.
 
 ## A teendők és a naptár alapelve
 
@@ -686,13 +819,19 @@ Rövid listát nem csukunk össze: három sor mögé kattintani rosszabb, mint
 elolvasni őket.
 
 A laphossz ezért kapu: a `proba/meret.mjs` minden lapon megméri, és nyolc
-telefonképernyőnél hosszabb lap megbukik. Egy lapot viszont nem tudott mérni: a
-véglegesített szerződését, mert a példaadatban nincs véglegesített szerződés, a
-méretpróba pedig a sor elején fut, friss adatbázison. A vakfolt mögött a lap
-tizenkilenc képernyő lett (a kész szöveg alapból nyitva állt), és semmi nem
-szólt. Azóta a `proba/forditas.mjs` méri meg, ott, ahol épp véglegesített egy
-szerződést — a tanulság pedig általános: ha egy állapotot a példaadat nem
-tartalmaz, azt az az oldal mérje meg, amelyik előállítja. Ha egy lap átlépi, csoportosítani
+telefonképernyőnél hosszabb lap megbukik. A mérés friss példaadaton fut
+(`npm run proba` maga tölti be), mert a próbasor menet közben maga is termel
+adatot: az előfizetéspróba minden futáskor új előfizetést vesz fel, és abból
+havi előírás lesz. Kétszer egymás után, újratöltés nélkül futtatva a lapok
+nem a termék állapotát mutatnák, hanem a próbáét.
+
+Egy lapot viszont sokáig nem tudott mérni: a véglegesített szerződését, mert a
+példaadatban nincs véglegesített szerződés, a méretpróba pedig a sor elején fut,
+friss adatbázison. A vakfolt mögött a lap tizenkilenc képernyő lett (a kész
+szöveg alapból nyitva állt), és semmi nem szólt. Azóta a `proba/forditas.mjs`
+méri meg, ott, ahol épp véglegesített egy szerződést — a tanulság pedig
+általános: ha egy állapotot a példaadat nem tartalmaz, azt az az oldal mérje
+meg, amelyik előállítja. Ha egy lap átlépi, csoportosítani
 vagy összecsukni kell, nem a korlátot emelni. A mérés önpróbával kezd —
 magassággal és szélességgel egyaránt —, mert ebben a projektben már két
 olyan próbaállítás volt, ami mindig igazat adott.
