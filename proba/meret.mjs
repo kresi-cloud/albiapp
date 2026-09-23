@@ -113,6 +113,7 @@ const BERBEADOI = [
   "/ado",
   "/dokumentumok",
   "/hibak",
+  "/ertekelesek",
   "/beszelgetesek",
   "/beallitasok",
 ];
@@ -125,6 +126,7 @@ const BERLOI = [
   "/berlo/jegyzokonyvek",
   "/berlo/dokumentumok",
   "/berlo/betekinto",
+  "/ertekelesek",
   "/berlo/adatok",
 ];
 

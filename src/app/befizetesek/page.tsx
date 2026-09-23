@@ -86,6 +86,14 @@ export default async function Befizetesek() {
     bizonylatSorai,
   };
 
+  // Ami lezárult és nincs rajta rendezetlen tétel, az hátra kerül. A lezárás
+  // önmagában nem elég: a kiköltözés nem fizeti ki a tartozást, és egy
+  // elmaradt havi díj nem tűnhet el egy összecsukott szakasz mögé.
+  const rendezetlen = (nezet: JogviszonyNezet) =>
+    csoportositva(nezet.egyeztetesek, "berbeado").soronVan.length > 0;
+  const elol = nezetek.filter((nezet) => !nezet.lezart || rendezetlen(nezet));
+  const hatul = nezetek.filter((nezet) => nezet.lezart && !rendezetlen(nezet));
+
   return (
     <div className="grid gap-6">
       <div className="grid gap-3">
@@ -118,71 +126,118 @@ export default async function Befizetesek() {
         </Sugo>
       </div>
 
-      {nezetek.map((nezet) => {
-        // Egy-két év alatt száz fölötti tétel gyűlik össze. Ha mind egyforma
-        // súllyal áll a lapon, telefonon percekig kell görgetni ahhoz az
-        // egyhez, amivel tényleg dolga van. Amivel már nincs, az nem tűnik el:
-        // összecsukva, darabszámmal áll ott.
-        const { soronVan, rendezett } = csoportositva(nezet.egyeztetesek, "berbeado");
+      {elol.map(berlet)}
 
-        // Amihez bizonylatot töltöttek fel, az akkor is teljes kártyát kap, ha
-        // a vita közben rendeződött: egy fájlt nem tüntetünk el csendben.
-        const bizonylatos = rendezett.filter(
-          (sor) => sor.eloirtTetelId && bizonylatSorai(sor.eloirtTetelId).length > 0,
-        );
-        const csendes = rendezett.filter((sor) => !bizonylatos.includes(sor));
+      {/*
+        A lezárt bérletek egy közös, összecsukott csokorban.
 
-        return (
-          <section key={nezet.id} className="grid gap-2">
-            <Szakaszcim
-              mellette={sz("befizetesek.havi_dij", {
-                osszeg: forintNyelven(nezet.berletiDijFt, nyelv),
-              })}
-            >
-              {nezet.ingatlanMegnevezes}
-            </Szakaszcim>
-            <p className="-mt-2 text-sm text-halvany">{nezet.berlokNeve}</p>
-
-            {nezet.egyeztetesek.length === 0 ? (
-              <p className="text-sm text-halvany">{sz("befizetesek.nincs_tetel")}</p>
-            ) : null}
-
-            {soronVan.length === 0 && nezet.egyeztetesek.length > 0 ? (
-              <p className="rounded-kartya border border-rendben-keret bg-rendben-lap p-3 text-sm font-medium text-rendben">
-                {sz("lista.nincs_teendo")}
-              </p>
-            ) : null}
-
-            {soronVan.length > 0 ? (
-              <ul className="grid gap-2">
-                {soronVan.map((sor) => (
-                  <Tetel key={kulcs(sor)} sor={sor} nezetId={nezet.id} cimkek={cimkek} />
-                ))}
-              </ul>
-            ) : null}
-
-            {bizonylatos.length > 0 ? (
-              <Osszecsukott
-                cim={sz("lista.rendezett_bizonylattal", { darab: bizonylatos.length })}
-              >
-                {bizonylatos.map((sor) => (
-                  <Tetel key={kulcs(sor)} sor={sor} nezetId={nezet.id} cimkek={cimkek} />
-                ))}
-              </Osszecsukott>
-            ) : null}
-
-            {csendes.length > 0 ? (
-              <Osszecsukott cim={sz("lista.rendezett", { darab: csendes.length })}>
-                {csendes.map((sor) => (
-                  <RovidSor key={kulcs(sor)} sor={sor} cimkek={cimkek} />
-                ))}
-              </Osszecsukott>
-            ) : null}
-          </section>
-        );
-      })}
+        Egy bérbeadónál a bérletek nem fogynak, csak gyűlnek: öt év alatt öt
+        kiköltözött bérlő öt szakaszfejlécet és öt „nincs teendő" sávot hagyna
+        a lapon, örökre. Ami lezárult és el is van rendezve, az mögé kerül;
+        amin még van rendezetlen tétel, az elöl marad, mert a kiköltözés nem
+        fizeti ki a tartozást.
+      */}
+      {hatul.length > 0 ? (
+        <details className="group">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-base font-bold tracking-tight">
+            <span className="font-display">
+              {sz("befizetesek.lezart_berletek")}
+            </span>
+            <span className="text-sm font-medium text-halvany">
+              ({hatul.length})
+            </span>
+            <IkonNyil
+              meret={16}
+              osztaly="text-nagyon-halvany rotate-90 transition-transform group-open:-rotate-90"
+            />
+          </summary>
+          <div className="mt-2 grid gap-6">{hatul.map(berlet)}</div>
+        </details>
+      ) : null}
     </div>
   );
+
+  function berlet(nezet: JogviszonyNezet) {
+    // Egy-két év alatt száz fölötti tétel gyűlik össze. Ha mind egyforma
+    // súllyal áll a lapon, telefonon percekig kell görgetni ahhoz az
+    // egyhez, amivel tényleg dolga van. Amivel már nincs, az nem tűnik el:
+    // összecsukva, darabszámmal áll ott.
+    const { soronVan, rendezett } = csoportositva(
+      nezet.egyeztetesek,
+      "berbeado",
+    );
+
+    // Amihez bizonylatot töltöttek fel, az akkor is teljes kártyát kap, ha
+    // a vita közben rendeződött: egy fájlt nem tüntetünk el csendben.
+    const bizonylatos = rendezett.filter(
+      (sor) =>
+        sor.eloirtTetelId && bizonylatSorai(sor.eloirtTetelId).length > 0,
+    );
+    const csendes = rendezett.filter((sor) => !bizonylatos.includes(sor));
+
+    return (
+      <section key={nezet.id} className="grid gap-2">
+        <Szakaszcim
+          mellette={sz("befizetesek.havi_dij", {
+            osszeg: forintNyelven(nezet.berletiDijFt, nyelv),
+          })}
+        >
+          {nezet.ingatlanMegnevezes}
+        </Szakaszcim>
+        <p className="-mt-2 text-sm text-halvany">{nezet.berlokNeve}</p>
+
+        {nezet.egyeztetesek.length === 0 ? (
+          <p className="text-sm text-halvany">
+            {sz("befizetesek.nincs_tetel")}
+          </p>
+        ) : null}
+
+        {soronVan.length === 0 && nezet.egyeztetesek.length > 0 ? (
+          <p className="rounded-kartya border border-rendben-keret bg-rendben-lap p-3 text-sm font-medium text-rendben">
+            {sz("lista.nincs_teendo")}
+          </p>
+        ) : null}
+
+        {soronVan.length > 0 ? (
+          <ul className="grid gap-2">
+            {soronVan.map((sor) => (
+              <Tetel
+                key={kulcs(sor)}
+                sor={sor}
+                nezetId={nezet.id}
+                cimkek={cimkek}
+              />
+            ))}
+          </ul>
+        ) : null}
+
+        {bizonylatos.length > 0 ? (
+          <Osszecsukott
+            cim={sz("lista.rendezett_bizonylattal", {
+              darab: bizonylatos.length,
+            })}
+          >
+            {bizonylatos.map((sor) => (
+              <Tetel
+                key={kulcs(sor)}
+                sor={sor}
+                nezetId={nezet.id}
+                cimkek={cimkek}
+              />
+            ))}
+          </Osszecsukott>
+        ) : null}
+
+        {csendes.length > 0 ? (
+          <Osszecsukott cim={sz("lista.rendezett", { darab: csendes.length })}>
+            {csendes.map((sor) => (
+              <RovidSor key={kulcs(sor)} sor={sor} cimkek={cimkek} />
+            ))}
+          </Osszecsukott>
+        ) : null}
+      </section>
+    );
+  }
 }
 
 type Sor = JogviszonyNezet["egyeztetesek"][number];
@@ -214,7 +269,13 @@ function kulcs(sor: Sor): string {
 }
 
 /** Összecsukott lista: a nyitósor kiírja, hány tétel van mögötte. */
-function Osszecsukott({ cim, children }: { cim: string; children: React.ReactNode }) {
+function Osszecsukott({
+  cim,
+  children,
+}: {
+  cim: string;
+  children: React.ReactNode;
+}) {
   return (
     <details className="group rounded-kartya border border-keret bg-felulet">
       <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-3 text-sm font-semibold text-halvany">
@@ -243,7 +304,9 @@ function Tetel({
   cimkek: Cimkek;
 }) {
   const { nyelv, u } = cimkek;
-  const bizonylatai = sor.eloirtTetelId ? cimkek.bizonylatSorai(sor.eloirtTetelId) : [];
+  const bizonylatai = sor.eloirtTetelId
+    ? cimkek.bizonylatSorai(sor.eloirtTetelId)
+    : [];
 
   return (
     // A `data-*` a böngészős próbának ad nyelv- és megjelenésfüggetlen
@@ -259,11 +322,16 @@ function Tetel({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-sm font-medium text-halvany">
-            {sor.idoszak ? honapNyelven(sor.idoszak, nyelv) : cimkek.nincsEloiras}
+            {sor.idoszak
+              ? honapNyelven(sor.idoszak, nyelv)
+              : cimkek.nincsEloiras}
           </div>
           {sor.osszegFt > 0 ? (
             <div className="mt-0.5">
-              <Osszeg ertek={forintNyelven(sor.osszegFt, nyelv)} meret="kozepes" />
+              <Osszeg
+                ertek={forintNyelven(sor.osszegFt, nyelv)}
+                meret="kozepes"
+              />
             </div>
           ) : null}
         </div>
@@ -337,9 +405,16 @@ function Tetel({
 function Harmas({ sor, cimkek }: { sor: Sor; cimkek: Cimkek }) {
   const { nyelv } = cimkek;
 
-  const ertek = (osszegFt: number | null, nap: Date | null, helyette?: string) =>
+  const ertek = (
+    osszegFt: number | null,
+    nap: Date | null,
+    helyette?: string,
+  ) =>
     osszegFt !== null && nap
-      ? { osszeg: forintNyelven(osszegFt, nyelv), nap: datumNyelven(nap, nyelv) }
+      ? {
+          osszeg: forintNyelven(osszegFt, nyelv),
+          nap: datumNyelven(nap, nyelv),
+        }
       : { osszeg: helyette ?? cimkek.nincsAdat, nap: null };
 
   return (
@@ -358,7 +433,9 @@ function Harmas({ sor, cimkek }: { sor: Sor; cimkek: Cimkek }) {
         {...ertek(
           sor.berbeadoiOsszegFt,
           sor.berbeadoiDatuma,
-          sor.elteresOka === "nem_erkezett_meg" ? cimkek.nemErkezett : undefined,
+          sor.elteresOka === "nem_erkezett_meg"
+            ? cimkek.nemErkezett
+            : undefined,
         )}
       />
     </dl>
@@ -384,7 +461,9 @@ function OldalSor({
     >
       <dt className="text-xs font-medium text-halvany">{cimke}</dt>
       <dd className="flex items-baseline gap-2">
-        <span className={`szam text-sm ${nap ? "font-semibold" : "text-nagyon-halvany"}`}>
+        <span
+          className={`szam text-sm ${nap ? "font-semibold" : "text-nagyon-halvany"}`}
+        >
           {osszeg}
         </span>
         {nap ? <span className="szam text-xs text-halvany">{nap}</span> : null}
@@ -410,7 +489,9 @@ function RovidSor({ sor, cimkek }: { sor: Sor; cimkek: Cimkek }) {
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <span className="flex items-baseline gap-2">
           <span className="text-halvany">
-            {sor.idoszak ? honapNyelven(sor.idoszak, nyelv) : cimkek.nincsEloiras}
+            {sor.idoszak
+              ? honapNyelven(sor.idoszak, nyelv)
+              : cimkek.nincsEloiras}
           </span>
           {sor.osszegFt > 0 ? (
             <Osszeg ertek={forintNyelven(sor.osszegFt, nyelv)} meret="kicsi" />
@@ -420,7 +501,10 @@ function RovidSor({ sor, cimkek }: { sor: Sor; cimkek: Cimkek }) {
       </div>
       <p className="mt-0.5 text-halvany">{u(sor.magyarazat)}</p>
       {sor.berbeadoiIgazolasId ? (
-        <BeerkezestVisszavon igazolasId={sor.berbeadoiIgazolasId} cimke={cimkek.visszavon} />
+        <BeerkezestVisszavon
+          igazolasId={sor.berbeadoiIgazolasId}
+          cimke={cimkek.visszavon}
+        />
       ) : null}
     </li>
   );

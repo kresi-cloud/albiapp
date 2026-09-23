@@ -2683,6 +2683,125 @@ export const SZOTAR: Szotar = {
     hu: "Jelöld be, kinek írsz.",
     en: "Tick who you are writing to.",
   },
+
+  // ——— Kölcsönös értékelés a jogviszony végén ———
+  "nav.ertekelesek": { hu: "Értékelés", en: "Reviews" },
+  "befizetesek.lezart_berletek": { hu: "Lezárt bérletek", en: "Closed tenancies" },
+  "ertekeles.cim": { hu: "Értékelés", en: "Reviews" },
+  "ertekeles.alcim": {
+    hu: "A lezárt bérletekről, kölcsönösen.",
+    en: "On closed tenancies, both ways.",
+  },
+  "ertekeles.sugo_cim": { hu: "Miért nem látod rögtön a másikét?", en: "Why can't you see theirs yet?" },
+  "ertekeles.sugo": {
+    hu: "Amíg mindkét fél meg nem írta a sajátját, egyik sem látja a másikét. Enélkül a második értékelés az elsőre adott válasz lenne, nem a bérletről szólna. Ha a másik fél nem ír semmit, {nap} nap után az is felfedődik, ami megvan — különben elég lenne hallgatni ahhoz, hogy eltűnjön a rólad szóló értékelés.",
+    en: "Until both sides have written theirs, neither can see the other's. Otherwise the second review would be a reply to the first, not about the tenancy. If the other side writes nothing, whatever exists is revealed after {nap} days — otherwise staying silent would be enough to make a review of you disappear.",
+  },
+  "ertekeles.nem_meres_cim": { hu: "Ez vélemény, nem mérés", en: "This is an opinion, not a measurement" },
+  "ertekeles.nem_meres": {
+    hu: "Amit itt olvasol, a másik fél saját állítása arról, hogyan ment a bérlet. Az alkalmazás nem ellenőrzi, és nem is von össze egyetlen pontszámmá: a három szempont nem egyenértékű, és az átlaguk mérésnek látszana.",
+    en: "What you read here is the other side's own account of how the tenancy went. The app does not verify it, and does not fold it into a single score: the three aspects are not equivalent, and an average would look like a measurement.",
+  },
+  "ertekeles.nincs": {
+    hu: "Még nincs lezárt bérleted. Értékelni a kiköltözés után lehet.",
+    en: "You have no closed tenancy yet. Reviews open after move-out.",
+  },
+  "ertekeles.nincs_fiok": {
+    hu: "Ennek a bérlőnek nincs fiókja, ezért nem tud értékelni, és értékelni sem lehet: az értékelés két félé, nem egyé.",
+    en: "This tenant has no account, so they cannot review and cannot be reviewed: a review belongs to two sides, not one.",
+  },
+  "ertekeles.masik_fel": { hu: "A másik fél: {nev}", en: "The other side: {nev}" },
+  "ertekeles.lezarva_nap": { hu: "Lezárva: {nap}", en: "Closed: {nap}" },
+  "ertekeles.hatralevo": { hu: "Még {nap} napig írhatsz.", en: "You can still write for {nap} days." },
+
+  "ertekeles.allapot.nem_ideje": {
+    hu: "A bérlet még fut. Értékelni a lezárás után lehet.",
+    en: "The tenancy is still running. Reviews open once it closes.",
+  },
+  "ertekeles.allapot.irhato": {
+    hu: "Rajtad a sor: még nem írtad meg a sajátodat.",
+    en: "Your turn: you have not written yours yet.",
+  },
+  "ertekeles.allapot.varakozik": {
+    hu: "Megvan a tiéd. A másik félét akkor látod, ha ő is megírta.",
+    en: "Yours is in. You will see theirs once they have written it too.",
+  },
+  "ertekeles.allapot.lathato": {
+    hu: "Felfedve: mindkettő látszik.",
+    en: "Revealed: both are visible.",
+  },
+  "ertekeles.allapot.elmaradt": {
+    hu: "Letelt az idő, és egyik fél sem írt értékelést.",
+    en: "The window closed and neither side wrote a review.",
+  },
+
+  // A jelző rövid felirata. A hozzá tartozó magyarázat az `allapot.*` kulcsokon
+  // van: egy mondat nem fér a pirulába, és az nem is törik.
+  "ertekeles.jelzo.nem_ideje": { hu: "Még fut", en: "Still running" },
+  "ertekeles.jelzo.irhato": { hu: "Rajtad a sor", en: "Your turn" },
+  "ertekeles.jelzo.varakozik": { hu: "Vár a másikra", en: "Waiting on them" },
+  "ertekeles.jelzo.lathato": { hu: "Felfedve", en: "Revealed" },
+  "ertekeles.jelzo.elmaradt": { hu: "Elmaradt", en: "Not written" },
+
+  "ertekeles.sajat_cim": { hu: "Amit te írtál", en: "What you wrote" },
+  "ertekeles.masike_cim": { hu: "Amit {nev} írt", en: "What {nev} wrote" },
+  "ertekeles.urlap_cim": { hu: "Értékelés írása", en: "Write a review" },
+  "ertekeles.urlap_modosit": { hu: "Az értékelésed módosítása", en: "Change your review" },
+  "ertekeles.modosithato": {
+    hu: "Felfedésig módosíthatod. Utána nem: amit a másik fél elolvasott, azt nem írjuk át.",
+    en: "You can change it until it is revealed. Not after: what the other side has read is not rewritten.",
+  },
+  "ertekeles.szoveg_cimke": { hu: "Hogyan ment a bérlet?", en: "How did the tenancy go?" },
+  "ertekeles.szoveg_sugo": {
+    hu: "Pontszám magyarázat nélkül nincs: abból a másik fél nem tud kiindulni.",
+    en: "No score without a reason: the other side has nothing to go on otherwise.",
+  },
+  "ertekeles.kuld": { hu: "Értékelés mentése", en: "Save review" },
+  "ertekeles.kuldom": { hu: "Mentem…", en: "Saving…" },
+  "ertekeles.pont_cimke": { hu: "{szempont}: {pont} az 5-ből", en: "{szempont}: {pont} out of 5" },
+
+  "ertekeles.szempont.berlorol.fizetes": { hu: "Fizetés", en: "Payment" },
+  "ertekeles.szempont.berlorol.allapot": { hu: "A lakás állapota", en: "Condition of the flat" },
+  "ertekeles.szempont.berlorol.kommunikacio": { hu: "Kommunikáció", en: "Communication" },
+  "ertekeles.szempont.berbeadorol.hibakezeles": { hu: "Hibák elhárítása", en: "Handling of faults" },
+  "ertekeles.szempont.berbeadorol.elerhetoseg": { hu: "Elérhetőség", en: "Reachability" },
+  "ertekeles.szempont.berbeadorol.elszamolas": { hu: "Elszámolás", en: "Settling up" },
+
+  "ertekeles.kifogas.nincs_szoveg": {
+    hu: "Írd le, hogyan ment: pontszám magyarázat nélkül nincs.",
+    en: "Say how it went: no score without a reason.",
+  },
+  "ertekeles.kifogas.hianyzo_szempont": {
+    hu: "Mind a három szempontra adj pontot.",
+    en: "Give a score for all three aspects.",
+  },
+  "ertekeles.kifogas.tartomanyon_kivul": {
+    hu: "A pont 1 és 5 között lehet.",
+    en: "A score must be between 1 and 5.",
+  },
+  "ertekeles.kifogas.ismeretlen_szempont": {
+    hu: "Ismeretlen szempont került az űrlapra.",
+    en: "The form carried an unknown aspect.",
+  },
+  "ertekeles.kifogas.nem_ideje": {
+    hu: "Ezt a bérletet még nem zárták le, vagy letelt az értékelési idő.",
+    en: "This tenancy is not closed yet, or the review window has passed.",
+  },
+  "ertekeles.kifogas.mar_felfedve": {
+    hu: "Az értékelések már felfedődtek, ezen nem lehet változtatni.",
+    en: "The reviews are already revealed; this can no longer be changed.",
+  },
+  "ertekeles.hiba.nem_tied": {
+    hu: "Ehhez a bérlethez nincs hozzáférésed.",
+    en: "You do not have access to this tenancy.",
+  },
+  "ertekeles.kesz": { hu: "Az értékelésed elmentve.", en: "Your review has been saved." },
+
+  "teendo.ertekeles.cim": { hu: "Értékeld a lezárt bérletet: {cimke}", en: "Review the closed tenancy: {cimke}" },
+  "teendo.ertekeles.leiras": {
+    hu: "Még {nap} napig írhatsz. Amíg nem írsz, a rólad szólót sem látod.",
+    en: "You can still write for {nap} days. Until you do, you cannot see the one about you.",
+  },
 };
 
 /** Szövegező a beépített szótárral. Kliensoldali komponens is ezt hívja. */
