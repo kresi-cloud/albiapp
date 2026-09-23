@@ -38,6 +38,11 @@ export async function belep(
   if (!felhasznalo) return elutasitas;
   if (!(await jelszoEgyezik(jelszo, felhasznalo.jelszoHash))) return elutasitas;
 
+  // A letiltott fiók ugyanazt a választ kapja, mint a rossz jelszó. Nem
+  // udvariasságból: aki a címet végigpróbálja, abból is megtudná, hogy van
+  // ott fiók, csak épp letiltva — és az is információ, ami nem az övé.
+  if (felhasznalo.letiltva) return elutasitas;
+
   await munkamenetetIndit(felhasznalo.id);
 
   // Első belépéskor egyszer elkérjük a saját adatait: a szerződéshez kellenek,

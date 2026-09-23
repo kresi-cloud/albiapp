@@ -534,6 +534,53 @@ hibabejelentés válaszhatáridejénél.
 A válaszidő mediánt néz, nem átlagot: egyetlen nyaralás alatt megkapott válasz
 nem minősítheti a többit.
 
+## Az üzemeltetői lap alapelve
+
+Az üzemeltetőnek két kérdése van: **működik-e az alkalmazás, és van-e valami
+elakadva.** Ehhez összesítő számok kellenek és a rendszer saját állapota, nem
+mások bérleti ügyei. A lap ezért **csak darabszámot** mutat más emberekről, a
+néven és a szerepen túl, amit a névsor eddig is kiírt: hány fiók, hány
+bérlemény, hány élő és lezárt bérlet, hány nyitott hiba, és hány kétoldali
+kérdés vár még válaszra. Bérleményt, jogviszonyt és befizetést nem.
+
+Ez nem óvatoskodás. Egy üzemeltetői fiók, ami mindent lát, észrevétlenül
+ugyanaz lesz, mint a bérlőszűrés, amit a termék kerül — és a betekintőnél is
+pont ezt mondtuk ki: amit egyszer kiadtunk, azt nem lehet visszavenni. Ha a
+részletekre mégis szükség lesz, azt külön kell eldönteni, nem egy bővülő
+adminlap mellékhatásaként.
+
+A válaszidő sávjai (`VALASZIDO_FIGYELEM_MS`, `VALASZIDO_GOND_MS`) az alkalmazás
+alapértelmezései, nem szolgáltatói vállalások, és a lap ezt ki is mondja —
+ugyanúgy, ahogy a hibabejelentés válaszhatáridejénél és a gépi értékelés
+válaszidejénél.
+
+**A fiók letiltása nem törlés.** A jogviszony, a befizetés és a kiadott okirat
+a másik félé is: egy törölt fiókkal azok is eltűnnének, és a bérbeadó szerződése
+a saját bérlőjéről szólna úgy, hogy a bérlő már nincs sehol. A letiltás a
+belépést veszi el, és a `Felhasznalo.letiltva` dátum azért dátum, nem logikai
+jelölő, mert az üzemeltetőnek az a kérdése, hogy mióta.
+
+**A letiltás a munkamenetre is hat**, nem csak a belépőlapra. A süti harminc
+napig él: ha csak a belépést tiltanánk, a már belépett fiók a letiltás után is
+zavartalanul dolgozna tovább — épp az, akitől az üzemeltető elvette a
+hozzáférést. A `belepettFelhasznalo` ezért a letiltottra `null`-t ad, tehát
+minden lap és minden kiszolgálói művelet elutasítja. A belépőlap válasza
+ugyanaz, mint a rossz jelszóé: aki a címeket végigpróbálja, abból se tudja meg,
+hogy van ott fiók, csak épp letiltva.
+
+**Magát senki nem tilthatja le.** Ha az egyetlen rendszergazda kizárja magát,
+onnantól az adatbázishoz kell nyúlni ahhoz, hogy bárki üzemeltetni tudja az
+alkalmazást. Ezt a domain mondja ki (`fiokmuveletetEllenoriz`), és a kiszolgáló
+tartja be — a gomb elrejtése nem védelem, és a böngészős próba pont egy
+hazudott űrlapmezővel próbálja ki.
+
+**Minden üzemeltetői művelet naplóba kerül** (`AdminNaplo`), és a felületről
+nem törölhető: egy napló, amit az tud kitörölni, akit naplóz, nem napló. A
+tiltás és a naplósor egy tranzakcióban megy, mert egy napló, ami a műveletek
+egy részéről lemarad, rosszabb a semminél — hinni lehet neki. Ez az egyetlen
+naplónk: a kódban konzolra továbbra sem írunk, és személyes adat ide sem kerül,
+csak az érintett sor azonosítója.
+
 ## A teendők és a naptár alapelve
 
 A teendő nem tárolt igazság: a rendszer állapotából származik
@@ -790,6 +837,11 @@ Ebből két szabály lett:
 A hiba onnan derült ki, hogy a böngészős próba a bérbeadó oldalán vitásnak várt
 egy tételt, a lap viszont várakozót mutatott: ugyanazt az utalást a lap hol a
 bérleti díjhoz, hol egy ezerforintos előfizetéshez kötötte.
+
+A `prisma migrate dev` árnyékadatbázist hoz létre és dob el, tehát a helyi
+szerepnek `CREATEDB` joga kell legyen (`ALTER ROLE albi CREATEDB;`). A CI-ban és
+élesben ez nem kell: ott `prisma migrate deploy` fut, ami nem készít
+árnyékadatbázist.
 
 A Supabase két címet ad. A **session pooler** (5432) tartós kapcsolatot ad, ez
 kell a migrációhoz; a **transaction pooler** (6543) rövid kapcsolatokra való, ez

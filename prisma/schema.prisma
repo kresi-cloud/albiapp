@@ -41,28 +41,36 @@ model Felhasznalo {
    * emellett üzemeltetői rálátása is van. Felületről nem adható meg.
    */
   rendszergazda  Boolean   @default(false)
+  /**
+   * Letiltott fiók: nem tud belépni. Nem törlés — a jogviszony, a befizetés
+   * és az okirat a másik félé is, és egy törölt fiókkal azok is eltűnnének.
+   * A dátum azért dátum és nem logikai jelölő, mert az üzemeltetőnek az a
+   * kérdése, hogy mióta, nem az, hogy egyáltalán.
+   */
+  letiltva       DateTime?
   letrehozva     DateTime  @default(now())
 
-  ingatlanok          Ingatlan[]
-  berloJogviszonyai   JogviszonyBerlo[]   @relation("BerloJogviszonyai")
-  berbeadoiIgazolasai BerbeadoiIgazolas[]
-  bizonylatai         Bizonylat[]
-  teendoi             Teendo[]
-  oraallasai          Oraallas[]
-  beallitasok         Beallitasok?
-  berbeadoiAdatok     BerbeadoiAdatok?
-  hibabejelentesei    Hibabejelentes[]    @relation("Hibabejelentesei")
-  hibaUzenetei        HibaUzenet[]        @relation("HibaUzenetei")
-  betekintoi          Betekinto[]         @relation("Betekintoi")
-  feltoltottKepei     JegyzokonyvKep[]    @relation("KepFeltoltoje")
-  megerositettKepei   JegyzokonyvKep[]    @relation("KepMegerositoje")
-  beszelgetesei       BeszelgetesResztvevo[]
-  kuldottUzenetei     BeszelgetesUzenet[]  @relation("UzenetSzerzoje")
+  ingatlanok              Ingatlan[]
+  adminNaploja            AdminNaplo[]            @relation("AdminNaploja")
+  berloJogviszonyai       JogviszonyBerlo[]       @relation("BerloJogviszonyai")
+  berbeadoiIgazolasai     BerbeadoiIgazolas[]
+  bizonylatai             Bizonylat[]
+  teendoi                 Teendo[]
+  oraallasai              Oraallas[]
+  beallitasok             Beallitasok?
+  berbeadoiAdatok         BerbeadoiAdatok?
+  hibabejelentesei        Hibabejelentes[]        @relation("Hibabejelentesei")
+  hibaUzenetei            HibaUzenet[]            @relation("HibaUzenetei")
+  betekintoi              Betekinto[]             @relation("Betekintoi")
+  feltoltottKepei         JegyzokonyvKep[]        @relation("KepFeltoltoje")
+  megerositettKepei       JegyzokonyvKep[]        @relation("KepMegerositoje")
+  beszelgetesei           BeszelgetesResztvevo[]
+  kuldottUzenetei         BeszelgetesUzenet[]     @relation("UzenetSzerzoje")
   elofizetesNyilatkozatai ElofizetesJovahagyas[]
   bejelentettLatogatasai  SzolgaltatoiLatogatas[] @relation("LatogatasBejelentoje")
   latogatasValaszai       LatogatasValasz[]
-  irtErtekelesei          Ertekeles[]            @relation("ErtekelesSzerzoje")
-  kapottErtekelesei       Ertekeles[]            @relation("ErtekelesAlanya")
+  irtErtekelesei          Ertekeles[]             @relation("ErtekelesSzerzoje")
+  kapottErtekelesei       Ertekeles[]             @relation("ErtekelesAlanya")
 }
 
 /// Bérbeadónkénti egyeztetési beállítások. Az összegtolerancia szándékosan nincs
@@ -177,7 +185,7 @@ model Jogviszony {
   ertekelesAblak  DateTime? // az értékelési ablak kezdete, a lezáráskor eltárolva
   letrehozva      DateTime  @default(now())
 
-  ingatlan            Ingatlan            @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
+  ingatlan            Ingatlan                @relation(fields: [ingatlanId], references: [id], onDelete: Cascade)
   berlok              JogviszonyBerlo[]
   eloirtTetelek       EloirtTetel[]
   berloiIgazolasok    BerloiIgazolas[]
@@ -554,24 +562,24 @@ model Teendo {
 /// táblában ugyanez a viselkedés még egyszer meg lenne írva, és a második
 /// példány előbb-utóbb elmaradna az elsőtől.
 model Szerzodes {
-  id             String    @id @default(cuid())
-  jogviszonyId   String
-  megnevezes     String
-  fajta          String    @default("szerzodes") // "szerzodes" | "zaradek"
+  id               String    @id @default(cuid())
+  jogviszonyId     String
+  megnevezes       String
+  fajta            String    @default("szerzodes") // "szerzodes" | "zaradek"
   /// Melyik véglegesített szerződést egészíti ki. Csak záradéknál van kitöltve.
-  alapSzerzodesId String?
-  allapot        String    @default("tervezet") // "tervezet" | "veglegesitve"
-  kelteHelye     String    @default("")
-  kelte          DateTime?
-  veglegesSzoveg String?
+  alapSzerzodesId  String?
+  allapot          String    @default("tervezet") // "tervezet" | "veglegesitve"
+  kelteHelye       String    @default("")
+  kelte            DateTime?
+  veglegesSzoveg   String?
   /// A tájékoztató angol fordítás, véglegesítéskor ugyanúgy befagyasztva.
   /// Amit aláírtak, annak a fordítása se változzon meg egy későbbi
   /// modulfrissítéstől; és a fordítás mindig ahhoz a szöveghez tartozzon,
   /// ami mellette áll.
   veglegesSzovegEn String?
-  veglegesitve   DateTime?
-  letrehozva     DateTime  @default(now())
-  frissitve      DateTime  @updatedAt
+  veglegesitve     DateTime?
+  letrehozva       DateTime  @default(now())
+  frissitve        DateTime  @updatedAt
 
   jogviszony  Jogviszony           @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
   modulok     SzerzodesModul[]
@@ -815,14 +823,11 @@ model BetekintoMegnyitas {
 
 /**
  * Egy beszélgetés szála a bérbeadó és a bérlők között.
- *
  * A jogviszonyhoz tartozik, nem két felhasználóhoz: ugyanaz a két ember két
  * bérleményről beszélhet, és a két ügy nem folyhat egy szálba. A jogosultság is
  * innen jön — aki a jogviszonyban benne van, az írhat, más nem.
- *
  * Kétirányú és csoportos között nincs tárolt különbség: az a résztvevők
  * számából következik. Tárolva el tudna csúszni attól, ami tényleg igaz.
- *
  * Az archiválás sincs tárolva: a jogviszony lezárásából és a mai napból jön
  * (`domain/beszelgetes.ts`). Így a lezárás visszavonása magától visszanyitja a
  * szálat, ütemező nélkül.
@@ -831,7 +836,9 @@ model Beszelgetes {
   id           String   @id @default(cuid())
   jogviszonyId String
   letrehozva   DateTime @default(now())
-  /** Az utolsó üzenet ideje, hogy a lista rendezéséhez ne kelljen végigolvasni a szálat. */
+  /**
+   * Az utolsó üzenet ideje, hogy a lista rendezéséhez ne kelljen végigolvasni a szálat.
+   */
   utolsoUzenet DateTime @default(now())
 
   jogviszony Jogviszony             @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
@@ -925,4 +932,30 @@ model LatogatasValasz {
 
   @@unique([latogatasId, berloId])
   @@index([berloId])
+}
+
+/// Az üzemeltetői műveletek naplója.
+///
+/// Amit a rendszergazda a felületről tesz, az más ember fiókját érinti, tehát
+/// utólag is látszania kell, ki tette és mikor. Ez az egyetlen naplónk: a
+/// kódban konzolra nem írunk, és személyes adat ide sem kerül — a `targyId`
+/// az érintett sor azonosítója, nem a neve, se nem a címe.
+///
+/// A napló nem törölhető a felületről. Egy napló, amit az tud kitörölni, akit
+/// naplóz, nem napló.
+model AdminNaplo {
+  id      String   @id @default(cuid())
+  /// Ki tette. Marad akkor is, ha a fiókot később letiltják.
+  adminId String
+  /// Mit tett: "fiok_letiltas" | "fiok_visszaengedes".
+  muvelet String
+  /// Kin: a `Felhasznalo` azonosítója. Nem kötjük idegen kulccsal, mert a
+  /// napló sora akkor is igaz marad, ha az érintett sor később megszűnik.
+  targyId String
+  mikor   DateTime @default(now())
+
+  admin Felhasznalo @relation("AdminNaploja", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([mikor])
+  @@index([adminId])
 }
