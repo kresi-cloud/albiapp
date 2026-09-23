@@ -36,6 +36,12 @@ export type Dokumentum = {
   /** A szerkesztő oldal; csak a bérbeadónak van ilyen. */
   megnyitas?: string;
   letoltes?: string;
+  /**
+   * A tájékoztató angol fordítás letöltése. Csak ott van, ahol tényleg van
+   * fordítás: a magyar okirat az irányadó, és egy üres hivatkozás azt ígérné,
+   * hogy minden papírhoz jár angol példány.
+   */
+  forditasLetoltes?: string;
 };
 
 export type TarSzerzodes = {
@@ -44,6 +50,8 @@ export type TarSzerzodes = {
   allapot: string;
   veglegesitve: Date | null;
   letrehozva: Date;
+  /** Van-e befagyasztott angol fordítás. A szövegét a lista nem olvassa. */
+  vanForditas: boolean;
 };
 
 export type TarJegyzokonyv = {
@@ -98,6 +106,10 @@ export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] 
       allapotCimke: uzenet(vegleges ? "dokumentum.veglegesitve" : "dokumentum.tervezet"),
       megnyitas: `/szerzodesek/${szerzodes.id}`,
       letoltes: `/szerzodesek/${szerzodes.id}/letoltes`,
+      forditasLetoltes:
+        vegleges && szerzodes.vanForditas
+          ? `/szerzodesek/${szerzodes.id}/letoltes?nyelv=en`
+          : undefined,
     });
   }
 

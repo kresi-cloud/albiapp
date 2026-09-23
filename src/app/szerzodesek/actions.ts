@@ -235,6 +235,10 @@ export async function szerzodestVeglegesit(_elozo: Eredmeny, urlap: FormData): P
     data: {
       allapot: "veglegesitve",
       veglegesSzoveg: okiratSzovege(betoltott.bemenet),
+      // A fordítás ugyanitt fagy be. Ha később készülne, a modulkatalógus
+      // közben változhatna, és a fordítás már nem azt mondaná, amit a mellette
+      // álló magyar szöveg.
+      veglegesSzovegEn: okiratSzovege(betoltott.bemenet, "en"),
       veglegesitve: new Date(),
     },
   });
@@ -261,7 +265,7 @@ export async function veglegesitestVisszavon(_elozo: Eredmeny, urlap: FormData):
 
   await prisma.szerzodes.update({
     where: { id: szerzodesId },
-    data: { allapot: "tervezet", veglegesSzoveg: null, veglegesitve: null },
+    data: { allapot: "tervezet", veglegesSzoveg: null, veglegesSzovegEn: null, veglegesitve: null },
   });
 
   revalidatePath(`/szerzodesek/${szerzodesId}`);

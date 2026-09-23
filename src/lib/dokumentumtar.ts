@@ -41,6 +41,7 @@ function tarra(jogviszony: Betoltott, sajatBerloId?: string): TarJogviszony {
       allapot: szerzodes.allapot,
       veglegesitve: szerzodes.veglegesitve,
       letrehozva: szerzodes.letrehozva,
+      vanForditas: szerzodes.veglegesSzovegEn !== null,
     })),
     jegyzokonyvek: jogviszony.jegyzokonyvek.map((jegyzokonyv) => ({
       id: jegyzokonyv.id,
@@ -100,6 +101,7 @@ export async function berloiIratSzovege(
   fajta: "szerzodes" | "jegyzokonyv",
   id: string,
   berloId: string,
+  nyelv: "hu" | "en" = "hu",
 ): Promise<string | null> {
   const szures = {
     id,
@@ -107,12 +109,23 @@ export async function berloiIratSzovege(
     jogviszony: { berlok: { some: { berloId } } },
   } as const;
 
-  const irat =
-    fajta === "szerzodes"
-      ? await prisma.szerzodes.findFirst({ where: szures, select: { veglegesSzoveg: true } })
-      : await prisma.jegyzokonyv.findFirst({ where: szures, select: { veglegesSzoveg: true } });
+  if (fajta === "jegyzokonyv") {
+    const irat = await prisma.jegyzokonyv.findFirst({
+      where: szures,
+      select: { veglegesSzoveg: true },
+    });
+    return irat?.veglegesSzoveg ?? null;
+  }
 
-  return irat?.veglegesSzoveg ?? null;
+  const irat = await prisma.szerzodes.findFirst({
+    where: szures,
+    select: { veglegesSzoveg: true, veglegesSzovegEn: true },
+  });
+  if (!irat) return null;
+  // Az angol változat csak akkor jár, ha a véglegesítéskor elkészült. Aki
+  // korábban írt alá, annak a szerződéséhez nincs befagyasztott fordítás, és
+  // nem generálunk hozzá újat: az már nem ahhoz a szöveghez készülne.
+  return nyelv === "en" ? irat.veglegesSzovegEn : irat.veglegesSzoveg;
 }
 
 export type ElszamolasIratAdat = {

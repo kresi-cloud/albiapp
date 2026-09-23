@@ -23,6 +23,13 @@ import { eloirasok, type JogviszonyAdat } from "../src/domain/eloirasok";
 const url = (process.env.DATABASE_URL ?? "file:./dev.db").replace(/^file:/, "");
 const prisma = new PrismaClient({ adapter: new PrismaBetterSqlite3({ url }) });
 
+// A seed néhány okiratot ugyanazokkal a lib-függvényekkel állít elő, amikkel az
+// alkalmazás; azok viszont a `lib/db` kliensét használják, ami a globális
+// objektumon ül. Itt adjuk át a sajátunkat, hogy ne nyíljon egy második
+// kapcsolat ugyanarra az adatbázisfájlra — a lib oldali kliens ugyanis soha nem
+// zárulna be, és a seed a végén nem lépne ki.
+(globalThis as unknown as { prisma?: PrismaClient }).prisma = prisma;
+
 // Próbajelszó a példafiókokhoz. Éles adatbázisba ez a seed nem fut.
 const PROBA_JELSZO = "probajelszo2026";
 
@@ -911,6 +918,114 @@ async function main() {
       },
     },
   });
+
+  // Kiadott okiratok Anna jogviszonyán: egy aláírt szerződés és egy kiállított
+  // igazolás.
+  //
+  // Nem kozmetika. A dokumentumtár addig üres marad, amíg valaki végig nem
+  // kattintja a véglegesítést, és ami üres, azt a méretkapu sem méri: a
+  // véglegesített szerződés lapja pont ezért tudott tizenkilenc telefonképernyő
+  // magas lenni úgy, hogy semmi nem szólt rá. Ugyanez áll a bérlő oldalára,
+  // ahol kiadott okirat híján egy örökké üres lista állt.
+  //
+  // A szöveget nem gépeljük be: ugyanazzal a két függvénnyel készül, amivel az
+  // alkalmazás véglegesít. Kézzel beírt okiratszöveg pont attól csúszna el,
+  // amit mérni akarunk vele — ugyanaz az elv, mint az előírásoknál.
+  const annaSzerzodes = await prisma.szerzodes.create({
+    data: {
+      jogviszonyId: annaJogviszony.id,
+      megnevezes: "Bérleti szerződés – Ferencvárosi garzon",
+      kelteHelye: "Budapest",
+      kelte: nap(-12, 1),
+      modulok: {
+        create: ["ovadek", "indexalas", "allattartas_dohanyzas", "elofizetesek"].map(
+          (kulcs, sorrend) => ({ kulcs, sorrend }),
+        ),
+      },
+      parameterek: {
+        create: [
+          { kulcs: "dij_kozlemeny", ertek: "Tűzoltó 12/A - tárgyév/tárgyhónap" },
+          { kulcs: "kulcs_garnitura", ertek: "2" },
+          { kulcs: "berlemeny_butorozott", ertek: "igen" },
+          { kulcs: "index_honap", ertek: "január" },
+          { kulcs: "index_bazisev", ertek: String(EV - 1) },
+        ],
+      },
+    },
+  });
+
+  // A libet csak itt, futás közben importáljuk. A `lib/db` a globális
+  // objektumon tartja a Prisma-klienst, és ez a hozzárendelés a modul
+  // kiértékelésekor dől el — egy felül álló `import` a fájl elején hamarabb
+  // futna le, mint a fenti értékadás, és a seed egy második kapcsolatot
+  // nyitna ugyanarra a fájlra.
+  const { szerzodesBemenet } = await import("../src/lib/szerzodes");
+  const { okiratSzovege } = await import("../src/domain/szerzodes-keszites");
+
+  const annaBemenet = await szerzodesBemenet(annaSzerzodes.id, berbeado.id);
+  if (!annaBemenet) throw new Error("A példaszerződés bemenete nem állt össze.");
+
+  await prisma.szerzodes.update({
+    where: { id: annaSzerzodes.id },
+    data: {
+      allapot: "veglegesitve",
+      veglegesSzoveg: okiratSzovege(annaBemenet.bemenet),
+      // A tájékoztató fordítás ugyanitt fagy be, ahogy a véglegesítéskor is.
+      veglegesSzovegEn: okiratSzovege(annaBemenet.bemenet, "en"),
+      veglegesitve: nap(-12, 1),
+    },
+  });
+
+  // Igazolás egy lefutott hónapra. Az összeg és a teljesítés napja nem kézi
+  // adat: ugyanabból a párosításból jön, amit a befizetések lapja mutat, tehát
+  // a példaadatban sem állhat más, mint amit az alkalmazás kiállítana.
+  const { igazolhatoIdoszakok, szerzodesKelte } = await import("../src/lib/igazolas");
+  const igazolhato = await igazolhatoIdoszakok(annaJogviszony.id, berbeado.id);
+  const igazolando = igazolhato.find((sor) => honapokVissza(sor.idoszak) === 2);
+  const annaBerlo = await prisma.jogviszonyBerlo.findFirstOrThrow({
+    where: { jogviszonyId: annaJogviszony.id, berloId: berloAnna.id },
+  });
+
+  if (igazolando) {
+    const { igazolasSzovege } = await import("../src/domain/igazolas");
+    const kiallitva = nap(-1, 12);
+    const cel = "Egyetemi albérlettámogatás igényléséhez";
+
+    await prisma.igazolas.create({
+      data: {
+        jogviszonyBerloId: annaBerlo.id,
+        cel,
+        idoszak: igazolando.idoszak,
+        osszegFt: igazolando.osszegFt,
+        teljesitesNapja: igazolando.napja,
+        teljesitesModja: "atutalas",
+        szoveg: igazolasSzovege({
+          berbeado: {
+            nev: berbeado.nev,
+            email: berbeado.email,
+            lakcim: "1085 Budapest, Minta utca 3.",
+          },
+          berlo: { nev: annaBerlo.nev, lakcim: annaBerlo.lakcim },
+          osszesBerlo: [{ nev: annaBerlo.nev, lakcim: annaBerlo.lakcim }],
+          ingatlan: { cim: ferencvaros.cim },
+          jogviszony: {
+            kezdete: annaJogviszony.kezdete,
+            vege: annaJogviszony.vege,
+            berletiDijFt: annaJogviszony.berletiDijFt,
+            szerzodesKelte: await szerzodesKelte(annaJogviszony.id),
+          },
+          cel,
+          idoszak: igazolando.idoszak,
+          osszegFt: igazolando.osszegFt,
+          teljesitesNapja: igazolando.napja,
+          teljesitesModja: "atutalas",
+          kiallitasHelye: "Budapest",
+          kiallitasNapja: kiallitva,
+        }),
+        kiallitva,
+      },
+    });
+  }
 
   // Hibabejelentések: egy nyitott, sürgős, és egy lezárt, hogy mindkét állapot
   // látszódjon a felületen. Mind kitalált eset.
