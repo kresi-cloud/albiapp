@@ -114,7 +114,7 @@ export function Teendolap({
           </section>
 
           {kesobbiek.length > 0 ? (
-            <Osszecsukott cim={sz("teendok.kesobb")} darab={kesobbiek.length}>
+            <Osszecsukott cim={sz("teendok.kesobb")} darab={kesobbiek.length} szakasz="kesobb">
               <Teendolista teendok={kesobbiek} nyelv={nyelv} />
             </Osszecsukott>
           ) : null}
@@ -122,12 +122,12 @@ export function Teendolap({
       )}
 
       {lezartak.length > 0 ? (
-        <Osszecsukott cim={sz("teendok.lezart")} darab={lezartak.length}>
+        <Osszecsukott cim={sz("teendok.lezart")} darab={lezartak.length} szakasz="lezart">
           <Lezartlista lezartak={lezartak} nyelv={nyelv} />
         </Osszecsukott>
       ) : null}
 
-      <Osszecsukott cim={sz("teendok.uj")}>
+      <Osszecsukott cim={sz("teendok.uj")} szakasz="uj">
         <TeendoUrlap
           jogviszonyok={jogviszonyok}
           mai={napKulcs(napEleje(ma))}
@@ -152,14 +152,23 @@ export function Teendolap({
 function Osszecsukott({
   cim,
   darab,
+  szakasz,
   children,
 }: {
   cim: string;
   darab?: number;
+  /**
+   * Állandó azonosító a böngészős próbának. A szakasz feliratára szűrni azért
+   * nem elég, mert a Playwright szövegszűrése kis-nagybetűre érzéketlen
+   * részszó-keresés, és a lapon álló teendők szövegébe is belefut: a „lezárt
+   * bérletet" értékelő teendő miatt a „Lezárt" szűrő a „Később" szakaszt
+   * találta meg előbb.
+   */
+  szakasz: string;
   children: React.ReactNode;
 }) {
   return (
-    <details className="group">
+    <details className="group" data-szakasz={szakasz}>
       <summary className={`${NYITO} font-bold`}>
         <span className="font-display text-base">{cim}</span>
         {darab !== undefined ? (

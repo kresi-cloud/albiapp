@@ -879,7 +879,14 @@ bérlő különben joggal hinné, hogy előbb-utóbb mégis kérünk bankszámla
 
 A böngészős próbák ne a képernyőn látható szövegre szűrjenek ott, ahol a
 megjelenés változhat: a befizetési kártyán `data-idoszak` és `data-osszeg`
-van, a bizonylatblokkon `data-oldal`. A nyelvváltásra pedig nem a
+van, a bizonylatblokkon `data-oldal`, az összecsukható szakaszokon
+`data-szakasz`. A szakasznál ez nem stíluskérdés: a Playwright `hasText`
+szűrése kis-nagybetűre érzéketlen részszó-keresés a **teljes** részfán, tehát a
+szakaszban álló tételek szövegébe is belefut. A „Lezárt" szakaszra szűrő
+teendőpróba így az értékelős teendőt („Értékeld a lezárt bérletet") találta meg
+a „Később" szakaszban, és egy olyan ágon bukott el, amihez semmi köze nem volt.
+Egy szakasz feliratára szűrni ezért csak addig működik, amíg senki nem ír a lap
+másik felére hasonló mondatot. A nyelvváltásra pedig nem a
 `networkidle`-re várunk, hanem a `lang` attribútumra (`nyelvre()` a
 `proba/kozos.mjs`-ben): a kiszolgálói művelet válasza később jön, mint ahogy a
 hálózat elcsendesedik, és a következő `goto` elvágja.

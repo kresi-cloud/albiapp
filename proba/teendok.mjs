@@ -23,10 +23,22 @@ function napot(elteres) {
   return nap.toISOString().slice(0, 10);
 }
 
+/**
+ * A szakaszokat `data-szakasz` alapján keressük, nem a feliratuk szövege
+ * alapján. A Playwright szövegszűrése kis-nagybetűre érzéketlen részszó-keresés
+ * a szakasz teljes tartalmán, tehát a benne álló teendők szövegébe is belefut:
+ * a „Lezárt" szűrő az értékelős teendő („Értékeld a lezárt bérletet") miatt a
+ * „Később" szakaszt találta meg előbb, és a próba olyan helyen bukott, aminek
+ * semmi köze nem volt a lezáráshoz.
+ */
+function szakasz(oldal, nev) {
+  return oldal.locator(`details[data-szakasz="${nev}"]`);
+}
+
 async function urlapotKinyit(oldal) {
-  const szakasz = oldal.locator("details").filter({ hasText: "Új teendő" }).first();
-  await szakasz.locator("summary").first().click();
-  return szakasz;
+  const urlapSzakasz = szakasz(oldal, "uj");
+  await urlapSzakasz.locator("summary").first().click();
+  return urlapSzakasz;
 }
 
 export async function futtat(oldal) {
@@ -135,7 +147,7 @@ export async function futtat(oldal) {
 
   await oldal.goto(`${ALAP}/teendok`);
   await oldal.waitForLoadState("networkidle");
-  const lezartSzakasz = oldal.locator("details").filter({ hasText: "Lezárt" }).first();
+  const lezartSzakasz = szakasz(oldal, "lezart");
   await lezartSzakasz.locator("summary").first().click();
   all(
     (await lezartSzakasz.getByText(cim).count()) > 0,
