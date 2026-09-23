@@ -85,8 +85,12 @@ export default async function BerloiNezet() {
     sajatOldal: sz("bizonylat.kuldo"),
     masikOldal: sz("bizonylat.fogado"),
   };
+  // Óraállást csak az él, aki most is ott lakik: a lezárt jogviszony órái a
+  // bérbeadóé és a következő bérlőé. A kiszolgáló ezt magától is betartja
+  // (`oraallastRogzit`), itt azért szűrünk, hogy a volt bérlő ne találjon
+  // olyan űrlapot, ami úgyis elutasítja.
   const meroorasJogviszonyok = jogviszonyok.filter(
-    (jogviszony) => jogviszony.rezsiElszamolas === "almero",
+    (jogviszony) => jogviszony.rezsiElszamolas === "almero" && jogviszony.statusz === "elo",
   );
 
   if (nezetek.length === 0) {

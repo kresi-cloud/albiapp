@@ -51,6 +51,7 @@ export default async function MeghivoOldal({
         <p className="mt-2 text-sm text-halvany">
           {sz("meghivo.jelszo_sugo", { hossz: JELSZO_MIN_HOSSZ })}
         </p>
+        <p className="mt-2 text-sm text-halvany">{sz("meghivo.megleve_fiok_sugo")}</p>
       </section>
 
       <MeghivoUrlap
