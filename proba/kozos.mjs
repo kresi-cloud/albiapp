@@ -50,15 +50,36 @@ export async function kilep(oldal) {
     await tobb.first().click();
   }
   const kilepes = oldal.getByRole("button", { name: /Kilépés|Sign out/ });
+  // A „Több" panel tartalma a kattintás után jelenik meg. Aki rögtön ránéz,
+  // nullát talál, csendben kihagyja a kilépést, és a következő belépés a már
+  // belépett felhasználó lapjára fut — ott pedig nincs e-mail mező.
+  await kilepes
+    .first()
+    .waitFor({ state: "visible", timeout: 5000 })
+    .catch(() => {});
   if (await kilepes.count()) {
     await kilepes.first().click();
     await oldal.waitForLoadState("networkidle");
   }
 }
 
+/**
+ * Belépés. A kilépés után nem azonnal tölt be a belépőlap.
+ *
+ * A kilépés kiszolgálói művelet, és a `networkidle` hazudik rá, ugyanúgy, ahogy
+ * a nyelvváltásra: vissza tud térni azelőtt, hogy a süti tényleg eltűnt volna.
+ * Ilyenkor a `/belepes` még a belépett felhasználót látja, és átirányít — a
+ * próba pedig e-mail mezőt keres olyan lapon, ahol nincs. Ezért nem a hálózatra
+ * várunk, hanem az eredményre: addig töltjük újra a belépőlapot, amíg a mező
+ * meg nem jelenik.
+ */
 export async function belep(oldal, email) {
   await kilep(oldal);
-  await oldal.goto(`${ALAP}/belepes`);
+  for (let probalkozas = 0; probalkozas < 20; probalkozas++) {
+    await oldal.goto(`${ALAP}/belepes`);
+    if ((await oldal.locator('input[name="email"]').count()) > 0) break;
+    await oldal.waitForTimeout(500);
+  }
   await oldal.fill('input[name="email"]', email);
   await oldal.fill('input[name="jelszo"]', JELSZO);
   await oldal.getByRole("button", { name: /Belépés|Sign in/ }).click();

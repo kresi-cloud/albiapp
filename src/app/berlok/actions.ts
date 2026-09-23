@@ -66,6 +66,18 @@ export async function meghivotKeszit(
     return { allapot: "hiba", uzenet: sz("berlok.hiba.nem_tied"), link: "" };
   }
 
+  // Akinek már van fiókja, annak a helyére nem készítünk újabb meghívót. A
+  // felület sem kínálja fel, de a szabály a kiszolgálón dől el: az elfogadás
+  // átírná a hely `berloId`-ját, vagyis a valódi bérlő csendben lekerülne a
+  // jogviszonyról, a helyére pedig egy olyan fiók ülne, aminek a bérbeadó
+  // ismeri a jelszavát — és az a fiók a bérlő nevében erősítene meg
+  // fényképet, fogadna el elszámolást és írna értékelést. Ha a bérlő
+  // tényleg kicserélődik, a régit le kell venni a jogviszonyról, és az
+  // újat hozzáadni: az látszik is, nem csendes csere.
+  if (berlo.berloId !== null) {
+    return { allapot: "hiba", uzenet: sz("berlok.hiba.mar_van_fiok"), link: "" };
+  }
+
   const email = emailtNormalizal(urlap.get("email") ?? berlo.email);
   if (!emailNekLatszik(email)) {
     return { allapot: "hiba", uzenet: sz("berlok.hiba.email"), link: "" };
@@ -227,7 +239,8 @@ export async function jogviszonytLezarAction(
   }
 
   const eredmeny = await jogviszonytLezar(berbeado.id, szoveg(urlap.get("jogviszonyId")), vege);
-  if (!eredmeny) return hiba(sz("valasz.nincs_jogosultsag"));
+  if (eredmeny.allapot === "nincs_jogosultsag") return hiba(sz("valasz.nincs_jogosultsag"));
+  if (eredmeny.allapot === "mar_lezart") return hiba(sz("valasz.mar_lezart"));
 
   revalidatePath("/berlok");
   revalidatePath("/befizetesek");

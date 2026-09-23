@@ -133,10 +133,26 @@ const TELJES = {
   jogviszony: { include: { ingatlan: true } },
 } as const;
 
+/**
+ * Kié a beszélgetés. A résztvevői sor egymagában nem elég: a jogviszonyról
+ * levett bérlő résztvevő marad, a bérlemény ügyei viszont már nem rá
+ * tartoznak, és a szál addigi üzeneteit is tovább olvasná. Ezért a mostani
+ * tartozást is kérjük — a bérbeadónál a tulajdont, a bérlőnél a bérlősort.
+ */
+function ove(ki: Ki) {
+  return {
+    resztvevok: { some: { felhasznaloId: ki.id } },
+    jogviszony:
+      ki.szerep === "berbeado"
+        ? { ingatlan: { tulajdonosId: ki.id } }
+        : { berlok: { some: { berloId: ki.id } } },
+  };
+}
+
 /** A felhasználó összes beszélgetése, a legfrissebbel elöl. */
 export async function beszelgetesei(ki: Ki, most: Date): Promise<BeszelgetesNezet[]> {
   const sorok = await prisma.beszelgetes.findMany({
-    where: { resztvevok: { some: { felhasznaloId: ki.id } } },
+    where: ove(ki),
     include: TELJES,
     orderBy: { utolsoUzenet: "desc" },
   });
@@ -154,7 +170,7 @@ export async function beszelgetes(
   most: Date,
 ): Promise<{ fej: BeszelgetesNezet; uzenetek: Uzenetsor[] } | null> {
   const sor = await prisma.beszelgetes.findFirst({
-    where: { id: beszelgetesId, resztvevok: { some: { felhasznaloId: ki.id } } },
+    where: { id: beszelgetesId, ...ove(ki) },
     include: TELJES,
   });
   if (!sor) return null;
@@ -200,7 +216,7 @@ export async function uzenetetKuld(
   if (kifogas) return kifogas;
 
   const sor = await prisma.beszelgetes.findFirst({
-    where: { id: beszelgetesId, resztvevok: { some: { felhasznaloId: ki.id } } },
+    where: { id: beszelgetesId, ...ove(ki) },
     include: { jogviszony: true },
   });
   if (!sor) return "nincs_jogosultsag";
@@ -252,7 +268,7 @@ export async function beszelgetestIndit(
   const tagok = [ki.id, ...ervenyes];
 
   const meglevok = await prisma.beszelgetes.findMany({
-    where: { jogviszonyId, resztvevok: { some: { felhasznaloId: ki.id } } },
+    where: { jogviszonyId, ...ove(ki) },
     include: { resztvevok: true },
   });
   const meglevo = meglevok.find((sor) =>
@@ -280,7 +296,7 @@ export async function beszelgetestIndit(
 /** Hány olyan beszélgetése van, amiben az utolsó szó nem az övé. */
 export async function valaszraVaroDarab(ki: Ki): Promise<number> {
   const sorok = await prisma.beszelgetes.findMany({
-    where: { resztvevok: { some: { felhasznaloId: ki.id } } },
+    where: ove(ki),
     include: { uzenetek: { orderBy: { kuldve: "desc" }, take: 1 } },
   });
   return sorok.filter((sor) => sor.uzenetek[0] && sor.uzenetek[0].szerzoId !== ki.id).length;

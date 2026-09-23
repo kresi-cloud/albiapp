@@ -90,13 +90,26 @@ export async function bizonylatokTetelekhez(
  * Feltöltés. Oldalanként egy bizonylat van: az újratöltés a régit váltja fel,
  * mert egy utalásnak egy bizonylata van, és a félrefotózottat ki kell tudni
  * cserélni.
+ *
+ * **A sajátját mindenki cserélheti, a máséét senki.** Két fiókos lakótársnál a
+ * küldő oldal ugyanaz az egy sor: enélkül a másodikként feltöltő felülírná az
+ * elsőét, utána pedig — mert a sor már az övé — törölni is tudná. Egy fél
+ * fájlját nem tüntetjük el csendben, ugyanúgy, ahogy a bizonylatkérés
+ * kikapcsolása sem rejti el, amit már feltöltöttek. `false`, ha a helyen a
+ * lakótárs bizonylata áll.
  */
 export async function bizonylatotMent(
   felhasznalo: { id: string; szerep: "berbeado" | "berlo" },
   eloirtTetelId: string,
   fajl: { nev: string; tipus: string; tartalom: Uint8Array<ArrayBuffer> },
-): Promise<void> {
+): Promise<boolean> {
   const oldal = oldalaEnnek(felhasznalo.szerep);
+
+  const meglevo = await prisma.bizonylat.findUnique({
+    where: { eloirtTetelId_oldal: { eloirtTetelId, oldal } },
+    select: { feltoltoId: true },
+  });
+  if (meglevo && meglevo.feltoltoId !== felhasznalo.id) return false;
 
   await prisma.bizonylat.upsert({
     where: { eloirtTetelId_oldal: { eloirtTetelId, oldal } },
@@ -118,6 +131,7 @@ export async function bizonylatotMent(
       tartalom: fajl.tartalom,
     },
   });
+  return true;
 }
 
 /** A saját bizonylat törlése. A másik félét senki nem törölheti. */
