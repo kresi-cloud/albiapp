@@ -12,8 +12,10 @@ egyértelműen jobbat.
   külföldön dolgozó. A nyelvet a `Nyelvvalto` állítja, és az ezen az eszközön
   tett utolsó választás dönt (süti), süti híján a fiókban mentett nyelv.
 - **A kiadott okiratok magyarul érvényesek, és magyarul is maradnak**: a
-  szerződés, a jegyzőkönyv, az igazolás és a rezsielszámolás szövegét nem
-  fordítjuk, mert a fordítás nem az, amit aláírtak. A felület ezt ki is mondja.
+  szerződés, a jegyzőkönyv, az igazolás és a rezsielszámolás szövege magyar, mert
+  a fordítás nem az, amit aláírtak. A felület ezt ki is mondja. A bérleti
+  szerződéshez ezen felül jár egy **tájékoztató** angol fordítás; hogy az miért
+  nem mond ennek ellent, lásd „A szerződés fordításának alapelve".
 - A domain nem ad vissza kész mondatot, hanem `Uzenet`-et: kulcsot és a
   behelyettesítendő adatokat (`src/domain/nyelv.ts`). A mondat a szótárban él
   (`src/domain/szotar.ts`), hogy a két nyelv ne csússzon szét. A számítás így
@@ -250,6 +252,54 @@ a bérbeadónak meg kell erősítenie, hogy megnézték egymás fényképes igaz
 nem ellenőrzés, hanem annak a beismerése, hogy nem tudunk ellenőrizni — és pont ezért
 nem szabad elhagyni.
 
+## A szerződés fordításának alapelve
+
+A bérlő gyakran nem olvas magyarul, és mégis ő az, aki a szerződésben vállal
+valamit. Az okirat ettől még magyar marad: **amit aláírnak, az a magyar szöveg,
+és eltérés esetén is az az irányadó.** A fordítás melléklet, nem másik verzió,
+és nem is a szerződés új nyelvi változata.
+
+Ezt nem elég a lapon kiírni. A szöveget kimásolják, elküldik, kinyomtatják, és
+onnantól a lap már nincs mellette. Ezért **az angol okirat maga kezdi azzal**,
+hogy tájékoztató fordítás, és hogy a magyar az irányadó (`FORDITAS_FEJLEC`).
+
+A fordítás **modulonként készül** (`src/domain/szerzodes-modulok-en.ts`), nem a
+kész magyar szövegből. Két oka van, és egyik sem kényelmi. A kész szöveg már
+tartalmazza a felek személyes adatait — születési hely, anyja neve,
+igazolványszám —, és azt egy külső fordítószolgáltatáshoz küldeni pont az, amit
+az alkalmazás sehol máshol nem tesz. A másik, hogy a kész szövegben az összeg
+betűvel is ki van írva, és egy gépi fordító ezt vagy elrontja, vagy alkalmanként
+másképp rontja el; ugyanannak a szerződésnek viszont holnap is ugyanaz a
+fordítása kell legyen. Így a jogi keret fordul le, az adat a helyén marad, és a
+szöveg futásidőben nem függ semmitől.
+
+Az angol katalógus **külön fájlban** él, nem a magyar modul mellett: a magyar
+szöveg az, amit ügyvéddel ellenjegyeztetünk, az angol pedig kifejezetten nem
+jogi szöveg. Egy fájlban a kettő azt sugallná, hogy az ellenjegyzés erre is
+vonatkozik.
+
+**A számozás mindig a magyar szövegből következik.** A felek a pont sorszámára
+fognak hivatkozni egymásnak; ha egy modul angolul más számú bekezdést adna, a
+két okirat elcsúszna. Ezért a szakaszok kiválasztását és sorszámozását a magyar
+szöveg dönti el, és a fordítás ugyanazt a pontot ugyanazon a sorszámon viszi.
+
+Amit a bérbeadó maga gépelt be (közlemény, dátum, saját szöveg), az a
+fordításban is úgy marad: az az ő adata. A **modul alapértelmezése** viszont a mi
+szövegünk, tehát annak van angol párja (`ALAPERTELMEZES_EN`) — különben az, aki
+nem írja felül, magyar mondatot kapna az angol példányban.
+
+Véglegesítéskor a fordítás is befagy (`veglegesSzovegEn`), a magyar mellé.
+Amit aláírtak, annak a fordítása se változzon meg egy későbbi modulfrissítéstől.
+Ami a fordítás előtt lett véglegesítve, ahhoz nincs és nem is lesz: egy most
+készült fordítás már nem ahhoz a szöveghez tartozna, és a felület ezt ki is
+mondja.
+
+A kapu (`src/__tests__/szerzodes-forditas.test.ts`) a **kész angol okiratot**
+olvassa, nem a forrást: azt méri, amit a bérlő a kezébe kap. Elbukik, ha egy
+modulhoz nincs angol szöveg, ha egy angol mondatban magyar maradt, vagy ha a két
+nyelv számozása elcsúszik. A példaadata szándékosan ékezet nélküli, mert a felek
+neve és címe a fordításban is magyarul marad, és attól a mérés hamisan bukna.
+
 ## A jegyzőkönyv és az igazolás alapelve
 
 Az átadás-átvételi jegyzőkönyv nem különálló papír: véglegesítéskor a rögzített
@@ -483,7 +533,13 @@ Rövid listát nem csukunk össze: három sor mögé kattintani rosszabb, mint
 elolvasni őket.
 
 A laphossz ezért kapu: a `proba/meret.mjs` minden lapon megméri, és nyolc
-telefonképernyőnél hosszabb lap megbukik. Ha egy lap átlépi, csoportosítani
+telefonképernyőnél hosszabb lap megbukik. Egy lapot viszont nem tudott mérni: a
+véglegesített szerződését, mert a példaadatban nincs véglegesített szerződés, a
+méretpróba pedig a sor elején fut, friss adatbázison. A vakfolt mögött a lap
+tizenkilenc képernyő lett (a kész szöveg alapból nyitva állt), és semmi nem
+szólt. Azóta a `proba/forditas.mjs` méri meg, ott, ahol épp véglegesített egy
+szerződést — a tanulság pedig általános: ha egy állapotot a példaadat nem
+tartalmaz, azt az az oldal mérje meg, amelyik előállítja. Ha egy lap átlépi, csoportosítani
 vagy összecsukni kell, nem a korlátot emelni. A mérés önpróbával kezd —
 magassággal és szélességgel egyaránt —, mert ebben a projektben már két
 olyan próbaállítás volt, ami mindig igazat adott.
