@@ -4,6 +4,7 @@ import {
   useEffect,
   useRef,
   useState,
+  type RefObject,
   type InputHTMLAttributes,
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
@@ -81,6 +82,35 @@ function useVisszairas<E extends { value: string }>(ertek: string) {
 }
 
 /**
+ * A legördülő, aminek az értéke egyetlen opcióra sem illik.
+ *
+ * Ez a mező vezérelt: a React a tartott értéket írja az elemre. Ha az érték
+ * üres — mert a hívó nem adott `defaultValue`-t —, a böngésző **semmit nem
+ * jelöl ki** (`selectedIndex` −1): a felhasználó üres legördülőt lát, a
+ * beküldés pedig üres értéket visz, és a kiszolgáló jogosan utasítja el.
+ * Vezérelt mező nélkül ez nem fordulna elő: a natív `<select>` magától az
+ * első opciót jelöli ki.
+ *
+ * Ezért kirajzolás után átvesszük az első opció értékét. Ugyanaz az elv, mint
+ * a visszaírásnál: ami a képernyőn látszik, és ami beküldésre kerül, nem
+ * mondhat mást. A hívónak ettől még érdemes `defaultValue`-t adnia — az a
+ * szándékot is kimondja —, de az elfelejtése ne csendes hiba legyen.
+ *
+ * Üres opcióértékre („Nem tartozik bérleményhez") ez nem fut le: ott az üres
+ * érték illik egy opcióra, tehát ki is van jelölve.
+ */
+function useElsotJelol(
+  elem: RefObject<HTMLSelectElement | null>,
+  allit: (ertek: string) => void,
+) {
+  useEffect(() => {
+    const select = elem.current;
+    if (!select || select.options.length === 0) return;
+    if (select.selectedIndex === -1) allit(select.options[0].value);
+  });
+}
+
+/**
  * Ugyanaz a visszaírás rádiógombra. Külön kell, mert ott nem a `value`
  * csúszik el, hanem a `checked`: a visszaállított űrlapon a megjelölt
  * lehetőség jelöletlen lesz, a React szerint viszont minden rendben.
@@ -129,6 +159,7 @@ export function Valaszto({
 }) {
   const [ertek, allit] = useMegorzottErtek(allapot, defaultValue);
   const elem = useVisszairas<HTMLSelectElement>(ertek);
+  useElsotJelol(elem, allit);
 
   return (
     <select
