@@ -2802,6 +2802,141 @@ export const SZOTAR: Szotar = {
     hu: "Még {nap} napig írhatsz. Amíg nem írsz, a rólad szólót sem látod.",
     en: "You can still write for {nap} days. Until you do, you cannot see the one about you.",
   },
+
+  // ——— Bemutatkozó oldal ———
+  "nav.bemutatkozas": { hu: "Bemutatkozás", en: "Profile" },
+  "nav.rendszergazda": { hu: "Üzemeltetés", en: "Operations" },
+
+  "bemutatkozas.cim": { hu: "Bemutatkozás", en: "Profile" },
+  "bemutatkozas.alcim": {
+    hu: "Amit magadról írsz, és a rólad szóló értékelések. Ez az oldal egyelőre nem nyilvános.",
+    en: "What you write about yourself, and the reviews about you. This page is not public yet.",
+  },
+  "bemutatkozas.admin_alcim": {
+    hu: "Bemutatkozó oldal, üzemeltetői nézetben.",
+    en: "Profile page, operator view.",
+  },
+  "bemutatkozas.vissza": { hu: "Vissza a listához", en: "Back to the list" },
+  "bemutatkozas.szerep.berbeado": { hu: "Bérbeadó", en: "Landlord" },
+  "bemutatkozas.szerep.berlo": { hu: "Bérlő", en: "Tenant" },
+  "bemutatkozas.mezo_cimke": { hu: "Amit magadról írsz", en: "About you" },
+  "bemutatkozas.mezo_sugo": {
+    hu: "Néhány mondat arról, ki vagy és mit vársz a bérlettől. Ezt csak te látod és az üzemeltető; a másik félhez nem jut el.",
+    en: "A few sentences about who you are and what you expect from the tenancy. Only you and the operator can see it; it does not reach the other party.",
+  },
+  "bemutatkozas.ment": { hu: "Mentés", en: "Save" },
+  "bemutatkozas.mentem": { hu: "Mentem…", en: "Saving…" },
+  "bemutatkozas.kesz": {
+    hu: "A bemutatkozásod elmentve.",
+    en: "Your profile text has been saved.",
+  },
+  "bemutatkozas.hiba.nincs_belepve": {
+    hu: "Ehhez be kell lépned.",
+    en: "You need to be signed in for this.",
+  },
+  "bemutatkozas.hiba.tul_hosszu": {
+    hu: "A bemutatkozás legfeljebb {jel} karakter lehet.",
+    en: "The profile text can be at most {jel} characters.",
+  },
+  "bemutatkozas.ures_sajat": {
+    hu: "Még nem írtál magadról semmit.",
+    en: "You have not written anything about yourself yet.",
+  },
+  "bemutatkozas.ures_masike": {
+    hu: "Nem írt magáról semmit.",
+    en: "They have not written anything about themselves.",
+  },
+  "bemutatkozas.ertekelesek_cim": { hu: "Értékelések", en: "Reviews" },
+  "bemutatkozas.darab": { hu: "{darab} értékelés", en: "{darab} reviews" },
+  "bemutatkozas.atlag": {
+    hu: "{atlag} ({darab} értékelésből)",
+    en: "{atlag} (from {darab} reviews)",
+  },
+  "bemutatkozas.nincs_sajat": {
+    hu: "Még nincs rólad felfedett értékelés. Ami rejtve van, az ide sem számít bele.",
+    en: "There is no revealed review about you yet. Anything still hidden is not counted here either.",
+  },
+  "bemutatkozas.nincs_masike": {
+    hu: "Még nincs róla felfedett értékelés.",
+    en: "There is no revealed review about them yet.",
+  },
+  "bemutatkozas.nem_nyilvanos_cim": {
+    hu: "Ki látja ezt az oldalt?",
+    en: "Who can see this page?",
+  },
+  "bemutatkozas.nem_nyilvanos": {
+    hu: "Egyelőre csak te magad és az üzemeltető. A másik fél nem látja, és nyilvános hivatkozás sincs hozzá. Hogy a rólad szóló értékelést megmutathasd-e egy leendő bérbeadónak, még nincs eldöntve.",
+    en: "For now only you and the operator. The other party cannot see it, and there is no public link to it. Whether you may show a review about yourself to a prospective landlord is not decided yet.",
+  },
+  "bemutatkozas.rejtett_cim": {
+    hu: "Miért kevesebb, mint amennyit vártál?",
+    en: "Why fewer than you expected?",
+  },
+  "bemutatkozas.rejtett": {
+    hu: "Csak a felfedett értékelés látszik itt, és csak az számít bele a darabszámba. Amíg mindkét fél meg nem írta a sajátját, a rólad szóló rejtve marad — különben a puszta darabszámból is kiderülne, hogy a másik fél már írt.",
+    en: "Only revealed reviews appear here, and only those are counted. Until both parties have written their own, the one about you stays hidden — otherwise the count alone would reveal that the other party has already written.",
+  },
+
+  // ——— A rendszer saját értékelése, csak az üzemeltetőnek ———
+  "gepi.cim": { hu: "A rendszer értékelése", en: "System assessment" },
+  "gepi.alcim": {
+    hu: "Amit az alkalmazás maga mért. Csak az üzemeltető látja, a felhasználó nem.",
+    en: "What the application measured itself. Only the operator sees it, not the user.",
+  },
+  "gepi.szempont.pontossag": { hu: "Pontosság", en: "Accuracy" },
+  "gepi.szempont.valaszido": { hu: "Válaszidő", en: "Response time" },
+  "gepi.szempont.egyuttmukodes": { hu: "Együttműködés", en: "Cooperation" },
+  "gepi.pont": {
+    hu: "{pont} / 5 ({minta} megfigyelésből)",
+    en: "{pont} / 5 (from {minta} observations)",
+  },
+  "gepi.nincs_pont": { hu: "nincs elég adat", en: "not enough data" },
+  "gepi.nincs_eleg": {
+    hu: "{minta} megfigyelés van, és legalább {kell} kellene. Kevesebből a szám magát magyarázná.",
+    en: "There are {minta} observations, and at least {kell} would be needed. Fewer than that and the number would only explain itself.",
+  },
+  "gepi.pontossag": {
+    hu: "{minta} lejárt előírásból {rendben} zárult rendben, {vitas} vitás, {hianyzo} maradt nyilatkozat nélkül. A késés középértéke {keses} nap.",
+    en: "Of {minta} due charges, {rendben} closed cleanly, {vitas} are disputed and {hianyzo} were left without a statement. The median delay is {keses} days.",
+  },
+  "gepi.valaszido": {
+    hu: "{minta} megkeresésre adott válasz középértéke {ora} óra.",
+    en: "The median response to {minta} messages was {ora} hours.",
+  },
+  "gepi.egyuttmukodes": {
+    hu: "{minta} kétoldali kérdésből {megvalaszolt} esetben nyilatkozott, igennel vagy nemmel.",
+    en: "Of {minta} two-sided questions, they gave a statement in {megvalaszolt} cases, whether yes or no.",
+  },
+  "gepi.nincs_semmi": {
+    hu: "A rendszer még semmit nem tud erről a felhasználóról. Ez nem rossz jegy, hanem hiányzó adat.",
+    en: "The system knows nothing about this user yet. That is missing data, not a bad mark.",
+  },
+  "gepi.miert_cim": {
+    hu: "Miből jönnek ezek a számok?",
+    en: "Where do these numbers come from?",
+  },
+  "gepi.miert": {
+    hu: "Abból, amit az alkalmazás magától rögzített: a befizetések egyeztetéséből, a hibabejelentések és az üzenetek időpontjaiból, és abból, hány kétoldali kérdésre nyilatkozott a felhasználó. A három szempontot nem vonjuk össze egyetlen számmá, és amire nincs elég adat, arra nem tippelünk. A válaszidő sávjai az alkalmazás alapértelmezései, nem jogszabályi határidők. A számítás nincs eltárolva: minden megnyitáskor újra fut, tehát követi, ha a viselkedés megváltozik.",
+    en: "From what the application recorded on its own: the payment reconciliation, the timestamps of repair reports and messages, and how many two-sided questions the user answered. The three aspects are never merged into one number, and where there is not enough data we do not guess. The response-time bands are the application's defaults, not statutory deadlines. The calculation is not stored: it runs again on every visit, so it follows changes in behaviour.",
+  },
+
+  "rendszergazda.cim": { hu: "Üzemeltetés", en: "Operations" },
+  "rendszergazda.alcim": {
+    hu: "A felhasználók bemutatkozó oldalai.",
+    en: "The users' profile pages.",
+  },
+  "rendszergazda.sugo_cim": {
+    hu: "Mit látsz itt?",
+    en: "What do you see here?",
+  },
+  "rendszergazda.sugo": {
+    hu: "Minden felhasználó bemutatkozó oldalát, és rajtuk kétféle értékelést: amit a másik fél írt róla, és amit a rendszer mért. A rejtett értékelés itt sem látszik, és a darabszámba sem számít bele: a vakság ígérete a te oldaladon sem törik meg.",
+    en: "Every user's profile page, with two kinds of assessment on it: what the other party wrote about them, and what the system measured. Hidden reviews do not show here either, and are not counted: the promise of blind reviewing does not break on your side either.",
+  },
+  "rendszergazda.nincs": {
+    hu: "Nincs egyetlen felhasználó sem.",
+    en: "There are no users.",
+  },
 };
 
 /** Szövegező a beépített szótárral. Kliensoldali komponens is ezt hívja. */

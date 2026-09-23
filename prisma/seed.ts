@@ -146,6 +146,13 @@ async function main() {
       nev: "Nagy Péter",
       jelszoHash,
       szerep: "berbeado",
+      // A példaadatban a bérbeadó egyben az üzemeltető is, hogy a bemutatkozó
+      // oldalak rendszergazdai nézete külön belépés nélkül kipróbálható
+      // legyen. A jelölő éles adatbázisban külön adandó meg; felületről nem
+      // állítható.
+      rendszergazda: true,
+      bemutatkozas:
+        "Két lakást adok ki Budapesten, mindkettőt hosszú távra. A rezsit mért fogyasztás szerint számolom el, és a számlákat minden elszámoláshoz mellékelem.",
     },
   });
 
@@ -155,6 +162,8 @@ async function main() {
       nev: "Kovács Anna",
       jelszoHash,
       szerep: "berlo",
+      bemutatkozas:
+        "Másodéves egyetemista vagyok, csendes albérletet keresek. Nem dohányzom, háziállatom nincs.",
     },
   });
 
@@ -169,6 +178,8 @@ async function main() {
       nev: "Tóth Eszter",
       jelszoHash,
       szerep: "berlo",
+      bemutatkozas:
+        "Három évig béreltem ugyanazt a lakást, munkahelyváltás miatt költöztem el.",
     },
   });
 

@@ -613,6 +613,19 @@ export async function ertekelesiAblak(oldal) {
     ujHatra <= eredetiHatra,
     `a visszavont-újra lezárás nem indítja újra az ablakot (${eredetiHatra} → ${ujHatra} nap)`,
   );
+
+  // A bemutatkozó lap ugyanezt a felfedést használja, csak másik lekérdezésből:
+  // ha ott a beírt kiköltözési napot néznénk, a visszakeltezett lezárás azon a
+  // lapon hozná elő a rejtett szöveget, miközben az értékelések lapján még
+  // rejtve marad. Ahol a lap még nincs meg, ott nincs mit mérni.
+  const lap = await oldal.goto(`${ALAP}/bemutatkozas`);
+  if (lap !== null && lap.status() === 200) {
+    await oldal.waitForLoadState("networkidle");
+    all(
+      !(await oldal.content()).includes(MARTON_MONDATA),
+      "a bemutatkozó lap sem hozza elő a rejtett értékelést",
+    );
+  }
 }
 
 export async function futtat(oldal) {

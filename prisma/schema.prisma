@@ -27,6 +27,18 @@ model Felhasznalo {
    * belépéskor: a hiányra onnantól teendő emlékeztet.
    */
   adatkeresLatta DateTime?
+  /**
+   * Amit a felhasználó magáról ír a bemutatkozó oldalán. Üres szöveg, nem
+   * null: a null itt nem jelentene mást, mint hogy még nem írt semmit.
+   */
+  bemutatkozas   String    @default("")
+  /**
+   * Az üzemeltető. Nem a `szerep` harmadik értéke: a szerep azt dönti el,
+   * melyik alkalmazást látja a felhasználó, a rendszergazda viszont nem egy
+   * harmadik fajta felhasználó, hanem ugyanaz a bérbeadó vagy bérlő, akinek
+   * emellett üzemeltetői rálátása is van. Felületről nem adható meg.
+   */
+  rendszergazda  Boolean   @default(false)
   letrehozva     DateTime  @default(now())
 
   ingatlanok          Ingatlan[]
