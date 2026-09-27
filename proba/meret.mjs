@@ -139,7 +139,15 @@ const BERLOI = [
 
 // A betekintő nyilvános oldala szándékosan hiányzik: a megnyitása számít, és
 // azt a saját próbája méri. Az oldal méretét ott ellenőrizzük.
-const NYILVANOS = ["/belepes", "/jogi/adatkezeles", "/jogi/feltetelek"];
+const NYILVANOS = [
+  "/belepes",
+  "/jogi/adatkezeles",
+  "/jogi/feltetelek",
+  "/telepites",
+  // A kapcsolat nélküli lap is lap: a szervizmunkás ezt teszi el a
+  // készüléken, tehát ennek is el kell férnie 360 képponton.
+  "/offline",
+];
 
 /**
  * Hány telefonképernyőnél nem lehet hosszabb egy lap.

@@ -1,5 +1,6 @@
 /**
- * Az üzemeltetői lap: összesítő számok, rendszerállapot, fióktiltás, napló.
+ * Az üzemeltetői lap: összesítő számok, rendszerállapot, fióktiltás, napló,
+ * és az egyetlen lapunk, amit jellemzően nem telefonról nyitnak meg.
  *
  * Amit ez a próba megfog, és más nem:
  *
@@ -19,7 +20,7 @@
  * ugyanaz a kiindulóhelyzet kell.
  */
 
-import { ALAP, all, belep, JELSZO, kilep, magyarra, tullogas } from "./kozos.mjs";
+import { ALAP, SZELESSEG, all, belep, JELSZO, kilep, magyarra, nyelvre, tullogas } from "./kozos.mjs";
 
 export const nev = "Üzemeltetői lap";
 
@@ -174,4 +175,81 @@ export async function futtat(oldal) {
     "és a jelölése is eltűnik",
   );
   await kontextus.close();
+
+  await asztalon(oldal, celId);
+}
+
+/**
+ * Az üzemeltetői lap gépen.
+ *
+ * A rendszergazda Windowson, asztali gépen dolgozik — ez az egyetlen lapunk,
+ * amit nem telefonról nyitnak meg. A telefonos elrendezés ott nem hibás, csak
+ * pazarló: minden fiók két sort vitt el, a kilenc szám pedig hármasával állt.
+ *
+ * A mérés ezért kétoldalú: gépen egy sorban kell állnia a fióknak és a
+ * gombjának, telefonon viszont egymás alatt. Csak az egyiket nézve az
+ * elrendezés bármelyik irányban elromolhatna anélkül, hogy bármi szólna.
+ */
+async function asztalon(oldal, celId) {
+  // A próba idáig a bérlő menetében állt: az üzemeltetői lap neki nem is
+  // létezik. A belépés nélkül a hibalap jönne — az pedig rövid és keskeny,
+  // tehát minden méretállítást simán teljesítene, és a mérés némán hazudna.
+  await belep(oldal, "berbeado@pelda.hu");
+  await magyarra(oldal);
+  await oldal.setViewportSize({ width: 1440, height: 900 });
+  try {
+    for (const nyelv of ["hu", "en"]) {
+      await lapra(oldal, LAP);
+      await nyelvre(oldal, nyelv);
+      const valasz = await oldal.goto(`${ALAP}${LAP}`);
+      all(
+        valasz.status() === 200,
+        `az üzemeltetői lap tényleg megnyílik gépen (${nyelv}: ${valasz.status()})`,
+      );
+      await oldal.waitForLoadState("networkidle");
+      all(
+        !(await tullogas(oldal)),
+        `az üzemeltetői lap gépen sem lóg ki (${nyelv})`,
+      );
+    }
+
+    // A számok első sora az állomány, a második az, ami válaszra vár: gépen
+    // öt oszlop, tehát a kilenc szám két sorba kerül, nem háromba.
+    const sorokSzama = await oldal
+      .locator('[data-szakasz="szamok"] > div.grid')
+      .first()
+      .evaluate((racs) =>
+        new Set(
+          [...racs.children].map((elem) => elem.getBoundingClientRect().top),
+        ).size,
+      );
+    all(sorokSzama === 2, `gépen a kilenc szám két sorban áll (${sorokSzama} sor)`);
+
+    const sor = fioksor(oldal, celId);
+    const kartya = await sor.locator("a").first().boundingBox();
+    const gomb = await sor.locator("button[data-fiokmuvelet]").first().boundingBox();
+    all(
+      gomb.x > kartya.x + kartya.width - 1,
+      "gépen a letiltó gomb a fiók kártyája mellett áll, nem alatta",
+    );
+    all(
+      gomb.y < kartya.y + kartya.height,
+      "és egy magasságban vele: egy sor egy fiók",
+    );
+
+    // Telefonon viszont egymás alatt — enélkül a fenti állítás akkor is igaz
+    // lenne, ha az elrendezés minden méreten ugyanaz.
+    await oldal.setViewportSize({ width: SZELESSEG, height: 844 });
+    await lapra(oldal, LAP);
+    const telefonKartya = await sor.locator("a").first().boundingBox();
+    const telefonGomb = await sor.locator("button[data-fiokmuvelet]").first().boundingBox();
+    all(
+      telefonGomb.y >= telefonKartya.y + telefonKartya.height - 1,
+      "telefonon a gomb a kártya alatt marad",
+    );
+  } finally {
+    await oldal.setViewportSize({ width: SZELESSEG, height: 844 });
+    await lapra(oldal, LAP);
+    await nyelvre(oldal, "hu");
+  }
 }
