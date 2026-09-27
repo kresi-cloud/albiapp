@@ -42,9 +42,13 @@ export default async function Rendszergazda() {
 
       <Sugo cim={sz("rendszergazda.sugo_cim")}>{sz("rendszergazda.sugo")}</Sugo>
 
-      <section className="grid gap-2">
+      <section className="grid gap-2" data-szakasz="szamok">
         <Szakaszcim>{sz("uzemeltetes.szamok")}</Szakaszcim>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {/* Gépen öt oszlop, és ez nem esetleges: az első öt szám az
+            állomány (fiókok, ingatlan, élő és lezárt bérlet), a maradék négy
+            az, ami válaszra vár. Öt oszlopban a két csoport magától két sorba
+            kerül, tehát a rács maga mondja meg, mit kell nézni. */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
           <Mutato cimke={sz("uzemeltetes.berbeadok")} ertek={String(szamok.berbeadok)} />
           <Mutato cimke={sz("uzemeltetes.berlok")} ertek={String(szamok.berlok)} />
           <Mutato cimke={sz("uzemeltetes.ingatlanok")} ertek={String(szamok.ingatlanok)} />
@@ -100,26 +104,31 @@ export default async function Rendszergazda() {
         <Szakaszcim>{sz("uzemeltetes.fiokok")}</Szakaszcim>
         {sorok.length === 0 ? <Ures>{sz("rendszergazda.nincs")}</Ures> : null}
 
+        {/* Telefonon a gomb a kártya alatt áll, gépen mellette: egy sor egy
+            fiók, és a szem végigfut a listán. Az üzemeltetői lap az egyetlen,
+            amit jellemzően nem telefonról nyitnak meg. */}
         <ul className="grid gap-2">
           {sorok.map((sor) => (
-            <li key={sor.id} className="grid gap-2" data-fiok={sor.id}>
+            <li
+              key={sor.id}
+              className="grid gap-2 sm:grid-cols-[1fr_12rem] sm:items-center"
+              data-fiok={sor.id}
+            >
               <KartyaHivatkozas
                 href={sor.id === felhasznalo.id ? "/bemutatkozas" : `/bemutatkozas/${sor.id}`}
               >
-                <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="font-medium">{sor.nev}</span>
                   <span className="text-sm text-halvany">
                     {sz(`bemutatkozas.szerep.${sor.szerep}`)}
                   </span>
-                </div>
-                <p className="mt-1 text-sm text-halvany">
-                  {sz("bemutatkozas.darab", { darab: sor.ertekelesekSzama })}
-                </p>
-                {sor.letiltva ? (
-                  <p className="mt-2">
+                  <span className="text-sm text-halvany">
+                    {sz("bemutatkozas.darab", { darab: sor.ertekelesekSzama })}
+                  </span>
+                  {sor.letiltva ? (
                     <Jelzo allapot="gond">{sz("uzemeltetes.letiltott")}</Jelzo>
-                  </p>
-                ) : null}
+                  ) : null}
+                </div>
               </KartyaHivatkozas>
 
               {sor.id === felhasznalo.id ? (

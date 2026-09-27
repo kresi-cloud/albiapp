@@ -2,9 +2,11 @@ import type { Metadata, Viewport } from "next";
 import { Figtree, Inter } from "next/font/google";
 import Link from "next/link";
 import { Nyelvvalto } from "@/components/Nyelvvalto";
+import { Telepitheto } from "@/components/Telepitheto";
 import { Fulsav, type Fulelem } from "@/components/ui/Fulsav";
 import { Nevhuzas } from "@/components/ui/Jel";
 import { IKON_UTVONAL, IkonKilepes } from "@/components/ui/ikonok";
+import { IOS_IKON, JEL_IKON, NEV } from "@/domain/telepites";
 import { belepettFelhasznalo } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { kilep } from "./belepes/actions";
@@ -33,10 +35,35 @@ const cimBetu = Figtree({
   display: "swap",
 });
 
-/** A lap címe és leírása a választott nyelven: ezt a böngésző és a megosztás mutatja. */
+/**
+ * A lap címe és leírása a választott nyelven: ezt a böngésző és a megosztás
+ * mutatja.
+ *
+ * Az ikonok is itt vannak, mert a telepített alkalmazás ezekből él. Az
+ * `appleWebApp` az iPhone kezdőképernyőjére felvett változatnak szól: enélkül
+ * az Albi böngészősávval együtt indulna, vagyis pont az veszne el a
+ * telepítésből, amiért csinálták. A `mobile-web-app-capable` ugyanennek a mai
+ * neve; a kettő egymás mellett áll, mert a régebbi iOS csak a magáét ismeri.
+ */
 export async function generateMetadata(): Promise<Metadata> {
   const { sz } = await szovegek();
-  return { title: "Albi", description: sz("alkalmazas.leiras") };
+  return {
+    title: NEV,
+    description: sz("alkalmazas.leiras"),
+    applicationName: NEV,
+    icons: {
+      icon: [
+        { url: JEL_IKON, type: "image/svg+xml" },
+        { url: "/ikonok/albi-192.png", sizes: "192x192", type: "image/png" },
+      ],
+      apple: [{ url: IOS_IKON, sizes: "180x180", type: "image/png" }],
+    },
+    appleWebApp: { capable: true, title: NEV, statusBarStyle: "default" },
+    // A Next.js az `appleWebApp` alapján a mai nevet teszi ki
+    // (`mobile-web-app-capable`); a régebbi iPhone viszont csak a magáét
+    // ismeri, ezért az még külön kell. A kettő ugyanazt mondja.
+    other: { "apple-mobile-web-app-capable": "yes" },
+  };
 }
 
 /**
@@ -155,6 +182,11 @@ export default async function RootLayout({
   return (
     <html lang={nyelv} className={`${szovegBetu.variable} ${cimBetu.variable}`}>
       <body className="min-h-screen font-sans antialiased">
+        {/* Az alkalmazásleíró a nyelvi sütitől függ, a böngésző viszont
+            alapból süti nélkül kéri le: a `use-credentials` nélkül mindenki a
+            magyar alapértelmezést kapná a telepítő ablakban. */}
+        <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials" />
+        <Telepitheto />
         <header className="sticky top-0 z-30 border-b border-keret bg-felulet/90 backdrop-blur">
           <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-2.5">
             <Link href={berlo ? "/berlo" : "/"} className="shrink-0">
@@ -197,6 +229,11 @@ export default async function RootLayout({
             </Link>
             <Link href="/jogi/feltetelek" className="hover:text-halvany">
               {sz("jogi.feltetelek")}
+            </Link>
+            {/* A láblécből, mert belépés előtt is kell: a meghívóból érkező
+                bérlő még a saját fiókja előtt felteheti a telefonjára. */}
+            <Link href="/telepites" className="hover:text-halvany">
+              {sz("nav.telepites")}
             </Link>
           </nav>
           <p className="mt-2">{sz("jogi.lablec")}</p>

@@ -3926,6 +3926,79 @@ export const SZOTAR: Szotar = {
     hu: "{admin} visszaengedte ezt a fiókot: {targy}",
     en: "{admin} re-enabled this account: {targy}",
   },
+
+  // --- Telepítés és kapcsolat nélküli állapot
+  "nav.telepites": { hu: "Telepítés", en: "Install" },
+  "telepites.cim": { hu: "Telepítés a készülékre", en: "Install on your device" },
+  "telepites.alcim": {
+    hu: "Az Albi böngészőben fut, de felteheted a telefonod kezdőképernyőjére és a számítógéped Start menüjébe.",
+    en: "Albi runs in the browser, but you can add it to your phone's home screen and your computer's Start menu.",
+  },
+  "telepites.mit_ad": {
+    hu: "Telepítve saját ikont és saját ablakot kap, böngészősáv nélkül. Nem alkalmazásboltból jön, tehát nincs mit frissíteni: mindig a mostani változat indul.",
+    en: "Once installed it gets its own icon and its own window, with no browser bar. It does not come from an app store, so there is nothing to update: you always start the current version.",
+  },
+  "telepites.mit_nem": {
+    hu: "Amit a telepítés nem ad: az Albi ettől is a kiszolgálóról dolgozik. Internet nélkül nem mutat adatot, és a bérlet adatait nem tárolja a készüléken.",
+    en: "What installing does not give you: Albi still works from the server. Without an internet connection it shows no data, and it stores nothing about the tenancy on your device.",
+  },
+  "telepites.gomb": { hu: "Telepítés most", en: "Install now" },
+  "telepites.mar_telepitve": {
+    hu: "Ebben az ablakban már a telepített alkalmazás fut.",
+    en: "This window is already the installed app.",
+  },
+  "telepites.android.cim": { hu: "Android (Chrome)", en: "Android (Chrome)" },
+  "telepites.android.1": {
+    hu: "Nyisd meg az Albit Chrome-ban, és lépj be.",
+    en: "Open Albi in Chrome and sign in.",
+  },
+  "telepites.android.2": {
+    hu: "A jobb felső sarokban a menü (⋮), majd „Alkalmazás telepítése”.",
+    en: "Tap the menu (⋮) in the top right, then “Install app”.",
+  },
+  "telepites.android.3": {
+    hu: "Az ikon a kezdőképernyőre kerül, és onnantól saját ablakban indul.",
+    en: "The icon lands on your home screen, and from then on it opens in its own window.",
+  },
+  "telepites.ios.cim": { hu: "iPhone és iPad (Safari)", en: "iPhone and iPad (Safari)" },
+  "telepites.ios.1": {
+    hu: "Nyisd meg az Albit Safariban: más böngészőből az iPhone nem engedi feltenni.",
+    en: "Open Albi in Safari: the iPhone will not add it to the home screen from another browser.",
+  },
+  "telepites.ios.2": {
+    hu: "Alul a megosztás gomb (négyzet felfelé mutató nyíllal), majd „Hozzáadás a Főképernyőhöz”.",
+    en: "Tap the share button at the bottom (a square with an arrow), then “Add to Home Screen”.",
+  },
+  "telepites.ios.3": {
+    hu: "Az iPhone nem ajánlja fel magától a telepítést, tehát ezt a három lépést kézzel kell megtenni.",
+    en: "The iPhone never offers to install on its own, so these three steps have to be done by hand.",
+  },
+  "telepites.asztali.cim": {
+    hu: "Számítógép (Chrome, Edge)",
+    en: "Computer (Chrome, Edge)",
+  },
+  "telepites.asztali.1": {
+    hu: "Nyisd meg az Albit, és lépj be.",
+    en: "Open Albi and sign in.",
+  },
+  "telepites.asztali.2": {
+    hu: "A címsor jobb szélén a telepítés ikonja, vagy a menüben „Alkalmazások” → „Az Albi telepítése”.",
+    en: "Use the install icon at the right of the address bar, or the menu: “Apps” → “Install Albi”.",
+  },
+  "telepites.asztali.3": {
+    hu: "Az alkalmazás saját ablakot és Start menü-ikont kap; külön Windows-programot nem kell telepíteni.",
+    en: "The app gets its own window and a Start menu icon; there is no separate Windows program to install.",
+  },
+  "offline.cim": { hu: "Nincs kapcsolat", en: "No connection" },
+  "offline.mit": {
+    hu: "Az Albi minden adatot a kiszolgálóról tölt be, ezért kapcsolat nélkül nem tud mit mutatni. Amint van internet, folytathatod ott, ahol abbahagytad.",
+    en: "Albi loads everything from the server, so with no connection there is nothing it can show. As soon as you are online again you can carry on where you left off.",
+  },
+  "offline.adat": {
+    hu: "A bérlet adatait szándékosan nem tároljuk a készüléken: amit egyszer kiadtunk, azt nem lehet visszavenni.",
+    en: "We deliberately store nothing about the tenancy on the device: what has once been handed out cannot be taken back.",
+  },
+  "offline.ujra": { hu: "Újrapróbálom", en: "Try again" },
 };
 
 /** Szövegező a beépített szótárral. Kliensoldali komponens is ezt hívja. */

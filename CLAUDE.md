@@ -1032,6 +1032,77 @@ amíg a belépőlap tényleg elő nem jön, és ha nem jön, kimondja; korábban
 csendben belépve ment tovább, és a bukás harminc másodperces mezőkeresés lett
 valahol messze onnan, ahol a baj volt.
 
+## A telepíthetőség alapelve
+
+Az Albi weblap marad. Nincs alkalmazásbolt, nincs külön Android- és
+iOS-változat: a böngészők fel tudják tenni a kezdőképernyőre és a Start menübe,
+saját ikonnal és saját ablakkal. Egy magánbérbeadónak szánt terméknél ez nem
+kompromisszum, hanem a helyes döntés — egy boltba beadott alkalmazás
+átvizsgálásra vár, verziózni kell, és a bérlő nem fog telepíteni semmit azért,
+hogy megnézze, mit kell fizetnie.
+
+**Az alkalmazásleíró kérésenként készül, a nyelvi süti szerint**
+(`src/app/manifest.json/route.ts`). A leíró egynyelvű — a telepítő ablakban
+egyetlen név és egyetlen leírás állhat —, a bérlő viszont gyakran nem olvas
+magyarul, és a telepítés az első, amit lát. Ezért van a hivatkozáson
+`crossOrigin="use-credentials"`: a böngésző a leírót alapból süti nélkül kéri
+le, enélkül mindenki a magyar alapértelmezést kapná. Ugyanezért nem a Next.js
+beépített `app/manifest.ts` alakját használjuk: az maga tenné be a
+hivatkozást, épp e nélkül.
+
+**A telepítés elmaradása néma.** Ha egy ikonméret hiányzik, vagy az ikonfájl
+nincs ott, ahová a leíró mutat, minden lap hibátlanul jelenik meg, a
+típusellenőrzés és a fordítás is zöld — csak a böngésző nem ajánlja fel a
+telepítést. Ezért él a leíró a domainben (`src/domain/telepites.ts`), és ezért
+méri a teszt a lemezen álló PNG-k tényleges méretét is, nem csak azt, amit a
+leíró ígér.
+
+A vágható (`maskable`) ikon azért külön kép, mert az Android a saját alakjára
+vágja az ikont, és abból a rajz széle kimaradna: azon a változaton a jel
+kisebb, a háttér a szélekig ér. Gyorsindító (`shortcuts`) szándékosan nincs: a
+lista a telepítés pillanatában fagy be, a menüpontok viszont szerepenként
+mások — a bérlőnek nincs befizetés-egyeztetés lapja.
+
+**A szervizmunkás kiszolgálói választ nem tárol el** (`public/sw.js`).
+Egyetlen lapot, bizonylatot, fényképet vagy okiratot sem: azok mind a belépett
+felhasználó adatai, és a készüléken hagyott másolatot a kilépés nem viszi el, a
+fiók letiltása nem éri el, a következő felhasználó ugyanazon a gépen pedig
+megnyitná. Ugyanaz az elv, mint a betekintőnél: amit egyszer kiadtunk, azt nem
+lehet visszavenni. Amit eltesz, az a fordítás állandó része
+(`/_next/static/…`) és az ikonok — tartalomfüggő néven érkeznek, tehát soha nem
+avulnak, és senkié. A POST-hoz hozzá sem nyúl: minden kiszolgálói művelet
+érintetlenül megy tovább.
+
+A kapcsolat nélküli lap (`/offline`) **mindkét nyelven megszólal**. A lap a
+készüléken áll el, nem a kérés pillanatában készül: nem tudjuk, ki nézi majd. A
+szervizmunkás süti nélkül kéri le és teszi el, hogy a tárolt példányban semmi
+ne legyen, ami a belépett felhasználóé.
+
+**iOS-en a böngésző soha nem ajánlja fel a telepítést**, ott a megosztás
+menüjében van — aki nem tudja, nem találja meg. Épp a bérlő az, aki iPhone-t
+használ és nem olvas magyarul. Ezért van `/telepites` lap három rövid
+leírással, és ezért érhető el a láblécből, belépés nélkül is: a meghívóból
+érkező bérlő így még a saját fiókja előtt felteheti.
+
+Az offline mérés (`proba/telepites.mjs`) önpróbával kezd: a hálózat
+kikapcsolása után egy szándékosan nem tárolt címet kér le, és elvárja, hogy
+elbukjon. Enélkül a „kapcsolat nélkül is jön a saját lapunk" állítás akkor is
+igaz lenne, ha a hálózat végig élne.
+
+### Az üzemeltetői lap gépen
+
+Az üzemeltetői lap az egyetlen, amit jellemzően nem telefonról nyitnak meg. A
+lap mérete ettől nem lesz más: az alkalmazásnak egy szövegszélessége van
+(`max-w-5xl`), és a fejléc is abban áll — egyetlen szélesebb lap kilógna
+mellőle. Ami változik, az a lapon belüli elrendezés: gépen a kilenc szám öt
+oszlopban áll, tehát az első sor az állomány, a második az, ami válaszra vár; a
+fiók és a letiltó gombja pedig egy sorban, nem egymás alatt.
+
+A böngészős próba **mindkét irányban mér**: gépen egy sorban, telefonon egymás
+alatt. Csak az egyiket nézve az elrendezés bármelyik irányban elromolhatna
+anélkül, hogy bármi szólna — és a mérés akkor is zöld maradna, ha a két méret
+ugyanazt adná.
+
 ## Mit jelent, hogy kész
 
 - `npx eslint .`, `npm run typecheck`, `npm test` és `npm run build` zöld.
