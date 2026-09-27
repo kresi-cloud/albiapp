@@ -33,11 +33,21 @@ async function leiro(oldal) {
   });
 }
 
+/**
+ * Egy fejléccímke tulajdonsága, megvárva.
+ *
+ * A Next.js a metaadatokat a lap **végén** küldi el, és a React teszi át őket
+ * a fejlécbe — vagyis közvetlenül a `goto` után még nincsenek ott. Egy
+ * egyszeri `document.head.querySelector` ezért futásonként mást adott: két
+ * futáson megtalálta, a harmadikon nem. A keresés helyett tehát várunk rá; ha
+ * nem érkezik meg, az valódi hiba, nem időzítés.
+ */
 async function fejCimke(oldal, valaszto, tulajdonsag) {
-  return oldal.evaluate(
-    ([v, t]) => document.head.querySelector(v)?.getAttribute(t) ?? null,
-    [valaszto, tulajdonsag],
-  );
+  return oldal
+    .locator(`head ${valaszto}`)
+    .first()
+    .getAttribute(tulajdonsag, { timeout: 15000 })
+    .catch(() => null);
 }
 
 export async function futtat(oldal) {
