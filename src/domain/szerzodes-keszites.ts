@@ -72,10 +72,23 @@ export function alapertelmezettParameterek(): Record<string, string> {
 
 export function kontextustKeszit(bemenet: Bemenet, nyelv: Nyelv = "hu"): Kontextus {
   const tobb = bemenet.berlok.length > 1;
+  // Az alapértelmezés annak a modulnak a szövege, amelyik a paramétert
+  // hozza — tehát csak addig szól, amíg az a modul benne van az okiratban.
+  // Záradéknál semmi nem kötelező: a záró modul bekapcsolása nélkül is
+  // „igen" lett a `tanuk`, és a tanúsor ott állt a záradék alján úgy, hogy a
+  // bérbeadó sehol nem tudta kikapcsolni. Ugyanez a szabály a szerződésre
+  // nézve nem változtat semmin, mert ott a kötelező modulok mindig benne
+  // vannak.
+  const zaradek = bemenet.fajta === "zaradek";
+  const valasztott = new Set(bemenet.valasztottModulok);
+  const ervenyes = (modul: (typeof MODULOK)[number]) =>
+    valasztott.has(modul.kulcs) || (!zaradek && modul.kotelezo);
+
   const p = (kulcs: string): string => {
     const megadott = bemenet.parameterek[kulcs];
     if (megadott !== undefined && megadott !== "") return megadott;
     for (const modul of MODULOK) {
+      if (!ervenyes(modul)) continue;
       const parameter = modul.parameterek.find((elem) => elem.kulcs === kulcs);
       if (parameter) return parameter.alapertelmezes;
     }
@@ -92,6 +105,13 @@ export function kontextustKeszit(bemenet: Bemenet, nyelv: Nyelv = "hu"): Kontext
     psz: (kulcs) => {
       const szam = Number(String(p(kulcs)).replace(/\s/g, "").replace(",", "."));
       return Number.isFinite(szam) ? szam : 0;
+    },
+    pd: (kulcs) => {
+      const nyers = p(kulcs).trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(nyers)) return "";
+      const nap = new Date(`${nyers}T00:00:00.000Z`);
+      if (Number.isNaN(nap.getTime())) return "";
+      return nyelv === "en" ? hosszuDatumEn(nap) : hosszuDatum(nap);
     },
     v: (egyes, tobbes) => (tobb ? tobbes : egyes),
     B: nyelv === "en" ? (tobb ? "the Tenants" : "the Tenant") : tobb ? "a Bérlők" : "a Bérlő",

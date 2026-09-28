@@ -142,8 +142,22 @@ export function forintNyelven(osszegFt: number, nyelv: Nyelv): string {
   }).format(osszegFt);
 }
 
+/**
+ * Naptári nap emberi alakban.
+ *
+ * **UTC-ben formázunk**, mert a naptári napot is UTC nap elejére vágva
+ * tároljuk. Időzóna nélkül a kiszolgáló sajátja döntött: egy UTC-től nyugatra
+ * futó gépen a 2026-09-05T00:00:00Z esedékesség „2026. szeptember 4."-ének
+ * látszott, tehát minden dátum egy nappal korábbra csúszott az egész
+ * alkalmazásban — az esedékességtől a szerződés keltéig. EU-s régióban ez nem
+ * jön elő, és pont ezért maradt volna észrevétlen addig, amíg valaki át nem
+ * teszi a kiszolgálót.
+ */
 export function datumNyelven(ertek: Date, nyelv: Nyelv): string {
-  return new Intl.DateTimeFormat(helyszin(nyelv), { dateStyle: "medium" }).format(ertek);
+  return new Intl.DateTimeFormat(helyszin(nyelv), {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(ertek);
 }
 
 /**
@@ -156,6 +170,11 @@ export function datumIdovelNyelven(ertek: Date, nyelv: Nyelv): string {
   return new Intl.DateTimeFormat(helyszin(nyelv), {
     dateStyle: "medium",
     timeStyle: "short",
+    // Ez valódi időpont, nem naptári nap, tehát nem UTC-ben írjuk ki. A
+    // kiszolgáló óráját viszont nem hagyhatjuk dönteni: a lapot ő rajzolja
+    // meg, a felhasználó időzónáját nem ismeri. A bérlet magyar, tehát a
+    // magyar idő az, amiben a felek gondolkodnak.
+    timeZone: "Europe/Budapest",
   })
     .format(ertek)
     .replace(/[\u00a0\u202f]/g, " ");

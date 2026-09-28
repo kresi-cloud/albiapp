@@ -27,7 +27,7 @@ export async function GET(
   const { id } = await params;
 
   if (felhasznalo.szerep === "berlo") {
-    const szoveg = await berloiIratSzovege("jegyzokonyv", id, felhasznalo.id);
+    const szoveg = (await berloiIratSzovege("jegyzokonyv", id, felhasznalo.id))?.szoveg ?? null;
     if (!szoveg) {
       return new Response(sz("letoltes.nincs_vegleges_jegyzokonyv"), { status: 404 });
     }

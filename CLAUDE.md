@@ -34,7 +34,12 @@ egyértelműen jobbat.
 - `src/lib` köti össze a domaint az adatbázissal.
 - `src/app` csak megjelenítés és űrlapkezelés.
 - Pénz mindig egész forint (`Int`), soha nem lebegőpontos.
-- Dátumnál naptári napot számolunk, UTC nap elejére vágva.
+- Dátumnál naptári napot számolunk, UTC nap elejére vágva — és **UTC-ben is
+  írjuk ki**. A gép óráját követve egy UTC-től nyugatra futó kiszolgálón
+  minden dátum egy nappal korábbinak látszana, az esedékességtől a szerződés
+  keltéig. Ami valódi időpont (üzenet kelte), az nem naptári nap: az magyar
+  idő szerint megy ki, mert a felek abban gondolkodnak, és a kiszolgáló
+  régiója nem dönthet helyettük.
 
 ## Az egyeztetés alapelve
 
@@ -375,6 +380,18 @@ visel, holott egy fillért sem írtunk elő neki.
 
 Véglegesítéskor a kész szöveget elmentjük (`veglegesSzoveg`). Amit a felek
 aláírtak, azt egy későbbi modulfrissítés nem írhatja át.
+
+**A modulparaméter alapértelmezése annak a modulnak a szövege, amelyik hozza**,
+tehát csak addig szól, amíg az a modul benne van az okiratban. A szerződésen ez
+nem változtat semmit, mert ott a kötelező modulok mindig benne vannak; a
+záradékon viszont igen, mert ott semmi nem kötelező. A tanúsor korábban a záró
+modul bekapcsolása nélkül is ott állt a záradék alján, és a bérbeadó sehol nem
+tudta kikapcsolni.
+
+A **dátumparaméter** nem az űrlap gépi alakjában kerül a szövegbe (`pd`, nem
+`p`): egy aláírandó okiratban a „2027-06-15 napjáig" idegen test, magyarul
+„2027. június 15.", angolul „15 June 2027". Ugyanez az elv a tizedesjegyre: a
+másfél havi óvadék magyarul „1,5 havi", nem „1.5 havi".
 
 A személyes adatok (születési adatok, anyja neve, igazolványszám, adóazonosító)
 kizárólag a dokumentumok kiállításához kellenek. A bérbeadóé külön táblában van
