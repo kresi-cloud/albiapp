@@ -9,6 +9,7 @@ import {
   vallaltHibak,
 } from "@/domain/jegyzokonyv";
 import { igazolasSzovege, type TeljesitesModja } from "@/domain/igazolas";
+import { urlapForint } from "@/domain/penz";
 import { prisma } from "@/lib/db";
 import { jegyzokonyvBetoltes, kezdoTetelek } from "@/lib/jegyzokonyv";
 import { igazolhatoIdoszakok, szerzodesKelte } from "@/lib/igazolas";
@@ -282,11 +283,14 @@ export async function igazolastKiallit(_elozo: Eredmeny, urlap: FormData): Promi
   const teljesitesModja: TeljesitesModja =
     modja === "keszpenz" || modja === "egyeb" ? modja : "atutalas";
 
-  const megadottOsszeg = Number(szoveg(urlap.get("osszegFt")).replace(/\s/g, ""));
+  // A közös összegolvasón megy át: saját `Number()`-olvasásával a „120.000"
+  // százhúsz forintos igazolássá vált, szó nélkül kiállítva.
+  const megadottOsszeg = urlapForint(urlap.get("osszegFt"));
+  if (megadottOsszeg !== null && Number.isNaN(megadottOsszeg)) {
+    return hiba(sz("igazolas.hiba.osszeg"));
+  }
   const osszegFt =
-    Number.isFinite(megadottOsszeg) && megadottOsszeg > 0
-      ? Math.round(megadottOsszeg)
-      : befizetes.osszegFt;
+    megadottOsszeg !== null && megadottOsszeg > 0 ? megadottOsszeg : befizetes.osszegFt;
   if (osszegFt > befizetes.osszegFt) {
     return hiba(sz("igazolas.hiba.tobb", { osszeg: befizetes.osszegFt }));
   }

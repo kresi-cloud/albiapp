@@ -241,23 +241,31 @@ function Kartya({
             }}
           />
         )
-      ) : sajat ? (
-        <p className="mt-2 text-sm text-halvany">
-          {sajat.allapot === "kifogasolt"
-            ? sz("elofizetes.sajat_nyilatkozat.kifogasolt", { indoklas: sajat.indoklas ?? "" })
-            : sz("elofizetes.sajat_nyilatkozat.jovahagyva")}
-        </p>
       ) : (
-        <NyilatkozatUrlap
-          elofizetesId={adat.id}
-          cimkek={{
-            indoklas: sz("elofizetes.mezo.indoklas"),
-            jovahagy: sz("elofizetes.gomb.jovahagy"),
-            jovahagyom: sz("elofizetes.gomb.jovahagyom"),
-            kifogas: sz("elofizetes.gomb.kifogas"),
-            kifogasolom: sz("elofizetes.gomb.kifogasolom"),
-          }}
-        />
+        <>
+          {/* A már megadott nyilatkozat ott marad, de az űrlap is: a válasz
+              megváltoztatható. Egy elkattintott igen után eddig sehol nem
+              lehetett nemet mondani. A már megszületett előírásokat ez nem
+              írja át, a változtatás a következő hónapoktól hat. */}
+          {sajat ? (
+            <p className="mt-2 text-sm text-halvany">
+              {sajat.allapot === "kifogasolt"
+                ? sz("elofizetes.sajat_nyilatkozat.kifogasolt", { indoklas: sajat.indoklas ?? "" })
+                : sz("elofizetes.sajat_nyilatkozat.jovahagyva")}{" "}
+              {sz("elofizetes.nyilatkozat.megvaltoztathato")}
+            </p>
+          ) : null}
+          <NyilatkozatUrlap
+            elofizetesId={adat.id}
+            cimkek={{
+              indoklas: sz("elofizetes.mezo.indoklas"),
+              jovahagy: sz("elofizetes.gomb.jovahagy"),
+              jovahagyom: sz("elofizetes.gomb.jovahagyom"),
+              kifogas: sz("elofizetes.gomb.kifogas"),
+              kifogasolom: sz("elofizetes.gomb.kifogasolom"),
+            }}
+          />
+        </>
       )}
     </div>
   );

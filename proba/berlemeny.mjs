@@ -109,9 +109,14 @@ async function jogviszony(oldal) {
   const kezdet = new Date(Date.UTC(most.getUTCFullYear(), most.getUTCMonth() - 3, 1));
   await ur.locator('select[name="ingatlanId"]').selectOption({ label: NEV });
   await ur.locator('input[name="kezdete"]').fill(kezdet.toISOString().slice(0, 10));
-  await ur.locator('input[name="berletiDijFt"]').fill("195000");
-  await ur.locator('input[name="kozosKoltsegFt"]').fill("15000");
-  await ur.locator('input[name="kaucioFt"]').fill("390000");
+  // Az összegeket szándékosan magyar alakban gépeljük: pontos ezres
+  // tagolással és szóközzel. Az űrlap sokáig `Number()`-rel olvasott, és a
+  // „195.000"-ből 195 forintos jogviszony lett — kilenc hónapnyi 195 forintos
+  // előírással, figyelmeztetés nélkül, utólag javíthatatlanul. Az összeget
+  // ezért nem a mező értékén, hanem a **befizetések lapon** mérjük.
+  await ur.locator('input[name="berletiDijFt"]').fill("195.000");
+  await ur.locator('input[name="kozosKoltsegFt"]').fill("15 000");
+  await ur.locator('input[name="kaucioFt"]').fill("390.000");
   await ur.locator('select[name="rezsiElszamolas"]').selectOption("atalany");
 
   // Előbb nulla átalánnyal: azt el kell utasítani.
@@ -125,7 +130,7 @@ async function jogviszony(oldal) {
   // visszaírás nélkül a React kiürítette az egész űrlapot, vagyis egyetlen
   // hibás mező miatt tíz mezőt kellett volna újragépelni.
   all(
-    (await ur.locator('input[name="berletiDijFt"]').inputValue()) === "195000",
+    (await ur.locator('input[name="berletiDijFt"]').inputValue()) === "195.000",
     "az elutasítás után a bérleti díj megmarad",
   );
   all(
@@ -162,7 +167,11 @@ async function eloirasokLettek(oldal) {
   all((await szakasz.count()) > 0, "az új jogviszony megjelenik a befizetéseknél");
   all(
     (await szakasz.getByText("195 000 Ft").count()) > 0,
-    "a bérleti díj előírás lett, kézi rögzítés nélkül",
+    "a „195.000” alakban beírt bérleti díjból 195 000 Ft-os előírás lett",
+  );
+  all(
+    (await szakasz.getByText("15 000 Ft").count()) > 0,
+    "és a szóközzel tagolt közös költségből 15 000 Ft",
   );
   all(
     (await szakasz.getByText("22 000 Ft").count()) > 0,

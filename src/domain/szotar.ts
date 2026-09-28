@@ -1398,6 +1398,10 @@ export const SZOTAR: Szotar = {
   "elofizetes.gomb.jovahagyom": { hu: "Jóváhagyom…", en: "Approving…" },
   "elofizetes.gomb.kifogas": { hu: "Kifogást emelek", en: "I object" },
   "elofizetes.gomb.kifogasolom": { hu: "Küldöm…", en: "Sending…" },
+  "elofizetes.nyilatkozat.megvaltoztathato": {
+    hu: "A válaszodat meg tudod változtatni; a már kiírt hónapokat ez nem írja át.",
+    en: "You can change your answer; it does not rewrite the months already charged.",
+  },
   "elofizetes.mezo.indoklas": {
     hu: "Miért nem jó így?",
     en: "What is wrong with it?",
@@ -1447,10 +1451,6 @@ export const SZOTAR: Szotar = {
   "elofizetes.hiba.nincs_jogosultsag": {
     hu: "Ez az előfizetés nem a tiéd.",
     en: "This subscription is not yours.",
-  },
-  "elofizetes.hiba.mar_nyilatkozott": {
-    hu: "Erről már nyilatkoztál, és a nyilatkozatot nem írjuk felül.",
-    en: "You have already responded to this, and we do not overwrite your response.",
   },
   "elofizetes.rendezettek": {
     hu: "Rendezett és megszűnt előfizetések ({darab})",
@@ -3166,6 +3166,10 @@ export const SZOTAR: Szotar = {
     hu: "Erre a hónapra {osszeg} Ft érkezett; ennél többet nem igazolok.",
     en: "HUF {osszeg} arrived for this month; I will not certify more than that.",
   },
+  "igazolas.hiba.osszeg": {
+    hu: "Az összeget nem tudom számként olvasni. Írd be számjegyekkel, például 120000.",
+    en: "I cannot read that amount as a number. Type it in digits, for example 120000.",
+  },
   "igazolas.kesz": {
     hu: "Kész az igazolás {nev} részére. Letöltheted és aláírhatod.",
     en: "The certificate for {nev} is ready. You can download and sign it.",
@@ -3400,6 +3404,14 @@ export const SZOTAR: Szotar = {
   "rezsi.hiba.oraallas_negativ": {
     hu: "Az óraállás csak nem negatív szám lehet.",
     en: "A meter reading cannot be negative.",
+  },
+  "rezsi.hiba.olvashatatlan_allas": {
+    hu:
+      "A(z) \u201e{ertek}\u201d állást nem tudom biztosan olvasni: a pont ezres " +
+      "elválasztó vagy tizedesjel? A tizedest írd vesszővel.",
+    en:
+      "I cannot read the reading “{ertek}” with certainty: is the dot a " +
+      "thousands separator or a decimal point? Write decimals with a comma.",
   },
   "rezsi.hiba.meroora_nem_tied": {
     hu: "Ehhez a mérőórához nincs jogosultságod.",

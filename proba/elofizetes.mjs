@@ -83,30 +83,62 @@ async function berbeadoFelvesz(oldal) {
   );
 }
 
-/** A bérlő jóváhagyja, és ettől lesz belőle előírás. */
-async function berloJovahagy(oldal) {
+/**
+ * A bérlő előbb kifogást emel, aztán meggondolja magát.
+ *
+ * A kifogás gombja hónapokig jóváhagyást küldött: a React a szerverakciós gomb
+ * nevét átírja, tehát az `allapot` mező nem ment fel, a kiszolgáló pedig
+ * alapból jóváhagyást mentett. A bérlő nemet mondott, és visszavonhatatlan
+ * igent kapott — visszamenőleg előírásokkal. Ezért a próba **a kifogással
+ * kezd**, és az adatot nézi, nem a gomb feliratát.
+ */
+async function berloNyilatkozik(oldal) {
   await lista(oldal);
   all((await tullogas(oldal)) <= 1, "a bérlői előfizetéslap elfér 360 képponton");
 
   const kartya = oldal.locator("li").filter({ hasText: NEV }).first();
   all(await kartya.isVisible(), "a bérlő látja a bérbeadó új előfizetését");
 
-  await kartya.getByRole("button", { name: "Rendben, jóváhagyom" }).click();
-
-  // Sikerüzenetet szándékosan nem várunk: a jóváhagyott előfizetés átkerül a
-  // rendezettek közé, tehát az űrlap a válasszal együtt eltűnik. Az eredményt
-  // a kártya új állapota mutatja, és azt nézzük meg.
+  // Indoklás nélküli kifogás nincs: a másik fél abból nem tud kiindulni.
+  await kartya.getByRole("button", { name: "Kifogást emelek" }).click();
   await oldal.waitForTimeout(500);
   await lista(oldal);
   await mindetKinyit(oldal);
-  const utana = oldal.locator("li").filter({ hasText: NEV }).first();
+  let utana = oldal.locator("li").filter({ hasText: NEV }).first();
   all(
-    (await utana.innerText()).includes("Jóváhagytad"),
-    "a jóváhagyás után a saját nyilatkozat áll a kártyán",
+    !(await utana.innerText()).includes("Jóváhagytad"),
+    "indoklás nélküli kifogásból nem lesz jóváhagyás",
+  );
+
+  // Most indoklással.
+  await utana.locator('textarea[name="indoklas"]').fill("Nem kérem, nem nézek tévét.");
+  await utana.getByRole("button", { name: "Kifogást emelek" }).click();
+  await oldal.waitForTimeout(500);
+  await lista(oldal);
+  await mindetKinyit(oldal);
+  utana = oldal.locator("li").filter({ hasText: NEV }).first();
+  all(
+    (await utana.innerText()).includes("Kifogást emeltél"),
+    "a kifogás gombja kifogást küld, nem jóváhagyást",
   );
   all(
-    (await utana.locator('button:text("Rendben, jóváhagyom")').count()) === 0,
-    "ugyanarról kétszer nem nyilatkozik",
+    (await utana.innerText()).includes("Nem kérem, nem nézek tévét."),
+    "és az indoklás is odakerül",
+  );
+
+  // A válasz megváltoztatható: egy elkattintott nem nem végleges.
+  all(
+    (await utana.locator('button:text("Rendben, jóváhagyom")').count()) > 0,
+    "a nyilatkozat után is ott az űrlap: a válasz megváltoztatható",
+  );
+  await utana.getByRole("button", { name: "Rendben, jóváhagyom" }).click();
+  await oldal.waitForTimeout(500);
+  await lista(oldal);
+  await mindetKinyit(oldal);
+  utana = oldal.locator("li").filter({ hasText: NEV }).first();
+  all(
+    (await utana.innerText()).includes("Jóváhagytad"),
+    "a meggondolt jóváhagyás felváltja a kifogást",
   );
   all(
     (await utana.innerText()).toLowerCase().includes("jóváhagyva"),
@@ -149,7 +181,7 @@ export async function futtat(oldal) {
 
   await belep(oldal, "anna@pelda.hu");
   await magyarra(oldal);
-  await berloJovahagy(oldal);
+  await berloNyilatkozik(oldal);
 
   await belep(oldal, "berbeado@pelda.hu");
   await magyarra(oldal);

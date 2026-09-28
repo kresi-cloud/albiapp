@@ -16,6 +16,10 @@ import { ALAP, all, belep, magyarra, mindetKinyit } from "./kozos.mjs";
 export const nev = "Az elutasított mentés megőrzi a begépelt adatot";
 
 const JEL = String(Date.now()).slice(-6);
+// Az óraállás mezőjébe számjegy nélküli jelet írunk: a mező szabad szöveg,
+// és a számot ki is olvassuk belőle, tehát egy »nem olvasható 123456«-ból
+// százhuszonháromezer-négyszázötvenhat lenne, és a mentés sikerülne.
+const BETUJEL = JEL.replace(/\d/g, (jegy) => "abcdefghij"[Number(jegy)]);
 
 /** Szövegmező és dátum: az óraállás rögzítése. */
 async function oraallas(oldal) {
@@ -29,10 +33,10 @@ async function oraallas(oldal) {
   await urlap.locator('input[name="datum"]').fill("2026-03-17");
   // Az óraállás mezeje szándékosan szabad szöveg: a helyszínen
   // mértékegységgel együtt írják be. Amit nem tudunk kiolvasni, arra szólunk.
-  await urlap.locator('input[name="ertek"]').fill(`nem olvasható ${JEL}`);
+  await urlap.locator('input[name="ertek"]').fill(`nem olvasható ${BETUJEL}`);
   await urlap.getByRole("button", { name: "Óraállás rögzítése" }).click();
   await oldal
-    .getByText("Az óraállás csak nem negatív szám lehet.")
+    .getByText(/nem tudom biztosan olvasni/)
     .first()
     .waitFor({ timeout: 15000 });
 
@@ -41,7 +45,7 @@ async function oraallas(oldal) {
     "elutasított óraállás után a dátum megmarad",
   );
   all(
-    (await urlap.locator('input[name="ertek"]').inputValue()) === `nem olvasható ${JEL}`,
+    (await urlap.locator('input[name="ertek"]').inputValue()) === `nem olvasható ${BETUJEL}`,
     "elutasított óraállás után a beírt óraállás is megmarad",
   );
 }

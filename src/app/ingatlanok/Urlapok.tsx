@@ -77,7 +77,7 @@ export function IngatlanUrlap({ cimkek }: { cimkek: IngatlanCimkek }) {
         <Mezo
           nev="kozosKoltsegFt"
           cimke={cimkek.kozosKoltseg}
-          tipus="number"
+          tipus={OSSZEGMEZO}
           allapot={allapot}
         />
       </div>
@@ -96,7 +96,7 @@ export function IngatlanUrlap({ cimkek }: { cimkek: IngatlanCimkek }) {
           <Mezo
             nev="beszerzesiArFt"
             cimke={cimkek.beszerzesiAr}
-            tipus="number"
+            tipus={OSSZEGMEZO}
             allapot={allapot}
           />
           <Mezo nev="beszerzesDatuma" cimke={cimkek.beszerzesDatuma} tipus="date"
@@ -164,14 +164,14 @@ export function JogviszonyUrlap({
         <Mezo
           nev="berletiDijFt"
           cimke={cimkek.dij}
-          tipus="number"
+          tipus={OSSZEGMEZO}
           allapot={allapot}
           kotelezo
         />
         <Mezo
           nev="kozosKoltsegFt"
           cimke={cimkek.kozosKoltseg}
-          tipus="number"
+          tipus={OSSZEGMEZO}
           allapot={allapot}
         />
       </div>
@@ -179,7 +179,7 @@ export function JogviszonyUrlap({
       <Mezo
         nev="kaucioFt"
         cimke={cimkek.kaucio}
-        tipus="number"
+        tipus={OSSZEGMEZO}
         allapot={allapot}
       />
 
@@ -202,7 +202,7 @@ export function JogviszonyUrlap({
       <Mezo
         nev="rezsiAtalanyFt"
         cimke={cimkek.atalany}
-        tipus="number"
+        tipus={OSSZEGMEZO}
         allapot={allapot}
       />
 
@@ -252,6 +252,20 @@ function Figyelmeztetesek({ cimke, sorok }: { cimke: string; sorok: string[] }) 
  * intézzük: a közös `megorzo` mező csinálja, ugyanúgy, mint az alkalmazás
  * többi űrlapján. Itt ezen felül annyi van, hogy a hibás mező kerete piros.
  */
+/**
+ * Az összegmező nem `type="number"`, és ez szándékos.
+ *
+ * A bérbeadó magyar alakban gondolkodik: »195.000« vagy »195 000«. A
+ * `number` mező az elsőt érvényesnek látja — százkilencvenöt egész —, a
+ * másodikat pedig érvénytelennek, és akkor a böngésző **üres értéket küld**:
+ * a beírt bérleti díj szótlanul eltűnik. A kiszolgálón az `urlapForint` mind a
+ * két alakot helyesen olvassa, de csak akkor, ha egyáltalán odaér.
+ *
+ * Ezért szövegmező, `inputMode`-dal: telefonon is számbillentyűzet jön fel,
+ * de a szóköz és a pont is beírható marad.
+ */
+const OSSZEGMEZO = "osszeg";
+
 function Mezo({
   nev,
   cimke,
@@ -274,12 +288,14 @@ function Mezo({
   allapot: Eredmeny;
 }) {
   const hibas = allapot.hibak.includes(nev);
+  const osszeg = tipus === OSSZEGMEZO;
 
   return (
     <label className="grid gap-1 text-sm">
       <span className="font-medium">{cimke}</span>
       <MegorzoMezo
-        type={tipus}
+        type={osszeg ? "text" : tipus}
+        inputMode={osszeg ? "decimal" : undefined}
         name={nev}
         defaultValue={alap ?? ""}
         min={min}

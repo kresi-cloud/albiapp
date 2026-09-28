@@ -235,8 +235,24 @@ describe("oraallastKiolvas", () => {
   it("a mértékegységgel együtt beírt állásból kiveszi a számot", () => {
     expect(oraallastKiolvas("2893 kWh")).toBe(2893);
     expect(oraallastKiolvas("91,058 m³")).toBe(91.058);
-    expect(oraallastKiolvas("23.929")).toBe(23.929);
+    expect(oraallastKiolvas("23,929")).toBe(23.929);
     expect(oraallastKiolvas("  1200  ")).toBe(1200);
+  });
+
+  /**
+   * Ezerszeres hiba volt benne. A régi olvasó az első számot vette, tehát a
+   * „1.234,5 m3"-ból 1,234 lett, és az került a mérőóra történetébe az első
+   * rezsielszámolás nyitójaként.
+   */
+  it("a pontot ezres elválasztóként olvassa, ha vessző is van mellette", () => {
+    expect(oraallastKiolvas("1.234,5 m3")).toBe(1234.5);
+  });
+
+  it("a kétértelmű alakra nem tippel: pont után pontosan három jegy", () => {
+    // „23.929" lehet huszonháromezer-kilencszázhuszonkilenc és 23,929 is. A
+    // kettő között ezerszeres a különbség, tehát inkább szólunk.
+    expect(oraallastKiolvas("23.929")).toBeNull();
+    expect(oraallastKiolvas("12.345 kWh")).toBeNull();
   });
 
   it("szám nélküli vagy értelmetlen mezőből nem tippel", () => {
