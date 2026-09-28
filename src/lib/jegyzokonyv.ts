@@ -104,7 +104,12 @@ export async function jegyzokonyvBetoltes(
 export async function kezdoTetelek(jogviszonyId: string) {
   const jogviszony = await prisma.jogviszony.findUnique({
     where: { id: jogviszonyId },
-    include: { ingatlan: { include: { meroorak: true } } },
+    // A jegyzőkönyv mérősorai a véglegesítéssel befagynak, tehát a sorrendjük
+    // is: rendezés nélkül Postgresen két futásra más sorrend jöhet, és amelyik
+    // épp aktuális volt, az került az okiratba.
+    include: {
+      ingatlan: { include: { meroorak: { orderBy: [{ tipus: "asc" }, { id: "asc" }] } } },
+    },
   });
   if (!jogviszony) return [];
 

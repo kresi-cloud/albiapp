@@ -1,5 +1,12 @@
-import { describe, expect, it } from "vitest";
-import { hetNapjaiNyelven, NYELVEK, szovegezo, uzenet, type Szotar } from "../nyelv";
+import { afterEach, describe, expect, it } from "vitest";
+import {
+  datumNyelven,
+  hetNapjaiNyelven,
+  NYELVEK,
+  szovegezo,
+  uzenet,
+  type Szotar,
+} from "../nyelv";
 import { SZOTAR, szovegekNyelvvel } from "../szotar";
 import {
   allapotNeve as betekintoAllapotNeve,
@@ -180,5 +187,41 @@ describe("a hét napjai", () => {
 
   it("a két nyelv nevei nem ugyanazok", () => {
     expect(hetNapjaiNyelven("hu")).not.toEqual(hetNapjaiNyelven("en"));
+  });
+});
+
+describe("a naptári nap nem függ a kiszolgáló időzónájától", () => {
+  // A naptári napot UTC nap elejére vágva tároljuk. Ha a formázás a gép
+  // óráját követi, egy UTC-től nyugatra futó kiszolgálón minden dátum egy
+  // nappal korábbinak látszik: az esedékességtől a szerződés keltéig. EU-s
+  // régióban ez nem jön elő, tehát épp addig maradna észrevétlen, amíg valaki
+  // át nem teszi a kiszolgálót.
+  const EREDETI = process.env.TZ;
+
+  afterEach(() => {
+    process.env.TZ = EREDETI;
+  });
+
+  it("UTC-től nyugatra is a tárolt napot írja ki", () => {
+    process.env.TZ = "America/Los_Angeles";
+    const nap = new Date(Date.UTC(2026, 8, 5));
+    expect(datumNyelven(nap, "hu")).toContain("5.");
+    expect(datumNyelven(nap, "en")).toContain("5");
+  });
+
+  it("UTC-től keletre is", () => {
+    process.env.TZ = "Pacific/Auckland";
+    const nap = new Date(Date.UTC(2026, 8, 5));
+    expect(datumNyelven(nap, "hu")).toContain("5.");
+  });
+
+  it("önpróba: a mérés tényleg az időzónát mozgatja", () => {
+    process.env.TZ = "America/Los_Angeles";
+    const nap = new Date(Date.UTC(2026, 8, 5));
+    // Időzóna nélkül ugyanez a nap a negyedikének látszik — ha ez nem így
+    // lenne, a fenti két mérés mindig igazat adna.
+    expect(
+      new Intl.DateTimeFormat("hu-HU", { dateStyle: "medium" }).format(nap),
+    ).toContain("4.");
   });
 });

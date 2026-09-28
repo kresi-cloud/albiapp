@@ -106,7 +106,7 @@ export async function berloiIratSzovege(
   id: string,
   berloId: string,
   nyelv: "hu" | "en" = "hu",
-): Promise<string | null> {
+): Promise<{ szoveg: string; zaradek: boolean } | null> {
   const szures = {
     id,
     allapot: "veglegesitve",
@@ -118,18 +118,22 @@ export async function berloiIratSzovege(
       where: szures,
       select: { veglegesSzoveg: true },
     });
-    return irat?.veglegesSzoveg ?? null;
+    return irat?.veglegesSzoveg ? { szoveg: irat.veglegesSzoveg, zaradek: false } : null;
   }
 
   const irat = await prisma.szerzodes.findFirst({
     where: szures,
-    select: { veglegesSzoveg: true, veglegesSzovegEn: true },
+    select: { veglegesSzoveg: true, veglegesSzovegEn: true, fajta: true },
   });
   if (!irat) return null;
   // Az angol változat csak akkor jár, ha a véglegesítéskor elkészült. Aki
   // korábban írt alá, annak a szerződéséhez nincs befagyasztott fordítás, és
   // nem generálunk hozzá újat: az már nem ahhoz a szöveghez készülne.
-  return nyelv === "en" ? irat.veglegesSzovegEn : irat.veglegesSzoveg;
+  const szoveg = nyelv === "en" ? irat.veglegesSzovegEn : irat.veglegesSzoveg;
+  if (szoveg === null) return null;
+  // A fajtát a hívó a fájlnévhez kéri: a szerződés és a záradéka két külön
+  // okirat, és két külön néven kell letöltődniük.
+  return { szoveg, zaradek: irat.fajta === "zaradek" };
 }
 
 export type ElszamolasIratAdat = {

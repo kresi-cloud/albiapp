@@ -285,7 +285,7 @@ export const MODULOK: ModulDef[] = [
         : 0;
       const sorok = [
         `${k.BN} a szerződésből eredő ${k.v("kötelezettsége", "kötelezettségeik")} biztosítékául ` +
-          `${osszegSzoveg(k.jogviszony.kaucioFt)}${havi > 0 ? ` – ${havi} havi bérleti díjnak megfelelő – ` : " "}` +
+          `${osszegSzoveg(k.jogviszony.kaucioFt)}${havi > 0 ? ` – ${String(havi).replace(".", ",")} havi bérleti díjnak megfelelő – ` : " "}` +
           `óvadékot ${k.v("fizet", "fizetnek")} a Bérbeadónak.` +
           (k.p("ovadek_birtokbaadas_feltetele") === "igen"
             ? " Az óvadék megfizetése a birtokbaadás és a kulcsátadás feltétele."
@@ -339,7 +339,7 @@ export const MODULOK: ModulDef[] = [
       },
     ],
     szoveg: (k) => {
-      const hatarido = k.p("szunet_bejelentes_hatarido").trim();
+      const hatarido = k.pd("szunet_bejelentes_hatarido");
       const dij = k.psz("szunet_dij");
       const ora = k.psz("szunet_ertesites_ora") || 72;
       return [

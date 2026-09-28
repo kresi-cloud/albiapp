@@ -36,14 +36,23 @@ export async function GET(
   const angol = new URL(keres.url).searchParams.get("nyelv") === "en";
 
   if (felhasznalo.szerep === "berlo") {
-    const szoveg = await berloiIratSzovege("szerzodes", id, felhasznalo.id, angol ? "en" : "hu");
-    if (!szoveg) {
+    const irat = await berloiIratSzovege("szerzodes", id, felhasznalo.id, angol ? "en" : "hu");
+    if (!irat) {
       return new Response(
         sz(angol ? "letoltes.nincs_forditas" : "letoltes.nincs_vegleges_szerzodes"),
         { status: 404 },
       );
     }
-    return valasz(szoveg, angol ? "lease-agreement-translation" : "berleti-szerzodes");
+    return valasz(
+      irat.szoveg,
+      irat.zaradek
+        ? angol
+          ? "lease-agreement-addendum-translation"
+          : "szerzodes-zaradek"
+        : angol
+          ? "lease-agreement-translation"
+          : "berleti-szerzodes",
+    );
   }
 
   const betoltott = await szerzodesBemenet(id, felhasznalo.id);
@@ -59,15 +68,29 @@ export async function GET(
     if (!szoveg) return new Response(sz("letoltes.nincs_forditas"), { status: 404 });
     return valasz(
       szoveg,
-      betoltott.allapot === "veglegesitve"
-        ? "lease-agreement-translation"
-        : "lease-agreement-draft-translation",
+      betoltott.fajta === "zaradek"
+        ? betoltott.allapot === "veglegesitve"
+          ? "lease-agreement-addendum-translation"
+          : "lease-agreement-addendum-draft-translation"
+        : betoltott.allapot === "veglegesitve"
+          ? "lease-agreement-translation"
+          : "lease-agreement-draft-translation",
     );
   }
 
   const szoveg = betoltott.veglegesSzoveg ?? okiratSzovege(betoltott.bemenet);
+  // A záradék külön okirat, tehát külön fájlnév is jár neki: mindkettő
+  // „berleti-szerzodes.txt" néven jött le, és a második felülírta az elsőt a
+  // letöltések mappájában — pont azt a kettőt, aminek egymás mellett kell
+  // állnia.
   const fajlnev =
-    betoltott.allapot === "veglegesitve" ? "berleti-szerzodes" : "berleti-szerzodes-tervezet";
+    betoltott.fajta === "zaradek"
+      ? betoltott.allapot === "veglegesitve"
+        ? "szerzodes-zaradek"
+        : "szerzodes-zaradek-tervezet"
+      : betoltott.allapot === "veglegesitve"
+        ? "berleti-szerzodes"
+        : "berleti-szerzodes-tervezet";
 
   return valasz(szoveg, fajlnev);
 }

@@ -472,3 +472,76 @@ describe("zaradekSzovege", () => {
     expect(zaradek()).toContain(BERBEADO.nev);
   });
 });
+
+describe("a modulparaméterek az okiratban", () => {
+  it("a dátumparaméter nem a gépi alakjában kerül a szövegbe", () => {
+    // Az űrlap „2027-06-15"-öt küld, és eddig ez állt az aláírandó
+    // szerződésben: „2027-06-15 napjáig". Egy okiratban a dátum magyarul
+    // „2027. június 15.".
+    const kesz = szakaszok(
+      bemenet({
+        valasztottModulok: ["nyari_szunet"],
+        parameterek: { szunet_bejelentes_hatarido: "2027-06-15" },
+      }),
+    );
+    const szoveg = kesz.flatMap((szakasz) => szakasz.bekezdesek).join(" ");
+    expect(szoveg).toContain("2027. június 15. napjáig");
+    expect(szoveg).not.toContain("2027-06-15");
+  });
+
+  it("az angol példányban is a maga alakjában", () => {
+    const kesz = szakaszok(
+      bemenet({
+        valasztottModulok: ["nyari_szunet"],
+        parameterek: { szunet_bejelentes_hatarido: "2027-06-15" },
+      }),
+      "en",
+    );
+    const szoveg = kesz.flatMap((szakasz) => szakasz.bekezdesek).join(" ");
+    expect(szoveg).toContain("15 June 2027");
+    expect(szoveg).not.toContain("2027-06-15");
+  });
+
+  it("a havi óvadék magyar tizedesjegyet kap", () => {
+    // 225 000 / 150 000 = 1,5. Tizedesponttal („1.5 havi") az okirat idegen
+    // nyelven beszélne a magyar olvasóhoz.
+    const kesz = szakaszok(
+      bemenet({
+        valasztottModulok: ["ovadek"],
+        jogviszony: { ...JOGVISZONY, kaucioFt: 225000 },
+      }),
+    );
+    const szoveg = kesz.flatMap((szakasz) => szakasz.bekezdesek).join(" ");
+    expect(szoveg).toContain("1,5 havi bérleti díjnak megfelelő");
+    expect(szoveg).not.toContain("1.5 havi");
+  });
+});
+
+describe("a záradék nem örököl alapértelmezést a be nem kapcsolt modultól", () => {
+  const ALAP_OKIRAT = {
+    megnevezes: "Bérleti szerződés – Belvárosi garzon",
+    kelte: new Date(Date.UTC(2026, 7, 29)),
+    veglegesitve: new Date(Date.UTC(2026, 7, 30)),
+  };
+
+  function zaradekSzoveg(valasztottModulok: string[]) {
+    return zaradekSzovege(
+      bemenet({ fajta: "zaradek", alap: ALAP_OKIRAT, valasztottModulok }),
+    );
+  }
+
+  it("záró modul nélkül nincs tanúsor", () => {
+    // A `tanuk` alapértelmezése „igen", és a záró modul a szerződésben
+    // kötelező. Záradéknál viszont semmi nem kötelező: a tanúsor ott állt az
+    // okirat alján úgy, hogy a bérbeadó sehol nem tudta kikapcsolni.
+    expect(zaradekSzoveg(["elofizetesek"])).not.toContain("tanúk előtt");
+  });
+
+  it("bekapcsolva viszont ott van", () => {
+    expect(zaradekSzoveg(["elofizetesek", "zaro_rendelkezesek"])).toContain("tanúk előtt");
+  });
+
+  it("a szerződésben ettől semmi nem változik: a záró modul kötelező", () => {
+    expect(szerzodesSzovege(bemenet())).toContain("tanúk előtt");
+  });
+});

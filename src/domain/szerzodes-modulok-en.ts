@@ -188,7 +188,7 @@ export const MODULOK_EN: Record<string, ModulEn> = {
         : 0;
       return [
         `${k.BN} shall pay the Landlord a security deposit of ` +
-          `${osszegSzovegEn(k.jogviszony.kaucioFt)}${havi > 0 ? `, corresponding to ${havi} months' rent,` : ""} ` +
+          `${osszegSzovegEn(k.jogviszony.kaucioFt)}${havi > 0 ? `, corresponding to ${havi} ${havi === 1 ? "month's" : "months'"} rent,` : ""} ` +
           `as security for ${k.v("his or her", "their")} obligations under this agreement.` +
           (k.p("ovadek_birtokbaadas_feltetele") === "igen"
             ? " Payment of the security deposit is a condition of handover and of the delivery of the keys."
@@ -208,7 +208,7 @@ export const MODULOK_EN: Record<string, ModulEn> = {
   nyari_szunet: {
     cim: "Suspension of use and reduced rent",
     szoveg: (k) => {
-      const hatarido = k.p("szunet_bejelentes_hatarido").trim();
+      const hatarido = k.pd("szunet_bejelentes_hatarido");
       const dij = k.psz("szunet_dij");
       const ora = k.psz("szunet_ertesites_ora") || 72;
       return [

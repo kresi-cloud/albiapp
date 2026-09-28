@@ -92,6 +92,16 @@ export type Kontextus = {
   p: (kulcs: string) => string;
   /** Paraméterérték számként; nem szám esetén 0. */
   psz: (kulcs: string) => number;
+  /**
+   * Dátumparaméter az okirat nyelvén kiírva.
+   *
+   * A `p` az űrlapról jött nyers `2027-06-15` alakot adja vissza, és ez így is
+   * került az okiratba: „2027-06-15 napjáig". Egy aláírandó szerződésben a
+   * dátum magyarul „2027. június 15.", angolul „15 June 2027" — a gépi alak
+   * ott idegen test. Üres paraméternél üres szöveg, hogy a hívó eldönthesse,
+   * mit ír helyette.
+   */
+  pd: (kulcs: string) => string;
   /** Egyes vagy többes szám a bérlők száma szerint. */
   v: (egyes: string, tobbes: string) => string;
   /** "a Bérlő" vagy "a Bérlők". */
