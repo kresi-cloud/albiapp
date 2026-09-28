@@ -48,6 +48,29 @@ describe("egyeztetesbolTeendok", () => {
     expect(new Set(teendok.map((teendo) => teendo.kulcs)).size).toBe(2);
   });
 
+  it("mindkét fél a saját lapjára jut a teendőjéről", () => {
+    // A teendő egész kártyája hivatkozás. A bérlőnek adott `/befizetesek`
+    // a `kotelezoSzerep("berbeado")`-n akadt fenn, és visszadobta a `/berlo`-ra:
+    // a bérlő minden befizetéses teendője ugyanoda vitt.
+    const teendok = egyeztetesbolTeendok([
+      {
+        jogviszonyId: "jv-1",
+        eloirtTetelId: "e-1",
+        idoszak: "2026-09",
+        allapot: "vitas",
+        elteresOka: null,
+        elteresFt: -5000,
+        osszegFt: 180000,
+        esedekesseg: new Date(Date.UTC(2026, 8, 5)),
+      },
+    ]);
+    const hova = Object.fromEntries(
+      teendok.map((teendo) => [teendo.cimzett, teendo.hivatkozas]),
+    );
+    expect(hova.berbeado).toMatch(/^\/befizetesek\?/);
+    expect(hova.berlo).toMatch(/^\/berlo\?/);
+  });
+
   it("az előírás nélküli utalás csak a bérbeadó teendője", () => {
     const teendok = egyeztetesbolTeendok([
       {

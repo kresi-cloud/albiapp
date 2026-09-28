@@ -194,7 +194,9 @@ export async function nyilvanosNezet(
   // Minden előírástípus benne van, nem csak a bérleti díj: a közös költséget és
   // a rezsiátalányt ugyanaz a szülő fizeti, tehát ugyanúgy látnia kell.
   const tetelenkent: BetekintoTetel[] = betekinto.jogviszony.eloirtTetelek
-    .filter((tetel) => tetel.esedekesseg <= most)
+    // A friss hónap az esedékesség napján még nem késik: az egyeztetés is csak
+    // másnaptól számolja hiányzónak, és a két lap nem mondhat mást.
+    .filter((tetel) => tetel.esedekesseg < most)
     .map((tetel) => {
       const sor = tetelhez.get(tetel.id);
       const berbeadoi = sor?.berbeadoiIgazolasId
@@ -208,6 +210,22 @@ export async function nyilvanosNezet(
           keses: 0,
           eloirtFt: tetel.osszegFt,
           erkezettFt: 0,
+        };
+      }
+
+      // A vitás tétel nem számít teljesítettnek, és ezt ki is mondtuk. Eddig
+      // csak a bérbeadói oldalt néztük: ha volt mögötte beérkezés, a tétel
+      // `egyezik` vagy `elter` lett — egy vitás hónap tehát bekerült a
+      // „határidőig megérkezett" számba, miközben ugyanaz a hónap mindkét fél
+      // lapján „Vitás"-ként állt. Az `elter` magában rendben van: ott a két fél
+      // egyetért abban, mi történt.
+      if (sor?.allapot === "vitas") {
+        return {
+          idoszak: tetel.idoszak,
+          allapot: "vitas" as const,
+          keses: 0,
+          eloirtFt: tetel.osszegFt,
+          erkezettFt: berbeadoi.osszegFt,
         };
       }
 

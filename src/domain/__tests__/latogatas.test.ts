@@ -112,6 +112,18 @@ describe("a látogatás állapota", () => {
   it("a mai nap még nem múlt el", () => {
     expect(allapot(latogatas({ nap: MA }), MA)).toBe("varakozik");
   });
+
+  it("fiók nélküli bérlőknél nem »bemehet a kulccsal«, hanem nincs kit kérdezni", () => {
+    // Üres listánál minden várt válasz megvolt, tehát rögtön a »kulccsal«
+    // ág jött: »Senki nem lesz itthon, de a bérbeadó bemehet a kulccsal« —
+    // hozzájárulás nélkül, teendő nélkül. Az üres lista nem hozzájárulás,
+    // hanem hiányzó kérdés.
+    expect(allapot(latogatas({ varhatoValaszolok: [] }), MA)).toBe("nincs_kit_kerdezni");
+  });
+
+  it("a lemondás és az elmúlt nap ezt is felülírja", () => {
+    expect(allapot(latogatas({ varhatoValaszolok: [], lemondva: MA }), MA)).toBe("lemondva");
+  });
 });
 
 describe("a látogatás mondata", () => {

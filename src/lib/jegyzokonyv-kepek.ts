@@ -196,13 +196,28 @@ export async function kepekSzama(jegyzokonyvId: string): Promise<number> {
   return prisma.jegyzokonyvKep.count({ where: { jegyzokonyvId } });
 }
 
-/** A saját kép törlése, amíg a jegyzőkönyv tervezet. A másik félét senki. */
+/**
+ * A saját kép törlése, amíg a jegyzőkönyv tervezet, és amíg a másik fél nem
+ * szólt hozzá. A másik fél képét senki.
+ *
+ * A megerősítés utáni törlés az album értelmét venné el. Kimondtuk, hogy **a
+ * kifogás nem törli a képet**, mert mindkét állítás ott kell maradjon
+ * egymás mellett — egy fél által kitakarított album pont annyit érne, mint a
+ * bemondás. Ez fordítva is igaz: ha a feltöltő a kifogás után törölhetné a
+ * képet, ugyanoda jutnánk, csak a másik oldalról. A megerősítés ugyanígy: az
+ * már a másik fél saját nyilatkozata, és nem a feltöltőé elvenni.
+ *
+ * Aki cserélni akar, új képet tölt fel; a régi mellette marad, és a
+ * két állítás különbsége pont az, ami utólag számít.
+ */
 export async function kepetTorol(felhasznaloId: string, kepId: string): Promise<boolean> {
   const eredmeny = await prisma.jegyzokonyvKep.deleteMany({
     where: {
       id: kepId,
       feltoltoId: felhasznaloId,
       jegyzokonyv: { allapot: "tervezet" },
+      megerositoId: null,
+      kifogas: null,
     },
   });
   return eredmeny.count > 0;

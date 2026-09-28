@@ -63,6 +63,7 @@ model Felhasznalo {
   hibaUzenetei            HibaUzenet[]            @relation("HibaUzenetei")
   betekintoi              Betekinto[]             @relation("Betekintoi")
   feltoltottKepei         JegyzokonyvKep[]        @relation("KepFeltoltoje")
+  berloiIgazolasai        BerloiIgazolas[]        @relation("BerloiIgazolasSzerzoje")
   megerositettKepei       JegyzokonyvKep[]        @relation("KepMegerositoje")
   beszelgetesei           BeszelgetesResztvevo[]
   kuldottUzenetei         BeszelgetesUzenet[]     @relation("UzenetSzerzoje")
@@ -409,13 +410,19 @@ model EloirtTetel {
 model BerloiIgazolas {
   id              String   @id @default(cuid())
   jogviszonyId    String
+  /// Melyik bérlő mondta. Ennélkül a törlés csak a jogviszonyra tudott
+  /// szűrni, tehát a lakótárs a másik lakótárs nyilatkozatát is visszavonta
+  /// volna — a saját oldalát mindenki maga adja meg, és maga is veszi vissza.
+  /// Null a régi sorokon, amik a mező előtt születtek.
+  szerzoId        String?
   utalasDatuma    DateTime
   osszegFt        Int
   kozlemeny       String?
   igazolasUtvonal String?
   rogzitve        DateTime @default(now())
 
-  jogviszony Jogviszony @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  jogviszony Jogviszony   @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+  szerzo     Felhasznalo? @relation("BerloiIgazolasSzerzoje", fields: [szerzoId], references: [id])
 
   @@index([jogviszonyId, utalasDatuma])
 }

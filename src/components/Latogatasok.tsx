@@ -37,6 +37,9 @@ import { szovegekNyelvvel } from "@/domain/szotar";
 
 const SZIN: Record<Allapot, Allapotszin> = {
   varakozik: "figyelem",
+  // Nem „rendben": a kulccsal való bejutáshoz hozzájárulás kell, és itt még
+  // nincs kitől kérni. Ez tennivaló, nem elrendezett állapot.
+  nincs_kit_kerdezni: "figyelem",
   idopont_gond: "gond",
   itthon_lesz: "rendben",
   kulccsal: "rendben",
@@ -46,6 +49,7 @@ const SZIN: Record<Allapot, Allapotszin> = {
 
 const CIMKE: Record<Allapot, string> = {
   varakozik: "teendo.kozeli",
+  nincs_kit_kerdezni: "latogatas.cimke.nincs_kit_kerdezni",
   idopont_gond: "latogatas.valasz.nem_jo_idopont",
   itthon_lesz: "latogatas.valasz.itthon_leszek",
   kulccsal: "latogatas.valasz.kulccsal_beengedheto",

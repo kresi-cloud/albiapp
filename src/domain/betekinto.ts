@@ -37,7 +37,14 @@ import { uzenet, type Uzenet } from "./nyelv";
  */
 export type BetekintoTetel = {
   idoszak: string;
-  allapot: "egyezik" | "elter" | "hianyzik";
+  /**
+   * `elter` és `vitas` nem ugyanaz, és a különbségük itt is számít: az
+   * `elter`-nél a két fél egyetért abban, mi történt, csak nem az előírt
+   * összeg érkezett — az megérkezett. A `vitas` viszont azt jelenti, hogy a
+   * két fél adata nem fedi egymást, és ki is mondtuk: a vitás tétel sem
+   * számít teljesítettnek.
+   */
+  allapot: "egyezik" | "elter" | "vitas" | "hianyzik";
   /** Naptári nap az esedékességhez képest; negatív, ha korábban érkezett. */
   keses: number;
   /** Amennyit erre a hónapra elő volt írva. */
@@ -55,8 +62,10 @@ export type Osszesites = {
   kesve: number;
   /** Nem érkezett meg, vagy nem volt beazonosítható. */
   hianyzo: number;
-  /** Az összeg eltért az előírástól. */
+  /** Az összeg eltért az előírástól, de a két fél ugyanazt mondja. */
   eltero: number;
+  /** A két fél adata nem fedi egymást. Nem számít teljesítettnek. */
+  vitas: number;
   /** A késések átlaga napban, csak a késve érkezettekre. Nulla, ha nincs ilyen. */
   atlagosKeses: number;
   /** A leghosszabb késés napban. */
@@ -80,6 +89,7 @@ export const URES: Osszesites = {
   kesve: 0,
   hianyzo: 0,
   eltero: 0,
+  vitas: 0,
   atlagosKeses: 0,
   leghosszabbKeses: 0,
   sorozat: 0,
@@ -89,11 +99,16 @@ export const URES: Osszesites = {
 };
 
 function hataridore(tetel: BetekintoTetel): boolean {
-  return tetel.allapot !== "hianyzik" && tetel.keses <= 0;
+  return tetel.allapot !== "hianyzik" && tetel.allapot !== "vitas" && tetel.keses <= 0;
 }
 
 /** Hónapon belül a rosszabbik állapot dönt: egy rendezetlen tétel is rendezetlen hónap. */
-const SULY: Record<BetekintoTetel["allapot"], number> = { egyezik: 0, elter: 1, hianyzik: 2 };
+const SULY: Record<BetekintoTetel["allapot"], number> = {
+  egyezik: 0,
+  elter: 1,
+  vitas: 2,
+  hianyzik: 3,
+};
 
 /**
  * Tételenkénti sorokból havi sorok. Egy hónapra három előírás is eshet
@@ -118,8 +133,12 @@ export function havonta(sorok: BetekintoTetel[]): BetekintoTetel[] {
       allapot: SULY[sor.allapot] > SULY[eddigi.allapot] ? sor.allapot : eddigi.allapot,
       // A hiányzó tétel nem hoz késést: nincs mihez képest késnie.
       keses: Math.max(
-        sor.allapot === "hianyzik" ? Number.NEGATIVE_INFINITY : sor.keses,
-        eddigi.allapot === "hianyzik" ? Number.NEGATIVE_INFINITY : eddigi.keses,
+        sor.allapot === "hianyzik" || sor.allapot === "vitas"
+          ? Number.NEGATIVE_INFINITY
+          : sor.keses,
+        eddigi.allapot === "hianyzik" || eddigi.allapot === "vitas"
+          ? Number.NEGATIVE_INFINITY
+          : eddigi.keses,
       ),
       eloirtFt: eddigi.eloirtFt + sor.eloirtFt,
       erkezettFt: eddigi.erkezettFt + sor.erkezettFt,
@@ -144,7 +163,10 @@ export function osszesit(tetelek: BetekintoTetel[]): Osszesites {
 
   const sorrend = [...tetelek].sort((a, b) => b.idoszak.localeCompare(a.idoszak));
   const kesesek = sorrend
-    .filter((tetel) => tetel.allapot !== "hianyzik" && tetel.keses > 0)
+    .filter(
+      (tetel) =>
+        tetel.allapot !== "hianyzik" && tetel.allapot !== "vitas" && tetel.keses > 0,
+    )
     .map((tetel) => tetel.keses);
 
   let sorozat = 0;
@@ -162,6 +184,7 @@ export function osszesit(tetelek: BetekintoTetel[]): Osszesites {
     kesve: kesesek.length,
     hianyzo: sorrend.filter((tetel) => tetel.allapot === "hianyzik").length,
     eltero: sorrend.filter((tetel) => tetel.allapot === "elter").length,
+    vitas: sorrend.filter((tetel) => tetel.allapot === "vitas").length,
     atlagosKeses:
       kesesek.length === 0
         ? 0
@@ -209,6 +232,9 @@ export function mondatok(osszesites: Osszesites): Uzenet[] {
   if (osszesites.eltero > 0) {
     sorok.push(uzenet("betekinto.mondat.eltero", { eltero: osszesites.eltero }));
   }
+  if (osszesites.vitas > 0) {
+    sorok.push(uzenet("betekinto.mondat.vitas", { vitas: osszesites.vitas }));
+  }
   if (osszesites.sorozat > 1) {
     sorok.push(uzenet("betekinto.mondat.sorozat", { sorozat: osszesites.sorozat }));
   }
@@ -220,6 +246,7 @@ export function mondatok(osszesites: Osszesites): Uzenet[] {
 export function haviAllapotNeve(tetel: BetekintoTetel): Uzenet {
   if (tetel.allapot === "hianyzik") return uzenet("betekinto.havi.hianyzik");
   if (tetel.keses > 0) return uzenet("betekinto.havi.kesve", { napok: tetel.keses });
+  if (tetel.allapot === "vitas") return uzenet("betekinto.havi.vitas");
   if (tetel.allapot === "elter") return uzenet("betekinto.havi.elter");
   return uzenet("betekinto.havi.rendben");
 }

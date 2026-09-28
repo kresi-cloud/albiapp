@@ -209,27 +209,54 @@ export async function jegyzokonyvetVeglegesit(_elozo: Eredmeny, urlap: FormData)
       await tranzakcio.oraallas.create({ data: oraallas });
     }
 
+    // Kinek szól a vállalás teendője: annak, aki vállalta.
+    //
+    // Eddig feltétel nélkül a bérbeadóé volt, a bérlő vállalása is — a bérlő
+    // tehát nem látta és nem is tudta lezárni azt, amit ő ígért meg a
+    // birtokbaadáskor. Pont azért tárolt teendő ez, mert valaki vállalta.
+    const fiokosBerlok = (
+      await tranzakcio.jogviszonyBerlo.findMany({
+        where: { jogviszonyId: betoltott.jogviszonyId, berloId: { not: null } },
+        select: { berloId: true },
+        orderBy: [{ sorrend: "asc" }, { id: "asc" }],
+      })
+    ).map((sor) => sor.berloId as string);
+
     for (const [index, vallalas] of vallalasok.entries()) {
-      const kulcs = `jegyzokonyv:${jegyzokonyvId}:${index}`;
       // A tárolt teendő szövege a bérbeadó akkori nyelvén készül: egy elmentett
       // mondat nem tud később nyelvet váltani, a származtatott teendő viszont igen.
       const felelosNeve = sz(
         vallalas.felelos === "berbeado" ? "teendo.vallalo.berbeado" : "teendo.vallalo.berlo",
       );
-      await tranzakcio.teendo.upsert({
-        where: { kulcs },
-        create: {
-          kulcs,
-          cimzettId: berbeado.id,
-          jogviszonyId: betoltott.jogviszonyId,
-          tipus: "jegyzokonyvi_vallalas",
-          cim: vallalas.megnevezes,
-          leiras: sz("teendo.jegyzokonyvi_vallalas", { felelos: felelosNeve }),
-          esedekesseg: vallalas.hatarido as Date,
-          hivatkozas: `/jegyzokonyvek/${jegyzokonyvId}`,
-        },
-        update: { esedekesseg: vallalas.hatarido as Date },
-      });
+
+      // A bérlői vállalás minden fiókos bérlőnél megjelenik: a lakótársak
+      // együtt laknak, és a vállalás a lakásról szól. Fiók nélküli bérlőnek
+      // nincs hol megjelennie; ilyenkor a bérbeadóé marad, hogy ne tűnjön el.
+      const cimzettek =
+        vallalas.felelos === "berbeado" || fiokosBerlok.length === 0
+          ? [berbeado.id]
+          : fiokosBerlok;
+
+      for (const cimzettId of cimzettek) {
+        const kulcs =
+          cimzettId === berbeado.id
+            ? `jegyzokonyv:${jegyzokonyvId}:${index}`
+            : `jegyzokonyv:${jegyzokonyvId}:${index}:${cimzettId}`;
+        await tranzakcio.teendo.upsert({
+          where: { kulcs },
+          create: {
+            kulcs,
+            cimzettId,
+            jogviszonyId: betoltott.jogviszonyId,
+            tipus: "jegyzokonyvi_vallalas",
+            cim: vallalas.megnevezes,
+            leiras: sz("teendo.jegyzokonyvi_vallalas", { felelos: felelosNeve }),
+            esedekesseg: vallalas.hatarido as Date,
+            hivatkozas: `/jegyzokonyvek/${jegyzokonyvId}`,
+          },
+          update: { esedekesseg: vallalas.hatarido as Date },
+        });
+      }
     }
   });
 
