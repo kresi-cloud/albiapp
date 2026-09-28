@@ -1,4 +1,3 @@
-import { FAJTA_NEVE } from "@/domain/jegyzokonyv";
 import { datumNyelven } from "@/domain/nyelv";
 import { szovegekNyelvvel } from "@/domain/szotar";
 import { Album } from "@/app/jegyzokonyv-kepek/Album";
@@ -36,7 +35,12 @@ export default async function BerloiJegyzokonyvek() {
             className="rounded-kartya border border-keret bg-felulet p-4"
           >
             <h2 className="font-medium">
-              {FAJTA_NEVE[jegyzokonyv.fajta] ?? jegyzokonyv.fajta} · {jegyzokonyv.ingatlan}
+              {/* Szótárkulcs, nem a `FAJTA_NEVE` Record: az az okirat magyar
+                  szövegéhez való, és angol felületen is magyarul írta ki a
+                  fajtát — ugyanaz a jegyzőkönyv a dokumentumtárban már
+                  „Handover" volt. A kétnyelvűségi kapu ezt nem fogja meg,
+                  mert nem literál. */}
+              {sz(`jegyzokonyv.fajta.${jegyzokonyv.fajta}`)} · {jegyzokonyv.ingatlan}
             </h2>
             <p className="mt-1 text-sm text-halvany">
               {datumNyelven(jegyzokonyv.idopont, nyelv)}

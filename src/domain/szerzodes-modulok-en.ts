@@ -97,7 +97,7 @@ export const MODULOK_EN: Record<string, ModulEn> = {
         tarolo === "nem_resze"
           ? "The use of the storage unit belonging to the Property is not covered by this agreement; the Parties may agree on it only in a separate agreement."
           : tarolo === "resze"
-            ? "The use of the storage unit belonging to the Property is granted to the Tenant in consideration of the rent."
+            ? `The use of the storage unit belonging to the Property is granted to ${k.B} in consideration of the rent.`
             : "";
 
       return [elso, masodik, harmadik].filter(Boolean);
@@ -193,8 +193,8 @@ export const MODULOK_EN: Record<string, ModulEn> = {
           (k.p("ovadek_birtokbaadas_feltetele") === "igen"
             ? " Payment of the security deposit is a condition of handover and of the delivery of the keys."
             : ""),
-        "The security deposit may be used to cover overdue rent, the utility and other costs borne by the Tenant, " +
-          "damage attributable to the Tenant or to persons admitted to the Property by the Tenant, deterioration " +
+        `The security deposit may be used to cover overdue rent, the utility and other costs borne by ${k.B}, ` +
+          `damage attributable to ${k.B} or to persons admitted to the Property by ${k.B}, deterioration ` +
           "beyond the natural wear and tear of proper use, missing or damaged inventory items and keys, and the " +
           "documented cost of any necessary cleaning.",
         "The security deposit bears no interest and may not be set off against the rent, in particular against the " +
@@ -334,7 +334,7 @@ export const MODULOK_EN: Record<string, ModulEn> = {
           `${k.BN} shall reimburse the Landlord for the charges of these subscriptions, amounting at the time of ` +
             `signing to ${nevsorEn(berbeadoiak.map((sor) => `${nev(sor)}: ${osszegSzovegEn(sor.haviDijFt)} per month`))}. ` +
             "The Landlord shall give written notice of any change in the supplier's charges; the changed charge is " +
-            "payable by the Tenant from the month following that notice.",
+            `payable by ${k.B} from the month following that notice.`,
           "The subscription contract was concluded by the Landlord, only the Landlord may terminate it, and the " +
             `Landlord is liable towards the supplier. ${k.BN} may not bring a claim against the Landlord based on the ` +
             "quality of the service, but the Landlord is obliged to report such a claim to the supplier.",
@@ -350,7 +350,7 @@ export const MODULOK_EN: Record<string, ModulEn> = {
           k.p("elofizetes_berlo_vegen") === "igen"
             ? `${k.BN} shall terminate or transfer to another address any subscription held in ${k.v("his or her", "their")} own ` +
                 "name no later than the day the Property is returned, and shall provide proof thereof. Failing that, " +
-                "the resulting charges and costs are borne by the Tenant."
+                `the resulting charges and costs are borne by ${k.B}.`
             : "The Parties shall agree separately on the fate of the subscription when the Property is returned.",
         );
       }
@@ -514,10 +514,11 @@ export const MODULOK_EN: Record<string, ModulEn> = {
         "Other material breach: if a Party fails to perform a material obligation despite a written warning setting an " +
           "appropriate additional deadline, the other Party may terminate the agreement in writing, with effect " +
           "proportionate to the gravity of the breach, in accordance with the Civil Code and the Housing Act.",
-        `The Tenant moving out without legal grounds, returning the keys unilaterally or ceasing to use the Property ` +
+        `${k.BN} moving out without legal grounds, returning the keys unilaterally or ceasing to use the Property ` +
           `does not in itself terminate the agreement and does not release ${k.v("him or her", "them")} from the payment ` +
-          `obligation. The Tenant's obligation subsists at most until the end of the fixed term, or until a new tenant ` +
-          "accepted by the Landlord takes possession; the Landlord may not claim double rent for the same period.",
+          `obligation. ${k.v("The Tenant's", "The Tenants'")} obligation subsists at most until the end of the fixed term, ` +
+          "or until a new tenant accepted by the Landlord takes possession; the Landlord may not claim double rent for " +
+          "the same period.",
       ];
       if (k.berlok.length > 1) {
         sorok.push(

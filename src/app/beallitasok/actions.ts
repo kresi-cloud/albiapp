@@ -6,12 +6,17 @@ import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { adatkeresLatta } from "@/lib/szemelyes-adatok";
+import { adoazonositoGyanus, igazolvanyGyanus } from "@/domain/szemelyes-adatok";
 
 export type MentesEredmeny = {
   allapot: "ures" | "kesz" | "hiba";
   uzenet: string;
   hibak: string[];
 };
+
+function hiba(uzenet: string, hibak: string[] = []): MentesEredmeny {
+  return { allapot: "hiba", uzenet, hibak };
+}
 
 export async function beallitasokatMent(
   _elozo: MentesEredmeny,
@@ -80,13 +85,26 @@ export async function berbeadoiAdatokatMent(
   const berbeado = await kotelezoSzerep("berbeado");
   const { sz } = await szovegek();
 
+  // A bérbeadó saját igazolvány- és adóazonosító száma ugyanúgy az okiratba
+  // kerül, mint a bérlőé: ugyanaz az ellenőrzés jár neki. Az
+  // `adoazonositoGyanus` és a hozzá írt szótársor eddig sehol nem volt
+  // bekötve — megírva, tesztelve, de a felhasználóhoz soha nem ért el.
+  const igazolvanySzam = szoveg(urlap.get("igazolvanySzam"));
+  if (igazolvanyGyanus(igazolvanySzam)) {
+    return hiba(sz("adatok.hiba.igazolvany"), ["igazolvanySzam"]);
+  }
+  const adoazonosito = szoveg(urlap.get("adoazonosito"));
+  if (adoazonositoGyanus(adoazonosito)) {
+    return hiba(sz("adatok.hiba.adoazonosito"), ["adoazonosito"]);
+  }
+
   const adatok = {
     szuletesiHely: szoveg(urlap.get("szuletesiHely")) || null,
     szuletesiIdo: napotOlvas(urlap.get("szuletesiIdo")),
     anyjaNeve: szoveg(urlap.get("anyjaNeve")) || null,
     lakcim: szoveg(urlap.get("lakcim")) || null,
-    igazolvanySzam: szoveg(urlap.get("igazolvanySzam")) || null,
-    adoazonosito: szoveg(urlap.get("adoazonosito")) || null,
+    igazolvanySzam: igazolvanySzam || null,
+    adoazonosito: adoazonosito || null,
     telefon: szoveg(urlap.get("telefon")) || null,
     bankszamla: szoveg(urlap.get("bankszamla")) || null,
     bank: szoveg(urlap.get("bank")) || null,

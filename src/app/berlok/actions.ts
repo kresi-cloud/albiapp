@@ -6,6 +6,7 @@ import { emailNekLatszik, emailtNormalizal, meghivoLejarata } from "@/domain/bel
 import { datumNyelven } from "@/domain/nyelv";
 import { prisma } from "@/lib/db";
 import { meghivoToken } from "@/lib/meghivo";
+import { igazolvanyGyanus } from "@/domain/szemelyes-adatok";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { jogviszonytLezar, jogviszonytUjranyit } from "@/lib/jogviszony";
@@ -176,6 +177,15 @@ export async function berloAdataitMenti(_elozo: Eredmeny, urlap: FormData): Prom
     return hiba(sz("berlok.hiba.email_gyanus"));
   }
 
+  // Ugyanaz a mező, ugyanaz az ellenőrzés, akárki gépeli. Eddig csak a bérlő
+  // saját lapján futott: a bérbeadó által beírt elgépelt igazolványszám szó
+  // nélkül bekerült a szerződésbe — épp az a hiba, ami miatt a bérlő a magáét
+  // maga adja meg.
+  const igazolvanySzam = szoveg(urlap.get("igazolvanySzam"));
+  if (igazolvanyGyanus(igazolvanySzam)) {
+    return hiba(sz("adatok.hiba.igazolvany"), ["igazolvanySzam"]);
+  }
+
   await prisma.jogviszonyBerlo.update({
     where: { id: berlo.id },
     data: {
@@ -185,7 +195,7 @@ export async function berloAdataitMenti(_elozo: Eredmeny, urlap: FormData): Prom
       szuletesiIdo: napotOlvas(urlap.get("szuletesiIdo")),
       anyjaNeve: szoveg(urlap.get("anyjaNeve")) || null,
       lakcim: szoveg(urlap.get("lakcim")) || null,
-      igazolvanySzam: szoveg(urlap.get("igazolvanySzam")) || null,
+      igazolvanySzam: igazolvanySzam || null,
       telefon: szoveg(urlap.get("telefon")) || null,
       // Aki utoljára írta, az a forrás. A bérlő belépés után felülírhatja.
       adatokForrasa: "berbeado",

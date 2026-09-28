@@ -545,3 +545,28 @@ describe("a záradék nem örököl alapértelmezést a be nem kapcsolt modultó
     expect(szerzodesSzovege(bemenet())).toContain("tanúk előtt");
   });
 });
+
+describe("a fordítás is tudja, hány bérlő van", () => {
+  // A kapu ékezetet és sorszámot mér, a nyelvtani számot nem: a felmondási
+  // pont angolul egyes számban állt akkor is, amikor magyarul többesben.
+  it("két bérlőnél a felmondási pont többes számban áll", () => {
+    const kesz = szakaszok(
+      bemenet({ berlok: [BERLO_EGY, BERLO_KETTO], valasztottModulok: ["felmondas"] }),
+      "en",
+    );
+    const szoveg = kesz.flatMap((szakasz) => szakasz.bekezdesek).join(" ");
+    expect(szoveg).toContain("The Tenants moving out without legal grounds");
+    expect(szoveg).toContain("The Tenants' obligation");
+    expect(szoveg).not.toContain("The Tenant moving out");
+  });
+
+  it("egy bérlőnél viszont egyes számban", () => {
+    const kesz = szakaszok(
+      bemenet({ berlok: [BERLO_EGY], valasztottModulok: ["felmondas"] }),
+      "en",
+    );
+    const szoveg = kesz.flatMap((szakasz) => szakasz.bekezdesek).join(" ");
+    expect(szoveg).toContain("The Tenant moving out without legal grounds");
+    expect(szoveg).toContain("The Tenant's obligation");
+  });
+});
