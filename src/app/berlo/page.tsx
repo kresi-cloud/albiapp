@@ -236,7 +236,12 @@ export default async function BerloiNezet() {
         // Ugyanaz a gond, mint a bérbeadói oldalon: egy tanév után annyi a
         // tétel, hogy telefonon percekig kell görgetni ahhoz az egyhez, amivel
         // dolga van. Amit már mindkét fél letudott, az összecsukva áll.
-        const tetelek = nezet.egyeztetesek.filter((sor) => sor.eloirtTetelId !== null);
+        // Az előírás nélküli sorok közül a sajátja a bérlőé: egy ablakon kívül
+        // rögzített utalás eddig sehol nem látszott, tehát vissza sem lehetett
+        // vonni. A bérbeadó előírás nélküli beérkezése viszont az ő listája.
+        const tetelek = nezet.egyeztetesek.filter(
+          (sor) => sor.eloirtTetelId !== null || sor.berloiIgazolasId !== null,
+        );
         const { soronVan, rendezett } = csoportositva(tetelek, "berlo");
         const bizonylatos = rendezett.filter(
           (sor) => sor.eloirtTetelId && bizonylatSorai(sor.eloirtTetelId).length > 0,
@@ -282,7 +287,7 @@ export default async function BerloiNezet() {
         function Tetel(sor: (typeof tetelek)[number]) {
           return (
                     <li
-                      key={sor.eloirtTetelId ?? ""}
+                      key={sor.eloirtTetelId ?? sor.berloiIgazolasId ?? ""}
                       data-idoszak={sor.idoszak ?? ""}
                       data-osszeg={sor.osszegFt}
                       className="rounded-kartya border border-keret bg-felulet p-4"
@@ -290,14 +295,22 @@ export default async function BerloiNezet() {
                       <div className="flex flex-wrap items-baseline justify-between gap-2">
                         <span className="font-medium">
                           {sor.idoszak ? `${honapNyelven(sor.idoszak, nyelv)} · ` : ""}
-                          {forintNyelven(sor.osszegFt, nyelv)}
+                          {/* Előírás nélküli sornál a saját nyilatkozat összege
+                              a fejléc: a nulla forint azt sugallná, hogy semmit
+                              nem utalt. */}
+                          {forintNyelven(
+                            sor.eloirtTetelId ? sor.osszegFt : (sor.igazolasOsszegFt ?? 0),
+                            nyelv,
+                          )}
                         </span>
                         <Allapotjelzo allapot={sor.allapot} nyelv={nyelv} />
                       </div>
                       <p className="mt-1 text-sm text-halvany">
-                        {sz("berlo.esedekesseg", {
-                          nap: datumNyelven(sor.esedekesseg, nyelv),
-                        })}{" "}
+                        {sor.eloirtTetelId
+                          ? `${sz("berlo.esedekesseg", {
+                              nap: datumNyelven(sor.esedekesseg, nyelv),
+                            })} `
+                          : ""}
                         {u(sor.magyarazat)}
                       </p>
                       {sor.reszletezes ? (

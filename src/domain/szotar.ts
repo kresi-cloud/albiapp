@@ -128,6 +128,10 @@ export const SZOTAR: Szotar = {
     hu: "Beérkezett utalás, amihez nem tartozik előírt tétel.",
     en: "A transfer arrived that does not belong to any scheduled item.",
   },
+  "egyeztetes.nincs_eloiras_berloi": {
+    hu: "A bérlő utalása, amihez nem tartozik előírt tétel.",
+    en: "A transfer the tenant recorded that does not belong to any scheduled item.",
+  },
 
   // --- Bizonylat (csak vitás befizetéshez)
   "bizonylat.cim": {

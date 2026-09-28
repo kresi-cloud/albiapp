@@ -137,7 +137,8 @@ function nezetteAlakit(
         idoszak: eloiras?.idoszak ?? null,
         tipus: eloiras?.tipus ?? null,
         osszegFt: eloiras?.osszegFt ?? 0,
-        esedekesseg: eloiras?.esedekesseg ?? berbeadoi?.erkezesDatuma ?? ma,
+        esedekesseg:
+          eloiras?.esedekesseg ?? berbeadoi?.erkezesDatuma ?? igazolas?.utalasDatuma ?? ma,
         berbeadoiOsszegFt: berbeadoi?.megerkezett ? berbeadoi.osszegFt : null,
         berbeadoiDatuma: berbeadoi?.megerkezett ? berbeadoi.erkezesDatuma : null,
         igazolasOsszegFt: igazolas?.osszegFt ?? null,
