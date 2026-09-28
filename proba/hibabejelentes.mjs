@@ -164,4 +164,64 @@ export async function futtat(oldal) {
     (await oldal.getByText("Lezárt bejelentéseim").count()) > 0,
     "a megerősítés után a bejelentés lezárul",
   );
+
+  // --- A bérbeadó saját bejelentését ő maga zárja le
+  //
+  // A megerősítés azért a bérlőé, mert a bejelentő és az elhárító két
+  // különböző ember. Ha viszont a bérbeadó jelentette be — fiók nélküli
+  // bérlőnél, vagy két bérlet között —, nincs kit megkérdezni, és a hiba
+  // örökre „elhárítva" állapotban ragadt, teendővel együtt.
+  const SAJAT = "A kapucsengő nem szól a második emeleten";
+  await belep(oldal, "berbeado@pelda.hu");
+  await magyarra(oldal);
+  await oldal.goto(`${ALAP}/hibak`);
+  await mindetKinyit(oldal);
+
+  const sajatUrlap = oldal.locator('form:has(textarea[name="leiras"])').first();
+  await sajatUrlap.locator('input[name="targy"]').fill(SAJAT);
+  await sajatUrlap.locator('textarea[name="leiras"]').fill("A lakó szólt telefonon.");
+  await sajatUrlap.getByRole("button", { name: "Bejelentem" }).click();
+  await oldal.waitForLoadState("networkidle");
+
+  await oldal.goto(`${ALAP}/hibak`);
+  await mindetKinyit(oldal);
+  const sajatKartya = oldal.locator("li", { hasText: SAJAT }).first();
+  await sajatKartya.waitFor({ timeout: 15000 });
+  all((await sajatKartya.count()) > 0, "a bérbeadó saját bejelentése megjelenik nála");
+
+  // Bejelentettből előbb átvétel, utána elhárítás — ugyanaz az út, mint a
+  // bérlő bejelentésénél.
+  await sajatKartya.getByRole("button", { name: "Átvettem" }).click();
+  await oldal.waitForLoadState("networkidle");
+  await oldal.goto(`${ALAP}/hibak`);
+  await mindetKinyit(oldal);
+  await oldal
+    .locator("li", { hasText: SAJAT })
+    .first()
+    .getByRole("button", { name: "Elhárítottam" })
+    .click();
+  await oldal.waitForLoadState("networkidle");
+  await oldal.goto(`${ALAP}/hibak`);
+  await mindetKinyit(oldal);
+  const elharitott = oldal.locator("li", { hasText: SAJAT }).first();
+  all(
+    (await elharitott.getByRole("button", { name: "Rendben van, lezárom" }).count()) > 0,
+    "a saját bejelentését le is tudja zárni",
+  );
+  await elharitott.getByRole("button", { name: "Rendben van, lezárom" }).click();
+  await oldal.waitForLoadState("networkidle");
+
+  await oldal.goto(`${ALAP}/hibak`);
+  await mindetKinyit(oldal);
+  const lezart = oldal.locator("li", { hasText: SAJAT }).first();
+  all(
+    (await lezart.getByRole("button", { name: "Rendben van, lezárom" }).count()) === 0,
+    "a lezárás után nincs mit lezárni rajta",
+  );
+
+  // A negatív ágat — hogy a bérlő bejelentését a bérbeadó nem zárhatja le —
+  // a fenti „a bérbeadó nem zárhatja le saját maga" állítás már méri, és ott
+  // a tétel állapotát nem mozgatjuk meg. Itt megismételve elhárítottra kellene
+  // léptetni a példaadat nyitott hibáját, és onnantól a nyelvi próba nem
+  // találna nyitott hibából származó teendőt a bérbeadó kezdőlapján.
 }

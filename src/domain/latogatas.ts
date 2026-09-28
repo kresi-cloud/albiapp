@@ -103,11 +103,28 @@ export type Allapot =
  * előtt: **egy kifogás egymagában is dönt**, mert a lakótárs nem szavazhatja le
  * azt, akinek nem jó — ugyanaz az elv, mint az előfizetés jóváhagyásánál.
  */
+/**
+ * Azok a nyilatkozatok, amelyek most is számítanak.
+ *
+ * A jogviszonyról levett bérlő nyilatkozata ott marad a látogatáson, de a
+ * lakásba már nem ő megy haza: a korábbi kifogása egymagában tovább döntött,
+ * és a bérbeadó hiába kérdezte meg a mostani bérlőt, a látogatás „nem jó
+ * időpont" maradt. Aki nincs a várt válaszolók között, annak a szava sem
+ * dönt — ugyanaz az elv, mint a beszélgetésnél: a résztvevői sor egymagában
+ * nem jogosultság.
+ */
+export function ervenyesValaszok(latogatas: Latogatas): Latogatas["valaszok"] {
+  const varhatok = new Set(latogatas.varhatoValaszolok.map((sor) => sor.id));
+  return latogatas.valaszok.filter((sor) => varhatok.has(sor.berloId));
+}
+
 export function allapot(latogatas: Latogatas, ma: Date): Allapot {
   if (latogatas.lemondva) return "lemondva";
   if (napKulonbseg(ma, latogatas.nap) < 0) return "elmult";
 
-  if (latogatas.valaszok.some((sor) => sor.valasz === "nem_jo_idopont")) {
+  const valaszok = ervenyesValaszok(latogatas);
+
+  if (valaszok.some((sor) => sor.valasz === "nem_jo_idopont")) {
     return "idopont_gond";
   }
 
@@ -120,13 +137,13 @@ export function allapot(latogatas: Latogatas, ma: Date): Allapot {
   if (latogatas.varhatoValaszolok.length === 0) return "nincs_kit_kerdezni";
 
   // Fiók nélküli bérlőt nem lehet megkérdezni; akit meg lehet, attól várunk.
-  const valaszolt = new Set(latogatas.valaszok.map((sor) => sor.berloId));
+  const valaszolt = new Set(valaszok.map((sor) => sor.berloId));
   const hianyzik = latogatas.varhatoValaszolok.filter(
     (sor) => !valaszolt.has(sor.id),
   );
   if (hianyzik.length > 0) return "varakozik";
 
-  if (latogatas.valaszok.some((sor) => sor.valasz === "itthon_leszek")) {
+  if (valaszok.some((sor) => sor.valasz === "itthon_leszek")) {
     return "itthon_lesz";
   }
   return "kulccsal";
@@ -136,7 +153,7 @@ export function allapot(latogatas: Latogatas, ma: Date): Allapot {
 export function hianyzoValaszolok(
   latogatas: Latogatas,
 ): { id: string; nev: string }[] {
-  const valaszolt = new Set(latogatas.valaszok.map((sor) => sor.berloId));
+  const valaszolt = new Set(ervenyesValaszok(latogatas).map((sor) => sor.berloId));
   return latogatas.varhatoValaszolok.filter((sor) => !valaszolt.has(sor.id));
 }
 
@@ -289,12 +306,20 @@ export type Kifogas = { mezo: string; uzenet: Uzenet };
  * értelmes sorrendben, különben a bérlő egy olyan ablakot lát, ami visszafelé
  * megy.
  */
-export function bejelentestEllenoriz(bemenet: {
-  megnevezes: string;
-  nap: Date | null;
-  idoablakTol: string;
-  idoablakIg: string;
-}): Kifogas[] {
+export function bejelentestEllenoriz(
+  bemenet: {
+    megnevezes: string;
+    nap: Date | null;
+    idoablakTol: string;
+    idoablakIg: string;
+  },
+  /**
+   * A mai nap. Nélküle a múltba is be lehetett jelenteni látogatást: a sor
+   * rögtön „elmúlt" állapotban született, nyilatkozni sem lehetett rá, és a
+   * bérlő csak annyit látott, hogy megjelent egy már lejárt kérdés.
+   */
+  ma?: Date,
+): Kifogas[] {
   const kifogasok: Kifogas[] = [];
 
   if (bemenet.megnevezes.trim() === "") {
@@ -305,6 +330,8 @@ export function bejelentestEllenoriz(bemenet: {
   }
   if (!bemenet.nap || Number.isNaN(bemenet.nap.getTime())) {
     kifogasok.push({ mezo: "nap", uzenet: uzenet("latogatas.hiba.nap") });
+  } else if (ma && napKulonbseg(ma, bemenet.nap) < 0) {
+    kifogasok.push({ mezo: "nap", uzenet: uzenet("latogatas.hiba.mult") });
   }
 
   const ora = /^\d{1,2}:\d{2}$/;

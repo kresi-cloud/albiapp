@@ -313,3 +313,48 @@ describe("a lemondás joga", () => {
     ).toBe(false);
   });
 });
+
+describe("a levett bérlő nyilatkozata már nem dönt", () => {
+  // A jogviszonyról levett bérlő válasza ott marad a látogatáson, de a
+  // lakásba már nem ő megy haza. A korábbi kifogása egymagában tovább
+  // döntött: a bérbeadó hiába kérdezte meg a mostani bérlőt, a látogatás
+  // „nem jó időpont" maradt.
+  const levettel = latogatas({
+    varhatoValaszolok: [{ id: "b2", nev: "Uj berlo" }],
+    valaszok: [valasz("b1", "nem_jo_idopont"), valasz("b2", "itthon_leszek")],
+  });
+
+  it("a kifogása nem billenti át az állapotot", () => {
+    expect(allapot(levettel, MA)).toBe("itthon_lesz");
+  });
+
+  it("a mostani bérlő válaszát viszont beszámítjuk", () => {
+    const csakLevett = latogatas({
+      varhatoValaszolok: [{ id: "b2", nev: "Uj berlo" }],
+      valaszok: [valasz("b1", "itthon_leszek")],
+    });
+    expect(allapot(csakLevett, MA)).toBe("varakozik");
+    expect(hianyzoValaszolok(csakLevett).map((sor) => sor.nev)).toEqual(["Uj berlo"]);
+  });
+});
+
+describe("múltbeli napra nem jelentünk be látogatást", () => {
+  it("a tegnapi napot elutasítja", () => {
+    const kifogasok = bejelentestEllenoriz(
+      { megnevezes: "Kemenysepro", nap: TEGNAP, idoablakTol: "", idoablakIg: "" },
+      MA,
+    );
+    expect(kifogasok.map((sor) => sor.mezo)).toEqual(["nap"]);
+  });
+
+  it("a mai és a holnapi rendben van", () => {
+    for (const nap of [MA, HOLNAP]) {
+      expect(
+        bejelentestEllenoriz(
+          { megnevezes: "Kemenysepro", nap, idoablakTol: "", idoablakIg: "" },
+          MA,
+        ),
+      ).toEqual([]);
+    }
+  });
+});

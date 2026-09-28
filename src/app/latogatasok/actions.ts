@@ -90,7 +90,7 @@ export async function latogatastBejelent(
     idoablakIg: szoveg(urlap.get("idoablakIg")),
   };
 
-  const kifogasok = bejelentestEllenoriz(bemenet);
+  const kifogasok = bejelentestEllenoriz(bemenet, new Date());
   if (kifogasok.length > 0) {
     const { u } = await szovegek();
     return hiba(

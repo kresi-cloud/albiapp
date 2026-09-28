@@ -277,7 +277,10 @@ export async function beszelgetestIndit(
 
   // A címzettek nem az űrlapból nyernek jogosultságot: csak az számít, aki
   // ennek a jogviszonynak tényleg a tagja, és van fiókja.
-  const ervenyes = cimzettek.filter((id) =>
+  // Az űrlap kézzel szerkeszthető, és ismételt címzettel a résztvevői
+  // egyediségi kulcs dobott: a beszélgetés indítása 500-zal szállt el. Egy
+  // duplán megadott címzett ugyanaz az egy ember.
+  const ervenyes = [...new Set(cimzettek)].filter((id) =>
     tarsasag.resztvevok.some((tag) => tag.felhasznaloId === id && tag.felhasznaloId !== ki.id),
   );
   if (ervenyes.length === 0) return { hiba: "nincs_cimzett" };
