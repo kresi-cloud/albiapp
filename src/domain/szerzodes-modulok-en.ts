@@ -31,8 +31,9 @@ const HONAPOK_EN = [
   "July", "August", "September", "October", "November", "December",
 ];
 
+/** Ugyanaz, mint a magyar katalógusban: csak a jogviszonyon beállított összeg. */
 function kozosKoltseg(k: Kontextus): number {
-  return k.jogviszony.kozosKoltsegFt || k.ingatlan.kozosKoltsegFt || 0;
+  return k.jogviszony.kozosKoltsegFt || 0;
 }
 
 /**
@@ -297,8 +298,8 @@ export const MODULOK_EN: Record<string, ModulEn> = {
 
       const kk = kozosKoltseg(k);
       sorok.push(
-        k.p("kozos_koltseg_kit_terhel") === "berlo"
-          ? `The condominium common charge is borne by ${k.B}${kk > 0 ? `, amounting at the time of signing to ${osszegSzovegEn(kk)} per month` : ""}. ` +
+        kk > 0
+          ? `The condominium common charge is borne by ${k.B}, amounting at the time of signing to ${osszegSzovegEn(kk)} per month. ` +
               "The Landlord shall give written notice of any change in the common charge."
           : "The condominium common charge is borne by the Landlord.",
       );

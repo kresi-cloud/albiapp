@@ -11,7 +11,7 @@
  *  - az éves keret az elszámolt napokra arányosítva jár, nem egészben.
  */
 
-import { napKulonbseg, szam } from "./penz";
+import { napEleje, napKulonbseg, szam } from "./penz";
 
 export type Dijszabas = {
   kedvezmenyesArFiller: number;
@@ -66,9 +66,57 @@ export function keretAzIdoszakra(evesKeret: number | null, napok: number): numbe
   return (evesKeret * napok) / EV_NAPJAI;
 }
 
-/** Havi alapdíj napra bontva, a teljes éves díjból számolva. */
-export function alapdijResz(alapdijFt: number, napok: number): number {
-  return Math.round((alapdijFt * 12 * napok) / EV_NAPJAI);
+/**
+ * Havi díj arányosítása két nap között, **naptári hónapokkal**.
+ *
+ * Korábban ez `havi * 12 * napok / 365` volt, vagyis minden hónapot 30,42
+ * naposnak vett. Ebből az lett, hogy egy teljes hónapra sem a havi díj jött ki:
+ * egy tízezres alapdíj szeptember 1-től október 1-ig 9863 Ft, januárban
+ * 10 192 Ft, februárban 9205 Ft. A bérlő viszont a havi díjat ismeri, és a
+ * részletezés is „x Ft / hó"-t ír — egy teljes hónapra tehát pontosan annyit
+ * kell számolnunk.
+ *
+ * A havi előírások modulja (`eloirasok.ts`) ugyanezt teszi a hónap tényleges
+ * napjaival; két helyen két szabály előbb-utóbb azt adta volna, hogy ugyanarra
+ * a hónapra a két lap más összeget mutat.
+ *
+ * Az időszak a kezdőnapot tartalmazza, a záró napot nem: szeptember 1-től
+ * október 1-ig pontosan egy hónap, ahogy a leolvasások közti fogyasztás is
+ * ennyi.
+ */
+export function haviAranyos(haviFt: number, tol: Date, ig: Date): number {
+  const kezdet = napEleje(tol);
+  const veg = napEleje(ig);
+  if (veg.getTime() <= kezdet.getTime()) return 0;
+
+  let arany = 0;
+  let ev = kezdet.getUTCFullYear();
+  let honap = kezdet.getUTCMonth();
+
+  while (true) {
+    const honapElso = Date.UTC(ev, honap, 1);
+    const kovetkezoElso = Date.UTC(ev, honap + 1, 1);
+    if (honapElso >= veg.getTime()) break;
+
+    const elso = Math.max(honapElso, kezdet.getTime());
+    const utolso = Math.min(kovetkezoElso, veg.getTime());
+    if (utolso > elso) {
+      arany += (utolso - elso) / (kovetkezoElso - honapElso);
+    }
+
+    honap += 1;
+    if (honap > 11) {
+      honap = 0;
+      ev += 1;
+    }
+  }
+
+  return Math.round(haviFt * arany);
+}
+
+/** Havi alapdíj a két leolvasás közti időszakra, naptári hónapokkal. */
+export function alapdijResz(alapdijFt: number, tol: Date, ig: Date): number {
+  return haviAranyos(alapdijFt, tol, ig);
 }
 
 function egesz(ertek: number): string {
@@ -97,7 +145,7 @@ export function merooratElszamol(
 ): MerooraElszamolas {
   const napok = Math.max(0, napKulonbseg(elozo.datum, jelenlegi.datum));
   const nyersFogyasztas = fogyasztas(elozo, jelenlegi);
-  const alapdijReszFt = alapdijResz(dijszabas.alapdijFt, napok);
+  const alapdijReszFt = alapdijResz(dijszabas.alapdijFt, elozo.datum, jelenlegi.datum);
 
   if (nyersFogyasztas < 0) {
     return {
@@ -174,6 +222,12 @@ export function merooratElszamol(
 }
 
 export type Tetel = {
+  /**
+   * Az „atalany" és a „kozos_koltseg" fajtát ma már nem termeli semmi: azok
+   * havi előírások. A típusban mégis bent maradnak, mert a kiadott elszámolás
+   * tételei el vannak mentve, és egy korábban kiadott okirat sorát ugyanúgy
+   * ki kell tudni írni és az adóösszesítőben nem mértként besorolni.
+   */
   fajta: "meroora" | "alapdij" | "atalany" | "kozos_koltseg";
   megnevezes: string;
   mennyiseg: number | null;
@@ -194,22 +248,24 @@ export type ElszamolasBemenet = {
     nyito: Oraallas;
     zaro: Oraallas;
   }[];
-  /** Havi átalány, ha a jogviszony így számol el. */
-  atalanyFt?: number;
-  /** Havi közös költség, ha a bérlőre hárul. */
-  kozosKoltsegFt?: number;
 };
 
 export type Elszamolas = { tetelek: Tetel[]; osszegFt: number; napok: number };
 
-/** Havi díj arányosítva az elszámolt napokra. */
-function haviResz(haviFt: number, napok: number): number {
-  return Math.round((haviFt * 12 * napok) / EV_NAPJAI);
-}
-
 /**
  * Az elszámolás összege a kerekített tételek összege, nem a kerekítetlen
  * végösszeg: így a bérlő össze tudja adni a sorokat, és ugyanazt kapja.
+ *
+ * **A rezsiátalány és a közös költség nincs benne**, pedig korábban volt. Az a
+ * kettő havi előírásként megy (`domain/eloirasok.ts`), és ha az elszámolás is
+ * felvette őket, a bérlő ugyanazt kétszer fizette: Anna példaadatában két
+ * hónapra 56 537 Ft közös költség 28 000 helyett, és az adóösszesítő is
+ * kétszer számolta bevételnek. Egy tételnek egy helye van, és a havi előírás
+ * az a hely: azon megy végig a befizetés-egyeztetés is.
+ *
+ * Az elszámolás ezért kizárólag mért fogyasztást tartalmaz. Ebből következik,
+ * hogy átalányos és „közös költségben" módban nincs mit elszámolni — ezt a
+ * `lib/rezsi.ts` mondja ki a bérbeadónak, nem egy üres lista.
  */
 export function elszamolastKeszit(bemenet: ElszamolasBemenet): Elszamolas {
   const napok = Math.max(0, napKulonbseg(bemenet.idoszakKezdete, bemenet.idoszakVege));
@@ -249,32 +305,6 @@ export function elszamolastKeszit(bemenet: ElszamolasBemenet): Elszamolas {
     }
   }
 
-  if (bemenet.atalanyFt && bemenet.atalanyFt > 0) {
-    const osszegFt = haviResz(bemenet.atalanyFt, napok);
-    tetelek.push({
-      fajta: "atalany",
-      megnevezes: "Rezsiátalány",
-      mennyiseg: null,
-      mertekegyseg: null,
-      reszletezes: `${forintSzoveg(bemenet.atalanyFt)} / hó, ${napok} napra arányosítva.`,
-      osszegFt,
-      merooraId: null,
-    });
-  }
-
-  if (bemenet.kozosKoltsegFt && bemenet.kozosKoltsegFt > 0) {
-    const osszegFt = haviResz(bemenet.kozosKoltsegFt, napok);
-    tetelek.push({
-      fajta: "kozos_koltseg",
-      megnevezes: "Közös költség",
-      mennyiseg: null,
-      mertekegyseg: null,
-      reszletezes: `${forintSzoveg(bemenet.kozosKoltsegFt)} / hó, ${napok} napra arányosítva.`,
-      osszegFt,
-      merooraId: null,
-    });
-  }
-
   return {
     tetelek,
     osszegFt: tetelek.reduce((osszeg, tetel) => osszeg + tetel.osszegFt, 0),
@@ -282,13 +312,24 @@ export function elszamolastKeszit(bemenet: ElszamolasBemenet): Elszamolas {
   };
 }
 
-/** A díjszabásból az, ami az adott napon érvényes volt. */
-export function ervenyesDijszabas<T extends { ervenyesTol: Date }>(
+/**
+ * A díjszabásból az, ami az adott napon érvényes volt.
+ *
+ * Azonos `ervenyesTol` napnál az azonosító dönt, a nagyobb felé — ugyanaz a
+ * szabály, mint a lekérdezések rendezésénél. Enélkül két egy napon érvényes
+ * díjszabásból futásonként más jött ki, és ugyanannak az elszámolásnak két
+ * futáson két összege lett volna.
+ */
+export function ervenyesDijszabas<T extends { ervenyesTol: Date; id?: string }>(
   dijszabasok: T[],
   napon: Date,
 ): T | null {
   const jeloltek = dijszabasok
     .filter((dijszabas) => dijszabas.ervenyesTol.getTime() <= napon.getTime())
-    .sort((a, b) => b.ervenyesTol.getTime() - a.ervenyesTol.getTime());
+    .sort(
+      (a, b) =>
+        b.ervenyesTol.getTime() - a.ervenyesTol.getTime() ||
+        (b.id ?? "").localeCompare(a.id ?? ""),
+    );
   return jeloltek[0] ?? null;
 }

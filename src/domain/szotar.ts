@@ -3360,6 +3360,38 @@ export const SZOTAR: Szotar = {
     hu: "{nev}: nincs erre az időszakra érvényes díjszabás.",
     en: "{nev}: there is no tariff in force for this period.",
   },
+  "rezsi.kihagyott.nem_meres": {
+    hu:
+      "Ez a bérlet {mod} számol el, tehát nincs mit mérni: az összeg havi " +
+      "előírásként megy a befizetések lapra. Tételes elszámolás csak mérőóra " +
+      "szerinti bérletnél készül.",
+    en:
+      "This tenancy is settled {mod}, so there is nothing to meter: the amount " +
+      "goes to the payments page as a monthly charge. An itemised settlement is " +
+      "only prepared for metered tenancies.",
+  },
+  "rezsi.hiba.nem_meres": {
+    hu:
+      "Ez a bérlet {mod} számol el. Tételes elszámolást csak mérőóra szerinti " +
+      "bérletre készítünk — az átalányt és a közös költséget a havi előírás " +
+      "viszi, és ha itt is kiadnánk, a bérlő kétszer fizetné.",
+    en:
+      "This tenancy is settled {mod}. An itemised settlement is only prepared " +
+      "for metered tenancies: the flat rate and the service charge are carried " +
+      "by the monthly charge, and issuing them here would bill the tenant twice.",
+  },
+  "rezsi.hiba.jovobeli_allas": {
+    hu: "Jövőbeli napra nem lehet óraállást rögzíteni.",
+    en: "A reading cannot be recorded for a future date.",
+  },
+  "rezsi.hiba.nagyobb_allas": {
+    hu:
+      "Egy későbbi, {nap} napi leolvasás {ertek} állást mutat, ami ennél " +
+      "kisebb. Az óra nem forog visszafelé: nézd meg, melyik szám a helyes.",
+    en:
+      "A later reading on {nap} shows {ertek}, which is lower than this. The " +
+      "meter does not run backwards: check which figure is right.",
+  },
   "rezsi.hiba.lepj_be": {
     hu: "Lépj be a rögzítéshez.",
     en: "Sign in to record a reading.",

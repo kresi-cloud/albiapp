@@ -24,8 +24,17 @@ const IGEN_NEM = [
   { ertek: "nem", cimke: "Nem" },
 ];
 
+/**
+ * A közös költség, **amit a bérlő visel** — tehát kizárólag a jogviszonyon
+ * beállított összeg.
+ *
+ * Korábban ez visszaesett az ingatlanon rögzített összegre, ha a jogviszonyon
+ * nulla állt. Az ingatlané viszont a bérbeadó saját költsége: abból a
+ * szerződésben olyan mondat lett, hogy a bérlő havi 30 000 forintot visel,
+ * miközben az alkalmazás egy fillért sem írt elő neki.
+ */
 function kozosKoltseg(k: Kontextus): number {
-  return k.jogviszony.kozosKoltsegFt || k.ingatlan.kozosKoltsegFt || 0;
+  return k.jogviszony.kozosKoltsegFt || 0;
 }
 
 export const MODULOK: ModulDef[] = [
@@ -416,16 +425,6 @@ export const MODULOK: ModulDef[] = [
         alapertelmezes: "5",
       },
       {
-        kulcs: "kozos_koltseg_kit_terhel",
-        cimke: "A társasházi közös költséget ki viseli?",
-        tipus: "valaszt",
-        alapertelmezes: "berbeado",
-        valaszthatok: [
-          { ertek: "berbeado", cimke: "A bérbeadó" },
-          { ertek: "berlo", cimke: "A bérlő" },
-        ],
-      },
-      {
         kulcs: "hirkozles_hozzajarulas",
         cimke: "Internet és tévé csak előzetes hozzájárulással létesíthető?",
         tipus: "valaszt",
@@ -463,10 +462,15 @@ export const MODULOK: ModulDef[] = [
         );
       }
 
+      // Ki viseli a közös költséget: nem kérdés, hanem adat. A jogviszonyon
+      // beállított összeg az, amit az alkalmazás havonta elő is ír a bérlőnek;
+      // korábban ez külön paraméter volt, „a bérbeadó" alapértelmezéssel, és a
+      // szerződés így az aláírt szövegében mást mondott, mint amit az
+      // alkalmazás minden hónapban követelt.
       const kk = kozosKoltseg(k);
       sorok.push(
-        k.p("kozos_koltseg_kit_terhel") === "berlo"
-          ? `A társasházi közös költséget ${k.B} ${k.v("viseli", "viselik")}${kk > 0 ? `, amelynek mértéke a szerződéskötéskor ${osszegSzoveg(kk)} havonta` : ""}. ` +
+        kk > 0
+          ? `A társasházi közös költséget ${k.B} ${k.v("viseli", "viselik")}, amelynek mértéke a szerződéskötéskor ${osszegSzoveg(kk)} havonta. ` +
               "A közös költség változásáról a Bérbeadó írásban tájékoztat."
           : "A társasházi közös költség a Bérbeadót terheli.",
       );

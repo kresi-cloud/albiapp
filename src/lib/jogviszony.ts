@@ -15,7 +15,7 @@
  */
 
 import { ablakotKezd } from "@/domain/ertekeles";
-import { eloirasok } from "@/domain/eloirasok";
+import { eloirasok, idoszakHonapja } from "@/domain/eloirasok";
 import { jogviszonyAdatta as adatta } from "@/lib/eloirasok";
 import { prisma } from "@/lib/db";
 
@@ -60,7 +60,14 @@ export async function jogviszonytLezar(
     const zaroHonap = honapKulcs(vege);
 
     // A kiköltözés hónapja utáni előírások: az az időszak már nincs.
-    const torlendo = jogviszony.eloirtTetelek.filter((tetel) => tetel.idoszak > zaroHonap);
+    //
+    // A hónapot hasonlítjuk, nem a nyers jelet: a rezsielszámolás előírása
+    // kaphat sorszámot („2026-09/2"), és az szövegesen nagyobb a hónapnál —
+    // szeptemberi kiköltözésnél a lezárás így egy kiadott elszámolás előírását
+    // törölte, az okirat pedig előírás nélkül maradt.
+    const torlendo = jogviszony.eloirtTetelek.filter(
+      (tetel) => idoszakHonapja(tetel.idoszak) > zaroHonap,
+    );
     if (torlendo.length > 0) {
       await tx.eloirtTetel.deleteMany({
         where: { id: { in: torlendo.map((tetel) => tetel.id) } },

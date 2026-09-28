@@ -66,6 +66,20 @@ function idoszakKulcs(ev: number, honap: number): string {
 }
 
 /**
+ * Egy előírás időszakjeléből a hónap.
+ *
+ * A havi előírások jele maga a hónap („2026-09"), a rezsielszámolásé viszont
+ * kaphat sorszámot is, ha egy hónapra kettő készül („2026-09/2"). Aki
+ * hónapokat hasonlít — például a lezárás, ami a kiköltözés utáni előírásokat
+ * keresi —, annak ezen kell átmennie: a nyers szöveg szerint „2026-09/2"
+ * nagyobb, mint „2026-09", és a lezárás így egy kiadott elszámolás előírását
+ * törölte a szeptemberi kiköltözésnél.
+ */
+export function idoszakHonapja(idoszak: string): string {
+  return idoszak.slice(0, 7);
+}
+
+/**
  * Az esedékesség napja a hónapban. A fizetési nap lehet 31, de nem minden
  * hónapnak van 31 napja: ilyenkor a hónap utolsó napja az esedékesség.
  */
