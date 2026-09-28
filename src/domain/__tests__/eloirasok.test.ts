@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { eloirasok, type Eloiras, type JogviszonyAdat } from "../eloirasok";
+import { eloirasok, haviDijak, type Eloiras, type JogviszonyAdat } from "../eloirasok";
 import type { ElofizetesAdat } from "../elofizetes";
 
 function jogviszony(reszlet: Partial<JogviszonyAdat> = {}): JogviszonyAdat {
@@ -321,5 +321,80 @@ describe("előfizetés előírásai", () => {
     expect(sorok.filter((sor) => sor.tipus === "berleti_dij").every((sor) => sor.forrasId === "")).toBe(
       true,
     );
+  });
+});
+
+describe("díjemelés", () => {
+  const emeles = {
+    ervenyesTol: new Date(Date.UTC(2026, 2, 1)),
+    berletiDijFt: 195000,
+    kozosKoltsegFt: 16000,
+    rezsiAtalanyFt: 0,
+  };
+
+  it("a korábbi hónapok a régi díjon maradnak, a későbbiek az újon", () => {
+    // Meglévő előírást soha nem írunk át: amire egyszer egyeztettek, az marad.
+    const sorok = dijak(
+      eloirasok(
+        jogviszony({ dijValtozasok: [emeles] }),
+        new Date(Date.UTC(2026, 3, 20)),
+      ),
+    );
+    expect(sorok.map((sor) => [sor.idoszak, sor.osszegFt])).toEqual([
+      ["2026-01", 180000],
+      ["2026-02", 180000],
+      ["2026-03", 195000],
+      ["2026-04", 195000],
+    ]);
+  });
+
+  it("a közös költség is az emelés szerint megy", () => {
+    const sorok = eloirasok(
+      jogviszony({ kozosKoltsegFt: 14000, dijValtozasok: [emeles] }),
+      new Date(Date.UTC(2026, 2, 20)),
+    ).filter((sor) => sor.tipus === "kozos_koltseg");
+    expect(sorok.map((sor) => [sor.idoszak, sor.osszegFt])).toEqual([
+      ["2026-01", 14000],
+      ["2026-02", 14000],
+      ["2026-03", 16000],
+    ]);
+  });
+
+  it("több emelésből a hónapra érvényes legkésőbbi számít", () => {
+    const masodik = {
+      ervenyesTol: new Date(Date.UTC(2026, 5, 1)),
+      berletiDijFt: 210000,
+      kozosKoltsegFt: 16000,
+      rezsiAtalanyFt: 0,
+    };
+    // A sorrend szándékosan fordított: Postgresen az azonos kulcsú sorok
+    // sorrendje nincs garantálva, tehát a számítás nem támaszkodhat rá.
+    const adat = jogviszony({ dijValtozasok: [masodik, emeles] });
+    expect(haviDijak(adat, 2026, 1).berletiDijFt).toBe(180000);
+    expect(haviDijak(adat, 2026, 4).berletiDijFt).toBe(195000);
+    expect(haviDijak(adat, 2026, 5).berletiDijFt).toBe(210000);
+  });
+
+  it("almérős jogviszonynál az emelés átalányösszege sem lesz előírás", () => {
+    const adat = jogviszony({
+      rezsiElszamolas: "almero",
+      dijValtozasok: [{ ...emeles, rezsiAtalanyFt: 25000 }],
+    });
+    expect(haviDijak(adat, 2026, 3).rezsiAtalanyFt).toBe(0);
+    expect(
+      eloirasok(adat, new Date(Date.UTC(2026, 3, 20))).some(
+        (sor) => sor.tipus === "rezsi_atalany",
+      ),
+    ).toBe(false);
+  });
+
+  it("a hónap közepére keltezett emelés csak a következő hónaptól számít", () => {
+    // A kiszolgáló a hónap elejére vágja, de a számítás önmagában is helyes:
+    // egy hónapon belül nem lehet két összeg ugyanarra az időszakra.
+    const adat = jogviszony({
+      dijValtozasok: [{ ...emeles, ervenyesTol: new Date(Date.UTC(2026, 2, 15)) }],
+    });
+    expect(haviDijak(adat, 2026, 2).berletiDijFt).toBe(180000);
+    expect(haviDijak(adat, 2026, 3).berletiDijFt).toBe(195000);
   });
 });

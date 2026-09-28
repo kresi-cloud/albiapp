@@ -7,6 +7,8 @@ import {
   berloAdataitMenti,
   berlotHozzaad,
   berlotTorol,
+  dijValtozastRogzitAction,
+  dijValtozastVisszavonAction,
   jogviszonytLezarAction,
   jogviszonytUjranyitAction,
   type Eredmeny,
@@ -267,6 +269,101 @@ export function JogviszonyUjranyitas({
   return (
     <form action={kuldes} className="mt-2 grid gap-2">
       <input type="hidden" name="jogviszonyId" value={jogviszonyId} />
+      <button type="submit" disabled={folyamatban} className={APRO_GOMB}>
+        {folyamatban ? "…" : cimke}
+      </button>
+      <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
+    </form>
+  );
+}
+
+/**
+ * Díjemelés rögzítése.
+ *
+ * A mai összegek állnak a mezőkben alapból: aki emel, egy számot ír át, nem
+ * gépel be hármat újra. Az összegmezők szövegesek, mert a `type="number"` a
+ * magyar ezres tagolást (`180 000`) érvénytelennek tartja és csendben üres
+ * értéket küld — a beolvasás az `urlapForint` dolga.
+ */
+export function DijValtozasUrlap({
+  jogviszonyId,
+  alapHonap,
+  mostaniDij,
+  mostaniKozosKoltseg,
+  mostaniAtalany,
+  atalanyos,
+  cimkek,
+}: {
+  jogviszonyId: string;
+  alapHonap: string;
+  mostaniDij: string;
+  mostaniKozosKoltseg: string;
+  mostaniAtalany: string;
+  atalanyos: boolean;
+  cimkek: {
+    honap: string;
+    dij: string;
+    kozosKoltseg: string;
+    atalany: string;
+    gomb: string;
+    folyamatban: string;
+  };
+}) {
+  const [allapot, kuldes, folyamatban] = useActionState(dijValtozastRogzitAction, KEZDETI);
+
+  return (
+    <form action={kuldes} className="mt-3 grid gap-3 sm:grid-cols-2">
+      <input type="hidden" name="jogviszonyId" value={jogviszonyId} />
+      <Mezo
+        nev="ervenyesTol"
+        cimke={cimkek.honap}
+        ertek={alapHonap}
+        tipus="month"
+        allapot={allapot.allapot}
+      />
+      <Mezo
+        nev="berletiDijFt"
+        cimke={cimkek.dij}
+        ertek={mostaniDij}
+        allapot={allapot.allapot}
+      />
+      <Mezo
+        nev="kozosKoltsegFt"
+        cimke={cimkek.kozosKoltseg}
+        ertek={mostaniKozosKoltseg}
+        allapot={allapot.allapot}
+      />
+      {atalanyos ? (
+        <Mezo
+          nev="rezsiAtalanyFt"
+          cimke={cimkek.atalany}
+          ertek={mostaniAtalany}
+          allapot={allapot.allapot}
+        />
+      ) : null}
+      <div className="sm:col-span-2 grid gap-3">
+        <button type="submit" disabled={folyamatban} className={GOMB}>
+          {folyamatban ? cimkek.folyamatban : cimkek.gomb}
+        </button>
+        <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
+      </div>
+    </form>
+  );
+}
+
+/** Téves díjemelés visszavonása, amíg nem született rá előírás. */
+export function DijValtozasVisszavono({
+  dijValtozasId,
+  cimke,
+}: {
+  dijValtozasId: string;
+  cimke: string;
+}) {
+  const [allapot, kuldes, folyamatban] = useActionState(dijValtozastVisszavonAction, KEZDETI);
+
+  return (
+    <form action={kuldes} className="grid gap-2">
+      <input type="hidden" name="dijValtozasId" value={dijValtozasId} />
       <button type="submit" disabled={folyamatban} className={APRO_GOMB}>
         {folyamatban ? "…" : cimke}
       </button>

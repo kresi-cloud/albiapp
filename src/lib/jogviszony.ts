@@ -17,6 +17,7 @@
 import { ablakotKezd } from "@/domain/ertekeles";
 import { eloirasok, idoszakHonapja } from "@/domain/eloirasok";
 import { napEleje } from "@/domain/penz";
+import { honapKulcsa as honapKulcs } from "@/domain/berlemeny";
 import { jogviszonyAdatta as adatta } from "@/lib/eloirasok";
 import { prisma } from "@/lib/db";
 
@@ -32,10 +33,6 @@ export type LezarasEredmeny =
   | { allapot: "mar_lezart" }
   /** A vége nem lehet korábbi a kezdetnél: abból minden előírás törlése lenne. */
   | { allapot: "vege_a_kezdet_elott"; kezdete: Date };
-
-function honapKulcs(nap: Date): string {
-  return `${nap.getUTCFullYear()}-${String(nap.getUTCMonth() + 1).padStart(2, "0")}`;
-}
 
 /**
  * A lezárás egyetlen tranzakcióban fut.
@@ -143,6 +140,7 @@ export async function jogviszonytLezar(
       include: {
         elofizetesek: { include: { jovahagyasok: true } },
         berlok: { select: { berloId: true } },
+        dijValtozasok: { orderBy: [{ ervenyesTol: "asc" }, { id: "asc" }] },
       },
     });
     const kellene = eloirasok(adatta(frissitett), vege).filter(
@@ -239,6 +237,7 @@ export async function jogviszonytUjranyit(
         eloirtTetelek: true,
         elofizetesek: { include: { jovahagyasok: true } },
         berlok: { select: { berloId: true } },
+        dijValtozasok: { orderBy: [{ ervenyesTol: "asc" }, { id: "asc" }] },
       },
     });
 
@@ -264,4 +263,76 @@ export async function jogviszonytUjranyit(
 
     return true;
   });
+}
+
+export type DijValtozasHiba = "nem_tied" | "van_mar" | "eloirtuk";
+
+/**
+ * A legkésőbbi hónap, amire ennek a jogviszonynak már van előírása.
+ *
+ * A díjemelés ennél későbbi hónaptól indulhat: meglévő előírást soha nem írunk
+ * át, tehát egy korábbi hónapra beírt emelés szótlanul nem csinálna semmit.
+ */
+export async function utolsoEloirtHonap(jogviszonyId: string): Promise<string | null> {
+  const tetelek = await prisma.eloirtTetel.findMany({
+    where: { jogviszonyId },
+    select: { idoszak: true },
+  });
+  if (tetelek.length === 0) return null;
+  // A hónapot a jelből vesszük, nem a teljes kulcsból: a rezsielszámolás
+  // előírása kaphat sorszámot („2026-09/2"), és az szövegesen nagyobb.
+  return tetelek
+    .map((tetel) => tetel.idoszak.slice(0, 7))
+    .reduce((legkesobbi, honap) => (honap > legkesobbi ? honap : legkesobbi));
+}
+
+export async function dijValtozastRogzit(
+  tulajdonosId: string,
+  jogviszonyId: string,
+  adat: {
+    ervenyesTol: Date;
+    berletiDijFt: number;
+    kozosKoltsegFt: number;
+    rezsiAtalanyFt: number;
+  },
+): Promise<"kesz" | DijValtozasHiba> {
+  const jogviszony = await prisma.jogviszony.findFirst({
+    where: { id: jogviszonyId, ingatlan: { tulajdonosId } },
+    select: { id: true },
+  });
+  if (!jogviszony) return "nem_tied";
+
+  try {
+    await prisma.dijValtozas.create({ data: { jogviszonyId, ...adat } });
+  } catch {
+    // Az egyediségi kulcs a fék: ugyanarra a hónapra két összeg közül a
+    // sorrend döntene, Postgresen pedig az nincs garantálva.
+    return "van_mar";
+  }
+  return "kesz";
+}
+
+/**
+ * Díjemelés visszavonása.
+ *
+ * Csak addig, amíg nem született rá előírás: onnantól a bérlőnek kiírt összeg
+ * már az új díj, és a visszavonás a régi összeget úgy hozná vissza, hogy a
+ * kiadott előírás marad. Aki tévedett, későbbi hónaptól rögzít újat.
+ */
+export async function dijValtozastVisszavon(
+  tulajdonosId: string,
+  dijValtozasId: string,
+): Promise<"kesz" | DijValtozasHiba> {
+  const valtozas = await prisma.dijValtozas.findFirst({
+    where: { id: dijValtozasId, jogviszony: { ingatlan: { tulajdonosId } } },
+    select: { id: true, jogviszonyId: true, ervenyesTol: true },
+  });
+  if (!valtozas) return "nem_tied";
+
+  const honap = honapKulcs(valtozas.ervenyesTol);
+  const utolso = await utolsoEloirtHonap(valtozas.jogviszonyId);
+  if (utolso !== null && utolso >= honap) return "eloirtuk";
+
+  await prisma.dijValtozas.delete({ where: { id: dijValtozasId } });
+  return "kesz";
 }

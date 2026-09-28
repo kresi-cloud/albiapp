@@ -1,4 +1,5 @@
-import { datumNyelven, forintNyelven } from "@/domain/nyelv";
+import { datumNyelven, forintNyelven, honapNyelven } from "@/domain/nyelv";
+import { honapKulcsa } from "@/domain/berlemeny";
 import { meghivoAllapota } from "@/domain/belepes";
 import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
@@ -10,14 +11,24 @@ import {
   BerloAdatok,
   BerloHozzaadas,
   BerloTorles,
+  DijValtozasUrlap,
+  DijValtozasVisszavono,
   JogviszonyLezaras,
   JogviszonyUjranyitas,
 } from "./Urlapok";
+import { NYITO } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
 function napSzoveg(nap: Date | null): string {
   return nap ? nap.toISOString().slice(0, 10) : "";
+}
+
+/** A következő hónap kulcsa: a díjemelés alapértelmezett kezdete. */
+function kovetkezoHonap(most: Date): string {
+  return honapKulcsa(
+    new Date(Date.UTC(most.getUTCFullYear(), most.getUTCMonth() + 1, 1)),
+  );
 }
 
 export default async function Berlok() {
@@ -32,6 +43,7 @@ export default async function Berlok() {
     where: { ingatlan: { tulajdonosId: berbeado.id } },
     include: {
       ingatlan: true,
+      dijValtozasok: { orderBy: [{ ervenyesTol: "asc" }, { id: "asc" }] },
       berlok: {
         orderBy: [{ sorrend: "asc" }, { id: "asc" }],
         include: {
@@ -198,6 +210,55 @@ export default async function Berlok() {
                 folyamatban: sz("berlok.hozzaadas_folyamatban"),
               }}
             />
+
+            {jogviszony.statusz === "elo" ? (
+              <details className="mt-3" data-szakasz="dijvaltozas">
+                <summary className={NYITO}>{sz("dijvaltozas.cim")}</summary>
+                <p className="mt-2 text-xs text-nagyon-halvany">{sz("dijvaltozas.sugo")}</p>
+
+                {jogviszony.dijValtozasok.length === 0 ? (
+                  <p className="mt-2 text-sm text-halvany">{sz("dijvaltozas.nincs")}</p>
+                ) : (
+                  <ul className="mt-2 grid gap-2">
+                    {jogviszony.dijValtozasok.map((valtozas) => (
+                      <li
+                        key={valtozas.id}
+                        data-dijvaltozas={honapKulcsa(valtozas.ervenyesTol)}
+                        className="flex flex-wrap items-center gap-2 text-sm"
+                      >
+                        <span>
+                          {sz("dijvaltozas.sor", {
+                            honap: honapNyelven(honapKulcsa(valtozas.ervenyesTol), nyelv),
+                            dij: ft(valtozas.berletiDijFt),
+                          })}
+                        </span>
+                        <DijValtozasVisszavono
+                          dijValtozasId={valtozas.id}
+                          cimke={sz("dijvaltozas.visszavon")}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <DijValtozasUrlap
+                  jogviszonyId={jogviszony.id}
+                  alapHonap={kovetkezoHonap(most)}
+                  mostaniDij={String(jogviszony.berletiDijFt)}
+                  mostaniKozosKoltseg={String(jogviszony.kozosKoltsegFt)}
+                  mostaniAtalany={String(jogviszony.rezsiAtalanyFt)}
+                  atalanyos={jogviszony.rezsiElszamolas === "atalany"}
+                  cimkek={{
+                    honap: sz("dijvaltozas.honap"),
+                    dij: sz("dijvaltozas.dij"),
+                    kozosKoltseg: sz("dijvaltozas.kozos_koltseg"),
+                    atalany: sz("dijvaltozas.atalany"),
+                    gomb: sz("dijvaltozas.gomb"),
+                    folyamatban: sz("dijvaltozas.folyamatban"),
+                  }}
+                />
+              </details>
+            ) : null}
 
             {jogviszony.statusz === "lezart" ? (
               <JogviszonyUjranyitas

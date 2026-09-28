@@ -9,7 +9,16 @@ import { meghivoToken } from "@/lib/meghivo";
 import { igazolvanyGyanus } from "@/domain/szemelyes-adatok";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
-import { jogviszonytLezar, jogviszonytUjranyit } from "@/lib/jogviszony";
+import { dijValtozastEllenoriz, type DijValtozasBemenet } from "@/domain/berlemeny";
+import { urlapForint } from "@/domain/penz";
+import {
+  dijValtozastRogzit,
+  dijValtozastVisszavon,
+  jogviszonytLezar,
+  jogviszonytUjranyit,
+  utolsoEloirtHonap,
+  type DijValtozasHiba,
+} from "@/lib/jogviszony";
 
 export type MeghivoEredmeny = {
   allapot: "ures" | "kesz" | "hiba";
@@ -311,4 +320,98 @@ export async function jogviszonytUjranyitAction(
   revalidatePath("/befizetesek");
   revalidatePath("/");
   return { allapot: "kesz", uzenet: sz("valasz.ujranyitva"), hibak: [] };
+}
+
+/* ------------------------------------------------------------- Díjemelés */
+
+/** „2026-10" alakú hónapmezőből a hónap első napja. */
+function honapotOlvas(nyers: unknown): Date | null {
+  const ertek = szoveg(nyers);
+  if (!/^\d{4}-\d{2}$/.test(ertek)) return null;
+  const nap = new Date(`${ertek}-01T00:00:00.000Z`);
+  return Number.isNaN(nap.getTime()) ? null : nap;
+}
+
+function dijFrissit(): void {
+  revalidatePath("/berlok");
+  revalidatePath("/befizetesek");
+  revalidatePath("/berlo");
+  revalidatePath("/");
+}
+
+function dijValtozasUzenete(sz: (kulcs: string) => string, baj: DijValtozasHiba): string {
+  if (baj === "van_mar") return sz("dijvaltozas.hiba.van_mar");
+  if (baj === "eloirtuk") return sz("dijvaltozas.hiba.eloirtuk");
+  return sz("dijvaltozas.hiba.nem_tied");
+}
+
+/**
+ * Díjemelés rögzítése.
+ *
+ * Az új összegek a megadott hónap elejétől érvényesek, és csak olyan hónaptól,
+ * amire még nincs előírás: meglévő előírást soha nem írunk át — amire egyszer
+ * egyeztettek, azt egy későbbi emelés nem változtathatja meg. A hónapot a
+ * kiszolgáló vágja a hónap első napjára, nem az űrlap.
+ *
+ * Eddig díjemelésre egyáltalán nem volt mód: az egyetlen „kiút" a lezárás és
+ * egy új jogviszony volt, ami kettévágta a bérlet történetét.
+ */
+export async function dijValtozastRogzitAction(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, u } = await szovegek();
+
+  const jogviszony = await prisma.jogviszony.findFirst({
+    where: {
+      id: szoveg(urlap.get("jogviszonyId")),
+      ingatlan: { tulajdonosId: berbeado.id },
+    },
+    select: { id: true, kezdete: true, rezsiElszamolas: true },
+  });
+  if (!jogviszony) return hiba(sz("dijvaltozas.hiba.nem_tied"));
+
+  const bemenet: DijValtozasBemenet = {
+    ervenyesTol: honapotOlvas(urlap.get("ervenyesTol")),
+    berletiDijFt: urlapForint(urlap.get("berletiDijFt")),
+    kozosKoltsegFt: urlapForint(urlap.get("kozosKoltsegFt")) ?? 0,
+    rezsiAtalanyFt: urlapForint(urlap.get("rezsiAtalanyFt")) ?? 0,
+    rezsiElszamolas: jogviszony.rezsiElszamolas,
+    kezdete: jogviszony.kezdete,
+    utolsoEloirtHonap: await utolsoEloirtHonap(jogviszony.id),
+  };
+
+  const kifogasok = dijValtozastEllenoriz(bemenet);
+  if (kifogasok.length > 0) {
+    return hiba(u(kifogasok[0].uzenet), kifogasok.map((kifogas) => kifogas.mezo));
+  }
+
+  const eredmeny = await dijValtozastRogzit(berbeado.id, jogviszony.id, {
+    ervenyesTol: bemenet.ervenyesTol as Date,
+    berletiDijFt: bemenet.berletiDijFt as number,
+    kozosKoltsegFt: bemenet.kozosKoltsegFt as number,
+    rezsiAtalanyFt: bemenet.rezsiAtalanyFt as number,
+  });
+  if (eredmeny !== "kesz") return hiba(dijValtozasUzenete(sz, eredmeny));
+
+  dijFrissit();
+  return { allapot: "kesz", uzenet: sz("dijvaltozas.kesz"), hibak: [] };
+}
+
+export async function dijValtozastVisszavonAction(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+
+  const eredmeny = await dijValtozastVisszavon(
+    berbeado.id,
+    szoveg(urlap.get("dijValtozasId")),
+  );
+  if (eredmeny !== "kesz") return hiba(dijValtozasUzenete(sz, eredmeny));
+
+  dijFrissit();
+  return { allapot: "kesz", uzenet: sz("dijvaltozas.visszavonva"), hibak: [] };
 }
