@@ -131,6 +131,18 @@ export default async function Rezsi() {
 
           <div className="rounded-kartya border border-keret bg-felulet p-4">
             <h3 className="font-medium">{sz("rezsi.uj_elszamolas")}</h3>
+            {/* Tételes elszámolás csak mérőóra szerinti bérletnél van. Átalánynál
+                és közös költségbe foglalt rezsinél az összeget a havi előírás
+                viszi, és a szerződés is kimondja, hogy a felek tételesen nem
+                számolnak el — egy itt kiadott elszámolás ugyanazt másodszor
+                terhelné. A kiszolgáló is ezt tartja be, nem csak ez a feltétel. */}
+            {jogviszony.rezsiElszamolas !== "almero" ? (
+              <p className="mt-1 text-sm text-halvany">
+                {sz("rezsi.kihagyott.nem_meres", {
+                  mod: sz(`rezsi.mod.${jogviszony.rezsiElszamolas}`),
+                })}
+              </p>
+            ) : (
             <ElszamolasUrlap
               jogviszonyId={jogviszony.id}
               kezdete={napSzoveg(honapElseje)}
@@ -142,6 +154,7 @@ export default async function Rezsi() {
                 folyamatban: sz("rezsi.elszamolas.folyamatban"),
               }}
             />
+            )}
           </div>
 
           {jogviszony.elszamolasok.map((elszamolas) => (

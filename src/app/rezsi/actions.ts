@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { elszamolastOsszeallit } from "@/lib/rezsi";
 import { prisma } from "@/lib/db";
 import { datumNyelven } from "@/domain/nyelv";
+import { napEleje } from "@/domain/penz";
 import { belepettFelhasznalo, kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 
@@ -21,11 +22,26 @@ function napotOlvas(nyers: unknown): Date | null {
   return Number.isNaN(nap.getTime()) ? null : nap;
 }
 
+/**
+ * Óraállás felső korlátja.
+ *
+ * Nem szépségkérdés. Egy elgépelt vagy szándékos, irreálisan nagy állás két
+ * bajt csinált: onnantól minden valódi leolvasás kisebb lett, tehát a
+ * kiszolgáló elutasította — a mérő „bebetonozódott" —, az elszámolás pedig
+ * egész számot túlcsorduló összeget próbált elmenteni, és 500-zal elszállt.
+ * Tízmillió egység minden lakossági mérőnél nagyságrendekkel több, mint ami
+ * egy élet alatt átfolyik rajta.
+ */
+const LEGNAGYOBB_ALLAS = 10_000_000;
+
+/** Egész forint oszlopba ennél több nem megy: a Postgres `Int` felső határa. */
+const LEGNAGYOBB_OSSZEG = 2_000_000_000;
+
 function szamotOlvas(nyers: unknown): number | null {
   const szoveg = String(nyers ?? "").trim().replace(/\s/g, "").replace(",", ".");
   if (szoveg === "") return null;
   const szam = Number(szoveg);
-  return Number.isFinite(szam) && szam >= 0 ? szam : null;
+  return Number.isFinite(szam) && szam >= 0 && szam <= LEGNAGYOBB_ALLAS ? szam : null;
 }
 
 /** Óraállást a bérbeadó és a bérlő is rögzíthet, de csak a saját ingatlanához. */
@@ -40,6 +56,10 @@ export async function oraallastRogzit(_elozo: Eredmeny, urlap: FormData): Promis
 
   if (!nap) return hiba(sz("rezsi.hiba.datum"));
   if (ertek === null) return hiba(sz("rezsi.hiba.oraallas_negativ"));
+  // Jövőbeli napra nem lehet leolvasni: azt a számot még senki nem látta.
+  if (nap.getTime() > napEleje(new Date()).getTime()) {
+    return hiba(sz("rezsi.hiba.jovobeli_allas"));
+  }
 
   const meroora = await prisma.meroora.findFirst({
     where: {
@@ -60,16 +80,39 @@ export async function oraallastRogzit(_elozo: Eredmeny, urlap: FormData): Promis
               },
             },
     },
-    include: { oraallasok: { orderBy: [{ datum: "desc" }, { id: "desc" }], take: 1 } },
+    include: { oraallasok: { orderBy: [{ datum: "asc" }, { id: "asc" }] } },
   });
   if (!meroora) return hiba(sz("rezsi.hiba.meroora_nem_tied"));
 
-  const utolso = meroora.oraallasok[0];
-  if (utolso && ertek < utolso.ertek) {
+  // A leolvasás **mindkét** szomszédjához mérünk, nem csak a legutolsóhoz.
+  //
+  // Korábban csak az utolsóhoz: így egy visszakeltezett, nagyobb állást a
+  // kiszolgáló elfogadott, és az utána következő időszak fogyasztása nullára
+  // esett — a bérlő ingyen jutott a rezsihez, és a csatornadíj is elmaradt. Egy
+  // jogos utólagos pótlás viszont (amit a két meglévő állás közé kell beírni)
+  // elutasításra futott. Az óra egy irányba forog: ami előbb van, az kisebb.
+  const elotte = meroora.oraallasok.filter(
+    (allas) => allas.datum.getTime() <= nap.getTime(),
+  );
+  const utana = meroora.oraallasok.filter(
+    (allas) => allas.datum.getTime() > nap.getTime(),
+  );
+  const elozo = elotte[elotte.length - 1];
+  const kovetkezo = utana[0];
+
+  if (elozo && ertek < elozo.ertek) {
     return hiba(
       sz("rezsi.hiba.kisebb_allas", {
-        ertek: utolso.ertek,
-        nap: datumNyelven(utolso.datum, nyelv),
+        ertek: elozo.ertek,
+        nap: datumNyelven(elozo.datum, nyelv),
+      }),
+    );
+  }
+  if (kovetkezo && ertek > kovetkezo.ertek) {
+    return hiba(
+      sz("rezsi.hiba.nagyobb_allas", {
+        ertek: kovetkezo.ertek,
+        nap: datumNyelven(kovetkezo.datum, nyelv),
       }),
     );
   }
@@ -106,9 +149,25 @@ export async function elszamolastKeszitAction(
   });
   if (!jogviszony) return hiba(sz("rezsi.hiba.jogviszony_nem_tied"));
 
+  // Tételes elszámolás csak mérőóra szerinti bérletre készül. Átalánynál és
+  // közös költségbe foglalt rezsinél a szerződés kifejezetten kimondja, hogy a
+  // felek tételesen nem számolnak el, az összeget pedig a havi előírás viszi:
+  // egy itt kiadott elszámolás ugyanazt másodszor terhelné. Ezt a kiszolgáló
+  // tartja be, nem az űrlap elrejtése.
+  if (jogviszony.rezsiElszamolas !== "almero") {
+    return hiba(
+      sz("rezsi.hiba.nem_meres", { mod: sz(`rezsi.mod.${jogviszony.rezsiElszamolas}`) }),
+    );
+  }
+
   const osszeallitas = await elszamolastOsszeallit(jogviszonyId, kezdete, vege);
   if (osszeallitas.tetelek.length === 0) {
     return hiba(sz("rezsi.hiba.nincs_tetel"), osszeallitas.kihagyott.map(u));
+  }
+  // Az összeg egész forint oszlopba megy: egy elgépelt óraállásból kijövő
+  // csillagászati összeg különben nem hibaüzenet, hanem 500-as lap lenne.
+  if (osszeallitas.osszegFt > LEGNAGYOBB_OSSZEG) {
+    return hiba(sz("rezsi.hiba.tul_nagy_osszeg"));
   }
 
   await prisma.elszamolas.create({
@@ -191,9 +250,24 @@ export async function elszamolastKiad(_elozo: Eredmeny, urlap: FormData): Promis
   };
 }
 
-/** Az előírt tétel időszakjele jogviszonyonként egyedi, ezért ütközésnél sorszámozunk. */
+/**
+ * Az előírt tétel időszakjele jogviszonyonként egyedi, ezért ütközésnél
+ * sorszámozunk.
+ *
+ * A jel az **utolsó elszámolt napból** jön, nem a záró dátum hónapjából. Az
+ * időszak a kezdőnapot tartalmazza, a záró napot nem: egy szeptember 1-től
+ * október 1-ig tartó elszámolás szeptemberről szól, és korábban mégis
+ * „2026-10" jelet kapott — októberi sornak látszott az adóösszesítőben és a
+ * betekintőben.
+ *
+ * A sorszámozott jel („2026-09/2") szövegesen nagyobb, mint a hónap maga, ezért
+ * aki hónapokat hasonlít, az `idoszakHonapja`-val hasonlítson — a lezárás
+ * korábban pont ezért törölte a második elszámolás előírását a kiadott okirat
+ * mögül.
+ */
 async function szabadIdoszakJel(jogviszonyId: string, idoszakVege: Date): Promise<string> {
-  const alap = `${idoszakVege.getUTCFullYear()}-${String(idoszakVege.getUTCMonth() + 1).padStart(2, "0")}`;
+  const utolsoNap = new Date(napEleje(idoszakVege).getTime() - 24 * 60 * 60 * 1000);
+  const alap = `${utolsoNap.getUTCFullYear()}-${String(utolsoNap.getUTCMonth() + 1).padStart(2, "0")}`;
   for (let sorszam = 1; sorszam < 50; sorszam++) {
     const jel = sorszam === 1 ? alap : `${alap}/${sorszam}`;
     const letezo = await prisma.eloirtTetel.findFirst({

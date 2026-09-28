@@ -788,14 +788,25 @@ async function main() {
   void martonErtekelese;
 
   // Egy kiadott és befizetett rezsielszámolás, hogy az adóösszesítőn látszódjon
-  // a lényeg: a mért fogyasztás nem bevétel, a közös költség viszont igen.
+  // a lényeg: a mért fogyasztás továbbhárítva nem bevétel.
+  //
+  // Az elszámolás **csak mért tételeket** tartalmaz: a közös költség havi
+  // előírásként megy, és ha itt is sorként állna, a példaadat ugyanazt a
+  // kettős terhelést mutatná, amit az alkalmazásból kivettünk.
+  //
+  // Az időszakjel a hónapból jön, nem beégetve: az időszak vége a mostani
+  // hónap elseje, tehát az utolsó elszámolt nap az előző hónap utolsó napja —
+  // ugyanúgy, ahogy a `rezsi/actions.ts` képzi a jelet. Beégetett „2026-09"
+  // mellett a betekintő és az adóösszesítő hónapról hónapra hazudott volna.
+  const rezsiIdoszak = `${nap(-1).getUTCFullYear()}-${String(nap(-1).getUTCMonth() + 1).padStart(2, "0")}`;
+  const rezsiOsszeg = 35625 + 7351;
   const rezsiEloiras = await prisma.eloirtTetel.create({
     data: {
       jogviszonyId: annaJogviszony.id,
       tipus: "rezsi",
-      idoszak: "2026-09",
+      idoszak: rezsiIdoszak,
       esedekesseg: nap(0, 15),
-      osszegFt: 71513,
+      osszegFt: rezsiOsszeg,
     },
   });
 
@@ -805,7 +816,7 @@ async function main() {
       idoszakKezdete: nap(-2),
       idoszakVege: nap(0),
       allapot: "elfogadva",
-      osszegFt: 71513,
+      osszegFt: rezsiOsszeg,
       eloirtTetelId: rezsiEloiras.id,
       kiadva: nap(0, 5),
       lezarva: nap(0, 6),
@@ -831,13 +842,6 @@ async function main() {
             osszegFt: 7351,
             sorrend: 1,
           },
-          {
-            fajta: "kozos_koltseg",
-            megnevezes: "Közös költség",
-            reszletezes: "14 000 Ft / hó, 62 napra arányosítva.",
-            osszegFt: 28537,
-            sorrend: 2,
-          },
         ],
       },
     },
@@ -848,8 +852,8 @@ async function main() {
       tulajdonosId: berbeado.id,
       jogviszonyId: annaJogviszony.id,
       erkezesDatuma: nap(0, 14),
-      osszegFt: 71513,
-      kozlemeny: "Rezsielszámolás 2026 nyár",
+      osszegFt: rezsiOsszeg,
+      kozlemeny: "Rezsielszámolás",
     },
   });
 

@@ -164,6 +164,32 @@ Ezt e-mailes megerősítés zárná le, az pedig a küldőszolgáltatáson múli
 
 ## A rezsielszámolás alapelve
 
+**Az elszámolás csak mért fogyasztást tartalmaz.** A rezsiátalány és a közös
+költség havi előírás (`domain/eloirasok.ts`), és amíg az elszámolás is sort
+csinált belőlük, a bérlő ugyanazt kétszer fizette — a példaadatban két hónapra
+56 537 Ft közös költség 28 000 helyett —, az adóösszesítő pedig kétszer
+számolta bevételnek. Egy tételnek egy helye van, és az a havi előírás: azon megy
+végig a befizetés-egyeztetés is. Ebből következik, hogy **átalányos és „közös
+költségben" módban nincs mit elszámolni**, a szerződés is ezt mondja ki, ezért
+ott tételes elszámolás nem készül. Ezt a kiszolgáló tartja be, nem az űrlap
+elrejtése, és a lap meg is mondja, miért nincs — egy üres tétellistából a
+bérbeadó azt hinné, elromlott valami.
+
+**Havi díjat naptári hónappal arányosítunk**, nem 365/12 napos átlaghónappal
+(`haviAranyos`). Amazzal egy teljes hónapra sem a havi díj jött ki: egy
+tízezres alapdíj szeptemberre 9863 Ft lett, januárra 10 192, februárra 9205. A
+havi előírások modulja a hónap tényleges napjaival számol; két helyen két
+szabályból az lett volna, hogy ugyanarra a hónapra a két lap más összeget mutat.
+
+**Az óraállás mindkét szomszédjához mérődik**, nem csak a legutolsóhoz, és
+jövőbeli napra nem rögzíthető. A régi szabály mellett egy visszakeltezett,
+nagyobb állást a kiszolgáló elfogadott — a rákövetkező időszak fogyasztása
+nullára esett, a csatornadíjjal együtt —, egy jogos utólagos pótlás viszont
+elutasításra futott. Az állásnak felső korlátja is van: egy elgépelt,
+irreálisan nagy szám különben bebetonozta a mérőt (onnantól minden valódi
+leolvasás kisebb, tehát elutasított), és egész számot túlcsorduló összeget
+próbált elmenteni.
+
 Az egységár fillérben, egészben számol (`Int`), és forintra csak a kész tétel
 kerekít. Az elszámolás végösszege a kerekített tételek összege, nem a
 kerekítetlen összeg kerekítése: a bérlő össze fogja adni a sorokat.
@@ -276,6 +302,15 @@ A szöveg abból épül, amit az alkalmazás már tud: a bérleti díj, az óvad
 bérlők és az ingatlan a saját adataiból jön, nem külön beírásból. Így a
 szerződésben nem állhat más összeg, mint a befizetés-egyeztetésben. Ami ezen
 felül kell, az modulparaméter.
+
+Ebbe beletartozik az is, hogy **ki viseli a közös költséget: az adat, nem
+kérdés**. A jogviszonyon beállított összeg az, amit az alkalmazás havonta elő is
+ír a bérlőnek; amíg ez külön paraméter volt „a bérbeadó" alapértelmezéssel, az
+aláírt szerződés azt mondta, hogy a közös költség a bérbeadót terheli, miközben
+az alkalmazás minden hónapban a bérlőtől kérte. A jogviszony összege az
+irányadó, nem az ingatlané: az ingatlanon rögzített közös költség a bérbeadó
+saját költsége, és abból olyan mondat lett, hogy a bérlő havi 30 000 forintot
+visel, holott egy fillért sem írtunk elő neki.
 
 Véglegesítéskor a kész szöveget elmentjük (`veglegesSzoveg`). Amit a felek
 aláírtak, azt egy későbbi modulfrissítés nem írhatja át.

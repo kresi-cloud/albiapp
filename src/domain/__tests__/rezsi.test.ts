@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   alapdijResz,
   elszamolastKeszit,
+  haviAranyos,
   ervenyesDijszabas,
   EV_NAPJAI,
   fogyasztas,
@@ -48,14 +49,65 @@ describe("keretAzIdoszakra", () => {
   });
 });
 
+describe("haviAranyos", () => {
+  // Ez a mérés arról szól, ami korábban nem volt igaz: a 365/12 napos
+  // átlaghónapból egy teljes hónapra sem jött ki a havi díj.
+  it("egy teljes naptári hónapra pontosan a havi díj jár", () => {
+    const honapok = [
+      [new Date(Date.UTC(2026, 8, 1)), new Date(Date.UTC(2026, 9, 1))], // 30 napos
+      [new Date(Date.UTC(2026, 0, 1)), new Date(Date.UTC(2026, 1, 1))], // 31 napos
+      [new Date(Date.UTC(2026, 1, 1)), new Date(Date.UTC(2026, 2, 1))], // 28 napos
+      [new Date(Date.UTC(2024, 1, 1)), new Date(Date.UTC(2024, 2, 1))], // szökőév
+    ];
+    for (const [tol, ig] of honapok) {
+      expect(haviAranyos(10000, tol, ig)).toBe(10000);
+    }
+  });
+
+  it("egy teljes évre tizenkét havi díj", () => {
+    expect(
+      haviAranyos(10000, new Date(Date.UTC(2026, 0, 1)), new Date(Date.UTC(2027, 0, 1))),
+    ).toBe(120000);
+  });
+
+  it("töredékhónapot a hónap tényleges napjaival arányosít", () => {
+    // Szeptember 1–30. huszonkilenc nap a harmincból, nem 29/30,42.
+    expect(
+      haviAranyos(10000, new Date(Date.UTC(2026, 8, 1)), new Date(Date.UTC(2026, 8, 30))),
+    ).toBe(Math.round((10000 * 29) / 30));
+    // Február 15-től március 15-ig: fél február és fél március, nem egy hónap.
+    expect(
+      haviAranyos(30000, new Date(Date.UTC(2026, 1, 15)), new Date(Date.UTC(2026, 2, 15))),
+    ).toBe(Math.round(30000 * (14 / 28 + 14 / 31)));
+  });
+
+  it("üres és visszafelé forduló időszakra nulla", () => {
+    const nap = new Date(Date.UTC(2026, 8, 1));
+    expect(haviAranyos(10000, nap, nap)).toBe(0);
+    expect(haviAranyos(10000, new Date(Date.UTC(2026, 8, 5)), nap)).toBe(0);
+  });
+
+  it("nulla díjból nulla lesz", () => {
+    expect(
+      haviAranyos(0, new Date(Date.UTC(2026, 8, 1)), new Date(Date.UTC(2026, 9, 1))),
+    ).toBe(0);
+  });
+});
+
 describe("alapdijResz", () => {
-  it("a havi alapdíjat napra bontja", () => {
-    expect(alapdijResz(1200, 365)).toBe(14400);
-    expect(alapdijResz(1200, 30)).toBe(Math.round((1200 * 12 * 30) / 365));
+  it("a havi alapdíjat a két leolvasás közti naptári hónapokkal arányosítja", () => {
+    expect(
+      alapdijResz(1200, new Date(Date.UTC(2026, 0, 1)), new Date(Date.UTC(2027, 0, 1))),
+    ).toBe(14400);
+    expect(
+      alapdijResz(1200, new Date(Date.UTC(2026, 8, 1)), new Date(Date.UTC(2026, 9, 1))),
+    ).toBe(1200);
   });
 
   it("nulla alapdíjból nulla lesz", () => {
-    expect(alapdijResz(0, 30)).toBe(0);
+    expect(
+      alapdijResz(0, new Date(Date.UTC(2026, 8, 1)), new Date(Date.UTC(2026, 9, 1))),
+    ).toBe(0);
   });
 });
 
@@ -108,8 +160,9 @@ describe("merooratElszamol", () => {
       { ...VILLANY, alapdijFt: 900 },
       "kWh",
     );
-    expect(eredmeny.alapdijReszFt).toBe(alapdijResz(900, 30));
-    expect(eredmeny.osszegFt).toBe(Math.round((180 * 3690) / 100) + alapdijResz(900, 30));
+    const alapdij = alapdijResz(900, NYITO.datum, new Date(Date.UTC(2026, 0, 31)));
+    expect(eredmeny.alapdijReszFt).toBe(alapdij);
+    expect(eredmeny.osszegFt).toBe(Math.round((180 * 3690) / 100) + alapdij);
     expect(eredmeny.reszletezes).toContain("Alapdíj");
   });
 
@@ -212,43 +265,54 @@ describe("elszamolastKeszit", () => {
         zaro: { datum: new Date(Date.UTC(2026, 0, 31)), ertek: 1180 },
       },
     ],
-    kozosKoltsegFt: 14000,
   };
 
   it("minden tételt felvesz, és az összeg a tételek összege", () => {
     const elszamolas = elszamolastKeszit(bemenet);
-    expect(elszamolas.tetelek).toHaveLength(2);
+    expect(elszamolas.tetelek).toHaveLength(1);
     expect(elszamolas.osszegFt).toBe(
       elszamolas.tetelek.reduce((osszeg, tetel) => osszeg + tetel.osszegFt, 0),
     );
     expect(elszamolas.napok).toBe(30);
   });
 
-  it("az átalányt és a közös költséget a napokra arányosítja", () => {
-    const elszamolas = elszamolastKeszit({ ...bemenet, atalanyFt: 30000 });
-    const atalany = elszamolas.tetelek.find((tetel) => tetel.fajta === "atalany");
-    expect(atalany?.osszegFt).toBe(Math.round((30000 * 12 * 30) / 365));
-    expect(atalany?.reszletezes).toContain("30 napra");
-  });
-
-  it("nulla átalányból és nulla közös költségből nem lesz tétel", () => {
-    const elszamolas = elszamolastKeszit({
-      ...bemenet,
-      atalanyFt: 0,
-      kozosKoltsegFt: 0,
-    });
+  /**
+   * Ez a mérés a kettős terhelésről szól. A rezsiátalány és a közös költség
+   * havi előírás; amíg az elszámolás is sort csinált belőlük, a bérlő ugyanazt
+   * kétszer fizette, és az adóösszesítő is kétszer számolta bevételnek.
+   */
+  it("csak mért fogyasztás kerül bele: átalány és közös költség nem", () => {
+    const elszamolas = elszamolastKeszit(bemenet);
     expect(elszamolas.tetelek.map((tetel) => tetel.fajta)).toEqual(["meroora"]);
   });
 
-  it("mérőóra nélkül is elszámol, ha van átalány", () => {
+  it("mérőóra nélkül nincs mit elszámolni", () => {
     const elszamolas = elszamolastKeszit({
       idoszakKezdete: bemenet.idoszakKezdete,
       idoszakVege: bemenet.idoszakVege,
       meroorak: [],
-      atalanyFt: 25000,
     });
-    expect(elszamolas.tetelek).toHaveLength(1);
-    expect(elszamolas.osszegFt).toBeGreaterThan(0);
+    expect(elszamolas.tetelek).toEqual([]);
+    expect(elszamolas.osszegFt).toBe(0);
+  });
+
+  it("a csatornadíj külön sor, ugyanarra a köbméterre", () => {
+    const elszamolas = elszamolastKeszit({
+      ...bemenet,
+      meroorak: [
+        {
+          id: "vizora",
+          megnevezes: "Víz",
+          mertekegyseg: "m3",
+          dijszabas: VIZ,
+          nyito: { datum: NYITO.datum, ertek: 200 },
+          zaro: { datum: new Date(Date.UTC(2026, 0, 31)), ertek: 210 },
+        },
+      ],
+    });
+    expect(elszamolas.tetelek).toHaveLength(2);
+    expect(elszamolas.tetelek[1].megnevezes).toContain("csatornadíj");
+    expect(elszamolas.tetelek[1].mennyiseg).toBe(10);
   });
 });
 
@@ -259,6 +323,16 @@ describe("ervenyesDijszabas", () => {
   it("a napon érvényes, legfrissebb díjszabást adja", () => {
     expect(ervenyesDijszabas([regi, uj], new Date(Date.UTC(2026, 5, 1)))?.nev).toBe("új");
     expect(ervenyesDijszabas([regi, uj], new Date(Date.UTC(2025, 5, 1)))?.nev).toBe("régi");
+  });
+
+  it("azonos érvényességi napnál az azonosító dönt, a nagyobb felé", () => {
+    // Postgresen két egy napon érvényes díjszabás sorrendje nincs garantálva:
+    // enélkül ugyanannak az elszámolásnak két futáson két összege lett volna.
+    const a = { ervenyesTol: new Date(Date.UTC(2026, 0, 1)), id: "a", nev: "első" };
+    const b = { ervenyesTol: new Date(Date.UTC(2026, 0, 1)), id: "b", nev: "második" };
+    const napon = new Date(Date.UTC(2026, 5, 1));
+    expect(ervenyesDijszabas([a, b], napon)?.nev).toBe("második");
+    expect(ervenyesDijszabas([b, a], napon)?.nev).toBe("második");
   });
 
   it("a kezdőnapon már érvényes", () => {

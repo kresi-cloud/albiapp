@@ -30,8 +30,13 @@ export async function elszamolastOsszeallit(
       ingatlan: {
         include: {
           meroorak: {
+            // Rendezés a mérőórákon és a díjszabásokon is: az elszámolás
+            // tételeinek sorrendje a kiadott okiratba fagy be, a díjszabásból
+            // pedig a legfrissebb érvényes kell. Postgresen a rendezés nélküli
+            // lekérdezés két futásra másik sorrendet adhat.
+            orderBy: [{ tipus: "asc" }, { id: "asc" }],
             include: {
-              dijszabasok: true,
+              dijszabasok: { orderBy: [{ ervenyesTol: "asc" }, { id: "asc" }] },
               oraallasok: { orderBy: [{ datum: "asc" }, { id: "asc" }] },
             },
           },
@@ -45,8 +50,17 @@ export async function elszamolastOsszeallit(
   const meroorak: ElszamolasBemenet["meroorak"] = [];
 
   // Mérőórát csak akkor olvasunk, ha a jogviszony tényleges fogyasztás szerint
-  // számol el. Átalánynál és közös költségbe foglalt rezsinél nincs mit mérni.
+  // számol el. Átalánynál és közös költségbe foglalt rezsinél nincs mit mérni —
+  // és nincs is mit elszámolni: azt a havi előírás viszi. Ezt ki is mondjuk,
+  // mert egy üres tétellistából a bérbeadó azt hinné, elromlott valami.
   const meroorasElszamolas = jogviszony.rezsiElszamolas === "almero";
+  if (!meroorasElszamolas) {
+    kihagyott.push(
+      uzenet("rezsi.kihagyott.nem_meres", {
+        mod: uzenet(`rezsi.mod.${jogviszony.rezsiElszamolas}`),
+      }),
+    );
+  }
 
   for (const meroora of meroorasElszamolas ? jogviszony.ingatlan.meroorak : []) {
     const megnevezes = merooraNeve(meroora.tipus, meroora.almero);
@@ -81,14 +95,10 @@ export async function elszamolastOsszeallit(
     });
   }
 
-  const eredmeny = elszamolastKeszit({
-    idoszakKezdete,
-    idoszakVege,
-    meroorak,
-    // Átalányos elszámolásnál a mérőórák helyett a havi átalány megy ki.
-    atalanyFt: jogviszony.rezsiElszamolas === "atalany" ? jogviszony.rezsiAtalanyFt : 0,
-    kozosKoltsegFt: jogviszony.kozosKoltsegFt,
-  });
+  // Az elszámolás csak mért fogyasztást tartalmaz: a rezsiátalány és a közös
+  // költség havi előírásként megy, és ha itt is sorként jelenne meg, a bérlő
+  // ugyanazt kétszer fizetné.
+  const eredmeny = elszamolastKeszit({ idoszakKezdete, idoszakVege, meroorak });
 
   return { ...eredmeny, kihagyott };
 }
