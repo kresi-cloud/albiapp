@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { belepettFelhasznalo } from "@/lib/munkamenet";
 import { aktualisNyelv } from "@/lib/nyelv";
 import { szovegekNyelvvel } from "@/domain/szotar";
+import Link from "next/link";
 import { Jel } from "@/components/ui/Jel";
 import { BelepesUrlap } from "./BelepesUrlap";
 
@@ -40,6 +41,17 @@ export default async function Belepes() {
 
       <p className="rounded-kartya border border-dashed border-keret px-4 py-3 text-sm leading-relaxed text-halvany">
         {sz("belepes.meghivo")}
+      </p>
+
+      {/*
+        Fiókot eddig sehol nem lehetett készíteni: az alkalmazás csak a
+        példaadaton élt, és aki élesben kipróbálta volna, itt elakadt.
+      */}
+      <p className="text-center text-sm text-halvany">
+        {sz("belepes.regisztracio")}{" "}
+        <Link href="/regisztracio" className="font-medium text-szoveg underline underline-offset-2">
+          {sz("belepes.regisztracio_link")}
+        </Link>
       </p>
     </div>
   );

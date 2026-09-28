@@ -7,6 +7,7 @@ import {
   meghivoAllapota,
   meghivoLejarata,
   jelszotEllenoriz,
+  regisztraciotEllenoriz,
 } from "../belepes";
 
 describe("emailtNormalizal", () => {
@@ -115,5 +116,38 @@ describe("meghivoLejarata", () => {
   it("két hétre előre tesz", () => {
     const most = new Date(Date.UTC(2026, 8, 20));
     expect(meghivoLejarata(most).toISOString()).toBe("2026-10-04T00:00:00.000Z");
+  });
+});
+
+describe("regisztraciotEllenoriz", () => {
+  const JO = {
+    nev: "Próba Bérbeadó",
+    email: "uj@pelda.hu",
+    jelszo: "hosszu-jelszo-2026",
+    jelszoUjra: "hosszu-jelszo-2026",
+  };
+
+  it("a kitöltött űrlapot elfogadja", () => {
+    expect(regisztraciotEllenoriz(JO)).toEqual([]);
+  });
+
+  it("név nélkül nem megy", () => {
+    expect(regisztraciotEllenoriz({ ...JO, nev: "   " }).map((h) => h.kulcs)).toEqual([
+      "fiok.hiba.nev",
+    ]);
+  });
+
+  it("a rossz alakú címet megfogja", () => {
+    expect(regisztraciotEllenoriz({ ...JO, email: "nem cim" }).map((h) => h.kulcs)).toEqual([
+      "fiok.hiba.email",
+    ]);
+  });
+
+  it("a rövid és az el nem gépelt jelszót ugyanúgy megfogja, mint a meghívónál", () => {
+    const hibak = regisztraciotEllenoriz({ ...JO, jelszo: "rovid", jelszoUjra: "masik" });
+    expect(hibak.map((h) => h.kulcs)).toEqual([
+      "jelszo.hiba.rovid",
+      "jelszo.hiba.nem_egyezik",
+    ]);
   });
 });

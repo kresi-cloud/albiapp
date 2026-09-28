@@ -67,3 +67,24 @@ export const MEGHIVO_ELETTARTAM_NAP = 14;
 export function meghivoLejarata(most: Date): Date {
   return new Date(most.getTime() + MEGHIVO_ELETTARTAM_NAP * 24 * 60 * 60 * 1000);
 }
+
+/**
+ * Regisztráció szabályai.
+ *
+ * **Fiókot csak bérbeadó készít magának.** A bérlőt meghívó hozza, és ez nem
+ * kényelmi döntés: az elfogadás köti a fiókot a jogviszonyhoz, tehát egy
+ * magától regisztráló bérlő olyan fiókkal ülne itt, aminek semmi köze egy
+ * bérleményhez — a bérbeadó pedig nem tudná, melyik az övé.
+ */
+export function regisztraciotEllenoriz(bemenet: {
+  nev: string;
+  email: string;
+  jelszo: unknown;
+  jelszoUjra: unknown;
+}): Uzenet[] {
+  const hibak: Uzenet[] = [];
+  if (bemenet.nev.trim() === "") hibak.push(uzenet("fiok.hiba.nev"));
+  if (!emailNekLatszik(bemenet.email)) hibak.push(uzenet("fiok.hiba.email"));
+  hibak.push(...jelszotEllenoriz(bemenet.jelszo, bemenet.jelszoUjra));
+  return hibak;
+}

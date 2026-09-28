@@ -18,37 +18,46 @@ datasource db {
 }
 
 model Felhasznalo {
-  id             String    @id @default(cuid())
-  email          String    @unique
-  nev            String
-  jelszoHash     String
-  szerep         String // "berbeado" | "berlo"
-  nyelv          String    @default("hu") // "hu" | "en" — a bérlői oldal kétnyelvű
+  id              String    @id @default(cuid())
+  email           String    @unique
+  nev             String
+  jelszoHash      String
+  szerep          String // "berbeado" | "berlo"
+  nyelv           String    @default("hu") // "hu" | "en" — a bérlői oldal kétnyelvű
   /**
    * Mikor mutattuk meg neki az adatkérést. Egyszer kérjük, nem minden
    * belépéskor: a hiányra onnantól teendő emlékeztet.
    */
-  adatkeresLatta DateTime?
+  adatkeresLatta  DateTime?
   /**
    * Amit a felhasználó magáról ír a bemutatkozó oldalán. Üres szöveg, nem
    * null: a null itt nem jelentene mást, mint hogy még nem írt semmit.
    */
-  bemutatkozas   String    @default("")
+  bemutatkozas    String    @default("")
   /**
    * Az üzemeltető. Nem a `szerep` harmadik értéke: a szerep azt dönti el,
    * melyik alkalmazást látja a felhasználó, a rendszergazda viszont nem egy
    * harmadik fajta felhasználó, hanem ugyanaz a bérbeadó vagy bérlő, akinek
    * emellett üzemeltetői rálátása is van. Felületről nem adható meg.
    */
-  rendszergazda  Boolean   @default(false)
+  rendszergazda   Boolean   @default(false)
+  /**
+   * Ettől a pillanattól érvényes munkamenet. A jelszócsere ezt állítja át, és
+   * ezzel a korábban kiadott jegyek elvesztik az érvényüket: a süti harminc
+   * napig él, tehát enélkül a jelszócsere pont attól nem venné el a
+   * hozzáférést, akinek a régi jelszava megvolt. Ugyanaz az elv, mint a
+   * letiltásnál: a belépés tiltása önmagában nem ér semmit, ha a már belépett
+   * munkamenet zavartalanul dolgozik tovább.
+   */
+  munkamenetekTol DateTime?
   /**
    * Letiltott fiók: nem tud belépni. Nem törlés — a jogviszony, a befizetés
    * és az okirat a másik félé is, és egy törölt fiókkal azok is eltűnnének.
    * A dátum azért dátum és nem logikai jelölő, mert az üzemeltetőnek az a
    * kérdése, hogy mióta, nem az, hogy egyáltalán.
    */
-  letiltva       DateTime?
-  letrehozva     DateTime  @default(now())
+  letiltva        DateTime?
+  letrehozva      DateTime  @default(now())
 
   ingatlanok              Ingatlan[]
   adminNaploja            AdminNaplo[]            @relation("AdminNaploja")

@@ -233,6 +233,30 @@ Minden oldal és minden szerveroldali művelet a belépett felhasználóból ind
 (`kotelezoSzerep`), soha nem abból, amit az űrlap küld. A bérbeadói adatokhoz a
 lekérdezés mindig szűr a tulajdonosra, a bérlői oldal a saját jogviszonyaira.
 
+**Fiókot magának csak a bérbeadó készít** (`/regisztracio`). A bérlőt meghívó
+hozza, és ez nem kényelmi döntés: az elfogadás köti a fiókot a jogviszonyhoz,
+tehát egy magától regisztráló bérlői fiók nem tartozna sehová — a bérbeadó
+pedig nem tudná, melyik az övé. Ami ezen az úton is megmarad: aki a címeket
+végigpróbálja, a „már van fiók" üzenetből megtudja, melyik cím foglalt. Ugyanaz
+a rés, mint a meghívónál, és ugyanaz zárja le: e-mailes megerősítés. Némán
+elfogadni nem lehet, mert akkor az sem tudná meg, hogy nem lett fiókja, aki
+tényleg most regisztrál.
+
+A saját fiók lapja (`/fiok`) mindkét szerepé: név, jelszó és e-mail-cím. Az
+elgépelt név eddig ott maradt minden kiadott okiraton, a jelszócseréhez pedig az
+adatbázishoz kellett nyúlni. A jelszót és a címet **a mostani jelszó ismeretében**
+lehet átírni: enélkül egy nyitva hagyott gépnél bárki átvenné a fiókot, és a
+gazdája csak a következő belépésnél venné észre.
+
+**A jelszócsere a többi eszközt is kilépteti.** A süti harminc napig él, tehát
+enélkül a csere pont attól nem venné el a hozzáférést, akinek a régi jelszó a
+kezébe került. Ehhez a munkamenetjegy a kiadás idejét is hordozza, a felhasználó
+sora pedig egy dátumot (`munkamenetekTol`), ami elé eső jegyet nem fogadunk el —
+ugyanaz az elv, mint a letiltásnál: a belépés tiltása önmagában nem ér semmit,
+ha a már belépett munkamenet zavartalanul dolgozik tovább. A saját munkamenetet
+a csere rögtön újranyitja, különben a felhasználó a saját jelszócseréjétől lépne
+ki.
+
 A bérlő fiókja meghívóval készül. **Bérlői helyre csak bérlői, nem
 letiltott fiók ülhet**: a szerep azt dönti el, melyik alkalmazást látja a
 felhasználó, tehát egy bérbeadói fiók a bérlői helyen egyetlen bérlői lapot
