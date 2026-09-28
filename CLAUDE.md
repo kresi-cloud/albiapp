@@ -128,6 +128,30 @@ korábbi véget is kaphatna: az már egyeztetett előírt tételeket törölne, 
 záró hónapot újraarányosítaná. Aki a dátumot javítani akarja, előbb visszavonja
 a lezárást — az vissza is számolja, amit az első elvett —, és utána zár le újra.
 
+**A kiköltözés napja nem lehet korábbi a beérkezésnél.** Ennélkül egy
+elgépelt évszám minden előírást a „kiköltözés utáni" közé sorol, és a
+lezárás mindet törli — a felület pedig sikert jelent.
+
+**És amiről valamelyik fél már nyilatkozott, azt a lezárás nem viszi el.** A
+bizonylat és a beérkezés-igazolás az előíráson lóg kaskáddal, tehát egy
+törölt sorral a másik fél feltöltött fájlja és a „erre nem érkezett pénz"
+nyilatkozata is végleg elveszne, a kiadott elszámolás pedig előírás nélkül
+maradna — és a visszavonás sem hozná vissza, mert a pótlás csak új, üres
+sort tud csinálni. Ezeket megtartjuk, és a felület meg is mondja, hányat és
+miért.
+
+**Az arányosítás a saját sorainkra fut**, azokra, amiket a rendszer számolt:
+a teljes havi összegre és a `reszletezes`-sel jelölt töredékre egyaránt.
+Amit ember írt át, ahhoz nem nyúlunk. A töredék korábban kimaradt, és pont
+az esett ki vele, amikor valaki egy hónapon belül költözött be és ki.
+
+**Akinek már állítottunk ki igazolást, azt nem lehet levenni a
+jogviszonyról**: az `Igazolas` a bérlő során lóg, tehát a levétel a kiadott
+okiratot is elvinné, mindkét fél tárából — holott az a bérlőé is. Aki
+igazolást kapott, az ténylegesen ott lakott; az ő részvételét a jogviszony
+lezárása zárja le. A levétel arra való, akit tévedésből vagy még okirat
+előtt vettek fel.
+
 A lezárás ezért eltárol egy második dátumot is (`ertekelesAblak`): a `vege` a
 kiköltözés beírt napja, ez pedig az, ahonnan a lezáráshoz kötött határidők
 futnak. A kettő eltér, ha a bérbeadó utólag rögzíti a lezárást — a bérlő addig
@@ -727,6 +751,13 @@ Kétirányú és csoportos között nincs tárolt különbség: a résztvevők s
 következik. Aki még nem lépett be a saját fiókjába, nem szerepel a címzettek
 közt — neki nincs hová írni —, és a felület ezt ki is mondja, különben úgy tűnne,
 eltűnt a listából.
+
+A kilencven nap **nem a beírt kiköltözési naptól fut, hanem attól, amit a
+lezárás eltárolt** (`ertekelesAblak`) — ugyanaz a dátum, amin az értékelési
+ablak is indul, és ugyanazért: ha a bérbeadó utólag rögzíti a lezárást, a
+bérlő addig nem is látta, hogy a bérlet lezárult. A `vege`-től számolva egy
+fél évvel később rögzített lezárás azonnal archivált szálat adna: egy nap sem
+maradna az óvadékot megbeszélni, pedig pont azért van a kilencven nap.
 
 Az archiválás sem tárolt: a jogviszony lezárásából és a mai napból jön
 (`ARCHIVALAS_NAP`, 90 nap). Így egy elkattintott lezárás visszavonása magától

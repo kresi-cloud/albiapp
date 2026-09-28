@@ -15,6 +15,7 @@ import {
   fajtaja,
   ugyanazATarsasag,
   uzenetetEllenoriz,
+  zarasKezdete,
   type Resztvevo,
   type Uzenetsor,
 } from "@/domain/beszelgetes";
@@ -87,7 +88,7 @@ export async function tarsasagai(ki: Ki, most: Date): Promise<JogviszonyTarsasag
       jogviszonyId: jogviszony.id,
       ingatlanNev: jogviszony.ingatlan.megnevezes,
       vege: jogviszony.vege,
-      archivalt: archivalt(jogviszony.vege, most),
+      archivalt: archivalt(zarasKezdete(jogviszony.vege, jogviszony.ertekelesAblak), most),
       resztvevok,
     };
   });
@@ -101,7 +102,11 @@ function nezette(
     resztvevok: { felhasznalo: { id: string; nev: string; szerep: string } }[];
     uzenetek: { szoveg: string }[];
     _count: { uzenetek: number };
-    jogviszony: { vege: Date | null; ingatlan: { megnevezes: string } };
+    jogviszony: {
+      vege: Date | null;
+      ertekelesAblak: Date | null;
+      ingatlan: { megnevezes: string };
+    };
   },
   ki: Ki,
   most: Date,
@@ -119,8 +124,14 @@ function nezette(
     nev: beszelgetesNeve(resztvevok, ki.id),
     fajta: fajtaja(resztvevok),
     resztvevok,
-    jogviszonyVege: beszelgetes.jogviszony.vege,
-    archivalt: archivalt(beszelgetes.jogviszony.vege, most),
+    jogviszonyVege: zarasKezdete(
+      beszelgetes.jogviszony.vege,
+      beszelgetes.jogviszony.ertekelesAblak,
+    ),
+    archivalt: archivalt(
+      zarasKezdete(beszelgetes.jogviszony.vege, beszelgetes.jogviszony.ertekelesAblak),
+      most,
+    ),
     utolsoUzenet: beszelgetes.utolsoUzenet,
     elonezet: elonezet(beszelgetes.uzenetek[0]?.szoveg ?? ""),
     darab: beszelgetes._count.uzenetek,
@@ -224,7 +235,9 @@ export async function uzenetetKuld(
     include: { jogviszony: true },
   });
   if (!sor) return "nincs_jogosultsag";
-  if (archivalt(sor.jogviszony.vege, most)) return "archivalt";
+  if (archivalt(zarasKezdete(sor.jogviszony.vege, sor.jogviszony.ertekelesAblak), most)) {
+    return "archivalt";
+  }
 
   await prisma.$transaction([
     prisma.beszelgetesUzenet.create({

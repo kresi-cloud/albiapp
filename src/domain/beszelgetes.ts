@@ -72,19 +72,37 @@ export function fajtaNeve(fajta: BeszelgetesFajta): Uzenet {
  * visszanyitja a beszélgetést. Ha ütemezett feladat írná át egy mezőben, egy
  * elkattintott lezárás csendben lezárná a szálat, és a visszavonás nem hozná
  * vissza — ugyanaz a hiba, amit az előírásoknál már egyszer megkerültünk.
+ *
+ * **A kilencven nap nem a beírt kiköltözési naptól fut**, hanem attól, amit a
+ * lezárás pillanatában eltároltunk — ugyanaz a dátum, amin az értékelési
+ * ablak is indul. A kettő rendes esetben egybeesik, de ha a bérbeadó utólag
+ * rögzíti a lezárást, nem: a bérlő addig nem is látta, hogy a bérlet lezárult,
+ * tehát kérdezni sem tudott. A `vege`-től számolva egy fél évvel később
+ * rögzített lezárás azonnal archivált szálat adna: egy nap sem maradna az
+ * óvadékot és az utolsó rezsiszámlát megbeszélni, pedig pont azért van a
+ * kilencven nap. És a dátum a bérbeadó kezében van.
  */
-export function archivalt(
-  jogviszonyVege: Date | null,
-  most: Date,
-): boolean {
-  if (!jogviszonyVege) return false;
-  return napKulonbseg(jogviszonyVege, most) > ARCHIVALAS_NAP;
+export function archivalt(zarasKezdete: Date | null, most: Date): boolean {
+  if (!zarasKezdete) return false;
+  return napKulonbseg(zarasKezdete, most) > ARCHIVALAS_NAP;
 }
 
 /** Hány nap van még hátra a nyitva tartásból. Nulla vagy kevesebb: lejárt. */
-export function hatralevoNap(jogviszonyVege: Date | null, most: Date): number {
-  if (!jogviszonyVege) return ARCHIVALAS_NAP;
-  return ARCHIVALAS_NAP - napKulonbseg(jogviszonyVege, most);
+export function hatralevoNap(zarasKezdete: Date | null, most: Date): number {
+  if (!zarasKezdete) return ARCHIVALAS_NAP;
+  return ARCHIVALAS_NAP - napKulonbseg(zarasKezdete, most);
+}
+
+/**
+ * Honnan fut a kilencven nap: amit a lezárás eltárolt, és csak annak
+ * hiányában a beírt kiköltözési nap. A régi, a mező előtt lezárt
+ * jogviszonyoknál nincs tárolt kezdet, és ott a `vege` a legjobb, amink van.
+ */
+export function zarasKezdete(
+  vege: Date | null,
+  ertekelesAblak: Date | null,
+): Date | null {
+  return ertekelesAblak ?? vege;
 }
 
 /**
@@ -92,8 +110,8 @@ export function hatralevoNap(jogviszonyVege: Date | null, most: Date): number {
  * beszélgetés még él: a bérlő tudja meg előre, meddig van hol kérdeznie, és ne
  * akkor szembesüljön vele, amikor már nem tud írni.
  */
-export function archivalasNapja(jogviszonyVege: Date): Date {
-  const nap = napEleje(jogviszonyVege);
+export function archivalasNapja(zarasKezdete: Date): Date {
+  const nap = napEleje(zarasKezdete);
   return new Date(nap.getTime() + ARCHIVALAS_NAP * 24 * 60 * 60 * 1000);
 }
 

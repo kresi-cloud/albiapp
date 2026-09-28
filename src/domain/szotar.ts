@@ -1507,6 +1507,24 @@ export const SZOTAR: Szotar = {
     hu: "Lezárva. {torolt} későbbi előírás törölve, {aranyositott} előírás arányosítva a kiköltözés napjáig.",
     en: "Closed. {torolt} later scheduled items removed, {aranyositott} pro-rated to the move-out day.",
   },
+  "valasz.lezaras_vege_a_kezdet_elott": {
+    hu:
+      "A kiköltözés napja korábbi a beérkezésnél: a bérlet {kezdete} napján " +
+      "kezdődött. Ellenőrizd a dátumot.",
+    en:
+      "The move-out day is earlier than the move-in: the tenancy started on " +
+      "{kezdete}. Please check the date.",
+  },
+  "valasz.lezarva_megtartott": {
+    hu:
+      "Lezárva. {torolt} későbbi előírás törölve, {aranyositott} előírás " +
+      "arányosítva a kiköltözés napjáig. {megtartott} előírást megtartottunk, " +
+      "mert valamelyikőtök már nyilatkozott róla.",
+    en:
+      "Closed. {torolt} later scheduled items removed, {aranyositott} pro-rated " +
+      "to the move-out day. {megtartott} were kept, because one of you has " +
+      "already recorded something against them.",
+  },
   "valasz.ujranyitva": {
     hu: "Újranyitva; a havi előírások megint keletkeznek.",
     en: "Reopened; monthly items will be created again.",
@@ -3306,6 +3324,17 @@ export const SZOTAR: Szotar = {
   "berlok.hiba.jogviszony_nem_tied": {
     hu: "Ez a jogviszony nem a tiéd.",
     en: "This tenancy is not yours.",
+  },
+  "berlok.hiba.van_igazolasa": {
+    hu:
+      "{nev} nem vehető le: {darab} bérbeadói igazolás szól a nevére, és az " +
+      "a levétellel eltűnne mindkettőtök dokumentumtárából. A kiadott okirat a " +
+      "bérlőé is. Ha már nem lakik ott, a jogviszonyt zárd le.",
+    en:
+      "{nev} cannot be removed: {darab} landlord certificate(s) are in their " +
+      "name, and removing them would delete those from both document libraries. " +
+      "An issued document belongs to the tenant too. If they have moved out, " +
+      "close the tenancy instead.",
   },
   "berlok.hiba.utolso_berlo": {
     hu: "Az utolsó bérlőt nem veszem le: jogviszony bérlő nélkül nem értelmes.",

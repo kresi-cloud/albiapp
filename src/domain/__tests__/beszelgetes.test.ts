@@ -14,6 +14,7 @@ import {
   nyitvatartasSzovege,
   ugyanazATarsasag,
   uzenetetEllenoriz,
+  zarasKezdete,
   type Resztvevo,
 } from "../beszelgetes";
 
@@ -57,6 +58,22 @@ describe("archiválás a lezárás után", () => {
   it("a kilencvenegyedik napon archivált", () => {
     const egyelMasnap = new Date(vege.getTime() + (ARCHIVALAS_NAP + 1) * 24 * 60 * 60 * 1000);
     expect(archivalt(vege, egyelMasnap)).toBe(true);
+  });
+
+  it("a kilencven nap a tárolt kezdettől fut, nem a beírt kiköltözéstől", () => {
+    // Utólag rögzített lezárás: a bérlő fél évvel költözött ki, de csak most
+    // tudta meg, hogy a bérlet lezárult. A `vege`-től számolva a szál azonnal
+    // archivált lenne, és egy nap sem maradna az óvadékot megbeszélni.
+    const rogzites = nap(2026, 12, 15);
+    expect(zarasKezdete(vege, rogzites)).toEqual(rogzites);
+    expect(archivalt(zarasKezdete(vege, rogzites), rogzites)).toBe(false);
+    expect(archivalt(vege, rogzites)).toBe(true);
+  });
+
+  it("tárolt kezdet nélkül a beírt kiköltözés marad", () => {
+    // A mező előtt lezárt jogviszonyoknál a `vege` a legjobb, amink van.
+    expect(zarasKezdete(vege, null)).toEqual(vege);
+    expect(zarasKezdete(null, null)).toBeNull();
   });
 
   it("az archiválás napját ki tudjuk mondani előre", () => {

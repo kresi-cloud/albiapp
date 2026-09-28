@@ -16,13 +16,22 @@
 
 import { ablakotKezd } from "@/domain/ertekeles";
 import { eloirasok, idoszakHonapja } from "@/domain/eloirasok";
+import { napEleje } from "@/domain/penz";
 import { jogviszonyAdatta as adatta } from "@/lib/eloirasok";
 import { prisma } from "@/lib/db";
 
 export type LezarasEredmeny =
-  | { allapot: "kesz"; toroltEloirasok: number; aranyositottEloirasok: number }
+  | {
+      allapot: "kesz";
+      toroltEloirasok: number;
+      aranyositottEloirasok: number;
+      /** Amit a lezárás nem törlött, mert valamelyik fél már nyilatkozott róla. */
+      megtartottEloirasok: number;
+    }
   | { allapot: "nincs_jogosultsag" }
-  | { allapot: "mar_lezart" };
+  | { allapot: "mar_lezart" }
+  /** A vége nem lehet korábbi a kezdetnél: abból minden előírás törlése lenne. */
+  | { allapot: "vege_a_kezdet_elott"; kezdete: Date };
 
 function honapKulcs(nap: Date): string {
   return `${nap.getUTCFullYear()}-${String(nap.getUTCMonth() + 1).padStart(2, "0")}`;
@@ -57,6 +66,15 @@ export async function jogviszonytLezar(
     // számolja, amit az első elvett —, és utána zár le újra.
     if (jogviszony.statusz !== "elo") return { allapot: "mar_lezart" };
 
+    // A kiköltözés napja nem lehet korábbi a beköltözésnél.
+    //
+    // Ennélkül egy elgépelt évszám minden előírást a „kiköltözés utáni" közé
+    // sorolt: Anna harmincegy előírása nullára ment, a kiadott
+    // rezsielszámolás előírás nélkül maradt, a felület pedig sikert jelentett.
+    if (napEleje(vege).getTime() < napEleje(jogviszony.kezdete).getTime()) {
+      return { allapot: "vege_a_kezdet_elott", kezdete: jogviszony.kezdete };
+    }
+
     const zaroHonap = honapKulcs(vege);
 
     // A kiköltözés hónapja utáni előírások: az az időszak már nincs.
@@ -65,9 +83,36 @@ export async function jogviszonytLezar(
     // kaphat sorszámot („2026-09/2"), és az szövegesen nagyobb a hónapnál —
     // szeptemberi kiköltözésnél a lezárás így egy kiadott elszámolás előírását
     // törölte, az okirat pedig előírás nélkül maradt.
-    const torlendo = jogviszony.eloirtTetelek.filter(
+    const kikoltozesUtan = jogviszony.eloirtTetelek.filter(
       (tetel) => idoszakHonapja(tetel.idoszak) > zaroHonap,
     );
+
+    // Amiről valamelyik fél már nyilatkozott, azt a lezárás nem viszi el.
+    //
+    // A bizonylat és a beérkezés-igazolás `onDelete: Cascade` az előíráson,
+    // tehát egy törölt sorral a másik fél feltöltött fájlja és a „erre nem
+    // érkezett pénz" nyilatkozata is végleg elveszne, a kiadott elszámolás
+    // pedig előírás nélkül maradna — és a visszavonás sem hozná vissza,
+    // mert a pótlás csak új, üres sort tud csinálni. Ugyanaz az elv, mint a
+    // bizonylatkérés kikapcsolásánál: egy művelet ne tüntesse el csendben a
+    // másik fél fájlját.
+    const erintett =
+      kikoltozesUtan.length === 0
+        ? []
+        : await tx.eloirtTetel.findMany({
+            where: {
+              id: { in: kikoltozesUtan.map((tetel) => tetel.id) },
+              OR: [
+                { bizonylatok: { some: {} } },
+                { berbeadoiIgazolasok: { some: {} } },
+                { elszamolas: { isNot: null } },
+              ],
+            },
+            select: { id: true },
+          });
+    const megtartott = new Set(erintett.map((tetel) => tetel.id));
+    const torlendo = kikoltozesUtan.filter((tetel) => !megtartott.has(tetel.id));
+
     if (torlendo.length > 0) {
       await tx.eloirtTetel.deleteMany({
         where: { id: { in: torlendo.map((tetel) => tetel.id) } },
@@ -114,8 +159,16 @@ export async function jogviszonytLezar(
       );
       if (!meglevo || meglevo.osszegFt === eloiras.osszegFt) continue;
 
-      // Csak a generált, teljes havi összeget igazítjuk. Amit ember írt át,
-      // ahhoz nem nyúlunk: az a bérbeadó döntése volt.
+      // Csak a saját sorunkat igazítjuk. Amit ember írt át, ahhoz nem nyúlunk:
+      // az a bérbeadó döntése volt.
+      //
+      // Saját kétféle lehet: a teljes havi összeg, vagy egy már arányosított
+      // töredék, amit a `reszletezes` jelöl. A második korábban kimaradt, és
+      // pont az esett ki vele, amikor valaki egy hónapon belül költözött be
+      // és ki: a beköltözés hónapja már nem a teljes havi összeg volt, tehát
+      // a lezárás nem nyúlt hozzá — húrom hét helyett három hét plusz a
+      // hónap végéig járó rész maradt kiírva. Ugyanezt a jelölést nézi a
+      // lezárás visszavonása is.
       const teljesHavi =
         eloiras.tipus === "berleti_dij"
           ? frissitett.berletiDijFt
@@ -124,7 +177,8 @@ export async function jogviszonytLezar(
             : eloiras.tipus === "elofizetes"
               ? (frissitett.elofizetesek.find((sor) => sor.id === eloiras.forrasId)?.haviDijFt ?? 0)
               : frissitett.rezsiAtalanyFt;
-      if (meglevo.osszegFt !== teljesHavi) continue;
+      const sajatSor = meglevo.reszletezes !== null || meglevo.osszegFt === teljesHavi;
+      if (!sajatSor) continue;
 
       await tx.eloirtTetel.update({
         where: { id: meglevo.id },
@@ -140,6 +194,7 @@ export async function jogviszonytLezar(
       allapot: "kesz",
       toroltEloirasok: torlendo.length,
       aranyositottEloirasok: aranyositott,
+      megtartottEloirasok: megtartott.size,
     };
   });
 }
