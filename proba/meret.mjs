@@ -265,6 +265,27 @@ async function letezesOnprobaja(oldal) {
     (valasz?.status() ?? 0) >= 400,
     `a létezésellenőrzés elutasít egy nem létező lapot (válasz: ${valasz?.status() ?? "nincs"})`,
   );
+
+  // És ha már itt vagyunk, meg is mérjük a saját hibalapot. A listába nem
+  // tehettük be, mert ott 200-as választ várunk minden laptól — ez a lap
+  // viszont épp 404-gyel jön. Ugyanaz a tanulság, mint a véglegesített
+  // szerződésnél: amit a lista nem tud előállítani, azt mérje meg az az oldal,
+  // amelyik igen.
+  // Hogy tényleg a miénk jön, és nem a keretrendszer angol lapja: annak a
+  // címsora a puszta „404", és nincs rajta hová továbbmenni.
+  const cim = (await oldal.locator("h1").first().textContent())?.trim() ?? "";
+  all(cim !== "" && cim !== "404", `a hibalap a saját lapunk, nem a keretrendszeré (cím: „${cim}")`);
+  all(
+    (await oldal.locator('a[href="/belepes"]').count()) > 0,
+    "a hibalapról a belépés is elérhető, nem csak a böngésző vissza gombja",
+  );
+  const tobblet = await tullogas(oldal);
+  all(tobblet <= 1, `a hibalap elfér ${SZELESSEG} képponton (túllógás: ${tobblet}px)`);
+  const magassag = await oldal.evaluate(() => document.documentElement.scrollHeight);
+  all(
+    magassag / KEPERNYO <= MAX_KEPERNYO,
+    `a hibalap nem hosszabb ${MAX_KEPERNYO} telefonképernyőnél (${magassag}px)`,
+  );
 }
 
 /**

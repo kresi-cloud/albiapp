@@ -1303,6 +1303,14 @@ lehet visszavenni. Amit eltesz, az a fordítás állandó része
 avulnak, és senkié. A POST-hoz hozzá sem nyúl: minden kiszolgálói művelet
 érintetlenül megy tovább.
 
+Az ismeretlen vagy elavult címre a **saját hibalapunk** jön
+(`src/app/not-found.tsx`), a választott nyelven, és van róla hová továbbmenni: a
+kezdőlapra és a belépésre is. A keretrendszer alapértelmezett lapja angol volt,
+és navigáció nélküli — egy zsákutca, amiből csak a böngésző vissza gombja
+vezetett ki. A méretkapu listájába nem fér bele, mert ott minden laptól 200-as
+választ várunk; a létezésellenőrzés önpróbája méri meg, ott, ahol amúgy is egy
+nem létező címre lép.
+
 A kapcsolat nélküli lap (`/offline`) **mindkét nyelven megszólal**. A lap a
 készüléken áll el, nem a kérés pillanatában készül: nem tudjuk, ki nézi majd. A
 szervizmunkás süti nélkül kéri le és teszi el, hogy a tárolt példányban semmi
