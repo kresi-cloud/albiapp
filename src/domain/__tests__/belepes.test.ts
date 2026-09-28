@@ -3,6 +3,7 @@ import {
   emailNekLatszik,
   emailtNormalizal,
   JELSZO_MIN_HOSSZ,
+  LEGTOBB_ROSSZ_JELSZO,
   meghivoAllapota,
   meghivoLejarata,
   jelszotEllenoriz,
@@ -83,6 +84,30 @@ describe("meghivoAllapota", () => {
   it("a lejárat pillanatában már nem érvényes", () => {
     const allapot = meghivoAllapota({ lejar: most, felhasznalva: null }, most);
     expect(allapot).toBe("lejart");
+  });
+
+  it("az öt rossz jelszó elégeti a meghívót, akkor is, ha még él", () => {
+    const allapot = meghivoAllapota(
+      {
+        lejar: new Date(Date.UTC(2026, 8, 25)),
+        felhasznalva: null,
+        rosszJelszo: LEGTOBB_ROSSZ_JELSZO,
+      },
+      most,
+    );
+    expect(allapot).toBe("kimerult");
+  });
+
+  it("a korlát alatt maradó elgépelés még nem égeti el", () => {
+    const allapot = meghivoAllapota(
+      {
+        lejar: new Date(Date.UTC(2026, 8, 25)),
+        felhasznalva: null,
+        rosszJelszo: LEGTOBB_ROSSZ_JELSZO - 1,
+      },
+      most,
+    );
+    expect(allapot).toBe("ervenyes");
   });
 });
 

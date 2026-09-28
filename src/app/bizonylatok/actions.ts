@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { bizonylatotEllenoriz } from "@/domain/bizonylat";
+import { bizonylatotEllenoriz, tipusATartalombol } from "@/domain/bizonylat";
 import { bizonylatKerheto, bizonylatotMent, bizonylatotTorol } from "@/lib/bizonylat";
 import { belepettFelhasznalo, szerepe } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
@@ -51,17 +51,22 @@ export async function bizonylatotFeltolt(
   const fajl = urlap.get("bizonylat");
   if (!(fajl instanceof File)) return hiba(sz("bizonylat.hiba.ures"), ["bizonylat"]);
 
+  const tartalom = new Uint8Array(await fajl.arrayBuffer());
+
+  // A típust a tartalomból állapítjuk meg, nem a böngésző bemondásából: ezt a
+  // fájlt a másik fél tölti majd le a mi címünkről.
+  const valodiTipus = tipusATartalombol(tartalom);
   const baj = bizonylatotEllenoriz({
     nev: fajl.name,
-    tipus: fajl.type,
+    tipus: valodiTipus ?? "",
     meretBajt: fajl.size,
   });
   if (baj) return hiba(u(baj), ["bizonylat"]);
 
   const sikerult = await bizonylatotMent(ki, eloirtTetelId, {
     nev: fajl.name,
-    tipus: fajl.type,
-    tartalom: new Uint8Array(await fajl.arrayBuffer()),
+    tipus: valodiTipus ?? "",
+    tartalom,
   });
   if (!sikerult) return hiba(sz("bizonylat.hiba.lakotarse"), ["bizonylat"]);
 

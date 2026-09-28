@@ -373,6 +373,11 @@ model Meghivo {
   email             String
   lejar             DateTime
   felhasznalva      DateTime?
+  /// Hány rossz jelszó érkezett erre a meghívóra. Meglévő fiókra a meghívó a
+  /// fiók saját jelszavát kéri, a linket viszont a bérbeadó is birtokolja:
+  /// korlát nélkül ez a linken keresztüli jelszópróbálgatás lenne. A
+  /// `LEGTOBB_ROSSZ_JELSZO`-t elérve a meghívó elhasználtnak számít.
+  rosszJelszo       Int       @default(0)
   letrehozva        DateTime  @default(now())
 
   jogviszonyBerlo JogviszonyBerlo @relation(fields: [jogviszonyBerloId], references: [id], onDelete: Cascade)

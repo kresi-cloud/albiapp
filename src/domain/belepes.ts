@@ -38,13 +38,25 @@ export function jelszotEllenoriz(
   return hibak;
 }
 
-export type MeghivoAllapot = "ervenyes" | "lejart" | "felhasznalt";
+export type MeghivoAllapot = "ervenyes" | "lejart" | "felhasznalt" | "kimerult";
+
+/**
+ * Hány rossz jelszó után égetjük el a meghívót.
+ *
+ * Meglévő fiókra a meghívó elfogadása a fiók **saját** jelszavát kéri — ez az,
+ * ami miatt a bérbeadó nem köthet a jogviszonyához akárkit. A linket viszont a
+ * bérbeadó is birtokolja, tehát korlát nélkül ugyanez a mező jelszópróbálgató
+ * felület lenne, épp a fiók gazdája ellen. Öt próbálkozás kézi elgépelésre
+ * bőven elég, találgatásra nem.
+ */
+export const LEGTOBB_ROSSZ_JELSZO = 5;
 
 export function meghivoAllapota(
-  meghivo: { lejar: Date; felhasznalva: Date | null },
+  meghivo: { lejar: Date; felhasznalva: Date | null; rosszJelszo?: number },
   most: Date,
 ): MeghivoAllapot {
   if (meghivo.felhasznalva) return "felhasznalt";
+  if ((meghivo.rosszJelszo ?? 0) >= LEGTOBB_ROSSZ_JELSZO) return "kimerult";
   if (meghivo.lejar.getTime() <= most.getTime()) return "lejart";
   return "ervenyes";
 }

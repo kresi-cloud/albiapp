@@ -29,6 +29,19 @@ const nextConfig: NextConfig = {
   // A pg a hálózati kapcsolatot natív modulokra is bízhatja, ezért nem szabad a
   // szerveroldali csomagba fordítani: futásidőben kell betöltődnie.
   serverExternalPackages: ["pg", "@prisma/adapter-pg", "@prisma/client"],
+  experimental: {
+    /**
+     * A szerveroldali művelet törzsének felső határa.
+     *
+     * A Next alapból 1 MB-ot enged. A fénykép saját korlátja 8 MB, a
+     * bizonylaté 5: egy átlagos telefonos kép így el sem jutott addig, ahol a
+     * mi barátságos üzenetünk megszólalt volna, hanem keretrendszeri hibával
+     * bukott — a bérbeadó pedig azt hitte, elromlott. A 9 MB a nagyobbik saját
+     * korláttal és a többrészes űrlap ráadásával számol, tehát a „túl nagy"
+     * mindig a mi mondatunk marad.
+     */
+    serverActions: { bodySizeLimit: "9mb" },
+  },
   async headers() {
     return [{ source: "/:path*", headers: FEJLECEK }];
   },

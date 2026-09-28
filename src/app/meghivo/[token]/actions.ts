@@ -1,7 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { emailtNormalizal, jelszotEllenoriz, meghivoAllapota } from "@/domain/belepes";
+import {
+  emailtNormalizal,
+  jelszotEllenoriz,
+  meghivoAllapota,
+} from "@/domain/belepes";
 import { prisma } from "@/lib/db";
 import { jelszoEgyezik, jelszotHashel } from "@/lib/jelszo";
 import { munkamenetetIndit } from "@/lib/munkamenet";
@@ -50,6 +54,13 @@ export async function meghivotElfogad(
     // kétoldali elv, mint a befizetésnél vagy a fényképnél. Jelszót ez az út
     // továbbra sem ír felül, és újat sem állít be.
     if (!(await jelszoEgyezik(jelszo, letezo.jelszoHash))) {
+      // A rossz jelszót számoljuk, és a meghívó elfogy tőle. A link a
+      // bérbeadónál is megvan: korlát nélkül ez a mező a fiók gazdája elleni
+      // jelszópróbálgató felület lenne.
+      await prisma.meghivo.update({
+        where: { id: meghivo.id },
+        data: { rosszJelszo: { increment: 1 } },
+      });
       return {
         allapot: "hiba",
         uzenet: sz("meghivo.hiba.megleve_jelszo"),
@@ -88,16 +99,16 @@ export async function meghivotElfogad(
       };
     }
 
-    await prisma.$transaction([
-      prisma.jogviszonyBerlo.update({
-        where: { id: meghivo.jogviszonyBerloId },
-        data: { berloId: letezo.id },
-      }),
-      prisma.meghivo.update({
-        where: { id: meghivo.id },
-        data: { felhasznalva: new Date() },
-      }),
-    ]);
+    if (
+      !(await helyetElfoglal(meghivo.id, meghivo.jogviszonyBerloId, letezo.id))
+    ) {
+      return {
+        allapot: "hiba",
+        uzenet: sz("meghivo.hiba.mar_ul_ott"),
+        hibak: [],
+        nev,
+      };
+    }
 
     await munkamenetetIndit(letezo.id);
     redirect("/berlo");
@@ -115,17 +126,64 @@ export async function meghivotElfogad(
     data: { email, nev, jelszoHash, szerep: "berlo" },
   });
 
-  await prisma.$transaction([
-    prisma.jogviszonyBerlo.update({
-      where: { id: meghivo.jogviszonyBerloId },
-      data: { berloId: berlo.id, nev },
-    }),
-    prisma.meghivo.update({
-      where: { id: meghivo.id },
-      data: { felhasznalva: new Date() },
-    }),
-  ]);
+  if (
+    !(await helyetElfoglal(
+      meghivo.id,
+      meghivo.jogviszonyBerloId,
+      berlo.id,
+      nev,
+    ))
+  ) {
+    return {
+      allapot: "hiba",
+      uzenet: sz("meghivo.hiba.mar_ul_ott"),
+      hibak: [],
+      nev,
+    };
+  }
 
   await munkamenetetIndit(berlo.id);
   redirect("/berlo");
 }
+
+/**
+ * A hely elfoglalása és a meghívó elhasználása, feltételes írással.
+ *
+ * Mindkét írás `updateMany`, a feltétel a `where`-ben van: a hely csak akkor
+ * kerül a fiókhoz, ha **még üres**, és a meghívó csak akkor lesz elhasznált, ha
+ * **még nem az**. Feltétel nélküli `update`-tel két egyszerre megnyitott link
+ * mindegyike átment, az elsőként beülő fiókot pedig a második csendben
+ * leváltotta a jogviszonyról — épp az, amit a „meghívót csak üres helyre
+ * készítünk" szabály meg akar akadályozni. Egy kérésben, egy tranzakcióban:
+ * félúton megállva vagy foglalt hely maradna élő meghívóval, vagy fordítva.
+ */
+async function helyetElfoglal(
+  meghivoId: string,
+  jogviszonyBerloId: string,
+  berloId: string,
+  nev?: string,
+): Promise<boolean> {
+  return prisma
+    .$transaction(async (tx) => {
+      const hely = await tx.jogviszonyBerlo.updateMany({
+        where: { id: jogviszonyBerloId, berloId: null },
+        data: nev === undefined ? { berloId } : { berloId, nev },
+      });
+      if (hely.count === 0) return false;
+
+      const meghivo = await tx.meghivo.updateMany({
+        where: { id: meghivoId, felhasznalva: null },
+        data: { felhasznalva: new Date() },
+      });
+      if (meghivo.count === 0) throw new HelyFoglalt();
+
+      return true;
+    })
+    .catch((baj) => {
+      if (baj instanceof HelyFoglalt) return false;
+      throw baj;
+    });
+}
+
+/** Csak a tranzakció visszagördítésére való; a hívó `false`-ot lát belőle. */
+class HelyFoglalt extends Error {}

@@ -42,7 +42,14 @@ function frissit(): void {
   revalidatePath("/berlo");
 }
 
-/** Az a jogviszony, amihez a belépett felhasználónak tényleg köze van. */
+/**
+ * Az a jogviszony, amibe a belépett felhasználó **most** jelenthet be
+ * látogatást.
+ *
+ * A bérlőnél ehhez élő jogviszony kell: a kiköltözött bérlő már nem az ő
+ * lakásába enged be senkit, és a lezárt jogviszonyra bejelentett látogatásból a
+ * kiköltözött lakótársaknak is teendő lett.
+ */
 async function elerhetoJogviszony(
   felhasznaloId: string,
   szerep: string,
@@ -51,7 +58,7 @@ async function elerhetoJogviszony(
   return prisma.jogviszony.findFirst({
     where:
       szerep === "berlo"
-        ? { id: jogviszonyId, berlok: { some: { berloId: felhasznaloId } } }
+        ? { id: jogviszonyId, statusz: "elo", berlok: { some: { berloId: felhasznaloId } } }
         : { id: jogviszonyId, ingatlan: { tulajdonosId: felhasznaloId } },
     select: { id: true },
   });

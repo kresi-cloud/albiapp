@@ -29,7 +29,13 @@ export default async function MeghivoOldal({
       <div className="mx-auto grid max-w-sm gap-4">
         <Lapfej
           cim={sz("meghivo.nem_el")}
-          alcim={sz(allapot === "felhasznalt" ? "meghivo.felhasznalt" : "meghivo.lejart")}
+          alcim={sz(
+            allapot === "felhasznalt"
+              ? "meghivo.felhasznalt"
+              : allapot === "kimerult"
+                ? "meghivo.kimerult"
+                : "meghivo.lejart",
+          )}
         />
         <Link href="/belepes" className="underline underline-offset-2">
           {sz("belepes.cim")}

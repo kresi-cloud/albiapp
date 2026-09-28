@@ -36,12 +36,20 @@ function frissit(): void {
   revalidatePath("/berlo");
 }
 
-/** A jogviszony, amihez a belépett felhasználó hozzáfér, szerepével együtt. */
+/**
+ * A jogviszony, amibe a belépett felhasználó **most** bejelenthet.
+ *
+ * A bérlőnél az élő jogviszony a feltétel, nem a bérlősor megléte. A kiköltözött
+ * bérlő a régi lakásában már nem lakik: az ottani hiba onnantól a bérbeadóé és a
+ * következő bérlőé, a bejelentés viszont kiírta a bérbeadó e-mail-címét és
+ * telefonszámát, és teendőt csinált neki — évekkel a kiköltözés után is. Ugyanaz
+ * az elv, mint az óraállásnál: aki ott lakik, az jelent be.
+ */
 async function elerhetoJogviszony(felhasznaloId: string, szerep: string, jogviszonyId: string) {
   return prisma.jogviszony.findFirst({
     where:
       szerep === "berlo"
-        ? { id: jogviszonyId, berlok: { some: { berloId: felhasznaloId } } }
+        ? { id: jogviszonyId, statusz: "elo", berlok: { some: { berloId: felhasznaloId } } }
         : { id: jogviszonyId, ingatlan: { tulajdonosId: felhasznaloId } },
     select: { id: true },
   });
