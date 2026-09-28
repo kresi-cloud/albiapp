@@ -74,8 +74,14 @@ async function rogzites(oldal) {
 async function visszavonas(oldal) {
   const szakasz = await szakaszra(oldal);
   const sor = szakasz.locator(`[data-dijvaltozas="${honap(2)}"]`).first();
+  // A visszajelző sávra itt nem lehet várni: a visszavonással maga a sor tűnik
+  // el, és vele az űrlap meg a sáv is. Ezért a művelet válaszát várjuk meg, a
+  // megtörténtét pedig a hatásán mérjük — a sor tényleg nincs-e ott.
+  const valasz = oldal.waitForResponse(
+    (v) => v.request().method() === "POST" && v.url().includes("/berlok"),
+  );
   await sor.getByRole("button", { name: "Visszavonom" }).click();
-  await oldal.getByText(/A díjemelést visszavontuk/).first().waitFor({ timeout: 15000 });
+  await valasz;
 
   const ujra = await szakaszra(oldal);
   all(
