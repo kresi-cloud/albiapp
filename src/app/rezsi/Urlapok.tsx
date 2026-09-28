@@ -8,9 +8,10 @@ import {
   elszamolastKeszitAction,
   elszamolastKiad,
   oraallastRogzit,
+  oraallastVisszavonAction,
   type Eredmeny,
 } from "./actions";
-import { MEZO, GOMB } from "@/components/urlap";
+import { MEZO, GOMB, VISSZAVONO_GOMB } from "@/components/urlap";
 
 const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
 
@@ -178,6 +179,32 @@ export function ElbiralasUrlap({
         </button>
       </div>
       <Uzenetsav {...allapot} />
+    </form>
+  );
+}
+
+/**
+ * A saját óraállás visszavonása.
+ *
+ * Csak a sajátjáé, és csak addig, amíg nem épül rá elszámolás; mindkettőt a
+ * kiszolgáló tartja be, nem a gomb elrejtése.
+ */
+export function OraallasVisszavono({
+  oraallasId,
+  cimke,
+}: {
+  oraallasId: string;
+  cimke: string;
+}) {
+  const [allapot, kuldes, folyamatban] = useActionState(oraallastVisszavonAction, KEZDETI);
+
+  return (
+    <form action={kuldes} className="grid gap-1">
+      <input type="hidden" name="oraallasId" value={oraallasId} />
+      <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} />
+      <button type="submit" disabled={folyamatban} className={VISSZAVONO_GOMB}>
+        {cimke}
+      </button>
     </form>
   );
 }

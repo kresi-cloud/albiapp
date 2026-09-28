@@ -282,6 +282,40 @@ Az elszámolásban külön sor, nem a vízdíjba olvasztva, mert a vízszámla i
 írja, és a bérlő a kettőt össze fogja vetni. A fajtája ettől ugyanúgy mért
 fogyasztás, tehát az adóösszesítő továbbhárítva nem számolja bevételnek.
 
+### Mérőóra és díjszabás felvitele
+
+**A mérőóra a bérleményhez tartozik, nem a bérlethez**, ezért a felvitele is
+ott van (`/ingatlanok`), nem a rezsilapon: a következő bérlő ugyanazon az órán
+folytatja. A rezsilap csak kimondja, ha nincs mérőóra, és odamutat.
+
+A fajta és a mértékegység nem szabad szöveg (`src/domain/meroora.ts`): egy
+elgépelt „m³" és „m3" két különböző mérőórának látszana ugyanazon a lapon.
+A mértékegység a fajtához tartozik, és **csak addig javítható, amíg nincs
+egyetlen óraállás sem** — a meglévő mérések számai abban a mértékegységben
+értendők, és egy átírás visszamenőleg tenné mássá a korábbi elszámolásokat.
+Mérőórát törölni ugyanezért csak mérés és elszámolás nélkül lehet.
+
+**A díjszabást nem írjuk felül, hanem újat veszünk fel** későbbi érvényességi
+nappal, ugyanúgy, ahogy meglévő előírást sem írunk át: a régi elszámolások így
+ugyanazt mutatják, mint amikor kiadtuk őket. Ugyanarra a napra két díjszabás
+nem mehet — onnantól a sorrend döntené el, melyik érvényes, Postgresen pedig az
+azonos rendezőkulcsú sorok sorrendje nincs garantálva. Törölni csak azt lehet,
+amire még nem épül kiadott elszámolás.
+
+A csatornadíj mezője **csak vízórán** jelenik meg, és a kiszolgáló máshol el is
+utasítja: a mért köbméter után jár az elvezetés, villanyórán nincs mit
+elvezetni. A böngészős próba ezt hazudott űrlapmezővel próbálja ki.
+
+Az ár fillérben megy (`urlapFiller`), nem forintra kerekítve: a „36,90 Ft/kWh"
+kerekítve 37 lenne, és ezer kilowattórán már száz forint eltérés — pont az a
+fajta, amit a bérlő összead és megkérdez.
+
+**Óraállást mindenki a sajátját vonhatja vissza**, a másikét senki, és csak
+addig, amíg nem épül rá elszámolás: a kiadott okirat számai abból a mérésből
+jöttek. Elgépelt állás helyett ilyenkor új leolvasás jön, mai nappal. A lap
+azt is kiírja, ki rögzítette az állást — a bérbeadó eddig nem látta, hogy egy
+állás nem tőle származik.
+
 ## Az adóösszesítő alapelve
 
 Összesítő, nem bevallás; a felület is ezt mondja. A bevétel pénzforgalmi: a

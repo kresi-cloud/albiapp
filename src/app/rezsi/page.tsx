@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { datumNyelven, forintNyelven, szamNyelven } from "@/domain/nyelv";
 import { ElszamolasTetelek } from "@/components/ElszamolasTetelek";
 import { nevsor } from "@/domain/szerzodes";
@@ -5,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { merooraUzenet } from "@/lib/rezsi";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
-import { ElszamolasUrlap, KiadasUrlap, OraallasUrlap } from "./Urlapok";
+import { ElszamolasUrlap, KiadasUrlap, OraallasUrlap, OraallasVisszavono } from "./Urlapok";
 import { Lapfej, Sugo } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +32,11 @@ export default async function Rezsi() {
           meroorak: {
             include: {
               dijszabasok: { orderBy: [{ ervenyesTol: "desc" }, { id: "desc" }] },
-              oraallasok: { orderBy: [{ datum: "desc" }, { id: "desc" }], take: 1 },
+              oraallasok: {
+                orderBy: [{ datum: "desc" }, { id: "desc" }],
+                take: 1,
+                include: { rogzito: { select: { id: true, nev: true } } },
+              },
             },
           },
         },
@@ -72,7 +77,13 @@ export default async function Rezsi() {
             <h3 className="font-medium">{sz("rezsi.meroorak")}</h3>
             {jogviszony.ingatlan.meroorak.length === 0 ? (
               <p className="mt-1 text-sm text-halvany">
-                {sz("rezsi.nincs_meroora")}
+                {sz("rezsi.nincs_meroora")}{" "}
+                {/* A mérőóra a bérleményhez tartozik, nem a bérlethez: ott is
+                    vesszük fel. Enélkül a lap kimondta, hogy nincs mérőóra, de
+                    nem mondta meg, hol lesz. */}
+                <Link href="/ingatlanok" className="underline underline-offset-2">
+                  {sz("rezsi.meroorat_ide")}
+                </Link>
               </p>
             ) : (
               <ul className="mt-2 grid gap-4">
@@ -91,6 +102,23 @@ export default async function Rezsi() {
                             : sz("rezsi.nincs_oraallas")}
                         </span>
                       </div>
+                      {/* Ki rögzítette: a mérőórához a bérlő is hozzáír, és a
+                          bérbeadó eddig nem látta, hogy egy állás nem tőle
+                          származik. A visszavonás a sajátjáé — a másik félét
+                          senki nem viszi el. */}
+                      {utolso ? (
+                        <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-xs text-nagyon-halvany">
+                            {sz("meroora.rogzitette", { nev: utolso.rogzito.nev })}
+                          </span>
+                          {utolso.rogzito.id === berbeado.id ? (
+                            <OraallasVisszavono
+                              oraallasId={utolso.id}
+                              cimke={sz("meroora.allas_visszavon")}
+                            />
+                          ) : null}
+                        </div>
+                      ) : null}
                       <p className="text-xs text-nagyon-halvany">
                         {dijszabas
                           ? sz("rezsi.dijszabas", {

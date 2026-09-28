@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { oraallastVisszavon } from "@/lib/meroora";
 import { elszamolastOsszeallit } from "@/lib/rezsi";
 import { prisma } from "@/lib/db";
 import { datumNyelven } from "@/domain/nyelv";
@@ -326,4 +327,35 @@ export async function elszamolastElbiral(_elozo: Eredmeny, urlap: FormData): Pro
     uzenet: sz(dontes === "elfogadva" ? "rezsi.kesz.elfogadva" : "rezsi.kesz.vitatva"),
     hibak: [],
   };
+}
+
+/**
+ * Óraállás visszavonása.
+ *
+ * A sajátját mindenki visszavonhatja, a másikét senki — ugyanaz az elv, mint a
+ * befizetési nyilatkozatnál. Amire viszont már épül elszámolás, azt nem: a
+ * kiadott okirat számai abból a mérésből jöttek, és a bérlő már ki is fizette.
+ * Elgépelt állás helyett ilyenkor új leolvasás jön, mai nappal.
+ *
+ * Eddig egyáltalán nem volt visszavonás: egy elgépelt állás véglegesen bent
+ * maradt, és a monoton szabály miatt a mérő használhatatlanná is válhatott.
+ */
+export async function oraallastVisszavonAction(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
+  const felhasznalo = await belepettFelhasznalo();
+  const { sz } = await szovegek();
+  if (!felhasznalo) return hiba(sz("rezsi.hiba.lepj_be"));
+
+  const eredmeny = await oraallastVisszavon(
+    felhasznalo.id,
+    String(urlap.get("oraallasId") ?? ""),
+  );
+  if (eredmeny === "nem_tied") return hiba(sz("meroora.hiba.allas_nem_tied"));
+  if (eredmeny === "elszamolt") return hiba(sz("meroora.hiba.allas_elszamolt"));
+
+  revalidatePath("/rezsi");
+  revalidatePath("/berlo");
+  return { allapot: "kesz", uzenet: sz("meroora.allas_visszavonva"), hibak: [] };
 }
