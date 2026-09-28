@@ -962,7 +962,14 @@ kattintása volt, tehát nem is várhatjuk tőle.
 
 Az adatkezelési tájékoztató és a felhasználási feltételek szövege
 `src/domain/jogi.ts`-ben van, mindkét nyelven, és a lábléc minden oldalról
-elérhetővé teszi. Az üzemeltető adatai szögletes zárójellel kitöltendőként
+elérhetővé teszi. **A tájékoztató akkor ér valamit, ha felsorolja, amit
+tényleg kezelünk**: a bizonylatot és a fényképet, a beszélgetést, a
+látogatás-választ, az előfizetési nyilatkozatot, az értékelést, a
+bemutatkozást, az üzemeltetői naplót és a letiltást, a két sütit, és azt, hogy
+fióktörlés helyett letiltás van — mert a jogviszony és a kiadott okirat a másik
+félé is. A betekintőről sem azt mondjuk, hogy „semmilyen személyes adat": a
+bérlő nevét és a fizetési adatokat épp megmutatja, a bérbeadó nevét és a pontos
+címet nem. Az üzemeltető adatai szögletes zárójellel kitöltendőként
 állnak benne: az adatkezelő megnevezése jogi nyilatkozat, nem találjuk ki a
 bérbeadó helyett. Élesítés előtt ezeket ki kell tölteni.
 

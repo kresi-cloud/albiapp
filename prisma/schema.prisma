@@ -427,7 +427,8 @@ model BerloiIgazolas {
   @@index([jogviszonyId, utalasDatuma])
 }
 
-/// Amit a bankszámlakivonat mutat: egy sor a feltöltött kivonatból.
+/// Amit a bérbeadó mond a saját oldaláról: ekkor ennyi érkezett meg, vagy
+/// erre az előírásra nem jött pénz. Nem kivonatsor: kivonatot nem kérünk.
 model BerbeadoiIgazolas {
   id            String   @id @default(cuid())
   tulajdonosId  String
@@ -539,7 +540,7 @@ model Teendo {
   id           String   @id @default(cuid())
   cimzettId    String
   jogviszonyId String?
-  tipus        String // "befizetes_esedekes" | "eltereses_befizetes" | "kivonat_feltoltes" | "oraallas_bekeres" | ...
+  tipus        String // "befizetes_esedekes" | "eltereses_befizetes" | "bizonylat_keres" | "oraallas_bekeres" | ...
   cim          String
   leiras       String?
   esedekesseg  DateTime
@@ -785,7 +786,8 @@ model HibaUzenet {
 /**
  * Betekintő: a bérlő által kiadott, csak olvasható nézet a fizetési
  * előzményeire. A bérlőszűrés jogilag korlátos, ez viszont a bérlő saját
- * döntése a saját adatáról, és onnan jön, amit a bérbeadó kivonata igazol.
+ * döntése a saját adatáról, és abból jön, amit a bérbeadó a beérkezésről
+ * maga rögzített.
  */
 model Betekinto {
   id            String    @id @default(cuid())

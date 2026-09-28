@@ -230,10 +230,17 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
       });
     }
 
+    // A vásárlás napja előtti napokra nincs mit leírni: az ingatlan még nem
+    // volt a bérbeadóé. A dátumot az űrlap eddig is bekérte, és a hiányára a
+    // berlemeny.ts figyelmeztetése is hivatkozott — a számítás viszont nem
+    // használta, tehát egy július 1-jén vásárolt ingatlanra a január 1-je óta
+    // futó jogviszony egész évre adott leírást.
+    const beszerzes = ingatlan.beszerzesDatuma;
     const napok = berbeadottNapok(
       ev,
       ingatlan.jogviszonyok.map((jogviszony) => ({
-        kezdete: jogviszony.kezdete,
+        kezdete:
+          beszerzes && beszerzes > jogviszony.kezdete ? beszerzes : jogviszony.kezdete,
         vege: jogviszony.vege,
       })),
     );

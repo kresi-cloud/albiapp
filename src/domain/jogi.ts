@@ -55,6 +55,28 @@ const ADATKEZELES: Record<Nyelv, JogiOldal> = {
             "által igazolt befizetések.",
           "Hibabejelentéshez: a bejelentés szövege, a hozzá tartozó üzenetek, és hogy ki mikor " +
             "melyik állapotba lépett.",
+          "Vitás befizetéshez feltöltött bizonylat és a jegyzőkönyvhöz feltöltött fénykép, a " +
+            "feltöltő és a megerősítő személyével együtt. Bizonylatot csak vitás tételhez " +
+            "kérünk, és akkor is csak egyetlen utalásról; teljes bankszámlakivonatot soha.",
+          "A bérlet ügyeihez: a beszélgetések üzenetei, a szolgáltatói látogatásokra adott " +
+            "válaszok és az előfizetésekre adott jóváhagyás vagy kifogás az indoklásával.",
+          "A lezárt bérlet után: a kölcsönös értékelés szövege és pontjai, és amit magadról a " +
+            "bemutatkozó lapodra írsz.",
+          "Üzemeltetéshez: a fiók letiltásának ténye és ideje, és az üzemeltetői műveletek " +
+            "naplója (ki, mikor, melyik soron). Ebbe a naplóba személyes adat nem kerül, csak " +
+            "az érintett sor azonosítója.",
+          "Az üzemeltető a rendszer saját mérését is látja (pontosság, válaszidő, " +
+            "együttműködés). Ezt nem tároljuk: minden lekérdezéskor újraszámoljuk a már " +
+            "meglévő adatokból, és sem te, sem a másik fél nem látja.",
+        ],
+      },
+      {
+        cim: "Sütik",
+        bekezdesek: [
+          "Két sütit használunk, mindkettő működéshez szükséges: a belépési munkamenet " +
+            "azonosítója (30 napig él), és a választott nyelv (egy évig). Mérésre, " +
+            "hirdetésre vagy profilozásra sütit nem használunk, és külső szolgáltató sütijét " +
+            "sem tesszük ki.",
         ],
       },
       {
@@ -67,9 +89,10 @@ const ADATKEZELES: Record<Nyelv, JogiOldal> = {
           "A bérlő csak a saját jogviszonyához tartozó adatot látja, és a névre szóló " +
             "igazolásából is csak a sajátját.",
           "A betekintő linket a bérlő adja ki a saját fizetési előzményéről, és bármikor " +
-            "visszavonhatja. A link nem tartalmazza a bérbeadó nevét, a pontos címet, a " +
-            "lakótársak nevét és semmilyen személyes adatot, és magától is lejár. A " +
-            "megnyitásáról csak az időpontot tároljuk.",
+            "visszavonhatja. A link a bérlő nevét, a bérlemény településnevét és a fizetési " +
+            "adatokat mutatja; a bérbeadó nevét, a pontos címet, a lakótársakat és a " +
+            "szerződéshez megadott személyes adatokat nem, és magától is lejár. A " +
+            "megnyitásáról csak az időpontot tároljuk, IP-címet és böngészőazonosítót nem.",
         ],
       },
       {
@@ -78,8 +101,11 @@ const ADATKEZELES: Record<Nyelv, JogiOldal> = {
           "A kiállított okiratokat és a számviteli szempontból lényeges adatokat a jogszabályi " +
             "megőrzési idő végéig, egyébként a jogviszony megszűnését követő elszámolásig és az " +
             "esetleges igényérvényesítés elévüléséig.",
-          "A fiókod törlését bármikor kérheted; a törlés nem érinti a már kiállított, " +
-            "jogszabály alapján megőrzendő okiratokat.",
+          "A fiókod megszüntetését bármikor kérheted. A fiókot ilyenkor letiltjuk: a belépés " +
+            "megszűnik, az adatok viszont nem tűnnek el, mert a jogviszony, a befizetés és a " +
+            "kiadott okirat a másik félé is — egy törölt fiókkal az ő szerződése szólna olyan " +
+            "bérlőről, aki már nincs sehol. Ami csak rólad szól és nincs megőrzési ideje, azt " +
+            "kérésre töröljük.",
         ],
       },
       {
@@ -127,10 +153,33 @@ const ADATKEZELES: Record<Nyelv, JogiOldal> = {
           "For the lease and certificates: place and date of birth, mother's name, address, ID " +
             "number, tax identification number, bank account number, phone number. These only " +
             "ever appear in the issued documents.",
-          "For settlements: meter readings, bank statement lines, scheduled items and the " +
-            "payments confirmed by the tenant.",
+          "For settlements: meter readings, the payment details each party enters, scheduled " +
+            "items and the payments confirmed by the tenant.",
           "For fault reports: the text of the report, the messages attached to it, and who moved " +
             "it to which status and when.",
+          "Receipts uploaded for a disputed payment and photographs uploaded to a handover " +
+            "record, together with who uploaded and who confirmed them. A receipt is only " +
+            "asked for when the two sides disagree, and then only for that one transfer; a " +
+            "full bank statement, never.",
+          "For the running tenancy: the messages in conversations, the answers given to service " +
+            "visits, and the approval or objection given to a subscription with its reasons.",
+          "After the tenancy closes: the text and scores of the mutual review, and whatever you " +
+            "write about yourself on your profile page.",
+          "For operating the app: whether and when an account was disabled, and a log of the " +
+            "operator's actions (who, when, on which row). That log holds no personal data, " +
+            "only the identifier of the row concerned.",
+          "The operator also sees the system's own measurement (accuracy, response time, " +
+            "cooperation). It is not stored: it is recomputed from existing data on every " +
+            "view, and neither you nor the other party can see it.",
+        ],
+      },
+      {
+        cim: "Cookies",
+        bekezdesek: [
+          "We use two cookies, both strictly necessary: the identifier of your signed-in " +
+            "session (kept for 30 days) and the language you chose (kept for a year). We use " +
+            "no cookies for analytics, advertising or profiling, and we set no third-party " +
+            "cookies.",
         ],
       },
       {
@@ -142,10 +191,12 @@ const ADATKEZELES: Record<Nyelv, JogiOldal> = {
             "about what anyone typed.",
           "A tenant only sees data belonging to their own tenancy, and only their own personal " +
             "certificates.",
-          "The reference link is issued by the tenant about their own payment history, and can " +
-            "be revoked at any time. It contains no landlord name, no exact address, no " +
-            "flatmate names and no personal data, and it expires on its own. Of an opening we " +
-            "store only the time.",
+          "The sharing link is issued by the tenant about their own payment history, and can " +
+            "be revoked at any time. It shows the tenant's name, the town the property is in " +
+            "and the payment figures; it shows no landlord name, no exact address, no " +
+            "flatmates and none of the personal data given for the lease, and it expires on " +
+            "its own. Of an opening we store only the time, never an IP address or a browser " +
+            "identifier.",
         ],
       },
       {
@@ -154,8 +205,11 @@ const ADATKEZELES: Record<Nyelv, JogiOldal> = {
           "Issued documents and data that matters for accounting are kept for the retention " +
             "period required by law; everything else until the tenancy is settled and any claims " +
             "have lapsed.",
-          "You can ask for your account to be deleted at any time; deletion does not affect " +
-            "documents already issued that must be retained by law.",
+          "You can ask for your account to be closed at any time. The account is then " +
+            "disabled: signing in stops, but the data does not disappear, because the tenancy, " +
+            "the payments and the issued documents belong to the other party as well — with a " +
+            "deleted account their lease would name a tenant who is nowhere to be found. " +
+            "Whatever concerns only you and has no retention period, we erase on request.",
         ],
       },
       {
@@ -240,8 +294,8 @@ const FELTETELEK: Record<Nyelv, JogiOldal> = {
       {
         cim: "What the app does",
         bekezdesek: [
-          "It compares the scheduled item, the payment confirmed by the tenant and the line on " +
-            "the bank statement, and shows where the three differ.",
+          "It compares the scheduled item, the payment confirmed by the tenant and the arrival " +
+            "confirmed by the landlord, and shows where the three differ.",
           "It calculates utility settlements from the tariffs and meter readings you enter, with " +
             "an itemised breakdown.",
           "It produces a yearly tax summary from payments that actually arrived and were " +
@@ -264,8 +318,8 @@ const FELTETELEK: Record<Nyelv, JogiOldal> = {
       {
         cim: "What you are responsible for",
         bekezdesek: [
-          "What you enter: the rent, the tariffs, the meter readings and the statement you " +
-            "upload. The app calculates from these, and bad data gives bad numbers.",
+          "What you enter: the rent, the tariffs, the meter readings and the payment details " +
+            "you give. The app calculates from these, and bad data gives bad numbers.",
           "Your password and your invitation link. An invitation can be used once, and whoever " +
             "receives it can create an account with it.",
         ],
