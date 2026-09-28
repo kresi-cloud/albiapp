@@ -12,7 +12,7 @@ import { berloNezetei, berloTeendoi } from "@/lib/lekerdezesek";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { aktualisNyelv } from "@/lib/nyelv";
 import { merooraUzenet } from "@/lib/rezsi";
-import { ElbiralasUrlap, OraallasUrlap } from "@/app/rezsi/Urlapok";
+import { ElbiralasUrlap, OraallasUrlap, OraallasVisszavono } from "@/app/rezsi/Urlapok";
 import { meretSzoveg } from "@/domain/bizonylat";
 import { bizonylatokTetelekhez } from "@/lib/bizonylat";
 import { Bizonylatok } from "@/app/bizonylatok/Urlapok";
@@ -36,7 +36,15 @@ export default async function BerloiNezet() {
       include: {
         ingatlan: {
           include: {
-            meroorak: { include: { oraallasok: { orderBy: [{ datum: "desc" }, { id: "desc" }], take: 1 } } },
+            meroorak: {
+              include: {
+                oraallasok: {
+                  orderBy: [{ datum: "desc" }, { id: "desc" }],
+                  take: 1,
+                  select: { id: true, ertek: true, datum: true, rogzitoId: true },
+                },
+              },
+            },
           },
         },
         elszamolasok: {
@@ -174,6 +182,16 @@ export default async function BerloiNezet() {
                       : sz("berlo.oraallas.nincs")}
                   </span>
                 </div>
+                {/* A saját leolvasását a bérlő is visszavonhatja, amíg nem
+                    épül rá elszámolás. A bérbeadóét nem: azt ő rögzítette. */}
+                {meroora.oraallasok[0]?.rogzitoId === berlo.id ? (
+                  <div className="mt-1">
+                    <OraallasVisszavono
+                      oraallasId={meroora.oraallasok[0].id}
+                      cimke={sz("meroora.allas_visszavon")}
+                    />
+                  </div>
+                ) : null}
                 <OraallasUrlap
                   merooraId={meroora.id}
                   mai={mai}

@@ -2424,6 +2424,184 @@ export const SZOTAR: Szotar = {
   "meroora.futes": { hu: "Fűtés", en: "Heating" },
   "meroora.almero": { hu: "{nev} (almérő)", en: "{nev} (submeter)" },
 
+  // Mérőóra felvitele, javítása, törlése
+  "meroora.szakasz": { hu: "Mérőórák és díjszabás", en: "Meters and tariffs" },
+  "meroora.szakasz_sugo": {
+    hu:
+      "A mérőóra a bérleményhez tartozik, nem a bérlethez: a következő bérlő ugyanazon " +
+      "az órán folytatja. A díjszabás viszont időről időre változik, ezért nem felülírjuk, " +
+      "hanem új érvényességi dátummal veszünk fel egy újat — a régi elszámolások így " +
+      "ugyanazt mutatják, mint amikor kiadtuk őket.",
+    en:
+      "The meter belongs to the property, not to the tenancy: the next tenant carries on with " +
+      "the same meter. The tariff, on the other hand, changes from time to time, so we do not " +
+      "overwrite it but add a new one with a new start date — earlier settlements then still " +
+      "show what they showed when they were issued.",
+  },
+  "meroora.uj": { hu: "Új mérőóra", en: "New meter" },
+  "meroora.tipus": { hu: "Mit mér", en: "What it measures" },
+  "meroora.mertekegyseg": { hu: "Mértékegység", en: "Unit" },
+  "meroora.gyari_szam": { hu: "Gyári szám (nem kötelező)", en: "Serial number (optional)" },
+  "meroora.almero_mezo": { hu: "Almérő", en: "Submeter" },
+  "meroora.almero_sugo": {
+    hu: "Akkor jelöld be, ha ez a mérő a bérlemény saját órája a főmérő mögött.",
+    en: "Tick this if the meter is the flat's own, behind the building's main meter.",
+  },
+  "meroora.gomb": { hu: "Mérőóra felvétele", en: "Add meter" },
+  "meroora.folyamatban": { hu: "Felvétel…", en: "Adding…" },
+  "meroora.kesz": { hu: "A mérőórát felvettük.", en: "The meter has been added." },
+  "meroora.modosit": { hu: "Adatok mentése", en: "Save details" },
+  "meroora.modositva": { hu: "A mérőóra adatait elmentettük.", en: "The meter details have been saved." },
+  "meroora.torol": { hu: "Mérőóra törlése", en: "Delete meter" },
+  "meroora.torolve": { hu: "A mérőórát töröltük.", en: "The meter has been deleted." },
+  "meroora.hiba.tipus": {
+    hu: "Válaszd ki, mit mér ez az óra.",
+    en: "Choose what this meter measures.",
+  },
+  "meroora.hiba.mertekegyseg": {
+    hu: "Ehhez a mérőórához ez a mértékegység nem tartozik. Választható: {egysegek}.",
+    en: "That unit does not belong to this kind of meter. Available: {egysegek}.",
+  },
+  "meroora.hiba.gyari_szam": {
+    hu: "A gyári szám túl hosszú: azt írd be, ami az órán áll.",
+    en: "The serial number is too long: enter what is printed on the meter.",
+  },
+  "meroora.hiba.nem_tied": {
+    hu: "Ez a mérőóra nem a te bérleményedhez tartozik.",
+    en: "This meter does not belong to your property.",
+  },
+  "meroora.hiba.van_oraallas": {
+    hu:
+      "Ezen a mérőórán már van óraállás, ezért nem törölhető, és a mértékegysége sem írható " +
+      "át: a korábbi mérések számai ebben a mértékegységben értendők.",
+    en:
+      "This meter already has readings, so it cannot be deleted and its unit cannot be changed: " +
+      "the earlier readings are in that unit.",
+  },
+  "meroora.hiba.van_elszamolas": {
+    hu: "Ez a mérőóra már szerepel kiadott elszámolásban, ezért nem törölhető.",
+    en: "This meter already appears in an issued settlement, so it cannot be deleted.",
+  },
+  "meroora.rogzitette": { hu: "Rögzítette: {nev}", en: "Recorded by {nev}" },
+  "meroora.allas_visszavon": { hu: "Visszavonom", en: "Withdraw" },
+  "meroora.allas_visszavonva": { hu: "Az óraállást visszavontuk.", en: "The reading has been withdrawn." },
+  "meroora.hiba.allas_elszamolt": {
+    hu:
+      "Erre az óraállásra már épül egy elszámolás, ezért nem vonható vissza. Ha rosszul " +
+      "olvastad le, vegyél fel egy újabb állást a mai nappal.",
+    en:
+      "A settlement already builds on this reading, so it cannot be withdrawn. If you misread it, " +
+      "record a new reading with today's date.",
+  },
+  "meroora.hiba.allas_nem_tied": {
+    hu: "Csak a saját óraállásodat vonhatod vissza.",
+    en: "You can only withdraw a reading you recorded yourself.",
+  },
+
+  // Díjszabás
+  "dijszabas.uj": { hu: "Új díjszabás", en: "New tariff" },
+  "dijszabas.ervenyes_tol": { hu: "Érvényes ettől", en: "Valid from" },
+  "dijszabas.kedvezmenyes": {
+    hu: "Kedvezményes ár ({egyseg}, Ft)",
+    en: "Reduced price (per {egyseg}, HUF)",
+  },
+  "dijszabas.piaci": { hu: "Piaci ár ({egyseg}, Ft)", en: "Market price (per {egyseg}, HUF)" },
+  "dijszabas.keret": {
+    hu: "Éves kedvezményes keret ({egyseg}, üresen hagyható)",
+    en: "Annual reduced-price quota ({egyseg}, may be left empty)",
+  },
+  "dijszabas.alapdij": { hu: "Havi alapdíj (Ft)", en: "Monthly standing charge (HUF)" },
+  "dijszabas.csatorna": {
+    hu: "Csatornadíj ({egyseg}, Ft)",
+    en: "Sewage charge (per {egyseg}, HUF)",
+  },
+  "dijszabas.csatorna_sugo": {
+    hu:
+      "Ugyanarra a mért köbméterre jár, külön óraállás nincs hozzá. A nulla érvényes eset: " +
+      "a locsolási mellékmérőn átfolyt víz nem megy csatornába.",
+    en:
+      "It applies to the same measured cubic metres; there is no separate reading for it. Zero is " +
+      "a valid case: water through a garden meter does not go into the sewer.",
+  },
+  "dijszabas.gomb": { hu: "Díjszabás felvétele", en: "Add tariff" },
+  "dijszabas.folyamatban": { hu: "Felvétel…", en: "Adding…" },
+  "dijszabas.kesz": { hu: "A díjszabást felvettük.", en: "The tariff has been added." },
+  "dijszabas.torol": { hu: "Törlöm", en: "Delete" },
+  "dijszabas.torolve": { hu: "A díjszabást töröltük.", en: "The tariff has been deleted." },
+  "dijszabas.sor": {
+    hu: "{nap}-tól: {kedvezmenyes} Ft/{egyseg}",
+    en: "from {nap}: {kedvezmenyes} HUF/{egyseg}",
+  },
+  "dijszabas.hiba.datum": { hu: "Add meg, mikortól érvényes.", en: "Enter the date it is valid from." },
+  "dijszabas.hiba.kedvezmenyes": {
+    hu: "A kedvezményes ár egész forintban, tizedesekkel: pl. 36,90.",
+    en: "Enter the reduced price in forint, decimals allowed: e.g. 36.90.",
+  },
+  "dijszabas.hiba.piaci": {
+    hu: "A piaci ár egész forintban, tizedesekkel: pl. 70,10.",
+    en: "Enter the market price in forint, decimals allowed: e.g. 70.10.",
+  },
+  "dijszabas.hiba.alapdij": {
+    hu: "A havi alapdíj egész forint, és nem lehet negatív. Ha nincs, írj nullát.",
+    en: "The standing charge is a whole forint amount and cannot be negative. Enter zero if there is none.",
+  },
+  "dijszabas.hiba.keret": {
+    hu: "Az éves keret nullánál nagyobb szám. Ha nincs sáv, hagyd üresen.",
+    en: "The annual quota is a number greater than zero. Leave it empty if there is no band.",
+  },
+  "dijszabas.hiba.piaci_kisebb": {
+    hu:
+      "A piaci ár nem lehet olcsóbb a kedvezményesnél: akkor a keret fölötti fogyasztás lenne " +
+      "a jutalom, és a bérlő a saját számláján venné észre.",
+    en:
+      "The market price cannot be cheaper than the reduced one: consumption above the quota would " +
+      "then be the reward, and the tenant would notice it on their own bill.",
+  },
+  "dijszabas.hiba.tul_nagy": {
+    hu: "Ez az ár irreálisan nagy. Egységárat kérünk, nem a teljes számlát.",
+    en: "That price is unrealistically high. We are asking for a unit price, not the whole bill.",
+  },
+  "dijszabas.hiba.csatorna": {
+    hu: "A csatornadíj egész forintban, tizedesekkel, és nem lehet negatív.",
+    en: "The sewage charge is in forint, decimals allowed, and cannot be negative.",
+  },
+  "dijszabas.hiba.csatorna_nem_viz": {
+    hu:
+      "Csatornadíj csak vízórához tartozik: a mért köbméter után jár az elvezetés is. " +
+      "Máshol nincs mit elvezetni.",
+    en:
+      "A sewage charge belongs to a water meter only: it applies to the measured cubic metres. " +
+      "There is nothing to drain elsewhere.",
+  },
+  "dijszabas.hiba.van_mar": {
+    hu: "Erre a napra már van díjszabás ezen a mérőórán. Előbb töröld a régit, vagy válassz másik napot.",
+    en: "This meter already has a tariff starting on that day. Delete the old one first, or pick another day.",
+  },
+  "dijszabas.hiba.elszamolt": {
+    hu:
+      "Erre a díjszabásra már épül kiadott elszámolás, ezért nem törölhető. Áremeléshez vegyél " +
+      "fel újat, későbbi érvényességi nappal.",
+    en:
+      "An issued settlement already builds on this tariff, so it cannot be deleted. For a price " +
+      "change, add a new one with a later start date.",
+  },
+  "dijszabas.figyelem.nincs_keret": {
+    hu:
+      "Keret nélkül minden egység a kedvezményes áron megy: a piaci ár nem fog szerepelni " +
+      "az elszámolásban.",
+    en:
+      "With no quota every unit goes at the reduced price: the market price will not appear in " +
+      "the settlement.",
+  },
+  "dijszabas.figyelem.nincs_csatorna": {
+    hu:
+      "Csatornadíj nélkül csak az ivóvíz kerül az elszámolásba. Ez locsolómérőn és " +
+      "emésztőgödrös ingatlanon helyes, egyébként a vízszámla fele hiányozni fog.",
+    en:
+      "With no sewage charge only the drinking water goes into the settlement. That is right for a " +
+      "garden meter or a property with a cesspit; otherwise half the water bill will be missing.",
+  },
+
   // --- Rezsi és elszámolás (bérbeadói oldal)
   "rezsi.cim": { hu: "Rezsi és elszámolás", en: "Utilities and settlement" },
   "rezsi.bevezeto": {
@@ -2451,6 +2629,10 @@ export const SZOTAR: Szotar = {
   "rezsi.nincs_meroora": {
     hu: "Ehhez az ingatlanhoz nincs mérőóra felvéve.",
     en: "No meter has been added for this property.",
+  },
+  "rezsi.meroorat_ide": {
+    hu: "Mérőórát és díjszabást a Bérlemények lapon vehetsz fel.",
+    en: "You can add meters and tariffs on the Properties page.",
   },
   "rezsi.nincs_oraallas": { hu: "még nincs óraállás", en: "no reading yet" },
   "rezsi.dijszabas": {

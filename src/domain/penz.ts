@@ -26,6 +26,19 @@ export function szam(ertek: number, tizedes = 2): string {
  * "180000.00". Mindegyikből egész forintot csinálunk.
  */
 export function osszegetForintra(nyers: string): number | null {
+  const szam = osszegetSzamra(nyers);
+  return szam === null ? null : Math.round(szam);
+}
+
+/**
+ * Ugyanaz az olvasás, kerekítés nélkül.
+ *
+ * A rezsi egységára fillérben megy (`kedvezmenyesArFiller`), tehát ott a
+ * tizedesek nem elhanyagolhatók: a „36,90 Ft/kWh" kerekítve 37 lenne, és egy
+ * ezer kilowattórás elszámoláson az már száz forint eltérés — pont az a fajta,
+ * amit a bérlő összead és megkérdez.
+ */
+function osszegetSzamra(nyers: string): number | null {
   const tisztitott = nyers
     .replace(/ /g, " ")
     .replace(/(ft|huf)/gi, "")
@@ -50,8 +63,24 @@ export function osszegetForintra(nyers: string): number | null {
   }
 
   const szam = Number(normalizalt);
-  if (!Number.isFinite(szam)) return null;
-  return Math.round(szam);
+  return Number.isFinite(szam) ? szam : null;
+}
+
+/**
+ * Egységármező az űrlapról, **fillérben**.
+ *
+ * Ugyanúgy háromfélét ad vissza, mint az `urlapForint`: `null` az üres mező,
+ * `NaN` az olvashatatlan, és a szám maga minden másra. Így a domain meg tudja
+ * különböztetni a „nem adtam meg"-et az elgépelttől, és egy elrontott ár nem
+ * csúszik be csendben nullaként.
+ */
+export function urlapFiller(nyers: unknown): number | null {
+  const szoveg = String(nyers ?? "").trim();
+  if (szoveg === "") return null;
+  const ertek = osszegetSzamra(szoveg);
+  if (ertek === null) return Number.NaN;
+  const filler = Math.round(ertek * 100);
+  return Math.abs(filler) > LEGNAGYOBB_OSSZEG ? Number.NaN : filler;
 }
 
 /** Naptári napok különbsége, időzóna nélkül, a nap elejére vágva. */
