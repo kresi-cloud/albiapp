@@ -51,6 +51,106 @@ export const SZOTAR: Szotar = {
       "cannot find it, ask for a new one.",
   },
 
+  "belepes.regisztracio": {
+    hu: "Bérbeadóként itt tudsz fiókot készíteni.",
+    en: "As a landlord, you can create an account here.",
+  },
+  "belepes.regisztracio_link": { hu: "Fiók készítése", en: "Create an account" },
+
+  // --- Regisztráció és saját fiók
+  "regisztracio.cim": { hu: "Fiók készítése", en: "Create an account" },
+  "regisztracio.bevezeto": {
+    hu: "Bérbeadói fiók készül. A bérlőidnek innen küldesz majd meghívót, nekik nem kell regisztrálniuk.",
+    en:
+      "This creates a landlord account. You will invite your tenants from inside; they do not " +
+      "register themselves.",
+  },
+  "regisztracio.nev": { hu: "Neved", en: "Your name" },
+  "regisztracio.nev_sugo": {
+    hu: "Ez a név kerül a szerződésbe és az igazolásokra. Később módosíthatod.",
+    en: "This name goes on contracts and certificates. You can change it later.",
+  },
+  "regisztracio.jelszo_ujra": { hu: "Jelszó újra", en: "Password again" },
+  "regisztracio.gomb": { hu: "Fiók készítése", en: "Create account" },
+  "regisztracio.folyamatban": { hu: "Készítem…", en: "Creating…" },
+  "regisztracio.belepes": { hu: "Van már fiókod? Lépj be.", en: "Already have an account? Sign in." },
+  "regisztracio.hiba.nem_kesz": {
+    hu: "Nézd át, amit megadtál:",
+    en: "Please check what you entered:",
+  },
+  "regisztracio.hiba.foglalt": {
+    hu: "Ezzel a címmel már van fiók. Lépj be vele, vagy adj meg másik címet.",
+    en: "An account already exists with this address. Sign in with it, or use another address.",
+  },
+
+  "fiok.cim": { hu: "Fiók", en: "Account" },
+  "fiok.bevezeto": {
+    hu: "A belépési adataid. A bérlethez tartozó adatok a saját lapjukon vannak.",
+    en: "Your sign-in details. Everything about the tenancy lives on its own page.",
+  },
+  "fiok.nev_cim": { hu: "Név", en: "Name" },
+  "fiok.nev_sugo": {
+    hu: "Ez a neved áll a kiadott okiratokon. A már véglegesített okiratok szövege nem változik meg tőle.",
+    en:
+      "This is the name on the documents you issue. Documents already finalised keep the text " +
+      "they were signed with.",
+  },
+  "fiok.nev_gomb": { hu: "Név mentése", en: "Save name" },
+  "fiok.nev_kesz": { hu: "A nevedet elmentettük.", en: "Your name has been saved." },
+
+  "fiok.jelszo_cim": { hu: "Jelszó módosítása", en: "Change password" },
+  "fiok.jelszo_sugo": {
+    hu:
+      "A mostani jelszót azért kérjük, mert a nyitva hagyott gépen bárki átírná nélküle. A csere " +
+      "a többi eszközödön is kilépteti a fiókot, tehát ott újra be kell lépned.",
+    en:
+      "We ask for your current password because otherwise anyone at an unattended computer could " +
+      "change it. Changing it also signs the account out on your other devices.",
+  },
+  "fiok.jelszo_mostani": { hu: "Mostani jelszó", en: "Current password" },
+  "fiok.jelszo_uj": { hu: "Új jelszó", en: "New password" },
+  "fiok.jelszo_uj_ujra": { hu: "Új jelszó újra", en: "New password again" },
+  "fiok.jelszo_gomb": { hu: "Jelszó módosítása", en: "Change password" },
+  "fiok.jelszo_kesz": {
+    hu: "A jelszavad megváltozott. A többi eszközödön kiléptettük a fiókot.",
+    en: "Your password has changed. The account has been signed out on your other devices.",
+  },
+
+  "fiok.email_cim": { hu: "E-mail-cím módosítása", en: "Change email address" },
+  "fiok.email_sugo": {
+    hu:
+      "Ezzel a címmel lépsz be. Megerősítő levelet egyelőre nem küldünk, ezért az elgépelt címmel " +
+      "kizárnád magad: a mostani jelszót ezért is kérjük.",
+    en:
+      "This is the address you sign in with. We do not send a confirmation email yet, so a typo " +
+      "would lock you out: that is another reason we ask for your current password.",
+  },
+  "fiok.email_uj": { hu: "Új e-mail-cím", en: "New email address" },
+  "fiok.email_gomb": { hu: "Cím módosítása", en: "Change address" },
+  "fiok.email_kesz": {
+    hu: "Az e-mail-címed megváltozott. Mostantól ezzel lépj be.",
+    en: "Your email address has changed. Sign in with it from now on.",
+  },
+
+  "fiok.hiba.nev": { hu: "Add meg a neved.", en: "Enter your name." },
+  "fiok.hiba.email": {
+    hu: "Ez nem néz ki e-mail-címnek.",
+    en: "This does not look like an email address.",
+  },
+  "fiok.hiba.mostani_jelszo": {
+    hu: "A mostani jelszó nem stimmel.",
+    en: "Your current password is wrong.",
+  },
+  "fiok.hiba.ugyanaz_email": {
+    hu: "Ez a mostani címed.",
+    en: "This is your current address.",
+  },
+  "fiok.hiba.foglalt_email": {
+    hu: "Ezzel a címmel már van fiók.",
+    en: "An account already exists with this address.",
+  },
+  "nav.fiok": { hu: "Fiók", en: "Account" },
+
   // --- Meghívó
   "meghivo.nem_el": {
     hu: "A meghívó nem él",

@@ -22,10 +22,11 @@ function titok(): string {
 }
 
 export async function munkamenetetIndit(felhasznaloId: string): Promise<void> {
-  const lejar = Date.now() + ELETTARTAM_NAP * 24 * 60 * 60 * 1000;
+  const kiadva = Date.now();
+  const lejar = kiadva + ELETTARTAM_NAP * 24 * 60 * 60 * 1000;
   const suti = await cookies();
 
-  suti.set(SUTI, jegyetKeszit({ felhasznaloId, lejar }, titok()), {
+  suti.set(SUTI, jegyetKeszit({ felhasznaloId, kiadva, lejar }, titok()), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -52,6 +53,13 @@ export async function belepettFelhasznalo() {
   // csak a belépést tiltanánk, a már belépett fiók a letiltás után is tovább
   // dolgozna — épp az, akitől az üzemeltető el akarta venni a hozzáférést.
   if (felhasznalo?.letiltva) return null;
+
+  // Jelszócsere után a korábban kiadott jegyek nem érnek semmit. Enélkül a
+  // csere pont attól nem venné el a hozzáférést, akinek a régi jelszava
+  // megvolt: a másik gépen nyitva hagyott munkamenet még harminc napig
+  // dolgozna tovább.
+  const tol = felhasznalo?.munkamenetekTol;
+  if (tol && jegy.kiadva < tol.getTime()) return null;
 
   return felhasznalo;
 }

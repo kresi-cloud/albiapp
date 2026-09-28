@@ -120,6 +120,7 @@ const BERBEADOI = [
   "/rendszergazda",
   "/beszelgetesek",
   "/beallitasok",
+  "/fiok",
 ];
 
 const BERLOI = [
@@ -135,12 +136,14 @@ const BERLOI = [
   "/ertekelesek",
   "/bemutatkozas",
   "/berlo/adatok",
+  "/fiok",
 ];
 
 // A betekintő nyilvános oldala szándékosan hiányzik: a megnyitása számít, és
 // azt a saját próbája méri. Az oldal méretét ott ellenőrizzük.
 const NYILVANOS = [
   "/belepes",
+  "/regisztracio",
   "/jogi/adatkezeles",
   "/jogi/feltetelek",
   "/telepites",

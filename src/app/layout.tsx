@@ -118,6 +118,7 @@ const BERBEADO_TOBBI = [
   { kulcs: "nav.ertekelesek", utvonal: "/ertekelesek" },
   { kulcs: "nav.bemutatkozas", utvonal: "/bemutatkozas" },
   { kulcs: "nav.ado", utvonal: "/ado" },
+  { kulcs: "nav.fiok", utvonal: "/fiok" },
   { kulcs: "nav.beallitasok", utvonal: "/beallitasok" },
 ];
 
@@ -137,6 +138,7 @@ const BERLO_TOBBI = [
   { kulcs: "nav.ertekelesek", utvonal: "/ertekelesek" },
   { kulcs: "nav.bemutatkozas", utvonal: "/bemutatkozas" },
   { kulcs: "nav.adataim", utvonal: "/berlo/adatok" },
+  { kulcs: "nav.fiok", utvonal: "/fiok" },
 ];
 
 export default async function RootLayout({
