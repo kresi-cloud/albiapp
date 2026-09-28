@@ -22,6 +22,12 @@ export const TELJESITES_MODJA_NEVE: Record<TeljesitesModja, string> = {
 };
 
 export type Befizetes = {
+  /**
+   * Melyik előírás befizetése. Ez azonosítja a sort, nem az időszak: egy
+   * hónapban áll bérleti díj, közös költség és előfizetés is, és a
+   * hónapra keresve a sorrend döntene arról, melyikről szól az igazolás.
+   */
+  eloirtTetelId: string;
   /** "2026-09" */
   idoszak: string;
   osszegFt: number;
@@ -71,13 +77,20 @@ export function idoszakCimke(idoszak: string): string {
  */
 export function igazolhatoBefizetesek(befizetesek: Befizetes[]): Befizetes[] {
   // Csak azt igazoljuk, amiben a két fél egyetért. A vitás és a még félkész
-  // (egyoldalú) tételről nem állítunk ki papírt: az igazolás nem arra való,
+  // (egyoldali) tételről nem állítunk ki papírt: az igazolás nem arra való,
   // hogy eldöntsön egy vitát.
+  //
+  // A rendezés az azonosítóval zár: egy hónapban több sor is állhat, és
+  // Postgresen az azonos kulcsúak sorrendje nincs garantálva.
   return befizetesek
     .filter(
       (sor) => (sor.allapot === "egyezik" || sor.allapot === "elter") && sor.osszegFt > 0,
     )
-    .sort((a, b) => b.idoszak.localeCompare(a.idoszak));
+    .sort(
+      (a, b) =>
+        b.idoszak.localeCompare(a.idoszak) ||
+        b.eloirtTetelId.localeCompare(a.eloirtTetelId),
+    );
 }
 
 export function igazolasSzovege(bemenet: IgazolasBemenet): string {

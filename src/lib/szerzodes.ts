@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { allapota, terhelheto } from "@/domain/elofizetes";
+import { allapota, elo } from "@/domain/elofizetes";
 import { type Bemenet } from "@/domain/szerzodes-keszites";
 import { elofizetesAdatta } from "@/lib/eloirasok";
 
@@ -54,16 +54,18 @@ export async function szerzodesBemenet(
   const fiokosBerlok = jogviszony.berlok
     .map((berlo) => berlo.berloId)
     .filter((berloId): berloId is string => Boolean(berloId));
+  // És csak az, ami a ma napján él: a `!sor.vege` a jövőbeli végű, még élő
+  // előfizetést is kihagyta volna, pedig az a szerződés ideje alatt fut.
+  const ma = new Date();
   const elofizetesek = jogviszony.elofizetesek
     .map(elofizetesAdatta)
-    .filter((sor) => !sor.vege)
-    .filter(
-      (sor) =>
-        allapota(sor, fiokosBerlok) === "jovahagyva" ||
-        // A bérlő sajátja nem terhelhető, tehát a „jóváhagyva" nem is róla szól:
-        // az ő előfizetése a hozzájárulás miatt kerül a szerződésbe.
-        (sor.elofizeto === "berlo" && !terhelheto(sor, allapota(sor, fiokosBerlok))),
-    )
+    .filter((sor) => elo(sor, ma))
+    // Csak a jóváhagyott. Korábban itt `!terhelheto(...)` állt, ami a bérlő
+    // saját előfizetésére **mindig** igaz — a `terhelheto` definíció szerint
+    // csak bérbeadói előfizetésre igaz —, tehát minden bérlői előfizetés
+    // bement a szerződésbe, a kifogásolt is. Amiről a bérlő azt mondta, hogy
+    // nem kéri, az nem szerződéses kötelezettség.
+    .filter((sor) => allapota(sor, fiokosBerlok) === "jovahagyva")
     .map((sor) => ({
       megnevezes: sor.megnevezes,
       fajta: sor.fajta,

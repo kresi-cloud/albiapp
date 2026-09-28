@@ -257,7 +257,7 @@ export async function igazolastKiallit(_elozo: Eredmeny, urlap: FormData): Promi
   const berbeado = await kotelezoSzerep("berbeado");
   const { sz } = await szovegek();
   const jogviszonyBerloId = szoveg(urlap.get("jogviszonyBerloId"));
-  const idoszak = szoveg(urlap.get("idoszak"));
+  const eloirtTetelId = szoveg(urlap.get("eloirtTetelId"));
   const cel = szoveg(urlap.get("cel"));
 
   const berlo = await prisma.jogviszonyBerlo.findFirst({
@@ -272,11 +272,17 @@ export async function igazolastKiallit(_elozo: Eredmeny, urlap: FormData): Promi
   if (!berlo) return hiba(sz("igazolas.hiba.nem_tied"));
   if (cel === "") return hiba(sz("igazolas.hiba.cel"));
 
+  // Az előírás azonosítójára keresünk, nem a hónapra: egy hónapban több sor is
+  // állhat, és a hónapra keresve az első találat döntene arról, melyik
+  // befizetésről szól az okirat — a „beérkezettnél nem több" korlát is a
+  // rossz sorhoz mérődne. A lista már csak bérleti díjat tartalmaz, és ezt a
+  // kiszolgáló tartja be: az űrlapról érkező azonosító nem enged többet.
   const befizetesek = await igazolhatoIdoszakok(berlo.jogviszonyId, berbeado.id);
-  const befizetes = befizetesek.find((sor) => sor.idoszak === idoszak);
+  const befizetes = befizetesek.find((sor) => sor.eloirtTetelId === eloirtTetelId);
   if (!befizetes) {
     return hiba(sz("igazolas.hiba.nincs_befizetes"));
   }
+  const idoszak = befizetes.idoszak;
 
   const modja = szoveg(urlap.get("teljesitesModja"));
   const teljesitesModja: TeljesitesModja =
