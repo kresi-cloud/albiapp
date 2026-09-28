@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { emailNekLatszik, emailtNormalizal, meghivoLejarata } from "@/domain/belepes";
+import { datumNyelven } from "@/domain/nyelv";
 import { prisma } from "@/lib/db";
 import { meghivoToken } from "@/lib/meghivo";
 import { kotelezoSzerep } from "@/lib/munkamenet";
@@ -198,7 +199,18 @@ export async function berloAdataitMenti(_elozo: Eredmeny, urlap: FormData): Prom
   return { allapot: "kesz", uzenet: sz("berlok.kesz.adatok"), hibak: [] };
 }
 
-/** Bérlő levétele a jogviszonyról. A kiállított dokumentumokat nem érinti. */
+/**
+ * Bérlő levétele a jogviszonyról.
+ *
+ * Akinek már állítottunk ki igazolást, azt nem lehet levenni. Az `Igazolas`
+ * a bérlő során lóg (`onDelete: Cascade`), tehát a levétel a kiadott okiratot
+ * is elvinné — mindkét fél tárából —, holott az a bérlőé is: ugyanaz az elv,
+ * amit a fiók letiltásánál kimondtunk, hogy a kiadott okirat nem a miénk.
+ *
+ * Aki igazolást kapott, az ténylegesen ott lakott és fizetett abban a
+ * hónapban; az ő részvételét a jogviszony lezárása zárja le, nem a levétel.
+ * A levétel arra való, akit tévedésből vagy még okirat előtt vettek fel.
+ */
 export async function berlotTorol(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
   const { sz } = await szovegek();
@@ -214,6 +226,13 @@ export async function berlotTorol(_elozo: Eredmeny, urlap: FormData): Promise<Er
     return hiba(sz("berlok.hiba.utolso_berlo"));
   }
 
+  const igazolasok = await prisma.igazolas.count({
+    where: { jogviszonyBerloId: berlo.id },
+  });
+  if (igazolasok > 0) {
+    return hiba(sz("berlok.hiba.van_igazolasa", { nev: berlo.nev, darab: igazolasok }));
+  }
+
   await prisma.jogviszonyBerlo.delete({ where: { id: berlo.id } });
 
   revalidatePath("/berlok");
@@ -227,7 +246,7 @@ export async function jogviszonytLezarAction(
   urlap: FormData,
 ): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
-  const { sz } = await szovegek();
+  const { sz, nyelv } = await szovegek();
 
   const nyersNap = szoveg(urlap.get("vege"));
   if (!/^\d{4}-\d{2}-\d{2}$/.test(nyersNap)) {
@@ -241,16 +260,29 @@ export async function jogviszonytLezarAction(
   const eredmeny = await jogviszonytLezar(berbeado.id, szoveg(urlap.get("jogviszonyId")), vege);
   if (eredmeny.allapot === "nincs_jogosultsag") return hiba(sz("valasz.nincs_jogosultsag"));
   if (eredmeny.allapot === "mar_lezart") return hiba(sz("valasz.mar_lezart"));
+  if (eredmeny.allapot === "vege_a_kezdet_elott") {
+    return hiba(
+      sz("valasz.lezaras_vege_a_kezdet_elott", { kezdete: datumNyelven(eredmeny.kezdete, nyelv) }),
+      ["vege"],
+    );
+  }
 
   revalidatePath("/berlok");
   revalidatePath("/befizetesek");
   revalidatePath("/");
   return {
     allapot: "kesz",
-    uzenet: sz("valasz.lezarva", {
-      torolt: eredmeny.toroltEloirasok,
-      aranyositott: eredmeny.aranyositottEloirasok,
-    }),
+    uzenet:
+      eredmeny.megtartottEloirasok > 0
+        ? sz("valasz.lezarva_megtartott", {
+            torolt: eredmeny.toroltEloirasok,
+            aranyositott: eredmeny.aranyositottEloirasok,
+            megtartott: eredmeny.megtartottEloirasok,
+          })
+        : sz("valasz.lezarva", {
+            torolt: eredmeny.toroltEloirasok,
+            aranyositott: eredmeny.aranyositottEloirasok,
+          }),
     hibak: [],
   };
 }

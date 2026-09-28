@@ -35,6 +35,32 @@ export async function futtat(oldal) {
     "élő jogviszonynál felkínáljuk a lezárást",
   );
 
+  // --- A kiköltözés nem lehet korábbi a beérkezésnél
+  //
+  // Ennélkül egy elgépelt évszám minden előírást a »kiköltözés utáni« közé
+  // sorolt: harmincegy előírás ment nullára, a kiadott rezsielszámolás
+  // előírás nélkül maradt, a felület pedig sikert jelentett.
+  await kartya.getByText("Jogviszony lezárása").click();
+  await kartya.locator('input[name="vege"]').fill("2000-01-01");
+  await kartya.getByRole("button", { name: "Lezárom" }).click();
+  all(
+    await kartya
+      .getByText(/korábbi a beérkezésnél/)
+      .first()
+      .waitFor({ timeout: 15000 })
+      .then(() => true, () => false),
+    "a kezdet előtti kiköltözési napot elutasítjuk",
+  );
+
+  await oldal.goto(`${ALAP}/befizetesek`);
+  all(
+    (await oldal.getByText("180 000 Ft").count()) > 0,
+    "és az előírások a helyükön maradtak",
+  );
+
+  await oldal.goto(`${ALAP}/berlok`);
+  kartya = await elsoKartya(oldal);
+
   // --- Lezárás a hónap közepével
   await kartya.getByText("Jogviszony lezárása").click();
   await kartya.locator('input[name="vege"]').fill(zaroNap(new Date()));
