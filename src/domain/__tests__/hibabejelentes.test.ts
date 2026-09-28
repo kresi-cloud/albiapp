@@ -98,6 +98,7 @@ describe("teendők a hibákból", () => {
     targy: "Csöpög a mosogató csaptelepe",
     surgosseg: "normal",
     allapot: "bejelentve",
+    elharitva: null,
     bejelentve: nap("2026-09-10"),
   };
 
@@ -143,5 +144,49 @@ describe("késés", () => {
 
   it("a határidő napja még nem lejárt", () => {
     expect(keses("surgos", nap("2026-09-10"), nap("2026-09-13")).lejart).toBe(false);
+  });
+});
+
+describe("a saját bejelentését a bérbeadó lezárhatja", () => {
+  // A megerősítés azért a bérlőé, mert a bejelentő és az elhárító két
+  // különböző ember. Ha viszont a bérbeadó jelentette be — fiók nélküli
+  // bérlőnél, vagy két bérlet között —, nincs kit megkérdezni, és a hiba
+  // örökre „elhárítva" állapotban ragadt, teendővel együtt.
+  it("a másét továbbra sem", () => {
+    expect(lepesek("elharitva", "berbeado")).toEqual(["folyamatban"]);
+    expect(lepesLehetseges("elharitva", "lezarva", "berbeado")).toBe(false);
+  });
+
+  it("a sajátját igen", () => {
+    expect(lepesek("elharitva", "berbeado", true)).toContain("lezarva");
+    expect(lepesLehetseges("elharitva", "lezarva", "berbeado", true)).toBe(true);
+  });
+
+  it("a bérlő jogán ez nem változtat", () => {
+    expect(lepesek("elharitva", "berlo")).toEqual(["lezarva", "folyamatban"]);
+  });
+});
+
+describe("a megerősítés határideje az elhárítástól fut", () => {
+  it("nem a bejelentéstől: addig nincs mit megerősíteni", () => {
+    const bejelentve = new Date(Date.UTC(2026, 8, 1));
+    const elharitva = new Date(Date.UTC(2026, 8, 20));
+    const [teendo] = hibakbolTeendok([
+      {
+        id: "h9",
+        jogviszonyId: "jv1",
+        targy: "Csopog a mosogato",
+        surgosseg: "normal",
+        allapot: "elharitva",
+        bejelentve,
+        elharitva,
+      },
+    ]);
+    expect(teendo.esedekesseg.getTime()).toBe(
+      valaszHatarido("normal", elharitva).getTime(),
+    );
+    expect(teendo.esedekesseg.getTime()).toBeGreaterThan(
+      valaszHatarido("normal", bejelentve).getTime(),
+    );
   });
 });

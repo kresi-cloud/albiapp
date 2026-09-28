@@ -22,6 +22,8 @@ export type HibaNezet = {
   jogviszonyCimke: string;
   berlokNeve: string;
   bejelentoNev: string;
+  /** A néző jelentette-e be. Ebből következik, hogy ő zárhatja-e le. */
+  sajatBejelentes: boolean;
   targy: string;
   leiras: string;
   terulet: Terulet;
@@ -60,6 +62,7 @@ function nezette(hiba: Betoltott, nezoId: string): HibaNezet {
     jogviszonyCimke: hiba.jogviszony.ingatlan.megnevezes,
     berlokNeve: nevsor(hiba.jogviszony.berlok.map((berlo) => berlo.nev)),
     bejelentoNev: hiba.bejelento.nev,
+    sajatBejelentes: hiba.bejelentoId === nezoId,
     targy: hiba.targy,
     leiras: hiba.leiras,
     terulet: hiba.terulet as Terulet,
@@ -116,6 +119,7 @@ export async function nyitottHibak(
       surgosseg: true,
       allapot: true,
       bejelentve: true,
+      elharitva: true,
     },
   });
 
@@ -126,6 +130,7 @@ export async function nyitottHibak(
     surgosseg: hiba.surgosseg as HibaSurgosseg,
     allapot: hiba.allapot as HibaAllapot,
     bejelentve: hiba.bejelentve,
+    elharitva: hiba.elharitva,
   }));
 }
 

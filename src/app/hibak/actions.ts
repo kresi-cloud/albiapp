@@ -116,7 +116,14 @@ export async function hibatLep(_elozo: Eredmeny, urlap: FormData): Promise<Eredm
   if (!bejelentes) return hiba(sz("valasz.nem_tied"));
 
   const szerep = felhasznalo.szerep === "berlo" ? "berlo" : "berbeado";
-  if (!lepesLehetseges(bejelentes.allapot as HibaAllapot, cel, szerep)) {
+  if (
+    !lepesLehetseges(
+      bejelentes.allapot as HibaAllapot,
+      cel,
+      szerep,
+      bejelentes.bejelentoId === felhasznalo.id,
+    )
+  ) {
     return hiba(sz("valasz.lepes_nem_lehet"));
   }
 

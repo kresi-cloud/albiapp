@@ -773,6 +773,10 @@ export const SZOTAR: Szotar = {
     en: "Say what this visit is.",
   },
   "latogatas.hiba.nap": { hu: "Adj meg egy napot.", en: "Give a day." },
+  "latogatas.hiba.mult": {
+    hu: "Elmúlt napra nem lehet látogatást bejelenteni.",
+    en: "A visit cannot be announced for a day that has passed.",
+  },
   "latogatas.hiba.ora": {
     hu: "Az időt óra:perc alakban add meg, például 9:00.",
     en: "Give the time as hour:minute, for example 9:00.",
@@ -1012,6 +1016,11 @@ export const SZOTAR: Szotar = {
     hu: "A bérbeadó elérhetősége",
     en: "How to reach the landlord",
   },
+  // Akkor áll itt, ha a bérleménynek nincs beazonosítható tulajdonosa: a
+  // kulcs eddig hiányzott a szótárból, tehát a lap a nyers kulcsot írta volna
+  // ki. A kétnyelvűségi kapu a hiányzó kulcsot nem látja, csak azt, ha egy
+  // meglévő sorból hiányzik az egyik nyelv.
+  "hiba.kartya.berbeado": { hu: "A bérbeadó", en: "The landlord" },
   "hiba.oldal.nincs_telefon": {
     hu:
       "Telefonszámot még nem adott meg. Veszélyhelyzetnél kérd el tőle, mert a bejelentés magától " +

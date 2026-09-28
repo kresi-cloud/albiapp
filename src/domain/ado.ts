@@ -195,7 +195,11 @@ export function berbeadottNapok(
   const szakaszok = idoszakok
     .map((idoszak) => ({
       tol: Math.max(evKezdete, idoszak.kezdete.getTime()),
-      ig: Math.min(evVege, idoszak.vege ? idoszak.vege.getTime() : evVege),
+      // A `vege` a kiköltözés napja, és az még bérbeadott nap: az előírások
+      // modulja is beleszámolja a záró hónapba. Kizárva belőle egy egész évre
+      // 365 helyett 364 nap jött ki, és az értékcsökkenés egy 365-öddel
+      // kevesebb lett — csendben, mert 364 nap semmivel nem tűnik fel.
+      ig: Math.min(evVege, idoszak.vege ? idoszak.vege.getTime() + nap : evVege),
     }))
     .filter((szakasz) => szakasz.ig > szakasz.tol)
     .sort((a, b) => a.tol - b.tol);

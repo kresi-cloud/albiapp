@@ -149,7 +149,19 @@ export function koltsegJavaslat(terulet: Terulet, ok: Ok): Javaslat {
  * a bérbeadó nem zárhatja le a bérlő megerősítése nélkül: a hiba lezárása is
  * kétoldali, mint a befizetés egyeztetése.
  */
-export function lepesek(allapot: HibaAllapot, szerep: "berbeado" | "berlo"): HibaAllapot[] {
+export function lepesek(
+  allapot: HibaAllapot,
+  szerep: "berbeado" | "berlo",
+  /**
+   * A bérbeadó saját bejelentése-e. A megerősítés azért a bérlőé, mert a
+   * bejelentő és az elhárító két különböző ember — ha viszont a bérbeadó
+   * jelentette be (jellemzően fiók nélküli bérlőnél, vagy két bérlet között),
+   * nincs kit megkérdezni, és a hiba örökre „elhárítva" állapotban ragadt,
+   * teendővel együtt. Nem kétoldali kérdést tettünk föl, hanem olyat, amire
+   * nem volt kitől választ várni.
+   */
+  sajatBejelentes = false,
+): HibaAllapot[] {
   if (szerep === "berbeado") {
     switch (allapot) {
       case "bejelentve":
@@ -159,7 +171,7 @@ export function lepesek(allapot: HibaAllapot, szerep: "berbeado" | "berlo"): Hib
       case "folyamatban":
         return ["elharitva", "elutasitva"];
       case "elharitva":
-        return ["folyamatban"];
+        return sajatBejelentes ? ["folyamatban", "lezarva"] : ["folyamatban"];
       default:
         return [];
     }
@@ -175,8 +187,9 @@ export function lepesLehetseges(
   allapot: HibaAllapot,
   cel: HibaAllapot,
   szerep: "berbeado" | "berlo",
+  sajatBejelentes = false,
 ): boolean {
-  return lepesek(allapot, szerep).includes(cel);
+  return lepesek(allapot, szerep, sajatBejelentes).includes(cel);
 }
 
 export type HibaTeendohoz = {
@@ -186,6 +199,8 @@ export type HibaTeendohoz = {
   surgosseg: HibaSurgosseg;
   allapot: HibaAllapot;
   bejelentve: Date;
+  /** Mikor jelölte a bérbeadó elhárítottnak. A megerősítés határideje innen fut. */
+  elharitva: Date | null;
 };
 
 /**
@@ -204,7 +219,10 @@ export function hibakbolTeendok(hibak: HibaTeendohoz[]): Teendo[] {
         tipus: "hiba_megerosites",
         cim: uzenet("teendo.hiba.megerosites"),
         leiras: uzenet("teendo.hiba.elharitva", { targy: hiba.targy }),
-        esedekesseg: valaszHatarido("normal", hiba.bejelentve),
+        // Nem a bejelentéstől: a bérlőnek addig nincs mit megerősítenie, amíg
+        // a bérbeadó el nem hárította. A bejelentéstől számolva egy két hete
+        // futó hiba megerősítése már lejártként született meg.
+        esedekesseg: valaszHatarido("normal", hiba.elharitva ?? hiba.bejelentve),
         hivatkozas: `/berlo/hibak#${hiba.id}`,
       });
       continue;

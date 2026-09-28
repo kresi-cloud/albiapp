@@ -43,7 +43,16 @@ export async function ertekelestIr(_elozo: Eredmeny, urlap: FormData): Promise<E
   if (!nezet.irhato) {
     return {
       allapot: "hiba",
-      uzenet: u(kifogasSzovege(nezet.allapot === "nem_ideje" ? "nem_ideje" : "mar_felfedve")),
+      // Az „elmaradt" is lejárt ablak, csak úgy, hogy egyik fél sem írt
+      // semmit: ott a „már felfedődtek" mondat azt állítaná, hogy van mit
+      // elolvasni, holott nincs.
+      uzenet: u(
+        kifogasSzovege(
+          nezet.allapot === "nem_ideje" || nezet.allapot === "elmaradt"
+            ? "nem_ideje"
+            : "mar_felfedve",
+        ),
+      ),
       hibak: [],
     };
   }

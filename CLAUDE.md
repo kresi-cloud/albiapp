@@ -666,6 +666,14 @@ hibabejelentés válaszhatáridejénél.
 A válaszidő mediánt néz, nem átlagot: egyetlen nyaralás alatt megkapott válasz
 nem minősítheti a többit.
 
+**Csak az számít nyitott kérdésnek, amit tényleg neki tettünk fel.** A lakótárs
+fényképére a bérlő ugyanúgy nem bólinthat rá, mint a magáéra (a megerősítés
+szerep szerint megy), tehát az nem az ő elmaradt válasza; a saját bejelentésére
+pedig senki nem válaszol, tehát abból a bérbeadónak nem lesz nulla órás
+válaszideje. És a válasz is névre szól: a képnél a megerősítés azonosítóját
+nézzük, nem azt, hogy valaki nyilatkozott-e. A kifogásnál nem tároljuk, ki
+emelte, ezért az ilyen kép inkább kimarad a mintából, mint hogy tippeljünk.
+
 ## Az üzemeltetői lap alapelve
 
 Az üzemeltetőnek két kérdése van: **működik-e az alkalmazás, és van-e valami
@@ -798,6 +806,14 @@ ha a lap azt írná ki, „rendben, bejut a szerelő", holott a másik lakó mé
 válaszolt. Fiók nélküli bérlőt nem lehet megkérdezni, és a felület ezt ki is
 mondja.
 
+**A nyilatkozat annyit ér, amennyit a mostani résztvevői kör.** A jogviszonyról
+levett bérlő válasza ott marad a látogatáson, de a lakásba már nem ő megy haza:
+a korábbi kifogása egymagában tovább döntött, és a bérbeadó hiába kérdezte meg a
+mostani bérlőt. Aki nincs a várt válaszolók között, annak a szava sem dönt —
+ugyanaz az elv, mint a beszélgetésnél: a résztvevői sor egymagában nem
+jogosultság. Múltbeli napra pedig nem lehet látogatást bejelenteni: az rögtön
+„elmúlt" állapotban születne, nyilatkozni sem lehetne rá.
+
 Törölni nem lehet, csak lemondani, ugyanúgy, mint az előfizetést: a bérlő már
 nyilatkozott rá, és egy eltűnt sor mellől az ő nyilatkozata is eltűnne. A
 lemondás oka nem formaság — a bérlő ebből tudja meg, hogy nem kell otthon
@@ -866,6 +882,14 @@ nyitott, és teendő van belőle.
 A sürgősségből válaszhatáridő lesz. Ez nem jogszabályi határidő — magánszemélyek
 bérletére nincs ilyen —, hanem az alkalmazás alapértelmezése, és a felület ezt ki
 is mondja.
+
+**A megerősítés a bejelentőé, nem a bérlőé.** A kétoldaliság lényege, hogy a
+bejelentő és az elhárító két különböző ember. Ha a bérbeadó jelentette be a
+hibát — fiók nélküli bérlőnél, vagy két bérlet között —, nincs kit
+megkérdezni, és a hiba örökre „elhárítva" állapotban ragadt, teendővel együtt.
+A megerősítés határideje pedig az elhárítástól fut, nem a bejelentéstől: addig
+nincs mit megerősíteni, és a bejelentéstől számolva a teendő rendszerint már
+lejártként született meg.
 
 A költségviselőre javaslatot teszünk a szerződés karbantartási pontja és a
 lakástörvény 13. §-a alapján, de a döntés a bérbeadóé, és amíg nem mondta ki, a

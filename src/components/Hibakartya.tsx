@@ -43,7 +43,7 @@ export function Hibakartya({
   const javaslat = koltsegJavaslat(hiba.terulet, hiba.ok);
   const varakozas = keses(hiba.surgosseg, hiba.bejelentve, ma);
   const hatarido = valaszHatarido(hiba.surgosseg, hiba.bejelentve);
-  const lehet = lepesek(hiba.allapot, szerep);
+  const lehet = lepesek(hiba.allapot, szerep, hiba.sajatBejelentes);
 
   return (
     <li

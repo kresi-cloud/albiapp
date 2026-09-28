@@ -194,3 +194,34 @@ describe("rezsitMegoszt", () => {
     expect(rezsitMegoszt(30_000, 0, 0)).toEqual({ mertReszFt: 0, egyebReszFt: 30_000 });
   });
 });
+
+describe("a kiköltözés napja is bérbeadott nap", () => {
+  it("egy teljes évre 365 nap jön ki, nem 364", () => {
+    // A `vege` a kiköltözés napja, és az előírások modulja beleszámolja a
+    // záró hónapba. Kizárva belőle az értékcsökkenés egy 365-öddel kevesebb
+    // lett — csendben, mert a 364 semmivel nem tűnik fel.
+    expect(
+      berbeadottNapok(2026, [
+        { kezdete: new Date(Date.UTC(2026, 0, 1)), vege: new Date(Date.UTC(2026, 11, 31)) },
+      ]),
+    ).toBe(365);
+  });
+
+  it("egy napos bérlet egy nap", () => {
+    expect(
+      berbeadottNapok(2026, [
+        { kezdete: new Date(Date.UTC(2026, 5, 10)), vege: new Date(Date.UTC(2026, 5, 10)) },
+      ]),
+    ).toBe(1);
+  });
+
+  it("az egymás után jövő bérletek napjai nem fedik egymást", () => {
+    // Az első a 10-ét még bérbe adja, a második 11-én kezd: 2 nap, nem 3.
+    expect(
+      berbeadottNapok(2026, [
+        { kezdete: new Date(Date.UTC(2026, 5, 10)), vege: new Date(Date.UTC(2026, 5, 10)) },
+        { kezdete: new Date(Date.UTC(2026, 5, 11)), vege: new Date(Date.UTC(2026, 5, 11)) },
+      ]),
+    ).toBe(2);
+  });
+});

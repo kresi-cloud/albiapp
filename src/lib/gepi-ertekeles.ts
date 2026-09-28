@@ -101,7 +101,11 @@ async function valaszidok(
   });
 
   for (const hiba of hibak) {
-    if (szerep === "berbeado") {
+    // A saját bejelentésére senki nem válaszol. A bérbeadó a maga bejelentését
+    // rendszerint azonnal átveszi, és abból nulla órás „válaszidő" lett — a
+    // mutatót nem a bérlőivel való bánásmód javította, hanem az, hogy magának
+    // is bejelentett valamit.
+    if (szerep === "berbeado" && hiba.bejelentoId !== felhasznaloId) {
       // A bérbeadó válasza a bejelentésre: mikor vette át, vagy ha átvétel
       // nélkül intézkedett, mikor hárította el.
       hozza(orak, hiba.atvetve ? orakban(hiba.bejelentve, hiba.atvetve) : null);
@@ -109,6 +113,7 @@ async function valaszidok(
         hozza(orak, orakban(hiba.bejelentve, hiba.elharitva));
       }
     } else if (
+      szerep === "berlo" &&
       hiba.bejelentoId === felhasznaloId &&
       hiba.elharitva &&
       hiba.lezarva
@@ -194,17 +199,25 @@ async function egyuttmukodes(
   let ranyitott = 0;
   let megvalaszolt = 0;
 
-  // A másik fél feltöltött fényképei: a sajátjára senki nem bólinthat rá.
+  // A **másik szerep** feltöltött fényképei. Nem az, ami nem a sajátja: a
+  // lakótárs képére a bérlő ugyanúgy nem bólinthat rá, mint a magáéra
+  // (`megerositheti` a szerepet nézi), tehát az nem is az ő nyitott kérdése —
+  // eddig mégis rontotta az együttműködését egy olyan kérdés, amit fel sem
+  // tettünk neki.
   const kepek = await prisma.jegyzokonyvKep.findMany({
     where: {
       jegyzokonyv: { jogviszonyId: { in: jogviszonyIdk } },
-      feltoltoId: { not: felhasznaloId },
+      feltolto: { szerep: { not: szerep } },
     },
     select: { megerositoId: true, kifogas: true },
   });
   for (const kep of kepek) {
+    // A megerősítés névre szól, a kifogás viszont nem: nem tároljuk, ki emelte.
+    // Egy kifogásolt képnél tehát nem tudjuk, ő válaszolt-e — és amiről nincs
+    // adatunk, arra nem tippelünk: az ilyen kép ki is marad a mintából.
+    if (kep.kifogas !== null && kep.megerositoId !== felhasznaloId) continue;
     ranyitott += 1;
-    if (kep.megerositoId !== null || kep.kifogas !== null) megvalaszolt += 1;
+    if (kep.megerositoId === felhasznaloId) megvalaszolt += 1;
   }
 
   if (szerep === "berlo") {

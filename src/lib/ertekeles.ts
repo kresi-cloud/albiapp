@@ -234,35 +234,42 @@ export async function ertekelestMent(
   szoveg: string,
   pontok: Pont[],
 ): Promise<void> {
-  const meglevo = await prisma.ertekeles.findUnique({
-    where: {
-      jogviszonyId_szerzoId_alanyId: { jogviszonyId, szerzoId, alanyId },
-    },
-  });
+  // Egyetlen tranzakcióban, mert a szöveg és a pontok egy értékelést adnak ki.
+  // Külön futva a törlés és a beszúrás közé beleért a másik fél lapletöltése,
+  // és a felfedés pillanatában szöveg állt pontok nélkül — a lap úgy nézett
+  // ki, mintha a szerző egy szempontot sem adott volna meg. Ugyanaz az elv,
+  // mint a jogviszony lezárásánál: SQLite-on ez rejtve maradt, Postgresen nem.
+  await prisma.$transaction(async (tx) => {
+    const meglevo = await tx.ertekeles.findUnique({
+      where: {
+        jogviszonyId_szerzoId_alanyId: { jogviszonyId, szerzoId, alanyId },
+      },
+    });
 
-  const ertekelesId = meglevo
-    ? (
-        await prisma.ertekeles.update({
-          where: { id: meglevo.id },
-          data: { szoveg, irany },
-        })
-      ).id
-    : (
-        await prisma.ertekeles.create({
-          data: { jogviszonyId, szerzoId, alanyId, irany, szoveg },
-        })
-      ).id;
+    const ertekelesId = meglevo
+      ? (
+          await tx.ertekeles.update({
+            where: { id: meglevo.id },
+            data: { szoveg, irany },
+          })
+        ).id
+      : (
+          await tx.ertekeles.create({
+            data: { jogviszonyId, szerzoId, alanyId, irany, szoveg },
+          })
+        ).id;
 
-  // A pontokat lecseréljük, nem egyesével írjuk át: a szempontok listája
-  // kódban él, tehát egy korábbi értékelésben állhat olyan szempont, ami már
-  // nincs a listán, és annak a módosítás után nem szabad ott maradnia.
-  await prisma.ertekelesPont.deleteMany({ where: { ertekelesId } });
-  await prisma.ertekelesPont.createMany({
-    data: pontok.map((pont) => ({
-      ertekelesId,
-      szempont: pont.szempont,
-      pont: pont.pont,
-    })),
+    // A pontokat lecseréljük, nem egyesével írjuk át: a szempontok listája
+    // kódban él, tehát egy korábbi értékelésben állhat olyan szempont, ami már
+    // nincs a listán, és annak a módosítás után nem szabad ott maradnia.
+    await tx.ertekelesPont.deleteMany({ where: { ertekelesId } });
+    await tx.ertekelesPont.createMany({
+      data: pontok.map((pont) => ({
+        ertekelesId,
+        szempont: pont.szempont,
+        pont: pont.pont,
+      })),
+    });
   });
 }
 
