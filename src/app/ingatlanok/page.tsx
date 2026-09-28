@@ -1,22 +1,59 @@
 import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
-import { forintNyelven } from "@/domain/nyelv";
+import { datumNyelven, forintNyelven, szamNyelven } from "@/domain/nyelv";
+import { MEROORA_TIPUSOK, type MerooraTipus } from "@/domain/meroora";
+import { merooraUzenet } from "@/lib/rezsi";
 import { szovegek } from "@/lib/nyelv";
 import { IngatlanUrlap, JogviszonyUrlap } from "./Urlapok";
-import { Lapfej, NYITO, Ures } from "@/components/ui/alap";
+import {
+  DijszabasTorloUrlap,
+  DijszabasUrlap,
+  MerooraAdatUrlap,
+  MerooraTorloUrlap,
+  UjMerooraUrlap,
+  type MerooraCimkek,
+} from "./MerooraUrlapok";
+import { Lapfej, NYITO, Sugo, Ures } from "@/components/ui/alap";
 
 export const dynamic = "force-dynamic";
 
 export default async function Ingatlanok() {
   const berbeado = await kotelezoSzerep("berbeado");
-  const { sz, nyelv } = await szovegek();
+  const { sz, u, nyelv } = await szovegek();
   const ft = (osszegFt: number) => forintNyelven(osszegFt, nyelv);
+  const nap = (ertek: Date) => datumNyelven(ertek, nyelv);
+  const szamF = (ertek: number, tizedes?: number) => szamNyelven(ertek, nyelv, tizedes);
+  const mai = new Date().toISOString().slice(0, 10);
 
   const ingatlanok = await prisma.ingatlan.findMany({
     where: { tulajdonosId: berbeado.id },
-    include: { meroorak: true, jogviszonyok: true },
+    include: {
+      meroorak: {
+        include: {
+          dijszabasok: { orderBy: [{ ervenyesTol: "desc" }, { id: "desc" }] },
+          _count: { select: { oraallasok: true } },
+        },
+        orderBy: [{ tipus: "asc" }, { id: "asc" }],
+      },
+      jogviszonyok: true,
+    },
     orderBy: [{ letrehozva: "asc" }, { id: "asc" }],
   });
+
+  // A fajták nevei egyszer, nem mérőóránként: a választóban mind a négy áll.
+  const tipusNevek = Object.fromEntries(
+    MEROORA_TIPUSOK.map((tipus) => [tipus, sz(`meroora.${tipus}`)]),
+  );
+  const merooraCimkek: MerooraCimkek = {
+    tipus: sz("meroora.tipus"),
+    tipusNevek,
+    mertekegyseg: sz("meroora.mertekegyseg"),
+    gyariSzam: sz("meroora.gyari_szam"),
+    almero: sz("meroora.almero_mezo"),
+    almeroSugo: sz("meroora.almero_sugo"),
+    gomb: sz("meroora.gomb"),
+    folyamatban: sz("meroora.folyamatban"),
+  };
 
   const ures = ingatlanok.length === 0;
 
@@ -50,6 +87,129 @@ export default async function Ingatlanok() {
                   ertek={String(ingatlan.jogviszonyok.length)}
                 />
               </dl>
+
+              {/* A mérőórák összecsukva állnak: aki már felvitte őket, annak
+                  ez a lap a bérleményeiről szól, nem a díjszabásról. Amíg
+                  viszont nincs kész — nincs mérőóra, vagy van, de díjszabás
+                  nélkül —, nyitva marad: enélkül az almérős rezsielszámolás el
+                  sem indul, és a szakasz épp az első mérőóra felvétele után
+                  csukódott volna be, a bérbeadó orra előtt. */}
+              <details
+                open={
+                  ingatlan.meroorak.length === 0 ||
+                  ingatlan.meroorak.some((meroora) => meroora.dijszabasok.length === 0)
+                }
+                data-szakasz="meroorak"
+                className="mt-3 border-t border-keret pt-2"
+              >
+                <summary className={NYITO}>
+                  {sz("meroora.szakasz")} ({ingatlan.meroorak.length})
+                </summary>
+
+                <div className="mt-2 grid gap-4">
+                  <Sugo cim={sz("meroora.szakasz")}>
+                    <p>{sz("meroora.szakasz_sugo")}</p>
+                  </Sugo>
+
+                  {ingatlan.meroorak.map((meroora) => (
+                    <div
+                      key={meroora.id}
+                      data-meroora={meroora.id}
+                      className="rounded-lg border border-keret bg-felulet-halk p-3"
+                    >
+                      <h3 className="font-medium">
+                        {u(merooraUzenet(meroora.tipus, meroora.almero))}
+                        {meroora.gyariSzam ? ` · ${meroora.gyariSzam}` : ""}
+                      </h3>
+
+                      <ul className="mt-2 grid gap-2 text-sm">
+                        {meroora.dijszabasok.map((dijszabas) => (
+                          <li
+                            key={dijszabas.id}
+                            className="flex flex-wrap items-baseline justify-between gap-2"
+                          >
+                            <span className="tabular-nums">
+                              {sz("dijszabas.sor", {
+                                nap: nap(dijszabas.ervenyesTol),
+                                kedvezmenyes: szamF(dijszabas.kedvezmenyesArFiller / 100),
+                                egyseg: meroora.mertekegyseg,
+                              })}
+                            </span>
+                            <DijszabasTorloUrlap
+                              dijszabasId={dijszabas.id}
+                              cimke={sz("dijszabas.torol")}
+                            />
+                          </li>
+                        ))}
+                        {meroora.dijszabasok.length === 0 ? (
+                          <li className="text-halvany">{sz("rezsi.nincs_dijszabas")}</li>
+                        ) : null}
+                      </ul>
+
+                      <details className="mt-2" data-szakasz="dijszabas">
+                        <summary className={NYITO}>{sz("dijszabas.uj")}</summary>
+                        <div className="mt-2">
+                          <DijszabasUrlap
+                            merooraId={meroora.id}
+                            tipus={meroora.tipus as MerooraTipus}
+                            mai={mai}
+                            cimkek={{
+                              ervenyesTol: sz("dijszabas.ervenyes_tol"),
+                              kedvezmenyes: sz("dijszabas.kedvezmenyes", {
+                                egyseg: meroora.mertekegyseg,
+                              }),
+                              piaci: sz("dijszabas.piaci", { egyseg: meroora.mertekegyseg }),
+                              keret: sz("dijszabas.keret", { egyseg: meroora.mertekegyseg }),
+                              alapdij: sz("dijszabas.alapdij"),
+                              csatorna: sz("dijszabas.csatorna", {
+                                egyseg: meroora.mertekegyseg,
+                              }),
+                              csatornaSugo: sz("dijszabas.csatorna_sugo"),
+                              gomb: sz("dijszabas.gomb"),
+                              folyamatban: sz("dijszabas.folyamatban"),
+                            }}
+                          />
+                        </div>
+                      </details>
+
+                      <details className="mt-1" data-szakasz="meroora-adatok">
+                        <summary className={NYITO}>{sz("meroora.modosit")}</summary>
+                        <div className="mt-2 grid gap-3">
+                          <MerooraAdatUrlap
+                            merooraId={meroora.id}
+                            tipus={meroora.tipus}
+                            mertekegyseg={meroora.mertekegyseg}
+                            gyariSzam={meroora.gyariSzam ?? ""}
+                            almero={meroora.almero}
+                            cimkek={merooraCimkek}
+                            mentes={sz("meroora.modosit")}
+                          />
+                          {/* Törölni csak addig lehet, amíg nincs rajta mérés:
+                              a korábbi elszámolások erre a mérőórára
+                              hivatkoznak. A kiszolgáló is ezt tartja be. */}
+                          {meroora._count.oraallasok === 0 ? (
+                            <MerooraTorloUrlap
+                              merooraId={meroora.id}
+                              cimke={sz("meroora.torol")}
+                            />
+                          ) : (
+                            <p className="text-xs text-halvany">
+                              {sz("meroora.hiba.van_oraallas")}
+                            </p>
+                          )}
+                        </div>
+                      </details>
+                    </div>
+                  ))}
+
+                  <details data-szakasz="uj-meroora" open={ingatlan.meroorak.length === 0}>
+                    <summary className={NYITO}>{sz("meroora.uj")}</summary>
+                    <div className="mt-2">
+                      <UjMerooraUrlap ingatlanId={ingatlan.id} cimkek={merooraCimkek} />
+                    </div>
+                  </details>
+                </div>
+              </details>
             </li>
           ))}
         </ul>

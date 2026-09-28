@@ -9,8 +9,25 @@ import {
   type IngatlanBemenet,
   type JogviszonyBemenet,
 } from "@/domain/berlemeny";
+import {
+  dijszabasFigyelmeztetesei,
+  dijszabastEllenoriz,
+  merooratEllenoriz,
+  tipusE,
+  type MerooraBemenet,
+} from "@/domain/meroora";
 import { ingatlantLetrehoz, jogviszonytIndit } from "@/lib/berlemeny";
-import { urlapForint } from "@/domain/penz";
+import {
+  dijszabastFelvesz,
+  dijszabastTorol,
+  merooratFelvesz,
+  merooratModosit,
+  merooratTorol,
+  sajatMeroora,
+  type DijszabasHiba,
+  type MerooraTorlesHiba,
+} from "@/lib/meroora";
+import { urlapFiller, urlapForint } from "@/domain/penz";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 
@@ -143,4 +160,159 @@ export async function jogviszonytInditAction(
     hibak: [],
     figyelmeztetesek: jogviszonyFigyelmeztetesei(bemenet, ma).map(u),
   };
+}
+
+/* ------------------------------------------------------- Mérőóra és díjszabás */
+
+function merooraUrlaprol(urlap: FormData): MerooraBemenet {
+  return {
+    tipus: szoveg(urlap.get("tipus")),
+    mertekegyseg: szoveg(urlap.get("mertekegyseg")),
+    gyariSzam: szoveg(urlap.get("gyariSzam")) || null,
+    almero: urlap.get("almero") !== null,
+  };
+}
+
+function merooraHiba(hibak: string[]): Eredmeny {
+  return { allapot: "hiba", uzenet: hibak[0], hibak: [], figyelmeztetesek: [] };
+}
+
+function merooraFrissit(): void {
+  revalidatePath("/ingatlanok");
+  revalidatePath("/rezsi");
+  revalidatePath("/berlo");
+}
+
+function merooraUzenete(sz: (kulcs: string) => string, hiba: MerooraTorlesHiba): string {
+  if (hiba === "van_elszamolas") return sz("meroora.hiba.van_elszamolas");
+  if (hiba === "van_oraallas") return sz("meroora.hiba.van_oraallas");
+  return sz("meroora.hiba.nem_tied");
+}
+
+function dijszabasUzenete(sz: (kulcs: string) => string, hiba: DijszabasHiba): string {
+  if (hiba === "van_mar") return sz("dijszabas.hiba.van_mar");
+  if (hiba === "elszamolt") return sz("dijszabas.hiba.elszamolt");
+  return sz("meroora.hiba.nem_tied");
+}
+
+/**
+ * A mérőóra a bérleményhez tartozik, nem a bérlethez: a következő bérlő
+ * ugyanazon az órán folytatja. Ezért a felvitele is itt van, az ingatlan
+ * mellett, nem a rezsilapon.
+ */
+export async function merooratFelveszAction(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, u } = await szovegek();
+
+  const bemenet = merooraUrlaprol(urlap);
+  const kifogasok = merooratEllenoriz(bemenet);
+  if (kifogasok.length > 0) return merooraHiba(kifogasok.map(u));
+
+  const sikerult = await merooratFelvesz(
+    berbeado.id,
+    szoveg(urlap.get("ingatlanId")),
+    bemenet,
+  );
+  if (!sikerult) return merooraHiba([sz("berlemeny.hiba.cim")]);
+
+  merooraFrissit();
+  return { allapot: "kesz", uzenet: sz("meroora.kesz"), hibak: [], figyelmeztetesek: [] };
+}
+
+export async function merooratModositAction(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, u } = await szovegek();
+
+  const bemenet = merooraUrlaprol(urlap);
+  const kifogasok = merooratEllenoriz(bemenet);
+  if (kifogasok.length > 0) return merooraHiba(kifogasok.map(u));
+
+  const eredmeny = await merooratModosit(
+    berbeado.id,
+    szoveg(urlap.get("merooraId")),
+    bemenet,
+  );
+  if (eredmeny !== "kesz") return merooraHiba([merooraUzenete(sz, eredmeny)]);
+
+  merooraFrissit();
+  return { allapot: "kesz", uzenet: sz("meroora.modositva"), hibak: [], figyelmeztetesek: [] };
+}
+
+export async function merooratTorolAction(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+
+  const eredmeny = await merooratTorol(berbeado.id, szoveg(urlap.get("merooraId")));
+  if (eredmeny !== "kesz") return merooraHiba([merooraUzenete(sz, eredmeny)]);
+
+  merooraFrissit();
+  return { allapot: "kesz", uzenet: sz("meroora.torolve"), hibak: [], figyelmeztetesek: [] };
+}
+
+export async function dijszabastFelveszAction(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, u } = await szovegek();
+
+  const meroora = await sajatMeroora(berbeado.id, szoveg(urlap.get("merooraId")));
+  if (!meroora) return merooraHiba([sz("meroora.hiba.nem_tied")]);
+  if (!tipusE(meroora.tipus)) return merooraHiba([sz("meroora.hiba.tipus")]);
+
+  const keretNyers = szoveg(urlap.get("evesKeret"));
+  const bemenet = {
+    tipus: meroora.tipus,
+    ervenyesTol: napotOlvas(urlap.get("ervenyesTol")),
+    kedvezmenyesArFiller: urlapFiller(urlap.get("kedvezmenyesAr")),
+    piaciArFiller: urlapFiller(urlap.get("piaciAr")),
+    // Az üres keret nem hiányzó adat, hanem érvényes eset: nincs sáv.
+    evesKeret: keretNyers === "" ? null : Number(keretNyers.replace(",", ".")),
+    alapdijFt: urlapForint(urlap.get("alapdijFt")) ?? 0,
+    csatornaArFiller: urlapFiller(urlap.get("csatornaAr")) ?? 0,
+  };
+
+  const kifogasok = dijszabastEllenoriz(bemenet);
+  if (kifogasok.length > 0) return merooraHiba(kifogasok.map(u));
+
+  const eredmeny = await dijszabastFelvesz(berbeado.id, meroora.id, {
+    ervenyesTol: bemenet.ervenyesTol as Date,
+    kedvezmenyesArFiller: bemenet.kedvezmenyesArFiller as number,
+    piaciArFiller: bemenet.piaciArFiller as number,
+    evesKeret: bemenet.evesKeret,
+    alapdijFt: bemenet.alapdijFt,
+    csatornaArFiller: bemenet.csatornaArFiller,
+  });
+  if (eredmeny !== "kesz") return merooraHiba([dijszabasUzenete(sz, eredmeny)]);
+
+  merooraFrissit();
+  return {
+    allapot: "kesz",
+    uzenet: sz("dijszabas.kesz"),
+    hibak: [],
+    figyelmeztetesek: dijszabasFigyelmeztetesei(bemenet).map(u),
+  };
+}
+
+export async function dijszabastTorolAction(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+
+  const eredmeny = await dijszabastTorol(berbeado.id, szoveg(urlap.get("dijszabasId")));
+  if (eredmeny !== "kesz") return merooraHiba([dijszabasUzenete(sz, eredmeny)]);
+
+  merooraFrissit();
+  return { allapot: "kesz", uzenet: sz("dijszabas.torolve"), hibak: [], figyelmeztetesek: [] };
 }
