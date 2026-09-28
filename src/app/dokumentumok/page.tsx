@@ -181,6 +181,7 @@ export default async function Dokumentumok() {
                   <UjIgazolas
                     jogviszonyBerloId={berlo.id}
                     idoszakok={idoszakok.map((sor) => ({
+                      eloirtTetelId: sor.eloirtTetelId,
                       idoszak: sor.idoszak,
                       cimke: idoszakCimke(sor.idoszak),
                       osszeg: ft(sor.osszegFt),

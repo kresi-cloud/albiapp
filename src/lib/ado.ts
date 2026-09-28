@@ -161,18 +161,41 @@ export async function adoEv(tulajdonosId: string, ev: number): Promise<AdoEv> {
         continue;
       }
 
+      // Minden előírástípusnak saját fajtája van, mert az indoklás is más.
+      // Korábban a rezsiátalány és az előfizetés-térítés is `egyeb` lett, és a
+      // besoroló azt a bérleti díj indoklásával látta el: a könyvelői CSV-ben
+      // egy 25 000 forintos rezsiátalány mellett az állt, hogy „Bérleti díjként
+      // befolyt összeg". Az összeg bevételként jó volt, az indoklás hamis — és
+      // a mi ígéretünk az, hogy minden bevételi sor mellé indoklás kerül.
       const fajta =
         eloiras.tipus === "berleti_dij"
           ? "berleti_dij"
           : eloiras.tipus === "kozos_koltseg"
             ? "kozos_koltseg"
-            : "egyeb";
+            : eloiras.tipus === "rezsi_atalany"
+              ? "rezsi_atalany"
+              : eloiras.tipus === "elofizetes"
+                ? "elofizetes"
+                : "egyeb";
+
+      // A megnevezés is megkülönbözteti őket: egy hónap három-négy sora eddig
+      // csak összegben tért el egymástól.
+      const megnevezesKulcs =
+        fajta === "rezsi_atalany"
+          ? "ado.megnevezes.atalany"
+          : fajta === "elofizetes"
+            ? "ado.megnevezes.elofizetes"
+            : fajta === "kozos_koltseg"
+              ? "ado.megnevezes.kozos_koltseg"
+              : null;
 
       beerkezett.push({
         datum: beerkezes.erkezesDatuma,
         osszegFt: beerkezes.osszegFt,
         fajta,
-        megnevezes: uzenet("nyers", { szoveg: megnevezes }),
+        megnevezes: megnevezesKulcs
+          ? uzenet(megnevezesKulcs, { alap: megnevezes })
+          : uzenet("nyers", { szoveg: megnevezes }),
       });
     }
   }

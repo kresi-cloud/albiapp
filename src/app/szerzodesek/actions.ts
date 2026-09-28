@@ -252,7 +252,24 @@ export async function szerzodestVeglegesit(_elozo: Eredmeny, urlap: FormData): P
   };
 }
 
-/** Véglegesítés visszavonása, amíg nem írták alá. */
+/**
+ * Véglegesítés visszavonása, amíg nem épült rá semmi.
+ *
+ * A visszavonás a `veglegesSzoveg`-et is törli, tehát amit a felek
+ * elolvastak, az eltűnik, és a szöveg a mostani modulokból épül újra. Amíg
+ * csak a bérbeadó nézte meg, ez rendben van: azért van a gomb.
+ *
+ * Két dolog után viszont nincs rendben, és ezt a kiszolgáló tartja be, nem a
+ * gomb elrejtése:
+ *
+ * - **Ha van hozzá véglegesített záradék.** A záradék megnevezi az
+ *   alapszerződést, és kimondja, hogy annak többi rendelkezése változatlanul
+ *   hatályban marad — egy tervezetre visszaejtett alapszerződés mellett ez a
+ *   mondat semmire nem mutatna.
+ * - **Ha már állítottunk ki igazolást.** Az okirat szövege a szerződés keltét
+ *   idézi, és a kelte a visszavonás után más lehet: a kiadott papír és a
+ *   szerződés elcsúszna egymástól. Ami befagyott, azt nem olvasztjuk vissza.
+ */
 export async function veglegesitestVisszavon(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berbeado = await kotelezoSzerep("berbeado");
   const { sz } = await szovegek();
@@ -262,6 +279,21 @@ export async function veglegesitestVisszavon(_elozo: Eredmeny, urlap: FormData):
     where: { id: szerzodesId, jogviszony: { ingatlan: { tulajdonosId: berbeado.id } } },
   });
   if (!szerzodes) return hiba(sz("szerzodes.hiba.nem_tied"));
+  if (szerzodes.allapot === "tervezet") return hiba(sz("szerzodes.hiba.mar_tervezet"));
+
+  const zaradekok = await prisma.szerzodes.count({
+    where: { alapSzerzodesId: szerzodesId, allapot: { not: "tervezet" } },
+  });
+  if (zaradekok > 0) {
+    return hiba(sz("szerzodes.hiba.van_zaradeka", { darab: zaradekok }));
+  }
+
+  const igazolasok = await prisma.igazolas.count({
+    where: { jogviszonyBerlo: { jogviszonyId: szerzodes.jogviszonyId } },
+  });
+  if (igazolasok > 0) {
+    return hiba(sz("szerzodes.hiba.van_igazolas", { darab: igazolasok }));
+  }
 
   await prisma.szerzodes.update({
     where: { id: szerzodesId },

@@ -45,6 +45,8 @@ export type JogviszonyNezet = {
   lezart: boolean;
   egyeztetesek: (Egyeztetes & {
     idoszak: string | null;
+    /** Melyik előírás típusa. Az igazolás csak bérleti díjról szólhat. */
+    tipus: string | null;
     osszegFt: number;
     esedekesseg: Date;
     berbeadoiOsszegFt: number | null;
@@ -133,6 +135,7 @@ function nezetteAlakit(
       return {
         ...sor,
         idoszak: eloiras?.idoszak ?? null,
+        tipus: eloiras?.tipus ?? null,
         osszegFt: eloiras?.osszegFt ?? 0,
         esedekesseg: eloiras?.esedekesseg ?? berbeadoi?.erkezesDatuma ?? ma,
         berbeadoiOsszegFt: berbeadoi?.megerkezett ? berbeadoi.osszegFt : null,

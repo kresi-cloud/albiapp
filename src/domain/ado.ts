@@ -23,7 +23,16 @@ export const KOLTSEGHANYAD = 0.1;
 /** Épület értékcsökkenési leírási kulcsa évente. */
 export const ERTEKCSOKKENES_KULCS = 0.02;
 
-export type BevetelFajta = "berleti_dij" | "rezsi" | "kozos_koltseg" | "egyeb";
+export type BevetelFajta =
+  | "berleti_dij"
+  /** Tételes rezsielszámolás: a mért része nem bevétel, a többi igen. */
+  | "rezsi"
+  /** Havi rezsiátalány. Bevétel, de nem bérleti díj — a könyvelő szétválasztja. */
+  | "rezsi_atalany"
+  | "kozos_koltseg"
+  /** Előfizetés-térítés: a bérbeadó nevén álló számla megtérítése. */
+  | "elofizetes"
+  | "egyeb";
 
 export type BeerkezettTetel = {
   datum: Date;
@@ -78,6 +87,22 @@ export function bevetelketBesorol(tetelek: BeerkezettTetel[]): BevetelSor[] {
         bevetelFt: tetel.osszegFt,
         nemBevetelFt: 0,
         indoklas: uzenet("ado.indok.atalany"),
+      };
+    }
+    if (tetel.fajta === "rezsi_atalany") {
+      return {
+        ...tetel,
+        bevetelFt: tetel.osszegFt,
+        nemBevetelFt: 0,
+        indoklas: uzenet("ado.indok.atalany"),
+      };
+    }
+    if (tetel.fajta === "elofizetes") {
+      return {
+        ...tetel,
+        bevetelFt: tetel.osszegFt,
+        nemBevetelFt: 0,
+        indoklas: uzenet("ado.indok.elofizetes"),
       };
     }
     if (tetel.fajta === "kozos_koltseg") {

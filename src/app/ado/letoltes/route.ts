@@ -23,7 +23,23 @@ export async function GET(keres: Request): Promise<Response> {
   const nap = (datum: Date | null) => (datum ? datum.toISOString().slice(0, 10) : "");
   const idezojel = (szoveg: string) => `"${szoveg.replace(/"/g, '""')}"`;
 
-  const sorok: string[][] = [["Szakasz", "Dátum", "Megnevezés", "Bevétel", "Nem bevétel", "Költség", "Indoklás"]];
+  // A besorolatlan beérkezésnek saját oszlopa van, nem a „Bevétel"-ben áll.
+  // Korábban oda került, az összesítő sor viszont nem számolta bele — a
+  // könyvelő az oszlopot összeadva más számot kapott, mint ami az összesítésben
+  // állt, és nem látszott, melyik a jó. Amit nem tudunk besorolni, azt nem
+  // tippeljük meg — de el sem rejtjük.
+  const sorok: string[][] = [
+    [
+      "Szakasz",
+      "Dátum",
+      "Megnevezés",
+      "Bevétel",
+      "Nem bevétel",
+      "Költség",
+      "Besorolatlan",
+      "Indoklás",
+    ],
+  ];
 
   for (const sor of adatok.bevetelSorok) {
     sorok.push([
@@ -32,6 +48,7 @@ export async function GET(keres: Request): Promise<Response> {
       u(sor.megnevezes),
       String(sor.bevetelFt),
       String(sor.nemBevetelFt),
+      "",
       "",
       u(sor.indoklas),
     ]);
@@ -45,6 +62,7 @@ export async function GET(keres: Request): Promise<Response> {
       "",
       "",
       String(sor.osszegFt),
+      "",
       sz(`ado.fajta.${sor.fajta}`),
     ]);
   }
@@ -54,26 +72,38 @@ export async function GET(keres: Request): Promise<Response> {
       "Besorolatlan",
       nap(sor.datum),
       u(sor.megjegyzes),
+      "",
+      "",
+      "",
       String(sor.osszegFt),
-      "",
-      "",
       "",
     ]);
   }
 
   const o = adatok.osszesito;
   sorok.push([]);
-  sorok.push(["Összesítés", "", "Bevétel", String(o.bevetelFt), "", "", ""]);
-  sorok.push(["Összesítés", "", "Nem bevétel", "", String(o.nemBevetelFt), "", ""]);
-  sorok.push(["Összesítés", "", "Költség összesen", "", "", String(o.tetelesKoltsegFt), ""]);
-  sorok.push(["Összesítés", "", "Adóalap 10%-os költséghányaddal", String(o.adoalapHanyadFt), "", "", ""]);
-  sorok.push(["Összesítés", "", "Szja 10%-os költséghányaddal", String(o.adoHanyadFt), "", "", ""]);
-  sorok.push(["Összesítés", "", "Adóalap tételes elszámolással", String(o.adoalapTetelesFt), "", "", ""]);
-  sorok.push(["Összesítés", "", "Szja tételes elszámolással", String(o.adoTetelesFt), "", "", ""]);
+  sorok.push(["Összesítés", "", "Bevétel", String(o.bevetelFt), "", "", "", ""]);
+  sorok.push(["Összesítés", "", "Nem bevétel", "", String(o.nemBevetelFt), "", "", ""]);
+  sorok.push(["Összesítés", "", "Költség összesen", "", "", String(o.tetelesKoltsegFt), "", ""]);
+  sorok.push([
+    "Összesítés",
+    "",
+    "Besorolatlan beérkezés (nincs benne a bevételben)",
+    "",
+    "",
+    "",
+    String(adatok.besorolatlan.reduce((osszeg, sor) => osszeg + sor.osszegFt, 0)),
+    "",
+  ]);
+  sorok.push(["Összesítés", "", "Adóalap 10%-os költséghányaddal", String(o.adoalapHanyadFt), "", "", "", ""]);
+  sorok.push(["Összesítés", "", "Szja 10%-os költséghányaddal", String(o.adoHanyadFt), "", "", "", ""]);
+  sorok.push(["Összesítés", "", "Adóalap tételes elszámolással", String(o.adoalapTetelesFt), "", "", "", ""]);
+  sorok.push(["Összesítés", "", "Szja tételes elszámolással", String(o.adoTetelesFt), "", "", "", ""]);
   sorok.push([
     "Összesítés",
     "",
     "Ajánlott mód",
+    "",
     "",
     "",
     "",

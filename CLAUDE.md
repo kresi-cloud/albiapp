@@ -248,6 +248,18 @@ igen. Vegyes elszámolásnál a befizetés a tételek arányában oszlik meg, é
 kerekítés maradéka a nem mért részre kerül, hogy a két rész összege pontosan a
 befizetés legyen. Minden bevételi sor mellé indoklás kerül.
 
+**Minden előírástípusnak saját indoklása van.** A rezsiátalány és az
+előfizetés-térítés korábban „egyéb"-ként ment át, és a besoroló a bérleti díj
+indoklását adta hozzá: a könyvelői CSV-ben egy 25 000 forintos átalány
+mellett az állt, hogy „Bérleti díjként befolyt összeg". Az összeg
+bevételként jó volt, az indoklás hamis — és az ígéretünk az, hogy minden
+bevételi sor mellé indoklás kerül.
+
+A CSV-ben a besorolatlan beérkezésnek **saját oszlopa** van. Korábban a
+„Bevétel" oszlopban állt, az összesítő sor viszont nem számolta bele: a
+könyvelő az oszlopot összeadva más számot kapott, mint ami az összesítésben
+állt, és nem látszott, melyik a jó.
+
 Amit nem tudunk besorolni (előírás nélkül beérkezett pénz), azt nem tippeljük
 meg: külön listán megy a bérbeadóhoz.
 
@@ -418,6 +430,20 @@ teendő lesz, mert a birtokbaadáskor tett ígéret egyébként elvész.
 
 Az óraállás mezője szabad szöveg, mert a helyszínen mértékegységgel együtt
 írják be. A számot kiolvassuk belőle; ha nem megy, nem tippelünk, hanem szólunk.
+
+**Igazolás csak bérleti díjról szól, és mindig egy megnevezett előírásról**, nem
+egy hónapról. Az okirat szövege azt mondja ki, hogy a bérletidíj-fizetés
+megtörtént — ebből igényel a bérlő albérlettámogatást —, a hónapra keresve
+viszont a közös költség és egy ezerforintos előfizetés befizetése is
+igazolható volt, ugyanazzal a mondattal, és a „beérkezettnél nem több"
+korlát is a rossz sorhoz mérődött. Egy hónapban több bérletidíj-sor is
+állhat, ezért az űrlap az előírás azonosítóját küldi.
+
+**És amire már kiadtunk papírt, azt nem olvasztjuk vissza.** A véglegesített
+szerződés nem állítható vissza tervezetre, ha véglegesített záradék épül rá
+— a záradék mondata a többi rendelkezés hatályban maradásáról különben
+semmire nem mutatna —, vagy ha már állítottunk ki igazolást, mert az a
+szerződés keltét idézi, és a kelte a visszavonás után más lehet.
 
 A bérbeadói igazolás összegét és a teljesítés napját a párosított befizetésből
 vesszük, nem kézi beírásból. Amelyik hónapra nincs beazonosított befizetés,
