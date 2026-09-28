@@ -93,7 +93,9 @@ export type Allapot =
   | "idopont_gond"
   | "varakozik"
   | "itthon_lesz"
-  | "kulccsal";
+  | "kulccsal"
+  /** Egyik bérlőnek sincs fiókja: nincs kitől hozzájárulást kérni. */
+  | "nincs_kit_kerdezni";
 
 /**
  * Az állapot sorrendje szándékos. A lemondás és az elmúlt nap mindent felülír,
@@ -108,6 +110,14 @@ export function allapot(latogatas: Latogatas, ma: Date): Allapot {
   if (latogatas.valaszok.some((sor) => sor.valasz === "nem_jo_idopont")) {
     return "idopont_gond";
   }
+
+  // Ha egyetlen bérlőnek sincs fiókja, nincs kitől hozzájárulást kérni — és
+  // akkor pont nem az jön ki, hogy „senki nem lesz itthon, de a bérbeadó
+  // bemehet a kulccsal". A bérbeadó nem mehet be a bérlő távollétében
+  // pusztán azért, mert övé az ingatlan: ahhoz a bérlő kimondott
+  // hozzájárulása kell. Az üres lista nem hozzájárulás, hanem hiányzó
+  // kérdés, és ezt ki is mondjuk.
+  if (latogatas.varhatoValaszolok.length === 0) return "nincs_kit_kerdezni";
 
   // Fiók nélküli bérlőt nem lehet megkérdezni; akit meg lehet, attól várunk.
   const valaszolt = new Set(latogatas.valaszok.map((sor) => sor.berloId));
@@ -158,6 +168,9 @@ export function allapotMondata(latogatas: Latogatas, ma: Date): Uzenet {
     return uzenet("latogatas.allapot.itthon_lesz", {
       nev: itthon.map((sor) => sor.berloNeve).join(", "),
     });
+  }
+  if (mostani === "nincs_kit_kerdezni") {
+    return uzenet("latogatas.allapot.nincs_kit_kerdezni");
   }
   if (mostani === "kulccsal") return uzenet("latogatas.allapot.kulccsal");
   if (mostani === "lemondva") return uzenet("latogatas.allapot.lemondva");
@@ -228,6 +241,22 @@ export function latogatasokbolTeendok(
         leiras: uzenet("teendo.latogatas.kire_var", {
           nev: hianyzik.map((sor) => sor.nev).join(", "),
         }),
+        esedekesseg: napEleje(latogatas.nap),
+        hivatkozas,
+      });
+      continue;
+    }
+
+    // Nincs kitől hozzájárulást kérni: ez a bérbeadó teendője, nem elrendezett
+    // állapot. Ennélkül a látogatás csendben „bemehet a kulccsal"-ként állna,
+    // és semmi nem szólna.
+    if (mostani === "nincs_kit_kerdezni") {
+      teendok.push({
+        kulcs: `latogatas:${latogatas.id}:nincs_kit_kerdezni`,
+        cimzett: "berbeado",
+        tipus: "latogatas_varakozik",
+        cim: uzenet("teendo.latogatas.nincs_kit_kerdezni", adatok),
+        leiras: uzenet("teendo.latogatas.nincs_fiok"),
         esedekesseg: napEleje(latogatas.nap),
         hivatkozas,
       });

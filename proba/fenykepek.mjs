@@ -193,6 +193,46 @@ async function berloiOldal(oldal) {
     (await berloiSajat.getByRole("button", { name: "Ezt láttam, megerősítem" }).count()) === 0,
     "a bérlő a saját képére sem bólinthat rá",
   );
+
+  return EGYEDI;
+}
+
+/**
+ * Amit a másik fél már látott és elismert, azt a feltöltő sem törli.
+ *
+ * Kimondtuk, hogy a kifogás nem törli a képet, mert mindkét állítás ott kell
+ * maradjon egymás mellett. Ez fordítva is igaz: ha a feltöltő a másik fél
+ * nyilatkozata után törölhetné a képet, ugyanoda jutnánk, csak a másik
+ * oldalról — egy fél által kitakarított album annyit érne, mint a bemondás.
+ */
+async function megerositettKepetNemTorol(oldal, egyedi) {
+  await belep(oldal, "berbeado@pelda.hu");
+  await magyarra(oldal);
+  await oldal.goto(`${ALAP}/dokumentumok`);
+  const ut = await oldal
+    .locator('a[href^="/jegyzokonyvek/"]')
+    .first()
+    .getAttribute("href");
+  await oldal.goto(`${ALAP}${ut}`);
+  await oldal.waitForLoadState("networkidle");
+  await mindetKinyit(oldal);
+
+  const kartya = oldal.locator("li", { hasText: `Erkély, a korlát töve ${egyedi}` }).first();
+  all((await kartya.count()) > 0, "a bérlő által megerősített kép a feltöltőnél is ott áll");
+
+  const torlo = kartya.locator('form:has(input[name="kepId"]) button');
+  if ((await torlo.count()) > 0) {
+    await torlo.first().click();
+    await oldal.waitForTimeout(1500);
+  }
+
+  await oldal.goto(`${ALAP}${ut}`);
+  await oldal.waitForLoadState("networkidle");
+  await mindetKinyit(oldal);
+  all(
+    (await oldal.locator("li", { hasText: `Erkély, a korlát töve ${egyedi}` }).count()) > 0,
+    "a megerősített képet a feltöltő sem törli",
+  );
 }
 
 async function kivulallo(oldal) {
@@ -211,6 +251,7 @@ export async function futtat(oldal) {
   await magyarra(oldal);
   const ut = await berbeadoiAlbum(oldal);
   await feltoltes(oldal, ut);
-  await berloiOldal(oldal);
+  const egyedi = await berloiOldal(oldal);
+  await megerositettKepetNemTorol(oldal, egyedi);
   await kivulallo(oldal);
 }

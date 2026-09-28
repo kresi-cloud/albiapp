@@ -54,6 +54,12 @@ Ha a két oldal nem egyezik, onnantól van értelme a bizonylatnak — és akkor
 csak annak az egy utalásnak a bizonylatáról, a bérlőtől a küldő, a bérbeadótól a
 fogadó oldaliról. Ezt a `bizonylatKell` mező mondja ki, nem a felület.
 
+**A saját oldalát mindenki maga adja meg, tehát maga is veszi vissza.** A
+bérlői nyilatkozatnak ezért van szerzője (`BerloiIgazolas.szerzoId`): nélküle a
+visszavonás csak a jogviszonyra tudott szűrni, és bármelyik lakótárs
+visszavonhatta a másikét — a másik pedig csak abból vette volna észre, hogy a
+tétel megint a bérbeadóra vár.
+
 A bizonylatkérés viszont a bérbeadó döntése (`Beallitasok.bizonylatKeres`, alapból
 bekapcsolva): van, aki a bérlőjétől nem akar papírt kérni. Kikapcsolva a tétel
 vitás marad, csak nem kérünk hozzá semmit. Amit már feltöltöttek, azt a
@@ -167,7 +173,12 @@ Minden oldal és minden szerveroldali művelet a belépett felhasználóból ind
 (`kotelezoSzerep`), soha nem abból, amit az űrlap küld. A bérbeadói adatokhoz a
 lekérdezés mindig szűr a tulajdonosra, a bérlői oldal a saját jogviszonyaira.
 
-A bérlő fiókja meghívóval készül. A meghívó egyszer használható és lejár, és
+A bérlő fiókja meghívóval készül. **Bérlői helyre csak bérlői, nem
+letiltott fiók ülhet**: a szerep azt dönti el, melyik alkalmazást látja a
+felhasználó, tehát egy bérbeadói fiók a bérlői helyen egyetlen bérlői lapot
+sem nyit meg — nem tud nyilatkozni se látogatásról, se előfizetésről, se
+értékelésről, azok örökké „várakozik" állapotban maradnának, és a meghívó
+közben elhasználódna. A meghívó egyszer használható és lejár, és
 meglévő fiók jelszavát soha nem írja felül: a link a bérbeadónál is megvan.
 
 **Meghívót csak olyan helyre készítünk, ahol még nem ül fiók.** Az elfogadás
@@ -442,6 +453,11 @@ mindkét állítás ott marad egymás mellett, mert egy fél által kitakarítot
 album pont annyit érne, mint a bemondás. Kifogás indoklás nélkül nincs, abból a
 másik fél nem tud kiindulni.
 
+Ez fordítva is igaz: **a feltöltő sem törli a képet azután, hogy a másik fél
+nyilatkozott róla**, se megerősítés, se kifogás után. Különben ugyanoda
+jutnánk, csak a másik oldalról. Aki cserélni akar, új képet tölt fel; a régi
+mellette marad, és a két állítás különbsége pont az, ami utólag számít.
+
 A kiköltözéskori kép a birtokbaadáskorihoz kötődik (`parjaId`), és a záró
 jegyzőkönyv kiírja, melyik nyitóképnek nincs még párja: az a feladatlista.
 
@@ -654,6 +670,17 @@ határidővel vállalt javítás és a kézzel felvett saját teendő tárolt
 elkattintott „kész" különben csendben eltüntetné, amit valaki vállalt. Ugyanaz
 az elv, mint a jogviszony lezárásánál.
 
+**A teendő hivatkozása címzettenként más**, mert a két fél más lapon látja
+ugyanazt a tételt, és a teendő egész kártyája hivatkozás. A bérlőnek adott
+`/befizetesek` a `kotelezoSzerep("berbeado")`-n akadt fenn és visszadobta a
+`/berlo`-ra, a `/berlo/befizetesek` pedig soha nem létezett: a bérlő minden
+befizetéses teendője ugyanoda vitt, akármelyikre kattintott.
+
+**És a vállalás teendője azé, aki vállalta.** A jegyzőkönyvi vállalás
+feltétel nélkül a bérbeadóé volt, a bérlő vállalása is — a bérlő tehát nem
+látta és nem is tudta lezárni azt, amit ő ígért meg a birtokbaadáskor. Pont
+azért tárolt teendő ez, mert valaki vállalta.
+
 A kézzel felvett teendő azért kell, mert a bérlet hétköznapja nem következik
 abból, amit az alkalmazás tud: a kéményseprő érkezése, a biztosítás évfordulója,
 a felmondási határidő előtti döntés sehonnan nem vezethető le. A kulcsa külön
@@ -698,7 +725,12 @@ nélkül nincs, mert abból a másik fél nem tud új időpontot javasolni — u
 mint a fénykép és az előfizetés kifogásánál.
 
 Bejelenteni mindkét fél tud: a kéményseprőt a bérbeadó hívja, a saját szerelőjét
-viszont a bérlő. **Nyilatkozni viszont mindig a bérlő nyilatkozik**, mert a
+viszont a bérlő. **Ha egyetlen bérlőnek sincs fiókja, nincs kitől hozzájárulást kérni** — és
+akkor pont nem az jön ki, hogy „senki nem lesz itthon, de a bérbeadó bemehet a
+kulccsal". Az üres várólista nem hozzájárulás, hanem hiányzó kérdés: saját
+állapota van, és a bérbeadónak teendője lesz belőle.
+
+**Nyilatkozni viszont mindig a bérlő nyilatkozik**, mert a
 kérdés az ő lakásába való bejutásról szól, és ezt a kiszolgáló ellenőrzi, nem az
 űrlap.
 
@@ -814,6 +846,13 @@ maga rögzített: egy tétel akkor számít megérkezettnek, ha a **bérbeadó o
 van mögötte beérkezés. A vitás tétel sem számít teljesítettnek. A nyitott összeg
 ezért nem „tartozás": a friss hónap is nyitott, amíg a bérbeadó rá nem nézett a
 számlájára, és az oldal ezt ki is mondja.
+
+**A vitás hónap nem számít megérkezettnek, és az `elter` nem vitás.** A
+két állapot különbsége itt is dönt: az `elter`-nél a két fél egyetért abban,
+mi történt, csak nem az előírt összeg érkezett — az megérkezett. A `vitas`
+viszont azt jelenti, hogy a két fél adata nem fedi egymást, és a betekintő
+eddig ezt is beleszámolta a „határidőig megérkezett" hónapokba, miközben
+ugyanaz a hónap mindkét fél lapján „Vitás"-ként állt.
 
 A párosítást ugyanaz az `egyeztet` végzi, mint a befizetések lapon. A nézet nem
 olvashat külön tárolt egyeztetési eredményt: egy ilyen tábla volt a sémában,

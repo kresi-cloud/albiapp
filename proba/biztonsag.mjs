@@ -493,6 +493,40 @@ async function lakotarsBizonylata(oldal) {
     "az első bérlő bizonylata a helyén maradt",
   );
 
+  // --- És a lakótárs a másik nyilatkozatát sem vonhatja vissza.
+  //
+  // A `BerloiIgazolas` sornak nem volt szerzője, a törlés pedig csak a
+  // jogviszonyra szűrt: bármelyik lakótárs visszavonhatta a másikét, és a
+  // másik csak abból vette volna észre, hogy a tétel megint a bérbeadóra vár.
+  // Az űrlap az azonosítót küldi, tehát hazudni is lehet vele — ezért a
+  // lakótárs lapjáról küldjük el a másik sor azonosítóját.
+  const sajatUrlap = oldal
+    .locator('form:has(button:text("Ezt elgépeltem"))')
+    .first();
+  const igazolasId = await sajatUrlap.locator('input[name="igazolasId"]').inputValue();
+  all(Boolean(igazolasId), "az első bérlő nyilatkozatának van azonosítója");
+
+  await lapra(lakotars, "/berlo");
+  const hazugUrlap = lakotars
+    .locator('form:has(button:text("Ezt elgépeltem"))')
+    .first();
+  if ((await hazugUrlap.count()) > 0) {
+    // Ha a lakótársnak van saját sora, azon írjuk át az azonosítót.
+    await hazugUrlap
+      .locator('input[name="igazolasId"]')
+      .evaluate((elem, ertek) => {
+        elem.value = ertek;
+      }, igazolasId);
+    await hazugUrlap.getByRole("button", { name: "Ezt elgépeltem" }).click();
+    await lakotars.waitForTimeout(1500);
+  }
+
+  await lapra(oldal, "/berlo");
+  all(
+    (await oldal.locator(`input[name="igazolasId"][value="${igazolasId}"]`).count()) > 0,
+    "a lakótárs nem vonhatja vissza a másik bérlő nyilatkozatát",
+  );
+
   await kontextus.close();
 }
 

@@ -63,6 +63,7 @@ export async function utalastRogzit(_elozo: Eredmeny, urlap: FormData): Promise<
   await prisma.berloiIgazolas.create({
     data: {
       jogviszonyId,
+      szerzoId: berlo.id,
       utalasDatuma: nap,
       osszegFt,
       kozlemeny: szoveg(urlap.get("kozlemeny")) || null,
@@ -74,7 +75,21 @@ export async function utalastRogzit(_elozo: Eredmeny, urlap: FormData): Promise<
   return { allapot: "kesz", uzenet: sz("valasz.utalas_rogzitve"), hibak: [] };
 }
 
-/** Elgépelt utalás visszavonása. A bérbeadó adatához nem nyúl. */
+/**
+ * Elgépelt utalás visszavonása. A bérbeadó adatához nem nyúl — és a
+ * lakótárséhoz sem.
+ *
+ * A szűrés korábban csak a jogviszonyra ment, a sornak pedig nem volt
+ * szerzője: két lakótárs közül bármelyik visszavonhatta a másik
+ * nyilatkozatát, és a másik csak abból vette volna észre, hogy a tétel megint
+ * a bérbeadóra vár. A saját oldalát mindenki maga adja meg, tehát maga is
+ * veszi vissza — ugyanaz az elv, mint a bizonylatnál, ahol a feltöltő fájlját
+ * nem írjuk felül a lakótárséval.
+ *
+ * A mező előtt született sorokon nincs szerző, és azokat a jogviszony bármelyik
+ * bérlője visszavonhatja: nem tudjuk, ki írta, és egy visszavonhatatlan sor
+ * rosszabb lenne.
+ */
 export async function utalastTorol(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
   const berlo = await kotelezoSzerep("berlo");
   const { sz } = await szovegek();
@@ -83,6 +98,7 @@ export async function utalastTorol(_elozo: Eredmeny, urlap: FormData): Promise<E
     where: {
       id: szoveg(urlap.get("igazolasId")),
       jogviszony: { berlok: { some: { berloId: berlo.id } } },
+      OR: [{ szerzoId: berlo.id }, { szerzoId: null }],
     },
   });
   if (eredmeny.count === 0) return hiba(sz("valasz.nincs_jogosultsag"));

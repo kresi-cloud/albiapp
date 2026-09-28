@@ -77,7 +77,15 @@ export function egyeztetesbolTeendok(
   for (const egyeztetes of egyeztetesek) {
     const azonosito =
       egyeztetes.eloirtTetelId ?? `${egyeztetes.jogviszonyId}-${egyeztetes.idoszak}`;
-    const hivatkozas = `/befizetesek?jogviszony=${egyeztetes.jogviszonyId}`;
+    // A hivatkozás címzettenként más, mert a két fél más lapon látja
+    // ugyanazt a tételt. A bérlőnek adott `/befizetesek` a
+    // `kotelezoSzerep("berbeado")`-n akadt fenn, és visszadobta a `/berlo`-ra:
+    // a teendő egész kártyája hivatkozás, tehát a bérlőnek minden
+    // befizetéses teendője ugyanoda vitt, akármelyikre kattintott.
+    const hova = (cimzett: "berbeado" | "berlo") =>
+      cimzett === "berbeado"
+        ? `/befizetesek?jogviszony=${egyeztetes.jogviszonyId}`
+        : `/berlo?jogviszony=${egyeztetes.jogviszonyId}`;
 
     if (egyeztetes.allapot === "hianyzik") {
       teendok.push({
@@ -90,7 +98,7 @@ export function egyeztetesbolTeendok(
           osszeg: egyeztetes.osszegFt,
         }),
         esedekesseg: egyeztetes.esedekesseg,
-        hivatkozas,
+        hivatkozas: hova("berlo"),
       });
       teendok.push({
         kulcs: `hianyzik:${azonosito}:berbeado`,
@@ -102,7 +110,7 @@ export function egyeztetesbolTeendok(
           osszeg: egyeztetes.osszegFt,
         }),
         esedekesseg: egyeztetes.esedekesseg,
-        hivatkozas,
+        hivatkozas: hova("berbeado"),
       });
       continue;
     }
@@ -121,7 +129,7 @@ export function egyeztetesbolTeendok(
               ? uzenet("teendo.vitas.nem_erkezett_meg")
               : uzenet("teendo.elteres", { osszeg: egyeztetes.elteresFt }),
           esedekesseg: egyeztetes.esedekesseg,
-          hivatkozas,
+          hivatkozas: hova(cimzett),
         });
       }
       continue;
@@ -142,7 +150,7 @@ export function egyeztetesbolTeendok(
           osszeg: egyeztetes.osszegFt,
         }),
         esedekesseg: egyeztetes.esedekesseg,
-        hivatkozas,
+        hivatkozas: hova(kire),
       });
       continue;
     }
@@ -159,7 +167,7 @@ export function egyeztetesbolTeendok(
         cim,
         leiras: uzenet("teendo.elteres", { osszeg: egyeztetes.elteresFt }),
         esedekesseg: egyeztetes.esedekesseg,
-        hivatkozas,
+        hivatkozas: hova("berbeado"),
       });
       if (egyeztetes.elteresOka !== "nincs_eloiras") {
         teendok.push({
@@ -169,7 +177,7 @@ export function egyeztetesbolTeendok(
           cim: uzenet("teendo.elter.berlo"),
           leiras: uzenet("teendo.elteres", { osszeg: egyeztetes.elteresFt }),
           esedekesseg: egyeztetes.esedekesseg,
-          hivatkozas,
+          hivatkozas: hova("berlo"),
         });
       }
     }
@@ -236,6 +244,8 @@ export function kozelgoBefizetesTeendok(
         osszeg: tetel.osszegFt,
       }),
       esedekesseg: tetel.esedekesseg,
-      hivatkozas: `/berlo/befizetesek?jogviszony=${tetel.jogviszonyId}`,
+      // A bérlő befizetései a `/berlo` lapon állnak: `/berlo/befizetesek`
+      // soha nem létezett, tehát ez a teendő 404-re vitt.
+      hivatkozas: `/berlo?jogviszony=${tetel.jogviszonyId}`,
     }));
 }

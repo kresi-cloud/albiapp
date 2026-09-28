@@ -202,6 +202,9 @@ export default async function BetekintoOldal({
  */
 function haviSzin(tetel: BetekintoTetel): Allapotszin {
   if (tetel.allapot === "hianyzik") return "figyelem";
+  // A vitás hónap nem „rendben": a két fél adata nem fedi egymást, és ki is
+  // mondtuk, hogy az ilyen tétel nem számít teljesítettnek.
+  if (tetel.allapot === "vitas") return "figyelem";
   if (tetel.keses > 0) return "figyelem";
   if (tetel.allapot === "elter") return "semleges";
   return "rendben";

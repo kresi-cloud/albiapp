@@ -58,6 +58,36 @@ export async function meghivotElfogad(
       };
     }
 
+    // És csak bérlői fiók ülhet bérlői helyre.
+    //
+    // A szerep azt dönti el, melyik alkalmazást látja a felhasználó: egy
+    // bérbeadói fiók a bérlői helyen egyetlen bérlői lapot sem nyit meg,
+    // tehát nem tud nyilatkozni se látogatásról, se előfizetésről, se
+    // értékelésről — azok örökké „várakozik" állapotban maradnának, és a
+    // másik fél ezt sehonnan nem tudná meg. A meghívó ettől még elhasználódna,
+    // és a helyre újat sem lehetne készíteni. A legkönnyebben a bérbeadó
+    // saját címére küldött meghívóval áll elő.
+    if (letezo.szerep !== "berlo") {
+      return {
+        allapot: "hiba",
+        uzenet: sz("meghivo.hiba.nem_berloi_fiok"),
+        hibak: [],
+        nev,
+      };
+    }
+
+    // Letiltott fiókot sem kötünk a jogviszonyhoz: a `belepettFelhasznalo`
+    // null-t adna rá, tehát az elfogadás után azonnal kilépne — a hely viszont
+    // már foglalt lenne.
+    if (letezo.letiltva) {
+      return {
+        allapot: "hiba",
+        uzenet: sz("meghivo.hiba.letiltott_fiok"),
+        hibak: [],
+        nev,
+      };
+    }
+
     await prisma.$transaction([
       prisma.jogviszonyBerlo.update({
         where: { id: meghivo.jogviszonyBerloId },

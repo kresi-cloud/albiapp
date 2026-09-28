@@ -666,6 +666,20 @@ export const SZOTAR: Szotar = {
     hu: "Senki nem lesz itthon, de a bérbeadó bemehet a kulccsal.",
     en: "Nobody will be home, but the landlord may enter with the key.",
   },
+  "latogatas.cimke.nincs_kit_kerdezni": {
+    hu: "Nincs kitől kérdezni",
+    en: "Nobody to ask",
+  },
+  "latogatas.allapot.nincs_kit_kerdezni": {
+    hu:
+      "Egyik bérlőnek sincs még fiókja, tehát nincs kitől hozzájárulást kérni. " +
+      "A bérlő távollétében a kulccsal való bejutáshoz az ő kimondott igenje " +
+      "kell — beszéld meg vele, és hívd meg a fiókjába.",
+    en:
+      "None of the tenants has an account yet, so there is nobody to ask. " +
+      "Entering with the key in the tenant's absence needs their explicit " +
+      "consent — arrange it with them, and invite them to an account.",
+  },
   "latogatas.allapot.lemondva": { hu: "Lemondva.", en: "Cancelled." },
   "latogatas.allapot.elmult": { hu: "Elmúlt.", en: "Past." },
   "latogatas.idoablak": {
@@ -806,6 +820,18 @@ export const SZOTAR: Szotar = {
   "teendo.latogatas.kire_var": {
     hu: "{nev} nem nyilatkozott.",
     en: "{nev} has not answered.",
+  },
+  "teendo.latogatas.nincs_kit_kerdezni": {
+    hu: "Beszéld meg a bérlővel a bejutást: {megnevezes}",
+    en: "Agree the entry with the tenant: {megnevezes}",
+  },
+  "teendo.latogatas.nincs_fiok": {
+    hu:
+      "Egyik bérlőnek sincs fiókja, tehát itt nem tud nyilatkozni senki. A " +
+      "kulccsal való bejutáshoz a bérlő kimondott igenje kell.",
+    en:
+      "None of the tenants has an account, so nobody can respond here. " +
+      "Entering with the key needs the tenant's explicit consent.",
   },
   "teendo.latogatas.uj_idopont": {
     hu: "Új időpont kell: {megnevezes}",
@@ -1854,6 +1880,12 @@ export const SZOTAR: Szotar = {
     hu: "{napok} nap késéssel érkezett",
     en: "Arrived {napok} days late",
   },
+  "betekinto.havi.vitas": {
+    // Jelzőbe kerül, és a jelző nem tör sort: itt rövid mondat kell. A hosszú
+    // magyarázat az összegző mondatok között áll.
+    hu: "Még tisztázás alatt",
+    en: "Still being sorted out",
+  },
   "betekinto.havi.elter": {
     hu: "Megérkezett, de az összeg eltért",
     en: "Arrived, but the amount differed",
@@ -1905,6 +1937,14 @@ export const SZOTAR: Szotar = {
   "betekinto.mondat.eltero": {
     hu: "{eltero} hónapban a beérkezett összeg eltért az előírttól.",
     en: "In {eltero} months the amount received differed from the scheduled one.",
+  },
+  "betekinto.mondat.vitas": {
+    hu:
+      "{vitas} hónapra érkezett pénz, de a két fél adata nem egyezik: ezek még " +
+      "tisztázás alatt vannak, és nem számítanak megérkezettnek.",
+    en:
+      "In {vitas} month(s) money arrived but the two sides' records differ: " +
+      "these are still being sorted out and do not count as paid.",
   },
   "betekinto.mondat.sorozat": {
     hu: "A legutóbbi {sorozat} hónapban mindig határidőre érkezett.",
@@ -3256,6 +3296,21 @@ export const SZOTAR: Szotar = {
   "meghivo.hiba.nem_kesz": {
     hu: "A fiók nem készült el.",
     en: "The account was not created.",
+  },
+  "meghivo.hiba.nem_berloi_fiok": {
+    hu:
+      "Ehhez a címhez bérbeadói fiók tartozik, és bérbeadói fiók nem ülhet " +
+      "bérlői helyre: a bérlői lapokat nem látná, tehát nyilatkozni sem tudna. " +
+      "Kérj a bérbeadótól másik címre szóló meghívót.",
+    en:
+      "This address belongs to a landlord account, and a landlord account " +
+      "cannot take a tenant's place: it would not see the tenant pages, so it " +
+      "could not respond to anything. Ask the landlord for an invitation to a " +
+      "different address.",
+  },
+  "meghivo.hiba.letiltott_fiok": {
+    hu: "Ez a fiók le van tiltva. Fordulj az üzemeltetőhöz.",
+    en: "This account is disabled. Please contact the operator.",
   },
   "meghivo.hiba.megleve_jelszo": {
     hu:

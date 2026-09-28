@@ -42,6 +42,38 @@ describe("összesítés", () => {
     expect(osszesites.kesve).toBe(0);
   });
 
+  it("a vitás hónap nem számít határidőre megérkezettnek", () => {
+    // Eddig csak a bérbeadói oldalt néztük: ha volt mögötte beérkezés, a
+    // hónap bekerült a »határidőig megérkezett« számba, miközben ugyanaz a
+    // hónap mindkét fél lapján »Vitás«-ként állt.
+    const osszesites = osszesit([
+      tetel({ idoszak: "2026-08" }),
+      tetel({ idoszak: "2026-09", allapot: "vitas", erkezettFt: 175000 }),
+    ]);
+    expect(osszesites.honapok).toBe(2);
+    expect(osszesites.hataridore).toBe(1);
+    expect(osszesites.vitas).toBe(1);
+    expect(osszesites.kesve).toBe(0);
+    // És a nyitott összegben benne van, amit a két fél még nem tisztázott.
+    expect(osszesites.nyitottFt).toBe(5000);
+  });
+
+  it("az eltérő összeg viszont megérkezett: ott a két fél egyetért", () => {
+    const osszesites = osszesit([tetel({ allapot: "elter", erkezettFt: 175000 })]);
+    expect(osszesites.hataridore).toBe(1);
+    expect(osszesites.eltero).toBe(1);
+    expect(osszesites.vitas).toBe(0);
+  });
+
+  it("a vitás hónap a sorozatot is megszakítja", () => {
+    const osszesites = osszesit([
+      tetel({ idoszak: "2026-07" }),
+      tetel({ idoszak: "2026-08" }),
+      tetel({ idoszak: "2026-09", allapot: "vitas" }),
+    ]);
+    expect(osszesites.sorozat).toBe(0);
+  });
+
   it("a korábban érkezett befizetés is határidőre érkezett", () => {
     const osszesites = osszesit([tetel({ keses: -4 })]);
     expect(osszesites.hataridore).toBe(1);

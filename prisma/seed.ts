@@ -536,6 +536,12 @@ async function main() {
     }[],
     sorsa: (honapokVissza: number, tipus: string) => Sors,
     kozlemenyek: Record<string, string>,
+    /**
+     * Melyik bérlő mondta. A saját sorát mindenki maga vonja vissza.
+     * `null` a fiók nélküli bérlőnél: ő a valóságban nem is tudna
+     * nyilatkozni, a demó viszont az ő jogviszonyát is megmutatja.
+     */
+    szerzoId: string | null,
   ) {
     for (const tetel of tetelek) {
       const sors = sorsa(honapokVissza(tetel.idoszak), tetel.tipus);
@@ -548,6 +554,7 @@ async function main() {
       await prisma.berloiIgazolas.create({
         data: {
           jogviszonyId,
+          szerzoId,
           utalasDatuma: utalas,
           osszegFt: tetel.osszegFt,
           kozlemeny,
@@ -669,12 +676,14 @@ async function main() {
     annaTetelek,
     annaSorsa,
     KOZLEMENYEK,
+    berloAnna.id,
   );
   await befizeteseketKiir(
     tamasJogviszony.id,
     tamasTetelek,
     (vissza) => tamasSorsa(vissza),
     KOZLEMENYEK,
+    null,
   );
 
   // A lezárt jogviszony: Eszter tavaly lakott a garzonban, és kiköltözött.
@@ -740,6 +749,7 @@ async function main() {
     eszterTetelek,
     () => ({ fajta: "pontos" }),
     KOZLEMENYEK,
+    berloEszter.id,
   );
 
   // Eszter már értékelt, a bérbeadó még nem. Ez a vak állapot: a bérbeadó
