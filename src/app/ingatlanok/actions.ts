@@ -10,6 +10,7 @@ import {
   type JogviszonyBemenet,
 } from "@/domain/berlemeny";
 import { ingatlantLetrehoz, jogviszonytIndit } from "@/lib/berlemeny";
+import { urlapForint } from "@/domain/penz";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 
@@ -25,7 +26,10 @@ function szoveg(nyers: unknown): string {
   return String(nyers ?? "").trim();
 }
 
-/** Üres mező nem nulla: a "nem adtam meg" és a "nulla forint" nem ugyanaz. */
+/**
+ * Nem pénz, hanem darabszám: alapterület, fizetési nap. Itt a pont tizedesjel,
+ * és nincs ezres tagolás — az összegmezők az `urlapForint`-on mennek át.
+ */
 function szamotOlvas(nyers: unknown): number | null {
   const ertek = szoveg(nyers).replace(/\s/g, "");
   if (ertek === "") return null;
@@ -53,8 +57,8 @@ export async function ingatlantFelvesz(
     alapteruletM2: szamotOlvas(urlap.get("alapteruletM2")),
     helyrajziSzam: szoveg(urlap.get("helyrajziSzam")) || null,
     energetikaiAzonosito: szoveg(urlap.get("energetikaiAzonosito")) || null,
-    kozosKoltsegFt: szamotOlvas(urlap.get("kozosKoltsegFt")),
-    beszerzesiArFt: szamotOlvas(urlap.get("beszerzesiArFt")),
+    kozosKoltsegFt: urlapForint(urlap.get("kozosKoltsegFt")),
+    beszerzesiArFt: urlapForint(urlap.get("beszerzesiArFt")),
     beszerzesDatuma: napotOlvas(urlap.get("beszerzesDatuma")),
   };
 
@@ -92,12 +96,12 @@ export async function jogviszonytInditAction(
 
   const bemenet: JogviszonyBemenet = {
     kezdete: napotOlvas(urlap.get("kezdete")),
-    berletiDijFt: szamotOlvas(urlap.get("berletiDijFt")),
-    kozosKoltsegFt: szamotOlvas(urlap.get("kozosKoltsegFt")),
-    kaucioFt: szamotOlvas(urlap.get("kaucioFt")),
+    berletiDijFt: urlapForint(urlap.get("berletiDijFt")),
+    kozosKoltsegFt: urlapForint(urlap.get("kozosKoltsegFt")),
+    kaucioFt: urlapForint(urlap.get("kaucioFt")),
     fizetesiNap: szamotOlvas(urlap.get("fizetesiNap")),
     rezsiElszamolas: szoveg(urlap.get("rezsiElszamolas")),
-    rezsiAtalanyFt: szamotOlvas(urlap.get("rezsiAtalanyFt")),
+    rezsiAtalanyFt: urlapForint(urlap.get("rezsiAtalanyFt")),
     berloNeve: szoveg(urlap.get("berloNeve")),
   };
 

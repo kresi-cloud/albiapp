@@ -157,6 +157,29 @@ export async function futtat(oldal) {
     "a visszakeltezett, a későbbinél nagyobb állás elutasítva",
   );
 
+  // A kétértelmű alak: a »23.929« ezres tagolás vagy tizedes? Nem tippelünk.
+  // Ebből lett korábban ezerszeres hiba: a jegyzőkönyvi »12.345 kWh«
+  // 12,345-ként került a mérőóra történetébe, és az lett az első
+  // rezsielszámolás nyitóállása.
+  all(
+    await oraallast(
+      new Date().toISOString().slice(0, 10),
+      "23.929",
+      /nem tudom biztosan olvasni/,
+    ),
+    "a kétértelmű »23.929« állást nem tippeljük meg",
+  );
+
+  // Amiben mértékegység is van, azt viszont kiolvassuk: a helyszínen így írják.
+  all(
+    await oraallast(
+      new Date().toISOString().slice(0, 10),
+      "23929,5 kWh",
+      /Óraállás rögzítve|Az óra nem forog visszafelé|nagyobb/,
+    ),
+    "a mértékegységgel beírt állásból kiolvassuk a számot",
+  );
+
   // Önpróba: a fenti két elutasítás nem azért jött, mert az űrlap sosem megy
   // át. Egy szabályos, mai leolvasás egy egységgel a legutolsó fölött rögzül —
   // és a **hatását** nézzük, nem a visszajelző sávot: a lap újratöltve az új

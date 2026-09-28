@@ -9,6 +9,7 @@ import {
   type FelvetelHiba,
   type NyilatkozatHiba,
 } from "@/lib/elofizetes";
+import { urlapForint } from "@/domain/penz";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 
@@ -27,10 +28,15 @@ function frissit(): void {
   revalidatePath("/");
 }
 
-/** Egész forint az űrlapról; ami nem szám, az nulla, és a domain dönt róla. */
+/**
+ * Egész forint az űrlapról; ami nem szám, az nulla, és a domain dönt róla.
+ *
+ * A közös olvasón megy át: saját olvasója a „4.990"-ből négy forintot, a
+ * „12,5"-ből nullát csinált.
+ */
 function forint(nyers: FormDataEntryValue | null): number {
-  const ertek = Number(String(nyers ?? "").replace(/\s/g, ""));
-  return Number.isFinite(ertek) ? Math.trunc(ertek) : 0;
+  const ertek = urlapForint(nyers);
+  return ertek === null || Number.isNaN(ertek) ? 0 : ertek;
 }
 
 function nap(nyers: FormDataEntryValue | null): Date | null {

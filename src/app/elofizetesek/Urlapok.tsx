@@ -121,11 +121,16 @@ export function UjElofizetes({
 
         <label className="grid gap-1 text-sm">
           <span className="font-medium">{cimkek.haviDij}</span>
+          {/*
+            Szövegmező, nem `number`: a »4.990« a számmezőben négy egész
+            kilencszázkilencven, a »4 990« pedig érvénytelen, tehát a böngésző
+            üresen küldi el. A kiszolgálón az `urlapForint` mind a kettőt
+            helyesen olvassa — ha eljut hozzá.
+          */}
           <Mezo
             name="haviDijFt"
-            type="number"
-            min={0}
-            step={1}
+            type="text"
+            inputMode="decimal"
             className={MEZO}
             allapot={allapot.allapot}
             defaultValue="0"
@@ -199,8 +204,16 @@ export function NyilatkozatUrlap({
 }) {
   const [allapot, kuldes, folyamatban] = useActionState(nyilatkozikAction, KEZDETI);
 
+  // Az űrlap kapja az akciót, nem a két gomb.
+  //
+  // Korábban a két gomb hordozta a szerverakciót, a döntés pedig a gomb
+  // `name="allapot"` mezőjében utazott volna. A React a szerverakciós gomb
+  // nevét `$ACTION_REF_…`-re cseréli, tehát az `allapot` soha nem ment fel, és
+  // a kiszolgáló alapból jóváhagyást mentett: aki nemet mondott,
+  // visszavonhatatlan igent kapott, és visszamenőleg előírásokat. Minden más
+  // kétgombos űrlap az alkalmazásban így áll — ez volt az egyetlen kivétel.
   return (
-    <form className="mt-3 grid gap-2">
+    <form action={kuldes} className="mt-3 grid gap-2">
       <input type="hidden" name="elofizetesId" value={elofizetesId} />
       <label className="grid gap-1 text-sm">
         <span className="font-medium">{cimkek.indoklas}</span>
@@ -210,7 +223,6 @@ export function NyilatkozatUrlap({
       <div className="flex flex-wrap gap-2">
         <button
           type="submit"
-          formAction={kuldes}
           name="allapot"
           value="jovahagyva"
           disabled={folyamatban}
@@ -220,7 +232,6 @@ export function NyilatkozatUrlap({
         </button>
         <button
           type="submit"
-          formAction={kuldes}
           name="allapot"
           value="kifogasolt"
           disabled={folyamatban}

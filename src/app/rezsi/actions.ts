@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { elszamolastOsszeallit } from "@/lib/rezsi";
 import { prisma } from "@/lib/db";
 import { datumNyelven } from "@/domain/nyelv";
-import { napEleje } from "@/domain/penz";
+import { meroallastOlvas, napEleje } from "@/domain/penz";
 import { belepettFelhasznalo, kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 
@@ -38,10 +38,9 @@ const LEGNAGYOBB_ALLAS = 10_000_000;
 const LEGNAGYOBB_OSSZEG = 2_000_000_000;
 
 function szamotOlvas(nyers: unknown): number | null {
-  const szoveg = String(nyers ?? "").trim().replace(/\s/g, "").replace(",", ".");
-  if (szoveg === "") return null;
-  const szam = Number(szoveg);
-  return Number.isFinite(szam) && szam >= 0 && szam <= LEGNAGYOBB_ALLAS ? szam : null;
+  const szam = meroallastOlvas(String(nyers ?? ""));
+  if (szam === null) return null;
+  return szam >= 0 && szam <= LEGNAGYOBB_ALLAS ? szam : null;
 }
 
 /** Óraállást a bérbeadó és a bérlő is rögzíthet, de csak a saját ingatlanához. */
@@ -55,7 +54,16 @@ export async function oraallastRogzit(_elozo: Eredmeny, urlap: FormData): Promis
   const ertek = szamotOlvas(urlap.get("ertek"));
 
   if (!nap) return hiba(sz("rezsi.hiba.datum"));
-  if (ertek === null) return hiba(sz("rezsi.hiba.oraallas_negativ"));
+  if (ertek === null) {
+    // A kétértelmű alak („23.929": ezres vagy tizedes?) nem negatív szám és
+    // nem is üres mező — ilyenkor azt mondjuk meg, amit tényleg tenni kell.
+    const nyersAllas = String(urlap.get("ertek") ?? "").trim();
+    return hiba(
+      nyersAllas === ""
+        ? sz("rezsi.hiba.oraallas_negativ")
+        : sz("rezsi.hiba.olvashatatlan_allas", { ertek: nyersAllas }),
+    );
+  }
   // Jövőbeli napra nem lehet leolvasni: azt a számot még senki nem látta.
   if (nap.getTime() > napEleje(new Date()).getTime()) {
     return hiba(sz("rezsi.hiba.jovobeli_allas"));

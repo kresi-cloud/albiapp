@@ -12,6 +12,7 @@
 
 import { hosszuDatum, nevsor, type Fel } from "./szerzodes";
 import { uzenet, type Uzenet } from "./nyelv";
+import { meroallastOlvas } from "./penz";
 
 export type TetelFajta = "meroora" | "kulcs" | "hiba" | "dokumentum";
 
@@ -102,14 +103,17 @@ export function hianyzoTetelek(bemenet: JegyzokonyvBemenet): Uzenet[] {
 
 /**
  * Az óraállás mezője szabad szöveg ("2893 kWh", "91,058 m³"), mert a helyszínen
- * így olvassák le, és a mértékegységet is oda szokás írni. A szám elejét
- * kivesszük belőle; ha nem megy, nem tippelünk, hanem szólunk.
+ * így olvassák le, és a mértékegységet is oda szokás írni. A számot kivesszük
+ * belőle; ha nem megy, nem tippelünk, hanem szólunk.
+ *
+ * Az olvasás a `penz.ts` közös olvasóján megy: a saját regexe az első számot
+ * vette, tehát a „1.234,5 m3" 1,234 lett, a „12.345 kWh" 12,345 — és ez az
+ * érték ment be a mérőóra történetébe az első rezsielszámolás nyitójaként,
+ * ezerszeres hibával.
  */
 export function oraallastKiolvas(nyers: string): number | null {
-  const egyezes = /-?\d+(?:[.,]\d+)?/.exec(nyers.replace(/\s/g, ""));
-  if (!egyezes) return null;
-  const szam = Number(egyezes[0].replace(",", "."));
-  return Number.isFinite(szam) && szam >= 0 ? szam : null;
+  const szam = meroallastOlvas(nyers);
+  return szam !== null && szam >= 0 ? szam : null;
 }
 
 /**

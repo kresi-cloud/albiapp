@@ -175,7 +175,7 @@ export async function elofizetestMegszuntet(
   return eredmeny.count > 0;
 }
 
-export type NyilatkozatHiba = "nincs_jogosultsag" | "mar_nyilatkozott" | "nincs_indoklas";
+export type NyilatkozatHiba = "nincs_jogosultsag" | "nincs_indoklas";
 
 export async function nyilatkozik(
   berloId: string,
@@ -188,17 +188,30 @@ export async function nyilatkozik(
     include: { jovahagyasok: { where: { berloId } } },
   });
   if (!elofizetes) return "nincs_jogosultsag";
-  if (elofizetes.jovahagyasok.length > 0) return "mar_nyilatkozott";
   // Kifogás indoklás nélkül nincs: abból a bérbeadó nem tud kiindulni.
   if (allapot === "kifogasolt" && indoklas.trim().length === 0) return "nincs_indoklas";
 
-  await prisma.elofizetesJovahagyas.create({
-    data: {
-      elofizetesId,
-      berloId,
-      allapot,
-      indoklas: allapot === "kifogasolt" ? indoklas.trim() : null,
-    },
-  });
+  // A nyilatkozat **megváltoztatható**, nem egyszeri. Eddig az első válasz
+  // végleges volt; egy elkattintott igen után a bérlő sehol nem tudott nemet
+  // mondani, és a másik irányban sem gondolhatta meg magát, ha a szolgáltatás
+  // időközben megszűnt vagy megjavult.
+  //
+  // A már megszületett előírásokat ez nem írja át: amire egyszer előírás lett,
+  // azt a bérlő addig használta, és meglévő előírást soha nem írunk felül. A
+  // változtatás a következő hónapoktól hat — ugyanaz az elv, mint a
+  // díjemelésnél.
+  const meglevo = elofizetes.jovahagyasok[0];
+  const adat = {
+    allapot,
+    indoklas: allapot === "kifogasolt" ? indoklas.trim() : null,
+  };
+
+  if (meglevo) {
+    await prisma.elofizetesJovahagyas.update({ where: { id: meglevo.id }, data: adat });
+  } else {
+    await prisma.elofizetesJovahagyas.create({
+      data: { elofizetesId, berloId, ...adat },
+    });
+  }
   return null;
 }

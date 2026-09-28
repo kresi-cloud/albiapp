@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { urlapForint } from "@/domain/penz";
 import { prisma } from "@/lib/db";
 import { szovegek } from "@/lib/nyelv";
 import { kotelezoSzerep } from "@/lib/munkamenet";
@@ -19,11 +20,16 @@ function szoveg(ertek: FormDataEntryValue | null): string {
   return typeof ertek === "string" ? ertek.trim() : "";
 }
 
-/** Szabad szövegből egész forint. Szóköz és ezreselválasztó megengedett. */
+/**
+ * Szabad szövegből egész forint, a közös olvasóval.
+ *
+ * Saját olvasója volt, és a pontot mindig ezreselválasztónak vette: a
+ * „1000.50" százezer-ötven lett, miközben ugyanaz a szöveg az igazolás
+ * űrlapján ezer forintot jelentett. Egy alkalmazásban egy összegolvasó van.
+ */
 function forintot(nyers: string): number | null {
-  const tisztitott = nyers.replace(/[\s .]/g, "").replace(/Ft$/i, "");
-  if (!/^\d+$/.test(tisztitott)) return null;
-  return Number(tisztitott);
+  const ertek = urlapForint(nyers);
+  return ertek === null || Number.isNaN(ertek) ? null : ertek;
 }
 
 function napot(nyers: string): Date | null {

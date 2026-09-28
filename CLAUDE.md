@@ -907,6 +907,29 @@ egy okirat tervezetként és véglegesítve két különböző lap.
 
 ## Az űrlapok alapelve
 
+**Az összeget egy olvasó olvassa, és az űrlapon szövegmező áll, nem
+`type="number"`.** A bérbeadó magyar alakban gépel: „195.000" vagy „195 000".
+A számmező az elsőt érvényesnek látja — százkilencvenöt egész —, a másodikat
+érvénytelennek, és olyankor a böngésző **üres értéket küld**: a beírt bérleti
+díj szótlanul eltűnik. Ezért `inputMode="decimal"` szövegmező áll ott
+(telefonon így is számbillentyűzet jön), a beolvasást pedig az `urlapForint`
+végzi (`src/domain/penz.ts`). Korábban öt űrlap ötféleképp olvasott, és
+mindegyik másképp rontotta el; a bérleti díjnál ez kilenc hónapnyi 180
+forintos előírás lett, figyelmeztetés nélkül, és utólag javíthatatlanul,
+mert meglévő előírást nem írunk át. Az `urlapForint` hármat ad vissza, és
+mindháromra szükség van: `null` az üres mező, `NaN` az olvashatatlan, és a
+szám minden másra — ha a hibás bemenet is `null` lenne, a domain nem tudná
+megkülönböztetni a hiányzótól.
+
+**Az óraállás viszont más kérdés, és más olvasója van**
+(`meroallastOlvas`). Pénznél a „180.000" mindig száznyolcvanezer;
+óraállásnál a „12.345" lehet tizenkettő egész háromszáznegyvenöt is, és
+ott **nem tippelünk**: az ilyen alak elutasítás, azzal az üzenettel, hogy a
+tizedest vesszővel írják. Ebből lett korábban ezerszeres hiba — a
+jegyzőkönyvi „12.345 kWh" 12,345-ként került a mérőóra történetébe, és az
+lett az első rezsielszámolás nyitóállása. Ugyanaz az elv, mint a be nem
+sorolható befizetésnél: aki nem tudja, ne találja ki.
+
 Elutasított mentés nem viheti el a begépelt adatot. Egyetlen elgépelt
 igazolványszám miatt senki ne gépeljen újra húsz mezőt.
 
