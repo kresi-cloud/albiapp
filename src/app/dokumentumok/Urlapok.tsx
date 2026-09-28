@@ -58,7 +58,17 @@ export function UjJegyzokonyv({
 }
 
 /** Az összeg már formázva jön a laptól: a nyelv ott van kézben. */
-export type IdoszakValaszthato = { idoszak: string; cimke: string; osszeg: string };
+/**
+ * Egy választható sor az igazoláshoz. Az `eloirtTetelId` azonosítja, nem az
+ * időszak: egy hónapban több bérletidíj-sor is állhat (töredékhónap,
+ * javított előírás), és a hónapra keresve a sorrend döntene.
+ */
+export type IdoszakValaszthato = {
+  eloirtTetelId: string;
+  idoszak: string;
+  cimke: string;
+  osszeg: string;
+};
 
 export function UjIgazolas({
   jogviszonyBerloId,
@@ -102,13 +112,13 @@ export function UjIgazolas({
         <label className="grid gap-1 text-sm">
           <span className="font-medium">{cimkek.idoszak}</span>
           <Valaszto
-            name="idoszak"
+            name="eloirtTetelId"
             className={MEZO}
-            defaultValue={idoszakok[0].idoszak}
+            defaultValue={idoszakok[0].eloirtTetelId}
             allapot={allapot.allapot}
           >
             {idoszakok.map((sor) => (
-              <option key={sor.idoszak} value={sor.idoszak}>
+              <option key={sor.eloirtTetelId} value={sor.eloirtTetelId}>
                 {/*
                   Az összeg már a szövegező kezéből jön, pénznemmel együtt
                   („6 490 Ft", „HUF 6,490"), ezért itt nem teszünk hozzá

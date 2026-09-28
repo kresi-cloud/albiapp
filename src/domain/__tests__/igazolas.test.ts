@@ -9,6 +9,7 @@ import {
 
 function befizetes(reszlet: Partial<Befizetes>): Befizetes {
   return {
+    eloirtTetelId: "e1",
     idoszak: "2026-09",
     osszegFt: 180000,
     napja: new Date(Date.UTC(2026, 8, 3)),

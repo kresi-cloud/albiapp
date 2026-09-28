@@ -162,11 +162,26 @@ describe("idoszakCimke", () => {
 describe("igazolhatoBefizetesek", () => {
   it("csak a ténylegesen beérkezett befizetést engedi, újabb hónap elöl", () => {
     const kesz = igazolhatoBefizetesek([
-      { idoszak: "2026-08", osszegFt: 150000, napja: new Date(), allapot: "egyezik" },
-      { idoszak: "2026-09", osszegFt: 148000, napja: new Date(), allapot: "elter" },
-      { idoszak: "2026-10", osszegFt: 0, napja: new Date(), allapot: "hianyzik" },
+      { eloirtTetelId: "a", idoszak: "2026-08", osszegFt: 150000, napja: new Date(), allapot: "egyezik" },
+      { eloirtTetelId: "b", idoszak: "2026-09", osszegFt: 148000, napja: new Date(), allapot: "elter" },
+      { eloirtTetelId: "c", idoszak: "2026-10", osszegFt: 0, napja: new Date(), allapot: "hianyzik" },
     ]);
     expect(kesz.map((sor) => sor.idoszak)).toEqual(["2026-09", "2026-08"]);
+  });
+
+  it("azonos h\u00f3napn\u00e1l az azonos\u00edt\u00f3 d\u00f6nt, nem a bemenet sorrendje", () => {
+    // Postgresen az azonos rendez\u0151kulcs\u00fa sorok sorrendje nincs garant\u00e1lva, \u00e9s
+    // egy h\u00f3napban t\u00f6bb igazolhat\u00f3 sor is \u00e1llhat.
+    const nap = new Date();
+    const sorok = [
+      { eloirtTetelId: "b", idoszak: "2026-09", osszegFt: 180000, napja: nap, allapot: "egyezik" },
+      { eloirtTetelId: "a", idoszak: "2026-09", osszegFt: 180000, napja: nap, allapot: "egyezik" },
+    ];
+    expect(igazolhatoBefizetesek(sorok).map((sor) => sor.eloirtTetelId)).toEqual(["b", "a"]);
+    expect(igazolhatoBefizetesek([...sorok].reverse()).map((sor) => sor.eloirtTetelId)).toEqual([
+      "b",
+      "a",
+    ]);
   });
 });
 

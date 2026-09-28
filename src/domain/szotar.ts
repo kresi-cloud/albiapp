@@ -2330,6 +2330,16 @@ export const SZOTAR: Szotar = {
       "A service charge received from the tenant is income; if you pay it to the building, you " +
       "can deduct it as a cost.",
   },
+  "ado.indok.elofizetes": {
+    hu:
+      "A te nevedre szóló előfizetés (tévé, telefon, internet) bérlői " +
+      "megtérítése: nem fogyasztás szerint mért közüzemi díj, ezért bevétel. " +
+      "A szolgáltatónak fizetett számla viszont költségként leírható.",
+    en:
+      "The tenant's reimbursement for a subscription in your name (TV, phone, " +
+      "internet): not a metered utility charge, so it is income. The invoice " +
+      "you pay the provider is deductible as a cost.",
+  },
   "ado.indok.berleti_dij": {
     hu: "Bérleti díjként befolyt összeg.",
     en: "Received as rent.",
@@ -2339,6 +2349,14 @@ export const SZOTAR: Szotar = {
   "ado.megnevezes.mert": {
     hu: "{alap} · mért fogyasztás",
     en: "{alap} · metered use",
+  },
+  "ado.megnevezes.atalany": {
+    hu: "{alap} · rezsiátalány",
+    en: "{alap} · flat-rate utilities",
+  },
+  "ado.megnevezes.elofizetes": {
+    hu: "{alap} · előfizetés",
+    en: "{alap} · subscription",
   },
   "ado.megnevezes.kozos_koltseg": {
     hu: "{alap} · közös költség",
@@ -3024,6 +3042,30 @@ export const SZOTAR: Szotar = {
   "szerzodes.kesz.veglegesitve": {
     hu: "A szerződés véglegesítve. A szövege innentől nem változik.",
     en: "The contract is finalised. Its text will not change from now on.",
+  },
+  "szerzodes.hiba.mar_tervezet": {
+    hu: "Ez a szerződés már tervezet.",
+    en: "This contract is already a draft.",
+  },
+  "szerzodes.hiba.van_zaradeka": {
+    hu:
+      "Nem állítható vissza tervezetre: {darab} véglegesített záradék épül rá. " +
+      "A záradék kimondja, hogy a szerződés többi rendelkezése változatlanul " +
+      "hatályban marad, és ennek a mondatnak lennie kell mire mutatnia.",
+    en:
+      "Cannot revert to draft: {darab} finalised addendum/addenda build on it. " +
+      "An addendum states that the rest of the contract remains in force, and " +
+      "that sentence needs something to point to.",
+  },
+  "szerzodes.hiba.van_igazolas": {
+    hu:
+      "Nem állítható vissza tervezetre: {darab} bérbeadói igazolás hivatkozik " +
+      "erre a szerződésre a keltével. Amit a felek kézhez kaptak, azt nem " +
+      "írjuk át. Ha változott valami, készíts záradékot.",
+    en:
+      "Cannot revert to draft: {darab} landlord certificate(s) cite this " +
+      "contract by its date. What the parties have received is not rewritten. " +
+      "If something changed, draw up an addendum.",
   },
   "szerzodes.kesz.visszaallt": {
     hu: "Visszaállt tervezetre, újra szerkeszthető.",

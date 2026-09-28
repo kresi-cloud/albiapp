@@ -31,6 +31,23 @@ describe("bevetelketBesorol", () => {
     expect(sor.nemBevetelFt).toBe(0);
   });
 
+  it("a rezsiátalány bevétel, de nem bérleti díj indoklással", () => {
+    // Ez a mondat élő adaton soha nem jelent meg: a rezsiátalány `egyeb`
+    // fajtát kapott, és a besoroló a bérleti díj indoklását adta hozzá — a
+    // könyvelői CSV-ben egy 25 000 forintos átalány mellett az állt, hogy
+    // „Bérleti díjként befolyt összeg".
+    const [sor] = bevetelketBesorol([tetel({ fajta: "rezsi_atalany", osszegFt: 25000 })]);
+    expect(sor.bevetelFt).toBe(25000);
+    expect(sor.nemBevetelFt).toBe(0);
+    expect(sor.indoklas.kulcs).toBe("ado.indok.atalany");
+  });
+
+  it("az előfizetés-térítés is bevétel, a saját indoklásával", () => {
+    const [sor] = bevetelketBesorol([tetel({ fajta: "elofizetes", osszegFt: 6490 })]);
+    expect(sor.bevetelFt).toBe(6490);
+    expect(sor.indoklas.kulcs).toBe("ado.indok.elofizetes");
+  });
+
   it("a mért, továbbhárított közüzemi díj nem bevétel", () => {
     const [sor] = bevetelketBesorol([
       tetel({ fajta: "rezsi", osszegFt: 42000, mertKozuzem: true }),
