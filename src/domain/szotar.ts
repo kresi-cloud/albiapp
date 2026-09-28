@@ -4202,6 +4202,19 @@ export const SZOTAR: Szotar = {
     en: "We deliberately store nothing about the tenancy on the device: what has once been handed out cannot be taken back.",
   },
   "offline.ujra": { hu: "Újrapróbálom", en: "Try again" },
+  "nincslap.cim": { hu: "Ez a lap nincs meg", en: "This page is not here" },
+  "nincslap.mit": {
+    hu:
+      "Elképzelhető, hogy a cím elavult, vagy olyasmire mutat, ami időközben megszűnt — " +
+      "egy visszavont meghívóra, egy törölt bejegyzésre. Az is lehet, hogy kiléptél " +
+      "közben, és a régi cím már nem a tiéd.",
+    en:
+      "The address may be out of date, or point to something that has since gone — a revoked " +
+      "invitation, a deleted entry. It is also possible that you were signed out in the " +
+      "meantime and the old address is no longer yours.",
+  },
+  "nincslap.kezdolap": { hu: "Vissza a kezdőlapra", en: "Back to the home page" },
+  "nincslap.belepes": { hu: "Belépés", en: "Sign in" },
 };
 
 /** Szövegező a beépített szótárral. Kliensoldali komponens is ezt hívja. */
