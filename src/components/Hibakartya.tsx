@@ -41,8 +41,17 @@ export function Hibakartya({
 }) {
   const { sz, u } = szovegekNyelvvel(nyelv);
   const javaslat = koltsegJavaslat(hiba.terulet, hiba.ok);
-  const varakozas = keses(hiba.surgosseg, hiba.bejelentve, ma);
-  const hatarido = valaszHatarido(hiba.surgosseg, hiba.bejelentve);
+  // Elhárítás után már nem a bérbeadó válaszára várunk, hanem a bérlő
+  // megerősítésére: onnantól az a határidő, ami a bérlő teendőjén is áll
+  // (normál sürgősség, az elhárítás napjától). Eddig a kártya minden nyitott
+  // állapotnál a bejelentéstől számított sürgősségi határidőt írta, tehát egy
+  // másnap elhárított sürgős hiba harmadnaptól piros „(lejárt)" volt — pedig
+  // már senki nem késett vele, és teendő sem tartozott hozzá.
+  const megerositesre = hiba.allapot === "elharitva" && hiba.elharitva !== null;
+  const hataridoTol = megerositesre ? (hiba.elharitva as Date) : hiba.bejelentve;
+  const hataridoSurgosseg = megerositesre ? "normal" : hiba.surgosseg;
+  const varakozas = keses(hataridoSurgosseg, hataridoTol, ma);
+  const hatarido = valaszHatarido(hataridoSurgosseg, hataridoTol);
   const lehet = lepesek(hiba.allapot, szerep, hiba.sajatBejelentes);
 
   return (

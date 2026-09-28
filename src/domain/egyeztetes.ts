@@ -466,7 +466,24 @@ export function egyeztet(
         bizonylatKell: false,
         magyarazat: uzenet("egyeztetes.hianyzik"),
       });
+      continue;
     }
+
+    // Esedékesség előtt, nyilatkozat nélkül: eddig nem született sor. A bérlő
+    // teendői közt viszont ott állt, hogy „Közeleg a fizetési határidő", a
+    // befizetések lapján meg nem volt kártya hozzá — tehát nem volt hol
+    // rögzíteni, amire a teendő szólította. Nem hiányzik: még nem járt le.
+    eredmeny.push({
+      eloirtTetelId: eloiras.id,
+      berloiIgazolasId: null,
+      berbeadoiIgazolasId: null,
+      allapot: "varakozik",
+      elteresOka: null,
+      elteresFt: 0,
+      keses: 0,
+      bizonylatKell: false,
+      magyarazat: uzenet("egyeztetes.meg_nem_esedekes"),
+    });
   }
 
   // Amit a bérbeadó rögzített, de nincs hozzá előírás: lehet túlfizetés,
@@ -528,6 +545,40 @@ export type Oldal = "berbeado" | "berlo";
  * Amit rendezettnek mond, az nem tűnik el, csak összecsukva áll: a lap
  * kiírja, hány ilyen van, és egy kattintással mind látszik.
  */
+/**
+ * Mennyi az előírásból a bérbeadó saját adata szerint még nem érkezett meg.
+ *
+ * Egy fogalom, egy szabály, három lap. Eddig az áttekintő az `elteresFt`
+ * negatív értékeit adta össze, a betekintő az előírt és a beérkezett összeg
+ * különbségét, a befizetések lapja meg a `varRank`-ot használta „soron van"-ra
+ * — ugyanaz a szó, három szám. Kézzelfoghatóan: 150 000 forintos előírásra a
+ * bérbeadó 100 000-et rögzít, a bérlő hallgat; az áttekintő elmaradása 0 Ft
+ * volt, a betekintőé 50 000. Vitásnál (bérlő 100 000, bérbeadó 120 000) az
+ * áttekintő megint 0-t mondott, mert a két fél különbsége pozitív.
+ *
+ * A mérce a bérbeadó oldala, mert az elmaradás az ő pénzéről szól: amit ő nem
+ * igazolt beérkezettnek, az nyitva van. Az „erre nem érkezett pénz"
+ * nyilatkozat is nulla beérkezés, nem hiányzó adat.
+ *
+ * Esedékesség előtt nincs elmaradás: ami még nem járt le, az nem hátralék.
+ * A betekintő ettől eltérően a friss hónapot is nyitottnak mutatja, mert ott a
+ * kérdés nem az, hogy ki késik, hanem hogy mennyi van még hátra — és a lap ezt
+ * ki is mondja.
+ */
+export function nyitottFt(
+  sor: {
+    eloirtTetelId: string | null;
+    osszegFt: number;
+    berbeadoiOsszegFt: number | null;
+    esedekesseg: Date;
+  },
+  ma: Date,
+): number {
+  if (sor.eloirtTetelId === null) return 0;
+  if (napKulonbseg(sor.esedekesseg, ma) <= 0) return 0;
+  return Math.max(0, sor.osszegFt - (sor.berbeadoiOsszegFt ?? 0));
+}
+
 export function varRank(
   sor: Pick<Egyeztetes, "allapot" | "berloiIgazolasId" | "berbeadoiIgazolasId">,
   oldal: Oldal,

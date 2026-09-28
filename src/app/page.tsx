@@ -3,6 +3,7 @@ import { Hetsav } from "@/components/Hetsav";
 import { Teendolista } from "@/components/Teendolista";
 import { GombHivatkozas, Jelzo, Osszeg, Szakaszcim, Lapfej } from "@/components/ui/alap";
 import { IkonNyil } from "@/components/ui/ikonok";
+import { nyitottFt, varRank } from "@/domain/egyeztetes";
 import { kovetkezoHet } from "@/domain/naptar";
 import { jogviszonyNezetek, teendok } from "@/lib/lekerdezesek";
 import { kotelezoSzerep } from "@/lib/munkamenet";
@@ -25,10 +26,15 @@ export default async function Attekinto() {
   const kesobbiek = sajatTeendok.filter((teendo) => teendo.surgosseg === "kesobbi");
 
   const osszesEgyeztetes = nezetek.flatMap((nezet) => nezet.egyeztetesek);
-  const rendezetlen = osszesEgyeztetes.filter((sor) => sor.allapot !== "egyezik");
-  const elmaradasFt = rendezetlen
-    .filter((sor) => sor.elteresFt < 0)
-    .reduce((osszeg, sor) => osszeg + Math.abs(sor.elteresFt), 0);
+  // Ugyanaz a két fogalom, mint a befizetések lapján: rendezetlen az, ami a
+  // bérbeadóra vár (`varRank`), elmaradás az, ami a saját adata szerint nem
+  // érkezett meg (`nyitottFt`). Korábban itt két saját szabály állt, és a
+  // „Rendezetlen: 5" mellett a befizetések lapján négy tétel volt soron.
+  const rendezetlen = osszesEgyeztetes.filter((sor) => varRank(sor, "berbeado"));
+  const elmaradasFt = osszesEgyeztetes.reduce(
+    (osszeg, sor) => osszeg + nyitottFt(sor, ma),
+    0,
+  );
 
   return (
     <div className="grid gap-6">
