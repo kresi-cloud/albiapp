@@ -35,7 +35,7 @@ export async function GET(
       "Content-Type": bizonylat.mimeTipus,
       "Content-Disposition": `attachment; filename="${biztonsagosNev(
         bizonylat.oldal as Oldal,
-        bizonylat.fajlNev,
+        bizonylat.mimeTipus,
       )}"`,
       // Feltöltött tartalom a saját címünkön: a böngésző ne találgassa a
       // típust, és semmit ne futtasson belőle.

@@ -56,14 +56,52 @@ export function bizonylatotEllenoriz(fajl: FajlAdat): Uzenet | null {
 }
 
 /**
+ * A fájl eleje alapján állapítjuk meg a típust, nem a böngésző bemondásából —
+ * ugyanaz az elv, mint a jegyzőkönyvi fényképnél.
+ *
+ * A bejelentett típus a feltöltő gépéről jön, tehát bármi lehet. Ezt a
+ * tartalmat viszont a másik fél böngészője fogja megnyitni a mi címünkön: egy
+ * „application/pdf"-nek mondott fájl enélkül bármi lehetne, és a letöltött
+ * név kiterjesztése is a feltöltő kezében volt — egy `szamla.html` a bejelentett
+ * `image/png` mellett is `.html`-ként érkezett meg a másik félhez.
+ */
+export function tipusATartalombol(eleje: Uint8Array): string | null {
+  const kezdodik = (bajtok: number[]) =>
+    eleje.length >= bajtok.length && bajtok.every((bajt, k) => eleje[k] === bajt);
+
+  if (kezdodik([0x25, 0x50, 0x44, 0x46])) return "application/pdf"; // %PDF
+  if (kezdodik([0xff, 0xd8, 0xff])) return "image/jpeg";
+  if (kezdodik([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return "image/png";
+
+  // RIFF????WEBP
+  const riff = [0x52, 0x49, 0x46, 0x46];
+  const webp = [0x57, 0x45, 0x42, 0x50];
+  if (
+    eleje.length >= 12 &&
+    riff.every((bajt, k) => eleje[k] === bajt) &&
+    webp.every((bajt, k) => eleje[8 + k] === bajt)
+  ) {
+    return "image/webp";
+  }
+  return null;
+}
+
+const KITERJESZTES: Record<string, string> = {
+  "application/pdf": "pdf",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+/**
  * A letöltéskor visszaadott fájlnév. A feltöltött nevet nem adjuk vissza
  * nyersen: abból a böngészőnek szóló fejléc készül, és egy idézőjel vagy
  * sortörés a névben elrontaná. Ékezetet sem teszünk bele, mert a fejléc
- * kódolása formátumonként eltér.
+ * kódolása formátumonként eltér. A kiterjesztés az ellenőrzött típusból jön,
+ * nem a feltöltött névből: az utóbbi a feltöltő bemondása.
  */
-export function biztonsagosNev(oldal: Oldal, eredeti: string): string {
-  const kiterjesztes = /\.([a-z0-9]{1,5})$/i.exec(eredeti.trim())?.[1]?.toLowerCase() ?? "dat";
-  return `bizonylat-${oldal}.${kiterjesztes}`;
+export function biztonsagosNev(oldal: Oldal, mimeTipus: string): string {
+  return `bizonylat-${oldal}.${KITERJESZTES[mimeTipus] ?? "dat"}`;
 }
 
 /** Emberi méret a felületre: a bérlő lássa, mekkorát töltött fel. */

@@ -64,6 +64,14 @@ export const SZOTAR: Szotar = {
     hu: "Ez a link lejárt vagy nem létezik. Kérj újat a bérbeadódtól.",
     en: "This link has expired or does not exist. Ask your landlord for a new one.",
   },
+  "meghivo.kimerult": {
+    hu:
+      "Ezen a linken túl sokszor érkezett rossz jelszó, ezért lezártuk. Kérj újat a " +
+      "bérbeadódtól. Ha már van fiókod, a belépőlapon a meglévő jelszavaddal jutsz be.",
+    en:
+      "Too many wrong passwords were submitted through this link, so we closed it. Ask your " +
+      "landlord for a new one. If you already have an account, sign in with your existing password.",
+  },
   "meghivo.fiok": { hu: "Fiók készítése", en: "Create your account" },
   "meghivo.bevezeto": {
     hu:
@@ -3378,6 +3386,14 @@ export const SZOTAR: Szotar = {
     en:
       "That password is not right. If you already have an account with this email address, enter " +
       "your existing password — the invitation does not set a new one.",
+  },
+  "meghivo.hiba.mar_ul_ott": {
+    hu:
+      "Erre a helyre időközben bekerült egy fiók. Ha ez te vagy, lépj be; ha nem, szólj a " +
+      "bérbeadódnak.",
+    en:
+      "An account has meanwhile taken this place. If that was you, sign in; if not, tell your " +
+      "landlord.",
   },
   "teendo.hiba.lepj_be": { hu: "Lépj be.", en: "Please sign in." },
   "teendo.hiba.nem_tied": {

@@ -81,7 +81,11 @@ Melyik oldal bizonylatát ki adja fel, az a szerepből következik
 bérbeadónak fogadó oldali. Bizonylatot csak vitás előíráshoz fogadunk el, és ezt
 a kiszolgálón ellenőrizzük — enélkül az ígéretből, hogy csak vitánál kérünk,
 semmi nem maradna. A feltöltött fájlt letöltésként adjuk vissza, a feltöltött
-fájlnév nélkül: nem futtatunk idegen tartalmat a saját címünkön.
+fájlnév nélkül: nem futtatunk idegen tartalmat a saját címünkön. A típusát is a
+tartalmából állapítjuk meg (`tipusATartalombol`), ugyanúgy, mint a jegyzőkönyvi
+fényképnél, és a letöltés kiterjesztése is abból jön: a bejelentett típus és a
+fájlnév egyaránt a feltöltő bemondása, és ezt a fájlt a másik fél böngészője
+nyitja meg a mi címünkön.
 
 Az állapotok ezért ötfélék, és a különbségük termékdöntés:
 
@@ -229,6 +233,19 @@ venné észre, amikor a bérlemény megjelenik nála. A jelszó ezen az úton se
 íródik felül, és újat sem állítunk be. Ami így is megmarad: aki a linket
 megnyitja, a hibaüzenetből kikövetkeztetheti, hogy a címhez tartozik-e fiók.
 Ezt e-mailes megerősítés zárná le, az pedig a küldőszolgáltatáson múlik.
+
+A jelszópróbálgatás viszont nem marad meg: a meghívó öt rossz jelszó után
+elhasználtnak számít (`LEGTOBB_ROSSZ_JELSZO`). A link a bérbeadó kezében van,
+tehát korlát nélkül ez a mező a fiók gazdája ellen fordulna, és találat esetén
+nemcsak a helyet foglalná el, hanem be is léptetne a fiók nevében. Öt
+próbálkozás kézi elgépelésre bőven elég, találgatásra nem.
+
+**A hely elfoglalása és a meghívó elhasználása feltételes írás, egy
+tranzakcióban**: a hely csak akkor kerül a fiókhoz, ha még üres, a meghívó csak
+akkor lesz elhasznált, ha még nem az. Feltétel nélküli `update`-tel két
+egyszerre megnyitott link mindegyike átment, és a másodikként érkező csendben
+leváltotta az elsőt a jogviszonyról — pont az, amit a „meghívót csak üres helyre
+készítünk" szabály meg akar akadályozni. Postgresen ez a rés valóban nyitva van.
 
 ## A rezsielszámolás alapelve
 

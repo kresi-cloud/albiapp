@@ -15,8 +15,13 @@ export async function GET(keres: Request): Promise<Response> {
     return new Response("Nincs jogosultság.", { status: 403 });
   }
 
-  const cim = new URL(keres.url);
-  const ev = Number(cim.searchParams.get("ev")) || new Date().getUTCFullYear();
+  // Az évet a címsorból kapjuk, tehát bármi lehet. A `?ev=99999999` és a
+  // `?ev=1,5` érvénytelen dátumot adott, abból a lekérdezés 500-zal szállt el:
+  // a lapon a legördülő szűr, a letöltési cím viszont nem a lapon megy át.
+  const idei = new Date().getUTCFullYear();
+  const kert = Number(new URL(keres.url).searchParams.get("ev"));
+  const ev =
+    Number.isInteger(kert) && kert >= 2000 && kert <= idei + 1 ? kert : idei;
   const adatok = await adoEv(felhasznalo.id, ev);
   const { sz, u } = szovegekNyelvvel("hu");
 
