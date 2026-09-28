@@ -126,45 +126,56 @@ export async function futtat(oldal) {
   const oraUrlap = oldal.locator('form:has(button:text("Óraállás rögzítése"))').first();
   all((await oraUrlap.count()) > 0, "van óraállás-rögzítő űrlap");
 
-  // A művelet válaszára várunk, nem a hálózat csendjére: elutasításnál a
-  // `revalidatePath` le sem fut, de a válasz az, ami eldönti, mit látunk.
-  async function oraallast(datum, ertek) {
-    const valasz = oldal.waitForResponse(
-      (v) => v.url().includes("/rezsi") && v.request().method() === "POST",
-      { timeout: 15000 },
-    );
+  /**
+   * Óraállás beküldése, és megvárva az, amit a lap **utána** mond.
+   *
+   * A művelet válaszára várni itt nem elég: a válasz megérkezik, a React
+   * viszont csak utána cseréli ki a visszajelző sávot, tehát a nyomban
+   * kiolvasott lapszöveg még az előző beküldés üzenetét adja vissza. Ezért a
+   * várt mondatra várunk, határidővel: ha nem jön meg, az valódi hiba.
+   */
+  async function oraallast(datum, ertek, vart) {
     await oraUrlap.locator('input[name="datum"]').fill(datum);
     await oraUrlap.locator('input[name="ertek"]').fill(String(ertek));
     await oraUrlap.getByRole("button", { name: "Óraállás rögzítése" }).click();
-    await valasz;
-    return oldal.innerText("body");
+    return oraUrlap
+      .getByText(vart)
+      .first()
+      .waitFor({ timeout: 15000 })
+      .then(() => true, () => false);
   }
 
   const holnap = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
   all(
-    /Jövőbeli napra nem lehet óraállást rögzíteni/.test(await oraallast(holnap, 999999)),
+    await oraallast(holnap, 999999, /Jövőbeli napra nem lehet óraállást rögzíteni/),
     "jövőbeli napra nem rögzíthető óraállás",
   );
 
   // Visszakeltezett állás, ami nagyobb a következő leolvasásnál: elutasítva.
   all(
-    /Az óra nem forog visszafelé/.test(await oraallast("2000-01-01", 9999999)),
+    await oraallast("2000-01-01", 9999999, /Az óra nem forog visszafelé/),
     "a visszakeltezett, a későbbinél nagyobb állás elutasítva",
   );
 
   // Önpróba: a fenti két elutasítás nem azért jött, mert az űrlap sosem megy
-  // át. Ugyanaz az űrlap a legutolsó állással, mai napra, rögzül — és nem is
-  // visz idegen fogyasztást az elszámolásba, mert nulla a különbség.
+  // át. Egy szabályos, mai leolvasás egy egységgel a legutolsó fölött rögzül —
+  // és a **hatását** nézzük, nem a visszajelző sávot: a lap újratöltve az új
+  // állást mutatja.
   const oraSor = await oraUrlap.locator("xpath=..").innerText();
-  const allasSzam = /(\d+(?:[.,]\d+)?)\s*(?:kWh|m3|m³)/.exec(oraSor);
-  all(allasSzam !== null, `a lap kiírja a mérő legutolsó állását (${oraSor.split("\n")[1] ?? ""})`);
+  const allasSzam = /(\d+(?:[.,]\d+)?)\s*(kWh|m3|m³)/.exec(oraSor);
+  all(allasSzam !== null, "a lap kiírja a mérő legutolsó állását");
+
+  const ujAllas = Math.round(Number((allasSzam?.[1] ?? "0").replace(",", ".")) + 1);
+  await oraallast(new Date().toISOString().slice(0, 10), ujAllas, /Óraállás rögzítve/);
+  await oldal.goto(`${ALAP}/rezsi`);
+  await oldal.waitForLoadState("networkidle");
+  const ujSor = await oldal
+    .locator('form:has(button:text("Óraállás rögzítése"))')
+    .first()
+    .locator("xpath=..")
+    .innerText();
   all(
-    /Óraállás rögzítve/.test(
-      await oraallast(
-        new Date().toISOString().slice(0, 10),
-        (allasSzam?.[1] ?? "0").replace(",", "."),
-      ),
-    ),
-    "önpróba: szabályos óraállás viszont rögzül",
+    ujSor.includes(`${ujAllas} ${allasSzam?.[2] ?? ""}`),
+    `önpróba: a szabályos óraállás viszont rögzül (${ujAllas})`,
   );
 }
