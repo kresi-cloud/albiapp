@@ -1671,6 +1671,74 @@ export const SZOTAR: Szotar = {
   },
   "berlemeny.gomb": { hu: "Bérlemény felvétele", en: "Add property" },
   "jogviszony.uj": { hu: "Új jogviszony", en: "New tenancy" },
+
+  // Díjemelés
+  "dijvaltozas.cim": { hu: "Díjemelés", en: "Rent change" },
+  "dijvaltozas.sugo": {
+    hu:
+      "Az új összegek a megadott hónap elejétől érvényesek. A korábbi hónapok előírásait nem " +
+      "írjuk át: amire egyszer egyeztettetek, az ugyanaz marad. Ezért olyan hónapot lehet " +
+      "megadni, amire még nincs előírás — jellemzően a következőt.",
+    en:
+      "The new amounts apply from the start of the month you choose. Earlier months' charges are " +
+      "not rewritten: what you have already reconciled stays as it was. So you can choose a month " +
+      "that has no charges yet — usually the next one.",
+  },
+  "dijvaltozas.honap": { hu: "Melyik hónaptól", en: "From which month" },
+  "dijvaltozas.dij": { hu: "Új bérleti díj (Ft)", en: "New rent (HUF)" },
+  "dijvaltozas.kozos_koltseg": { hu: "Új közös költség (Ft)", en: "New common charge (HUF)" },
+  "dijvaltozas.atalany": { hu: "Új rezsiátalány (Ft)", en: "New flat-rate utilities (HUF)" },
+  "dijvaltozas.gomb": { hu: "Díjemelés rögzítése", en: "Record rent change" },
+  "dijvaltozas.folyamatban": { hu: "Rögzítés…", en: "Recording…" },
+  "dijvaltozas.kesz": {
+    hu: "A díjemelést rögzítettük. A következő előírások már az új összeggel készülnek.",
+    en: "The rent change has been recorded. Charges from then on will use the new amounts.",
+  },
+  "dijvaltozas.sor": {
+    hu: "{honap}-tól: {dij}",
+    en: "from {honap}: {dij}",
+  },
+  "dijvaltozas.nincs": {
+    hu: "Még nincs díjemelés: a jogviszony induló összegei érvényesek.",
+    en: "No rent change yet: the tenancy's original amounts apply.",
+  },
+  "dijvaltozas.visszavon": { hu: "Visszavonom", en: "Withdraw" },
+  "dijvaltozas.visszavonva": {
+    hu: "A díjemelést visszavontuk.",
+    en: "The rent change has been withdrawn.",
+  },
+  "dijvaltozas.hiba.honap": {
+    hu: "Add meg, melyik hónaptól érvényes az új összeg.",
+    en: "Enter the month the new amount applies from.",
+  },
+  "dijvaltozas.hiba.kezdet_elott": {
+    hu: "A bérlet kezdete előtti hónapra nincs mit emelni.",
+    en: "There is nothing to change for a month before the tenancy started.",
+  },
+  "dijvaltozas.hiba.mar_eloirtuk": {
+    hu:
+      "Erre a hónapra már van előírás ({honap}-ig bezárólag), azt pedig nem írjuk át: amire " +
+      "egyszer egyeztettetek, az ugyanaz marad. Válassz későbbi hónapot.",
+    en:
+      "Charges already exist for that month (up to and including {honap}), and we do not rewrite " +
+      "them: what you have reconciled stays as it was. Choose a later month.",
+  },
+  "dijvaltozas.hiba.van_mar": {
+    hu: "Erre a hónapra már rögzítettél díjemelést. Előbb vond vissza a régit.",
+    en: "You have already recorded a rent change for that month. Withdraw the old one first.",
+  },
+  "dijvaltozas.hiba.eloirtuk": {
+    hu:
+      "Erre a díjemelésre már épül előírás, ezért nem vonható vissza. Új emeléssel tudsz " +
+      "továbbmenni, későbbi hónaptól.",
+    en:
+      "Charges already build on this rent change, so it cannot be withdrawn. Record a new change " +
+      "from a later month instead.",
+  },
+  "dijvaltozas.hiba.nem_tied": {
+    hu: "Ez a jogviszony nem a tiéd.",
+    en: "This tenancy is not yours.",
+  },
   "jogviszony.uj_sugo": {
     hu: "Ettől kezdve a bérleti díj, a közös költség és a rezsiátalány minden hónapra magától előírás lesz. Kézzel nem kell rögzítened.",
     en: "From here the rent, common charges and utility flat rate become scheduled items every month, on their own. You do not record them by hand.",

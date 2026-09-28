@@ -152,6 +152,29 @@ A pótlás akkor fut, amikor valaki ránéz a befizetésekre — nincs ütemező
 magánbérbeadónak nem is kell. Meglévő előírást soha nem írunk át: amire egyszer
 már egyeztettünk, azt egy későbbi díjemelés nem változtathatja meg.
 
+### A díjemelés
+
+A bérleti díj nem örök: emelni kell tudni anélkül, hogy a bérlet története
+kettétörne. Eddig az egyetlen út a lezárás és egy új jogviszony volt — attól
+viszont a befizetések, az okiratok és az értékelés is más bérlethez tartozna,
+holott ugyanaz a bérlő lakik ugyanott.
+
+A díjemelés ezért a jogviszony saját sora (`DijValtozas`): egy hónap, és a
+hónaptól érvényes bérleti díj, közös költség és rezsiátalány. Az előírás
+készítésekor a hónapra érvényes legkésőbbi változás dönt (`haviDijak`), tehát
+**a régi hónapok a régi összegen maradnak**. Ez ugyanaz az elv, mint a
+díjszabásnál: nem felülírunk, hanem új érvényességet veszünk fel.
+
+Emelni csak olyan hónaptól lehet, amire még nincs előírás. Egy korábbi hónapra
+beírt emelés szótlanul nem csinálna semmit — meglévő előírást soha nem írunk át
+—, és a bérbeadó azt hinné, megtörtént. Ugyanebből következik, hogy a
+visszavonás is csak addig megy, amíg nem született rá előírás: onnantól a
+bérlőnek kiírt összeg már az új díj. Aki tévedett, későbbi hónaptól rögzít
+újat.
+
+A hónap eleje nem formaság: hónap közepén kezdődő emelésnél ugyanarra az
+időszakra két összeg állna, és a bérlő nem tudná, melyiket fizesse.
+
 A jogviszony lezárása ennek a határa. A kiköltözés utáni hónapok előírásait
 törli, a záró hónapét arányosítja, a múlthoz nem nyúl. A lezárás visszavonása
 ezt vissza is számolja, mert egy elkattintott lezárás egyébként csendben

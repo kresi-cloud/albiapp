@@ -56,6 +56,19 @@ function ures(ertek: string | null): boolean {
   return (ertek ?? "").trim() === "";
 }
 
+/**
+ * Megadott-e, és számként olvasható-e az összeg.
+ *
+ * Az olvashatatlan összeg `NaN`-ként érkezik (`urlapForint`), és **minden**
+ * összehasonlítás hamis rá: a „kisebb-e nullánál" kérdés is. Enélkül az
+ * elgépelt összeg átcsúszott az ellenőrzésen, és az `Int` oszlopon 500-as lap
+ * lett belőle — a bérbeadó pedig azt hitte, elromlott. Ugyanaz az eset, mint a
+ * felső határnál: amit nem tudunk számként olvasni, arra szólunk, nem tippelünk.
+ */
+function szam(ertek: number | null): ertek is number {
+  return ertek !== null && Number.isFinite(ertek);
+}
+
 export function ingatlantEllenoriz(bemenet: IngatlanBemenet): Kifogas[] {
   const kifogasok: Kifogas[] = [];
 
@@ -65,13 +78,13 @@ export function ingatlantEllenoriz(bemenet: IngatlanBemenet): Kifogas[] {
   if (ures(bemenet.cim)) {
     kifogasok.push({ mezo: "cim", uzenet: uzenet("berlemeny.hiba.cim") });
   }
-  if (bemenet.alapteruletM2 !== null && bemenet.alapteruletM2 <= 0) {
+  if (bemenet.alapteruletM2 !== null && (!szam(bemenet.alapteruletM2) || bemenet.alapteruletM2 <= 0)) {
     kifogasok.push({ mezo: "alapteruletM2", uzenet: uzenet("berlemeny.hiba.alapterulet") });
   }
-  if (bemenet.kozosKoltsegFt !== null && bemenet.kozosKoltsegFt < 0) {
+  if (bemenet.kozosKoltsegFt !== null && (!szam(bemenet.kozosKoltsegFt) || bemenet.kozosKoltsegFt < 0)) {
     kifogasok.push({ mezo: "kozosKoltsegFt", uzenet: uzenet("berlemeny.hiba.negativ") });
   }
-  if (bemenet.beszerzesiArFt !== null && bemenet.beszerzesiArFt < 0) {
+  if (bemenet.beszerzesiArFt !== null && (!szam(bemenet.beszerzesiArFt) || bemenet.beszerzesiArFt < 0)) {
     kifogasok.push({ mezo: "beszerzesiArFt", uzenet: uzenet("berlemeny.hiba.negativ") });
   }
 
@@ -111,13 +124,13 @@ export function jogviszonytEllenoriz(bemenet: JogviszonyBemenet): Kifogas[] {
   if (bemenet.kezdete === null || Number.isNaN(bemenet.kezdete.getTime())) {
     kifogasok.push({ mezo: "kezdete", uzenet: uzenet("jogviszony.hiba.kezdete") });
   }
-  if (bemenet.berletiDijFt === null || bemenet.berletiDijFt <= 0) {
+  if (!szam(bemenet.berletiDijFt) || bemenet.berletiDijFt <= 0) {
     kifogasok.push({ mezo: "berletiDijFt", uzenet: uzenet("jogviszony.hiba.dij") });
   }
-  if (bemenet.kozosKoltsegFt !== null && bemenet.kozosKoltsegFt < 0) {
+  if (bemenet.kozosKoltsegFt !== null && (!szam(bemenet.kozosKoltsegFt) || bemenet.kozosKoltsegFt < 0)) {
     kifogasok.push({ mezo: "kozosKoltsegFt", uzenet: uzenet("berlemeny.hiba.negativ") });
   }
-  if (bemenet.kaucioFt !== null && bemenet.kaucioFt < 0) {
+  if (bemenet.kaucioFt !== null && (!szam(bemenet.kaucioFt) || bemenet.kaucioFt < 0)) {
     kifogasok.push({ mezo: "kaucioFt", uzenet: uzenet("berlemeny.hiba.negativ") });
   }
   if (
@@ -136,7 +149,7 @@ export function jogviszonytEllenoriz(bemenet: JogviszonyBemenet): Kifogas[] {
   }
   // Átalányt nulla forinttal elszámolni értelmetlen: minden hónapra nulla
   // forintos előírás születne, és a bérlő azt hinné, nincs rezsije.
-  if (bemenet.rezsiElszamolas === "atalany" && (bemenet.rezsiAtalanyFt ?? 0) <= 0) {
+  if (bemenet.rezsiElszamolas === "atalany" && (!szam(bemenet.rezsiAtalanyFt) || bemenet.rezsiAtalanyFt <= 0)) {
     kifogasok.push({ mezo: "rezsiAtalanyFt", uzenet: uzenet("jogviszony.hiba.atalany") });
   }
   if (ures(bemenet.berloNeve)) {
@@ -180,4 +193,65 @@ export function jogviszonyFigyelmeztetesei(
     sorok.push(uzenet("jogviszony.figyelem.visszamenoleg", { honapok }));
   }
   return sorok;
+}
+
+/* ------------------------------------------------------------- Díjváltozás */
+
+export type DijValtozasBemenet = {
+  /** A hónap, amelytől érvényes: mindig a hónap első napjára vágva. */
+  ervenyesTol: Date | null;
+  berletiDijFt: number | null;
+  kozosKoltsegFt: number | null;
+  rezsiAtalanyFt: number | null;
+  /** A jogviszony elszámolási módja: átalány nélkül az átalányösszeg nem kell. */
+  rezsiElszamolas: string;
+  /** A jogviszony kezdete: ennél korábbi hónapra nincs mit emelni. */
+  kezdete: Date;
+  /** A legkésőbbi hónap, amire már van előírás. Üres, ha még egy sincs. */
+  utolsoEloirtHonap: string | null;
+};
+
+/** „2026-09" alakú hónapkulcs egy dátumból. */
+export function honapKulcsa(nap: Date): string {
+  return `${nap.getUTCFullYear()}-${String(nap.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+/**
+ * A díjemelés ellenőrzése.
+ *
+ * Két szabály nem formai. **Hónap elejétől**, mert a hónap közepén kezdődő
+ * emelés kettévágná a hónapot, és a bérlő két összeget kapna ugyanarra az
+ * időszakra. És **csak olyan hónaptól, amire még nincs előírás**: meglévő
+ * előírást soha nem írunk át — amire egyszer egyeztettünk, azt egy későbbi
+ * emelés nem változtathatja meg —, tehát egy korábbi hónapra beírt emelés
+ * szótlanul nem csinálna semmit.
+ */
+export function dijValtozastEllenoriz(bemenet: DijValtozasBemenet): Kifogas[] {
+  const kifogasok: Kifogas[] = [];
+
+  if (bemenet.ervenyesTol === null || Number.isNaN(bemenet.ervenyesTol.getTime())) {
+    kifogasok.push({ mezo: "ervenyesTol", uzenet: uzenet("dijvaltozas.hiba.honap") });
+  } else {
+    const honap = honapKulcsa(bemenet.ervenyesTol);
+    if (honap < honapKulcsa(bemenet.kezdete)) {
+      kifogasok.push({ mezo: "ervenyesTol", uzenet: uzenet("dijvaltozas.hiba.kezdet_elott") });
+    } else if (bemenet.utolsoEloirtHonap !== null && honap <= bemenet.utolsoEloirtHonap) {
+      kifogasok.push({
+        mezo: "ervenyesTol",
+        uzenet: uzenet("dijvaltozas.hiba.mar_eloirtuk", { honap: bemenet.utolsoEloirtHonap }),
+      });
+    }
+  }
+
+  if (!szam(bemenet.berletiDijFt) || bemenet.berletiDijFt <= 0) {
+    kifogasok.push({ mezo: "berletiDijFt", uzenet: uzenet("jogviszony.hiba.dij") });
+  }
+  if (!szam(bemenet.kozosKoltsegFt) || bemenet.kozosKoltsegFt < 0) {
+    kifogasok.push({ mezo: "kozosKoltsegFt", uzenet: uzenet("berlemeny.hiba.negativ") });
+  }
+  if (bemenet.rezsiElszamolas === "atalany" && (!szam(bemenet.rezsiAtalanyFt) || bemenet.rezsiAtalanyFt <= 0)) {
+    kifogasok.push({ mezo: "rezsiAtalanyFt", uzenet: uzenet("jogviszony.hiba.atalany") });
+  }
+
+  return kifogasok;
 }

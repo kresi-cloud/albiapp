@@ -6,7 +6,10 @@ import {
   ingatlantEllenoriz,
   jogviszonyFigyelmeztetesei,
   jogviszonytEllenoriz,
+  dijValtozastEllenoriz,
+  honapKulcsa,
   visszamenolegesHonapok,
+  type DijValtozasBemenet,
   type IngatlanBemenet,
   type JogviszonyBemenet,
 } from "../berlemeny";
@@ -194,5 +197,126 @@ describe("jogviszony figyelmeztetései", () => {
       ma,
     );
     expect(sorok.map((sor) => sor.kulcs)).toEqual(["jogviszony.figyelem.jovobeli"]);
+  });
+});
+
+describe("elgépelt összeg", () => {
+  // Az `urlapForint` `NaN`-t ad arra, amit nem tud számként olvasni, és `NaN`-ra
+  // minden összehasonlítás hamis: enélkül a „180 e" átcsúszott az ellenőrzésen,
+  // és az `Int` oszlopon 500-as lap lett belőle.
+  it("a bérleti díj helyén nem megy át a szám nélküli mező", () => {
+    const kifogasok = jogviszonytEllenoriz({ ...JOGVISZONY, berletiDijFt: Number.NaN });
+    expect(kifogasok.map((kifogas) => kifogas.mezo)).toContain("berletiDijFt");
+  });
+
+  it("a közös költség és az óvadék helyén sem", () => {
+    expect(
+      jogviszonytEllenoriz({ ...JOGVISZONY, kozosKoltsegFt: Number.NaN }).map((k) => k.mezo),
+    ).toContain("kozosKoltsegFt");
+    expect(
+      jogviszonytEllenoriz({ ...JOGVISZONY, kaucioFt: Number.NaN }).map((k) => k.mezo),
+    ).toContain("kaucioFt");
+  });
+
+  it("az átalány helyén sem, átalányos elszámolásnál", () => {
+    const kifogasok = jogviszonytEllenoriz({
+      ...JOGVISZONY,
+      rezsiElszamolas: "atalany",
+      rezsiAtalanyFt: Number.NaN,
+    });
+    expect(kifogasok.map((kifogas) => kifogas.mezo)).toContain("rezsiAtalanyFt");
+  });
+
+  it("a bérlemény adatlapján sem", () => {
+    expect(
+      ingatlantEllenoriz({ ...INGATLAN, kozosKoltsegFt: Number.NaN }).map((k) => k.mezo),
+    ).toContain("kozosKoltsegFt");
+    expect(
+      ingatlantEllenoriz({ ...INGATLAN, beszerzesiArFt: Number.NaN }).map((k) => k.mezo),
+    ).toContain("beszerzesiArFt");
+    expect(
+      ingatlantEllenoriz({ ...INGATLAN, alapteruletM2: Number.NaN }).map((k) => k.mezo),
+    ).toContain("alapteruletM2");
+  });
+});
+
+describe("honapKulcsa", () => {
+  it("a hónap kulcsa mindig kétjegyű", () => {
+    expect(honapKulcsa(new Date(Date.UTC(2026, 8, 30)))).toBe("2026-09");
+    expect(honapKulcsa(new Date(Date.UTC(2026, 11, 1)))).toBe("2026-12");
+  });
+});
+
+describe("díjemelés", () => {
+  const DIJ: DijValtozasBemenet = {
+    ervenyesTol: new Date(Date.UTC(2026, 9, 1)),
+    berletiDijFt: 195000,
+    kozosKoltsegFt: 14000,
+    rezsiAtalanyFt: 0,
+    rezsiElszamolas: "almero",
+    kezdete: new Date(Date.UTC(2026, 0, 1)),
+    utolsoEloirtHonap: "2026-09",
+  };
+
+  it("a következő, még elő nem írt hónapot elfogadja", () => {
+    expect(dijValtozastEllenoriz(DIJ)).toEqual([]);
+  });
+
+  it("már előírt hónapra nem enged emelni", () => {
+    // Amire egyszer egyeztettek, azt nem írjuk át: a szeptemberre beírt emelés
+    // szótlanul nem csinálna semmit, mert meglévő előírást nem módosítunk.
+    const kifogasok = dijValtozastEllenoriz({
+      ...DIJ,
+      ervenyesTol: new Date(Date.UTC(2026, 8, 1)),
+    });
+    expect(kifogasok.map((kifogas) => kifogas.uzenet.kulcs)).toEqual([
+      "dijvaltozas.hiba.mar_eloirtuk",
+    ]);
+  });
+
+  it("a bérlet kezdete előtti hónapra sem", () => {
+    const kifogasok = dijValtozastEllenoriz({
+      ...DIJ,
+      kezdete: new Date(Date.UTC(2026, 9, 1)),
+      ervenyesTol: new Date(Date.UTC(2026, 8, 1)),
+      utolsoEloirtHonap: null,
+    });
+    expect(kifogasok.map((kifogas) => kifogas.uzenet.kulcs)).toEqual([
+      "dijvaltozas.hiba.kezdet_elott",
+    ]);
+  });
+
+  it("előírás nélküli jogviszonynál a kezdet hónapjától lehet", () => {
+    expect(
+      dijValtozastEllenoriz({
+        ...DIJ,
+        ervenyesTol: new Date(Date.UTC(2026, 0, 1)),
+        utolsoEloirtHonap: null,
+      }),
+    ).toEqual([]);
+  });
+
+  it("hónap nélkül, nulla díjjal és elgépelt összeggel nem megy át", () => {
+    expect(
+      dijValtozastEllenoriz({ ...DIJ, ervenyesTol: null }).map((k) => k.uzenet.kulcs),
+    ).toContain("dijvaltozas.hiba.honap");
+    expect(
+      dijValtozastEllenoriz({ ...DIJ, berletiDijFt: 0 }).map((k) => k.mezo),
+    ).toContain("berletiDijFt");
+    expect(
+      dijValtozastEllenoriz({ ...DIJ, berletiDijFt: Number.NaN }).map((k) => k.mezo),
+    ).toContain("berletiDijFt");
+    expect(
+      dijValtozastEllenoriz({ ...DIJ, kozosKoltsegFt: Number.NaN }).map((k) => k.mezo),
+    ).toContain("kozosKoltsegFt");
+  });
+
+  it("átalányos jogviszonynál az átalány sem maradhat nullán", () => {
+    const kifogasok = dijValtozastEllenoriz({
+      ...DIJ,
+      rezsiElszamolas: "atalany",
+      rezsiAtalanyFt: 0,
+    });
+    expect(kifogasok.map((kifogas) => kifogas.mezo)).toEqual(["rezsiAtalanyFt"]);
   });
 });

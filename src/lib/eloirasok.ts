@@ -72,6 +72,12 @@ export function jogviszonyAdatta(jogviszony: {
   fizetesiNap: number;
   elofizetesek?: ElofizetesSor[];
   berlok?: { berloId: string | null }[];
+  dijValtozasok?: {
+    ervenyesTol: Date;
+    berletiDijFt: number;
+    kozosKoltsegFt: number;
+    rezsiAtalanyFt: number;
+  }[];
 }): JogviszonyAdat {
   return {
     kezdete: jogviszony.kezdete,
@@ -87,6 +93,7 @@ export function jogviszonyAdatta(jogviszony: {
     fiokosBerlok: (jogviszony.berlok ?? [])
       .map((berlo) => berlo.berloId)
       .filter((berloId): berloId is string => Boolean(berloId)),
+    dijValtozasok: jogviszony.dijValtozasok ?? [],
   };
 }
 
@@ -126,6 +133,7 @@ export async function eloirasokatPotol(tulajdonosId: string, ma = new Date()): P
       eloirtTetelek: { select: { tipus: true, idoszak: true, forrasId: true } },
       elofizetesek: { include: { jovahagyasok: true } },
       berlok: { select: { berloId: true } },
+      dijValtozasok: { orderBy: [{ ervenyesTol: "asc" }, { id: "asc" }] },
     },
   });
 

@@ -299,7 +299,15 @@ export async function futtat(oldal) {
   const urlap = oldal.locator('form:has(input[name="utalasDatuma"])').first();
   await urlap.locator('input[name="utalasDatuma"]').fill("2020-01-10");
   await urlap.locator('input[name="osszegFt"]').fill("12345");
+  // A mentés válaszát meg kell várni, mielőtt továbblépünk: a `goto` elvágja a
+  // függőben lévő kérést, és a lassabb gépen a rögzítés meg sem történik. A
+  // próba ilyenkor olyasmit keres, ami soha nem jött létre — nálunk zöld volt,
+  // a CI-ban bukott.
+  const rogzites = oldal.waitForResponse(
+    (valasz) => valasz.request().method() === "POST" && valasz.url().includes("/berlo"),
+  );
   await urlap.getByRole("button", { name: "Rögzítem" }).click();
+  await rogzites;
 
   await oldal.goto(`${ALAP}/berlo`);
   await mindetKinyit(oldal);
@@ -329,10 +337,13 @@ export async function futtat(oldal) {
   await magyarra(oldal);
   await oldal.goto(`${ALAP}/berlo`);
   await mindetKinyit(oldal);
+  const visszavonas = oldal.waitForResponse(
+    (valasz) => valasz.request().method() === "POST" && valasz.url().includes("/berlo"),
+  );
   await oldal
     .locator('li[data-idoszak=""][data-osszeg="0"]')
     .first()
     .getByText("Ezt elgépeltem")
     .click();
-  await oldal.waitForLoadState("networkidle");
+  await visszavonas;
 }

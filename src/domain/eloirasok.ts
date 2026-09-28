@@ -21,6 +21,14 @@ import { uzenet, type Uzenet } from "./nyelv";
 
 export type EloirasTipus = "berleti_dij" | "kozos_koltseg" | "rezsi_atalany" | "elofizetes";
 
+export type DijValtozas = {
+  /** Mindig egy hónap első napja. */
+  ervenyesTol: Date;
+  berletiDijFt: number;
+  kozosKoltsegFt: number;
+  rezsiAtalanyFt: number;
+};
+
 export type JogviszonyAdat = {
   kezdete: Date;
   vege: Date | null;
@@ -31,6 +39,18 @@ export type JogviszonyAdat = {
   rezsiAtalanyFt: number;
   /** A hónap hányadikára esedékes. */
   fizetesiNap: number;
+  /**
+   * Díjváltozások, hónap elejétől érvényesek.
+   *
+   * A jogviszony saját összegei a kiindulás; ami ezután jön, azt ez a lista
+   * mondja meg. Hónap elejétől, mert a hónap közepén kezdődő emelés kettévágná
+   * a hónapot, és a bérlő két összeget kapna ugyanarra az időszakra.
+   *
+   * Meglévő előírást ettől sem írunk át: az emelés a még meg nem született
+   * hónapok előírásaiban jelenik meg. Amire egyszer egyeztettünk, az ugyanaz
+   * marad.
+   */
+  dijValtozasok?: readonly DijValtozas[];
   /**
    * A bérleményhez tartozó előfizetések, jóváhagyásukkal együtt. Hogy melyikből
    * lesz előírás, azt az `elofizetes` modul mondja meg, nem a hívó: a
@@ -124,15 +144,43 @@ function aranyos(teljesFt: number, napok: number, honapNapjai: number): number {
   return Math.round((teljesFt * napok) / honapNapjai);
 }
 
-const TIPUSOK: { tipus: EloirasTipus; osszeget: (jogviszony: JogviszonyAdat) => number }[] = [
-  { tipus: "berleti_dij", osszeget: (jogviszony) => jogviszony.berletiDijFt },
-  { tipus: "kozos_koltseg", osszeget: (jogviszony) => jogviszony.kozosKoltsegFt },
-  {
-    tipus: "rezsi_atalany",
-    osszeget: (jogviszony) =>
-      jogviszony.rezsiElszamolas === "atalany" ? jogviszony.rezsiAtalanyFt : 0,
-  },
+type HaviDijak = { berletiDijFt: number; kozosKoltsegFt: number; rezsiAtalanyFt: number };
+
+const TIPUSOK: { tipus: EloirasTipus; osszeget: (dijak: HaviDijak) => number }[] = [
+  { tipus: "berleti_dij", osszeget: (dijak) => dijak.berletiDijFt },
+  { tipus: "kozos_koltseg", osszeget: (dijak) => dijak.kozosKoltsegFt },
+  { tipus: "rezsi_atalany", osszeget: (dijak) => dijak.rezsiAtalanyFt },
 ];
+
+/**
+ * Melyik összegek érvényesek egy adott hónapra.
+ *
+ * A legkésőbbi olyan díjváltozás dönt, ami a hónap első napjáig már hatályba
+ * lépett; ha nincs ilyen, a jogviszony saját összegei. Holtversenyt a dátum
+ * egyedisége zárja ki (`@@unique([jogviszonyId, ervenyesTol])`): enélkül
+ * Postgresen két azonos napú sor közül a sorrend döntene, és ugyanaz a hónap
+ * két futásra más összeget adna.
+ */
+export function haviDijak(jogviszony: JogviszonyAdat, ev: number, honap: number): HaviDijak {
+  const honapElseje = Date.UTC(ev, honap, 1);
+  let ervenyes: DijValtozas | null = null;
+  for (const valtozas of jogviszony.dijValtozasok ?? []) {
+    if (napEleje(valtozas.ervenyesTol).getTime() > honapElseje) continue;
+    if (!ervenyes || valtozas.ervenyesTol.getTime() > ervenyes.ervenyesTol.getTime()) {
+      ervenyes = valtozas;
+    }
+  }
+
+  const alap = ervenyes ?? jogviszony;
+  return {
+    berletiDijFt: alap.berletiDijFt,
+    kozosKoltsegFt: alap.kozosKoltsegFt,
+    // Az átalány csak átalányos elszámolásnál előírás: a mód a jogviszonyé, a
+    // változás csak az összeget viszi.
+    rezsiAtalanyFt:
+      jogviszony.rezsiElszamolas === "atalany" ? alap.rezsiAtalanyFt : 0,
+  };
+}
 
 /**
  * Az összes előírás a jogviszony kezdetétől a `ma` hónapjának végéig, vagy a
@@ -164,8 +212,9 @@ export function eloirasok(jogviszony: JogviszonyAdat, ma: Date): Eloiras[] {
       const elsoNap = new Date(Date.UTC(ev, honap, reszlet.elsoNap));
       const mikor = esedekesseg < elsoNap ? elsoNap : esedekesseg;
 
+      const dijak = haviDijak(jogviszony, ev, honap);
       for (const { tipus, osszeget } of TIPUSOK) {
-        const teljes = osszeget(jogviszony);
+        const teljes = osszeget(dijak);
         if (teljes <= 0) continue;
         const osszegFt = aranyos(teljes, reszlet.napok, reszlet.honapNapjai);
         if (osszegFt <= 0) continue;

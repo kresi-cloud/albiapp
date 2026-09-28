@@ -201,8 +201,30 @@ model Jogviszony {
   elofizetesek        Elofizetes[]
   latogatasok         SzolgaltatoiLatogatas[]
   ertekelesek         Ertekeles[]
+  dijValtozasok       DijValtozas[]
 
   @@index([ingatlanId])
+}
+
+/// Díjváltozás: a bérleti díj, a közös költség és a rezsiátalány új összege,
+/// egy hónap elejétől. Meglévő előírást soha nem írunk át, tehát az emelés a
+/// következő hónapok előírásaiban jelenik meg — a korábbiak ugyanazok
+/// maradnak, mint amikor egyeztettünk rájuk.
+model DijValtozas {
+  id             String   @id @default(cuid())
+  jogviszonyId   String
+  /// Mindig egy hónap első napja: a hónap közepén kezdődő emelés kettévágná a
+  /// hónapot, és a bérlő két összeget kapna ugyanarra az időszakra.
+  ervenyesTol    DateTime
+  berletiDijFt   Int
+  kozosKoltsegFt Int
+  rezsiAtalanyFt Int
+  letrehozva     DateTime @default(now())
+
+  jogviszony Jogviszony @relation(fields: [jogviszonyId], references: [id], onDelete: Cascade)
+
+  @@unique([jogviszonyId, ervenyesTol])
+  @@index([jogviszonyId, ervenyesTol])
 }
 
 /// Kölcsönös, a másik fél elől rejtett értékelés a jogviszony végén.
