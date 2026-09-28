@@ -5,6 +5,7 @@ import {
   ALAPERTELMEZETT_BEALLITASOK,
   csoportositva,
   egyeztet,
+  nyitottFt,
   varRank,
   KET_OLDAL_NAP_ELTERES,
   type BerbeadoiIgazolas,
@@ -228,7 +229,10 @@ describe("egyeztet — hiányzó és besorolatlan", () => {
     expect(eredmeny.bizonylatKell).toBe(false);
   });
 
-  it("jövőbeli esedékességnél nem csinál hiányzó tételt", () => {
+  it("jövőbeli esedékességnél nem hiányzó a tétel, hanem várakozó", () => {
+    // Sor viszont jár neki: a bérlő teendői közt ott áll, hogy „Közeleg a
+    // fizetési határidő", és ha nincs kártya, nincs is hol rögzíteni, amire a
+    // teendő szólítja. Hiányzónak viszont nem hiányzik: még nem járt le.
     const eredmeny = egyeztet(
       [eloiras({ esedekesseg: new Date(Date.UTC(2026, 9, 5)) })],
       [],
@@ -236,7 +240,10 @@ describe("egyeztet — hiányzó és besorolatlan", () => {
       MA,
     );
 
-    expect(eredmeny).toHaveLength(0);
+    expect(eredmeny).toHaveLength(1);
+    expect(eredmeny[0].allapot).toBe("varakozik");
+    expect(eredmeny[0].keses).toBe(0);
+    expect(eredmeny[0].magyarazat.kulcs).toBe("egyeztetes.meg_nem_esedekes");
   });
 
   it("előírás nélkül beérkezett pénzt külön sorban mutat, és nem tippel", () => {
@@ -599,5 +606,43 @@ describe("a párosítatlan bérlői utalás sem vész el", () => {
     const sajat = sorok.find((sor) => sor.berloiIgazolasId === "keso");
     expect(varRank(sajat!, "berbeado")).toBe(true);
     expect(varRank(sajat!, "berlo")).toBe(false);
+  });
+});
+
+describe("nyitottFt — egy fogalom, egy szabály", () => {
+  const sor = (modositas: Partial<Parameters<typeof nyitottFt>[0]> = {}) => ({
+    eloirtTetelId: "e1",
+    osszegFt: 150000,
+    berbeadoiOsszegFt: null as number | null,
+    esedekesseg: new Date(Date.UTC(2026, 8, 5)),
+    ...modositas,
+  });
+  const AKKOR = new Date(Date.UTC(2026, 8, 20));
+
+  it("amit a bérbeadó nem igazolt, az nyitva van", () => {
+    expect(nyitottFt(sor(), AKKOR)).toBe(150000);
+  });
+
+  it("a részben megérkezett tételből a maradék nyitott", () => {
+    // Korábban az áttekintő erre nulla forint elmaradást mutatott, a betekintő
+    // ötvenezret: ugyanaz a hónap, két szám.
+    expect(nyitottFt(sor({ berbeadoiOsszegFt: 100000 }), AKKOR)).toBe(50000);
+  });
+
+  it("a vitás tételnél is a bérbeadó oldala a mérce", () => {
+    expect(nyitottFt(sor({ berbeadoiOsszegFt: 120000 }), AKKOR)).toBe(30000);
+  });
+
+  it("a többlet nem negatív elmaradás", () => {
+    expect(nyitottFt(sor({ berbeadoiOsszegFt: 200000 }), AKKOR)).toBe(0);
+  });
+
+  it("esedékesség előtt nincs elmaradás", () => {
+    expect(nyitottFt(sor(), new Date(Date.UTC(2026, 8, 5)))).toBe(0);
+    expect(nyitottFt(sor(), new Date(Date.UTC(2026, 8, 1)))).toBe(0);
+  });
+
+  it("előírás nélküli sor nem elmaradás", () => {
+    expect(nyitottFt(sor({ eloirtTetelId: null }), AKKOR)).toBe(0);
   });
 });

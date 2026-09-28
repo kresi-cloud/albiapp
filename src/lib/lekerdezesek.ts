@@ -18,6 +18,7 @@ import { nevsor } from "@/domain/szerzodes";
 import {
   ALAPERTELMEZETT_BEALLITASOK,
   egyeztet,
+  varRank,
   type BerloiIgazolas,
   type EloirtTetel,
   type Egyeztetes,
@@ -206,11 +207,20 @@ function nezetekbolTeendok(nezetek: JogviszonyNezet[]) {
   );
 }
 
-function rendezettEloirasok(nezetek: JogviszonyNezet[]): Set<string> {
+/**
+ * Amit a bérlő a maga részéről letudott.
+ *
+ * Ez a halmaz csak a bérlő „Közeleg a fizetési határidő" teendőjét szűri,
+ * tehát a bérlő oldalát kell néznie, nem azt, hogy a két fél adata már
+ * összeért-e. Korábban `egyezik`-re szűrt: a bérlő 19-én rögzítette a 25-én
+ * esedékes utalást, a lapon a tétel a rendezett szakaszba került, a teendői
+ * közt viszont még hat napig ott állt, hogy fizessen.
+ */
+function berloReszerolRendezett(nezetek: JogviszonyNezet[]): Set<string> {
   return new Set(
     nezetek.flatMap((nezet) =>
       nezet.egyeztetesek
-        .filter((sor) => sor.allapot === "egyezik" && sor.eloirtTetelId)
+        .filter((sor) => sor.eloirtTetelId && !varRank(sor, "berlo"))
         .map((sor) => sor.eloirtTetelId as string),
     ),
   );
@@ -264,7 +274,7 @@ async function kozelgok(
   const eloirtTetelek = await prisma.eloirtTetel.findMany({
     where: { jogviszonyId: { in: jogviszonyIdk } },
   });
-  const rendezett = rendezettEloirasok(nezetek);
+  const rendezett = berloReszerolRendezett(nezetek);
 
   return kozelgoBefizetesTeendok(
     eloirtTetelek.map((tetel) => ({

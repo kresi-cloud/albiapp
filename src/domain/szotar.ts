@@ -120,6 +120,10 @@ export const SZOTAR: Szotar = {
     hu: "A bérbeadó rögzítette a beérkezést, a bérlő visszaigazolására vár.",
     en: "The landlord recorded the arrival; waiting for the tenant to confirm it.",
   },
+  "egyeztetes.meg_nem_esedekes": {
+    hu: "Még nem esedékes; egyik fél sem nyilatkozott róla.",
+    en: "Not due yet; neither side has recorded anything for it.",
+  },
   "egyeztetes.hianyzik": {
     hu: "Az esedékesség letelt, és nem érkezett hozzá befizetés.",
     en: "The due date has passed and no payment has arrived.",

@@ -112,6 +112,20 @@ Ezért a bérbeadói oldal párosítása után a vele egyező bérlői nyilatkoz
 **ugyanahhoz az előíráshoz kötődik**, az ablaktól függetlenül — az ablak arra
 való, hogy megtalálja a párját, nem arra, hogy szétvágja.
 
+**Egy fogalom, egy szabály, három lap.** „Rendezetlen" az, ami az adott félre
+vár (`varRank`), „elmaradás" az, ami a bérbeadó saját adata szerint még nem
+érkezett meg (`nyitottFt`). Mindkettő a domainben van, mert három lapon három
+szabály volt: az áttekintő 150 000 forintos előírásra, amire a bérbeadó
+100 000-et rögzített, nulla forint elmaradást mutatott, a betekintő ötvenezret;
+a „Rendezetlen: 5" mellett pedig a befizetések lapján négy tétel volt soron. A
+betekintő szándékosan tér el egy ponton: ott a friss hónap is nyitott, mert a
+kérdés nem az, ki késik, hanem hogy mennyi van hátra — és a lap ezt ki is
+mondja.
+
+**Esedékesség előtt is jár sor a tételnek.** Nem „hiányzik", hanem „várakozik":
+a bérlő teendői közt ott áll, hogy közeleg a fizetési határidő, és ha nincs
+kártya, nincs is hol rögzíteni, amire a teendő szólítja.
+
 Ami ezen felül beérkezik, de nincs hozzá előírás, azt nem tippeljük meg: külön
 listán megy a bérbeadóhoz. **És ugyanez áll a bérlő oldalára is.** Korábban csak
 a bérbeadó párosítatlan beérkezése kapott sort: egy elgépelt dátummal rögzített
