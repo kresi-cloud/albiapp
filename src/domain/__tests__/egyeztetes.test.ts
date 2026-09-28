@@ -513,3 +513,91 @@ describe("egyeztet — a bemenet sorrendje nem számít", () => {
     expect(masik.map((sor) => sor.eloirtTetelId)).toEqual(egyik.map((sor) => sor.eloirtTetelId));
   });
 });
+
+describe("az ablak széle nem szakítja szét a két oldalt", () => {
+  // Két hónap előírása, alapértelmezett ±3 napos ablakkal. A bérlő 24-én
+  // indította, a bérbeadó 27-én vette észre: külön párosítva a bérlőé
+  // szeptemberhez, a bérbeadóé októberhez került, és lett két „várakozik" sor,
+  // teendővel mindkét félnél — holott a két fél ugyanazt mondja.
+  const szeptember = eloiras({
+    id: "szept",
+    idoszak: "2026-09",
+    esedekesseg: new Date(Date.UTC(2026, 8, 5)),
+  });
+  const oktober = eloiras({
+    id: "okt",
+    idoszak: "2026-10",
+    esedekesseg: new Date(Date.UTC(2026, 9, 5)),
+  });
+
+  // A bérlő 24-én indította, a bérbeadó 27-én vette észre. A 24. még kívül
+  // esik az októberi előírás ablakán (–10 nap), tehát a bérlőé szeptemberhez
+  // kötődik; a 27. már benne van, és októberhez esik közelebb.
+  const berloiOldal = berloi({
+    id: "berloi-indit",
+    utalasDatuma: new Date(Date.UTC(2026, 8, 24)),
+  });
+  const berbeadoiOldal = berbeadoi({
+    id: "berbeadoi-eszrevesz",
+    erkezesDatuma: new Date(Date.UTC(2026, 8, 27)),
+  });
+  const AKKOR = new Date(Date.UTC(2026, 9, 10));
+
+  it("ugyanahhoz az előíráshoz kerül a két fél nyilatkozata", () => {
+    const sorok = egyeztet([szeptember, oktober], [berloiOldal], [berbeadoiOldal], AKKOR);
+    const parositott = sorok.filter((sor) => sor.berbeadoiIgazolasId !== null);
+    expect(parositott).toHaveLength(1);
+    expect(parositott[0].berloiIgazolasId).toBe("berloi-indit");
+    expect(parositott[0].allapot).toBe("egyezik");
+  });
+
+  it("nem marad két várakozó sor abból, amiben a felek egyetértenek", () => {
+    const sorok = egyeztet([szeptember, oktober], [berloiOldal], [berbeadoiOldal], AKKOR);
+    expect(sorok.filter((sor) => sor.allapot === "varakozik")).toEqual([]);
+  });
+
+  it("a bemenet sorrendje nem számít", () => {
+    const egyik = egyeztet([szeptember, oktober], [berloiOldal], [berbeadoiOldal], AKKOR);
+    const masik = egyeztet([oktober, szeptember], [berloiOldal], [berbeadoiOldal], AKKOR);
+    expect(masik.map((sor) => [sor.eloirtTetelId, sor.allapot])).toEqual(
+      egyik.map((sor) => [sor.eloirtTetelId, sor.allapot]),
+    );
+  });
+});
+
+describe("a párosítatlan bérlői utalás sem vész el", () => {
+  it("külön sort kap, ahogy a bérbeadó párosítatlan beérkezése is", () => {
+    // 26 nappal az esedékesség után rögzített utalás: az ablakon kívül van,
+    // tehát egyik előíráshoz sem köthető. Eddig nem volt hozzá sor: a bérlő
+    // nem tudta visszavonni, a bérbeadó nem tudta, hogy keresnie kell.
+    const sorok = egyeztet(
+      [eloiras()],
+      [berloi({ id: "keso", utalasDatuma: new Date(Date.UTC(2026, 9, 1)) })],
+      [],
+      new Date(Date.UTC(2026, 9, 5)),
+    );
+
+    const sajat = sorok.filter((sor) => sor.berloiIgazolasId === "keso");
+    expect(sajat).toHaveLength(1);
+    expect(sajat[0].eloirtTetelId).toBeNull();
+    expect(sajat[0].elteresOka).toBe("nincs_eloiras");
+    expect(sajat[0].magyarazat.kulcs).toBe("egyeztetes.nincs_eloiras_berloi");
+  });
+
+  it("a párosított bérlői utalás nem kap külön sort", () => {
+    const sorok = egyeztet([eloiras()], [berloi()], [], MA);
+    expect(sorok.filter((sor) => sor.eloirtTetelId === null)).toEqual([]);
+  });
+
+  it("a sor a bérbeadóra vár, a bérlőre nem: ő már nyilatkozott", () => {
+    const sorok = egyeztet(
+      [eloiras()],
+      [berloi({ id: "keso", utalasDatuma: new Date(Date.UTC(2026, 9, 1)) })],
+      [],
+      new Date(Date.UTC(2026, 9, 5)),
+    );
+    const sajat = sorok.find((sor) => sor.berloiIgazolasId === "keso");
+    expect(varRank(sajat!, "berbeado")).toBe(true);
+    expect(varRank(sajat!, "berlo")).toBe(false);
+  });
+});

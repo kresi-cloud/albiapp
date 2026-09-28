@@ -284,4 +284,55 @@ export async function futtat(oldal) {
     await berloiKesz.getByText("Törlöm").first().click();
     await oldal.waitForLoadState("networkidle");
   }
+
+  // --- Az ablakon kívül rögzített utalás sem vész el
+  //
+  // Elgépelt dátummal (2020) egyetlen előírás ablakába sem esik bele. Eddig
+  // nem lett belőle sor sehol: a bérlő nem tudta visszavonni, a bérbeadó nem
+  // tudta, hogy keresnie kell, a tétel meg „hiányzik" maradt. A sor
+  // azonosítója a jelzőkből jön: előírás nélkül az időszak üres, az előírt
+  // összeg pedig nulla.
+  await oldal.goto(`${ALAP}/berlo`);
+  await mindetKinyit(oldal);
+  const nyitoGomb = oldal.getByText("Elutaltam, rögzítem").first();
+  await nyitoGomb.click();
+  const urlap = oldal.locator('form:has(input[name="utalasDatuma"])').first();
+  await urlap.locator('input[name="utalasDatuma"]').fill("2020-01-10");
+  await urlap.locator('input[name="osszegFt"]').fill("12345");
+  await urlap.getByRole("button", { name: "Rögzítem" }).click();
+
+  await oldal.goto(`${ALAP}/berlo`);
+  await mindetKinyit(oldal);
+  const arva = oldal.locator('li[data-idoszak=""][data-osszeg="0"]').first();
+  await arva.waitFor({ timeout: 15000 });
+  all((await arva.count()) > 0, "az ablakon kívüli utalás megjelenik a bérlőnél");
+  all(
+    (await arva.getByText("12 345 Ft").count()) > 0,
+    "a saját összegét mutatja, nem nulla forintot",
+  );
+  all(
+    (await arva.getByText("Ezt elgépeltem").count()) > 0,
+    "és vissza is vonható: nem ragad benn",
+  );
+
+  await belep(oldal, "berbeado@pelda.hu");
+  await magyarra(oldal);
+  await oldal.goto(`${ALAP}/befizetesek`);
+  await mindetKinyit(oldal);
+  all(
+    (await oldal.getByText(/A bérlő utalása, amihez nem tartozik előírt tétel/).count()) > 0,
+    "a bérbeadó is látja, hogy van egy besorolatlan bérlői utalás",
+  );
+
+  // A próba elpakol: a bérlő visszavonja.
+  await belep(oldal, "anna@pelda.hu");
+  await magyarra(oldal);
+  await oldal.goto(`${ALAP}/berlo`);
+  await mindetKinyit(oldal);
+  await oldal
+    .locator('li[data-idoszak=""][data-osszeg="0"]')
+    .first()
+    .getByText("Ezt elgépeltem")
+    .click();
+  await oldal.waitForLoadState("networkidle");
 }

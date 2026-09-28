@@ -204,9 +204,24 @@ function parosit<T extends { id: string; osszegFt: number }>(
   tetelek: T[],
   datumot: (tetel: T) => Date,
   beallitasok: EgyeztetesBeallitasok,
+  rogzitett: Map<string, T> = new Map(),
 ): Map<string, Jelolt<T>> {
   const parok = new Map<string, Jelolt<T>>();
   const felhasznalt = new Set<string>();
+
+  // Ami már eldőlt, azt nem az ablak köti: a hívó mondta meg, melyik
+  // előíráshoz tartozik. Az ablakon a rögzített pár akkor is átmegy, ha
+  // kilógna belőle — épp ez a lényege.
+  for (const eloiras of eloirasok) {
+    const tetel = rogzitett.get(eloiras.id);
+    if (!tetel) continue;
+    parok.set(eloiras.id, {
+      tetel,
+      tavolsag: napKulonbseg(eloiras.esedekesseg, datumot(tetel)),
+      osszegElteres: tetel.osszegFt - eloiras.osszegFt,
+    });
+    felhasznalt.add(tetel.id);
+  }
 
   const jeloltek = (eloiras: EloirtTetel, csakPontos: boolean): Jelolt<T>[] =>
     tetelek
@@ -297,15 +312,43 @@ export function egyeztet(
     (tetel) => tetel.erkezesDatuma,
     beallitasok,
   );
+  // A bérlői oldal ahhoz az előíráshoz kötődik, amelyikhez a vele egyező
+  // bérbeadói nyilatkozat került.
+  //
+  // Enélkül a két oldal külön párosít, és az ablak szélén ugyanaz az utalás két
+  // különböző előírásra kerülhet: a bérlő 24-én indította, a bérbeadó 27-én
+  // vette észre, és a három nap két hónap közé esik. Ebből két „várakozik" sor
+  // lett és teendő mindkét félnél — pedig a két fél ugyanazt mondja, és a
+  // `ketOldalEgyezik` ezt ki is mondja. A tűrés csak az összevetésnél számított,
+  // a párosításnál nem; most ott is.
+  const berloiRogzitett = new Map<string, BerloiIgazolas>();
+  const berloiLekotve = new Set<string>();
+  for (const eloiras of sorrendben) {
+    const berbeadoi = berbeadoiParok.get(eloiras.id);
+    if (!berbeadoi) continue;
+    // Több egyező jelölt közül a legközelebbi, holtversenynél az azonosító
+    // dönt: a bemenet sorrendje Postgresen nem garantált.
+    const tavolsag = (berloi: BerloiIgazolas) =>
+      Math.abs(napKulonbseg(berloi.utalasDatuma, berbeadoi.tetel.erkezesDatuma));
+    const [parja] = berloiIgazolasok
+      .filter((berloi) => !berloiLekotve.has(berloi.id) && ketOldalEgyezik(berloi, berbeadoi.tetel))
+      .sort((a, b) => tavolsag(a) - tavolsag(b) || (a.id < b.id ? -1 : 1));
+    if (!parja) continue;
+    berloiRogzitett.set(eloiras.id, parja);
+    berloiLekotve.add(parja.id);
+  }
+
   const berloiParok = parosit(
     sorrendben,
     berloiIgazolasok,
     (tetel) => tetel.utalasDatuma,
     beallitasok,
+    berloiRogzitett,
   );
   const felhasznaltBerbeadoi = new Set(
     [...berbeadoiParok.values()].map((jelolt) => jelolt.tetel.id),
   );
+  const felhasznaltBerloi = new Set([...berloiParok.values()].map((jelolt) => jelolt.tetel.id));
 
   for (const eloiras of sorrendben) {
     const berbeadoiJelolt = berbeadoiParok.get(eloiras.id) ?? null;
@@ -441,6 +484,27 @@ export function egyeztet(
       keses: 0,
       bizonylatKell: false,
       magyarazat: uzenet("egyeztetes.nincs_eloiras"),
+    });
+  }
+
+  // És ugyanez a bérlő oldalán. Eddig csak a bérbeadó párosítatlan
+  // beérkezéseinek volt sora: egy ablakon kívül — mondjuk 26 nappal később —
+  // rögzített bérlői utalás sehol nem látszott, a bérlő nem tudta visszavonni,
+  // a bérbeadó nem tudta, hogy keresnie kell, a tétel pedig „hiányzik"
+  // maradt, teendővel mindkét félnél. Ez pont az az elv sérült meg, hogy a
+  // három adat közül egyik sem vész el.
+  for (const igazolas of berloiIgazolasok) {
+    if (felhasznaltBerloi.has(igazolas.id)) continue;
+    eredmeny.push({
+      eloirtTetelId: null,
+      berloiIgazolasId: igazolas.id,
+      berbeadoiIgazolasId: null,
+      allapot: "elter",
+      elteresOka: "nincs_eloiras",
+      elteresFt: igazolas.osszegFt,
+      keses: 0,
+      bizonylatKell: false,
+      magyarazat: uzenet("egyeztetes.nincs_eloiras_berloi"),
     });
   }
 

@@ -98,8 +98,22 @@ egyeztetés indul. A két fél dátuma közt viszont van tűrés
 (`KET_OLDAL_NAP_ELTERES`), mert a bérlő az indítás napját írja, a bérbeadó azt,
 amikor észrevette.
 
+**Ez a tűrés a párosításnál is számít, nem csak az összevetésnél.** A két oldal
+külön keresi meg a maga előírását, és az ablak szélén ugyanaz az utalás két
+különböző hónaphoz kerülhetett: a bérlő 24-én indította, ami az októberi előírás
+ablakán még kívül esik, a bérbeadó 27-én vette észre, ami már belül. Ebből két
+„várakozik" sor lett és teendő mindkét félnél, holott a felek ugyanazt mondják.
+Ezért a bérbeadói oldal párosítása után a vele egyező bérlői nyilatkozat
+**ugyanahhoz az előíráshoz kötődik**, az ablaktól függetlenül — az ablak arra
+való, hogy megtalálja a párját, nem arra, hogy szétvágja.
+
 Ami ezen felül beérkezik, de nincs hozzá előírás, azt nem tippeljük meg: külön
-listán megy a bérbeadóhoz.
+listán megy a bérbeadóhoz. **És ugyanez áll a bérlő oldalára is.** Korábban csak
+a bérbeadó párosítatlan beérkezése kapott sort: egy elgépelt dátummal rögzített
+bérlői utalás sehol nem jelent meg, tehát a bérlő nem tudta visszavonni, a
+bérbeadó nem tudta, hogy keresnie kell, az előírás pedig „hiányzik" maradt,
+teendővel mindkét félnél. Egy adat, amit csak eltárolunk, de sehol nem mutatunk
+meg, rosszabb, mint ha el sem fogadtuk volna.
 
 ## A havi előírások alapelve
 
