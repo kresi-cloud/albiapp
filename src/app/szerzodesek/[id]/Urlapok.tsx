@@ -4,6 +4,9 @@ import { useActionState } from "react";
 import { Mezo, Szovegdoboz, Valaszto } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import {
+  alairtatFeltolt,
+  alairtatRogziti,
+  alairtatTorolAction,
   modultValt,
   parametereketMenti,
   szakasztMenti,
@@ -12,7 +15,7 @@ import {
   zaradekotKeszit,
   type Eredmeny,
 } from "../actions";
-import { MEZO, GOMB, APRO_GOMB, SUGOSZOVEG } from "@/components/urlap";
+import { MEZO, GOMB, APRO_GOMB, FAJLMEZO, SUGOSZOVEG, VISSZAVONO_GOMB } from "@/components/urlap";
 import { NYITO } from "@/components/ui/alap";
 
 const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
@@ -277,6 +280,139 @@ export function SzakaszUrlap({
         <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
       </form>
     </details>
+  );
+}
+
+export type AlairtCimkek = {
+  mezo: string;
+  mezoSugo: string;
+  feltoltes: string;
+  csere: string;
+  feltoltom: string;
+  letoltes: string;
+  adatok: string;
+  rogzitveJelzes: string;
+  rogzitesSugo: string;
+  nyugtazas: string;
+  rogzites: string;
+  rogzitem: string;
+  torles: string;
+  torlom: string;
+  nincsMeg: string;
+};
+
+/**
+ * Az aláírt szerződés példánya: feltöltés, letöltés, levétel és rögzítés.
+ *
+ * Négy külön űrlap, mert négy külön döntés — és a rögzítés nem visszavonható,
+ * tehát nem is kerülhet ugyanarra a gombra a feltöltéssel.
+ */
+export function AlairtUrlap({
+  szerzodesId,
+  megvan,
+  rogzitve,
+  cimkek,
+}: {
+  szerzodesId: string;
+  megvan: boolean;
+  rogzitve: boolean;
+  cimkek: AlairtCimkek;
+}) {
+  const [feltoltes, feltoltesKuldes, feltoltesFut] = useActionState(alairtatFeltolt, KEZDETI);
+  const [torles, torlesKuldes, torlesFut] = useActionState(alairtatTorolAction, KEZDETI);
+  const [rogzites, rogzitesKuldes, rogzitesFut] = useActionState(alairtatRogziti, KEZDETI);
+
+  return (
+    <div className="grid gap-3">
+      {megvan ? (
+        <>
+          <a
+            href={`/szerzodesek/${szerzodesId}/alairt`}
+            className="text-sm underline underline-offset-2"
+          >
+            {cimkek.letoltes}
+          </a>
+          <p className={SUGOSZOVEG}>{cimkek.adatok}</p>
+        </>
+      ) : (
+        <p className={SUGOSZOVEG}>{cimkek.nincsMeg}</p>
+      )}
+
+      {rogzitve ? (
+        <p className="rounded border border-rendben-keret bg-rendben-lap p-3 text-sm text-rendben">
+          {cimkek.rogzitveJelzes}
+        </p>
+      ) : (
+        <>
+          <form action={feltoltesKuldes} className="grid gap-2">
+            <input type="hidden" name="szerzodesId" value={szerzodesId} />
+            <label className="grid gap-1 text-sm">
+              <span className="font-medium">{cimkek.mezo}</span>
+              {/* Fájlmező nem megy át a megőrzőn: azt a böngésző nem engedi
+                  programból kitölteni. */}
+              <input type="file" name="alairt" required className={FAJLMEZO} />
+              <span className={SUGOSZOVEG}>{cimkek.mezoSugo}</span>
+            </label>
+            <button type="submit" disabled={feltoltesFut} className={GOMB}>
+              {feltoltesFut ? cimkek.feltoltom : megvan ? cimkek.csere : cimkek.feltoltes}
+            </button>
+            <Uzenetsav
+              allapot={feltoltes.allapot}
+              uzenet={feltoltes.uzenet}
+              hibak={feltoltes.hibak}
+            />
+          </form>
+
+          {megvan ? (
+            <>
+              {/*
+                A rögzítés végleges, ezért nyugtázáshoz kötjük, ugyanúgy, mint a
+                véglegesítést: egy elkattintott gomb különben a rossz fájlt
+                betonozná be.
+              */}
+              <form
+                action={rogzitesKuldes}
+                className="grid gap-2 border-t border-keret pt-3"
+                data-szakasz="alairt-rogzites"
+              >
+                <input type="hidden" name="szerzodesId" value={szerzodesId} />
+                <p className={SUGOSZOVEG}>{cimkek.rogzitesSugo}</p>
+                <label className="flex items-start gap-2 rounded border border-keret-eros p-3 text-sm">
+                  <input
+                    type="checkbox"
+                    name="nyugtazas"
+                    value="igen"
+                    required
+                    className="mt-0.5"
+                  />
+                  <span>{cimkek.nyugtazas}</span>
+                </label>
+                <button type="submit" disabled={rogzitesFut} className={APRO_GOMB}>
+                  {rogzitesFut ? cimkek.rogzitem : cimkek.rogzites}
+                </button>
+                <Uzenetsav
+                  allapot={rogzites.allapot}
+                  uzenet={rogzites.uzenet}
+                  hibak={rogzites.hibak}
+                />
+              </form>
+
+              <form action={torlesKuldes} className="grid gap-2">
+                <input type="hidden" name="szerzodesId" value={szerzodesId} />
+                <button type="submit" disabled={torlesFut} className={VISSZAVONO_GOMB}>
+                  {torlesFut ? cimkek.torlom : cimkek.torles}
+                </button>
+                <Uzenetsav
+                  allapot={torles.allapot}
+                  uzenet={torles.uzenet}
+                  hibak={torles.hibak}
+                />
+              </form>
+            </>
+          ) : null}
+        </>
+      )}
+    </div>
   );
 }
 

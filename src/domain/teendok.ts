@@ -249,3 +249,42 @@ export function kozelgoBefizetesTeendok(
       hivatkozas: `/berlo?jogviszony=${tetel.jogviszonyId}`,
     }));
 }
+
+/**
+ * Nyilatkozat a kétnyelvű szerződéspéldányról.
+ *
+ * Származtatott: eltűnik, amint az illető válaszolt — vagy amint a kérdés
+ * eldőlt, mert valaki kifogást emelt, illetve mert a szerződés véglegesült. A
+ * teendő nélkül a kérdés csak azon a lapon látszana, ahová senki nem megy be
+ * magától, és a kétnyelvű példány azon bukna el, hogy valaki nem tud róla.
+ *
+ * A hivatkozás címzettenként más, mert a két fél más lapon látja ugyanazt a
+ * kérdést: a bérbeadó a szerződés lapján, a bérlő a dokumentumtárában.
+ */
+export function ketnyelvuTeendok(
+  kerdesek: {
+    szerzodesId: string;
+    ingatlan: string;
+    cimzett: "berbeado" | "berlo";
+    /** Igaz, ha ez a fél még nem nyilatkozott, és a kérdés még nyitott. */
+    nyilatkoznia_kell: boolean;
+  }[],
+  ma: Date,
+): Teendo[] {
+  return kerdesek
+    .filter((kerdes) => kerdes.nyilatkoznia_kell)
+    .map((kerdes) => ({
+      kulcs: `ketnyelvu:${kerdes.szerzodesId}:${kerdes.cimzett}`,
+      cimzett: kerdes.cimzett,
+      tipus: "ketnyelvu",
+      cim: uzenet("ketnyelvu.teendo.cim"),
+      leiras: uzenet("ketnyelvu.teendo.leiras", { ingatlan: kerdes.ingatlan }),
+      // Nincs valódi határideje: a véglegesítésig bármikor megválaszolható. Ma
+      // esedékes, hogy látszódjon, de ne legyen lejárt.
+      esedekesseg: ma,
+      hivatkozas:
+        kerdes.cimzett === "berbeado"
+          ? `/szerzodesek/${kerdes.szerzodesId}`
+          : "/berlo/dokumentumok",
+    }));
+}

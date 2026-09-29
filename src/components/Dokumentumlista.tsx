@@ -65,12 +65,36 @@ export function Dokumentumlista({
                       {sz("dokumentum.lista.letoltom")}
                     </a>
                   ) : null}
+                  {sor.nyomtatas ? (
+                    <Link
+                      href={sor.nyomtatas}
+                      className="text-kiemelt underline underline-offset-2"
+                    >
+                      {sz("dokumentum.lista.nyomtatom")}
+                    </Link>
+                  ) : null}
                   {sor.forditasLetoltes ? (
                     <a
                       href={sor.forditasLetoltes}
                       className="text-kiemelt underline underline-offset-2"
                     >
                       {sz("dokumentum.lista.forditas")}
+                    </a>
+                  ) : null}
+                  {sor.ketnyelvuLetoltes ? (
+                    <a
+                      href={sor.ketnyelvuLetoltes}
+                      className="text-kiemelt underline underline-offset-2"
+                    >
+                      {sz("dokumentum.lista.ketnyelvu")}
+                    </a>
+                  ) : null}
+                  {sor.alairtLetoltes ? (
+                    <a
+                      href={sor.alairtLetoltes}
+                      className="text-kiemelt underline underline-offset-2"
+                    >
+                      {sz("dokumentum.lista.alairt")}
                     </a>
                   ) : null}
                   <span className="text-nagyon-halvany">

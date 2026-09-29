@@ -30,10 +30,12 @@ import {
   hianyzoAdatokTeendoi,
   kozelgoBefizetesTeendok,
   surgosseg,
+  ketnyelvuTeendok,
   teendoketRendez,
   type Teendo,
   type TeendoSurgosseggel,
 } from "@/domain/teendok";
+import { berbeadoKetnyelvuKerdesei, berloKetnyelvuKerdesei } from "@/lib/ketnyelvu";
 
 export type JogviszonyNezet = {
   id: string;
@@ -289,6 +291,33 @@ async function kozelgok(
   );
 }
 
+/**
+ * A kétnyelvű példány nyitott kérdései egy félnek. Csak az számít, amire ő
+ * maga még nem válaszolt, és csak amíg a kérdés nyitott: egy kifogás után nincs
+ * mit eldönteni, a véglegesítés után pedig a példány már befagyott.
+ */
+async function ketnyelvuKerdesek(
+  felhasznaloId: string,
+  cimzett: "berbeado" | "berlo",
+  ma: Date,
+) {
+  const nezetek =
+    cimzett === "berbeado"
+      ? await berbeadoKetnyelvuKerdesei(felhasznaloId)
+      : await berloKetnyelvuKerdesei(felhasznaloId);
+
+  return ketnyelvuTeendok(
+    nezetek.map((nezet) => ({
+      szerzodesId: nezet.szerzodesId,
+      ingatlan: nezet.ingatlan,
+      cimzett,
+      nyilatkoznia_kell:
+        nezet.tervezet && nezet.allapot === "varakozik" && nezet.sajatNyilatkozat === null,
+    })),
+    ma,
+  );
+}
+
 export async function teendok(
   tulajdonosId: string,
   cimzett: "berbeado" | "berlo",
@@ -309,6 +338,7 @@ export async function teendok(
         "berbeado",
         ma,
       ),
+      ...(await ketnyelvuKerdesek(tulajdonosId, "berbeado", ma)),
       ...(cimzett === "berbeado" ? await tarolt(tulajdonosId, "berbeado") : []),
     ]
       .filter((teendo) => teendo.cimzett === cimzett)
@@ -331,6 +361,7 @@ export async function berloTeendoi(
       ...latogatasokbolTeendok(await nyitottLatogatasok(jogviszonyIdk, ma), ma, berloId),
       ...hianyzoAdatokTeendoi(await berloiAdathianyok(berloId), ma),
       ...ertekelesTeendoi(await ertekelesTeendoAdatai(berloId, "berlo", ma), "berlo", ma),
+      ...(await ketnyelvuKerdesek(berloId, "berlo", ma)),
       ...(await tarolt(berloId, "berlo")),
     ]
       .filter((teendo) => teendo.cimzett === "berlo")

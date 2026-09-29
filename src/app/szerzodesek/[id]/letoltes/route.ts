@@ -1,5 +1,6 @@
-import { okiratSzovege } from "@/domain/szerzodes-keszites";
-import { berloiIratSzovege } from "@/lib/dokumentumtar";
+import { ketnyelvuSzovege, okiratSzovege } from "@/domain/szerzodes-keszites";
+import { berloiIratSzovege, berloiKetnyelvu } from "@/lib/dokumentumtar";
+import { allapota as ketnyelvuAllapota } from "@/domain/szerzodes-ketnyelvu";
 import { belepettFelhasznalo } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { szerzodesBemenet } from "@/lib/szerzodes";
@@ -13,6 +14,32 @@ function valasz(szoveg: string, fajlnev: string): Response {
       "Content-Disposition": `attachment; filename="${fajlnev}.txt"`,
     },
   });
+}
+
+/**
+ * A kétnyelvű példány szövege.
+ *
+ * Véglegesítésnél a befagyasztott példány jön, tervezetnél a mostani
+ * modulokból építve — ugyanaz a szabály, mint a magyarnál és a fordításnál. A
+ * bérlő viszont csak a véglegesítettet kapja meg: a tervezet még változhat.
+ */
+async function ketnyelvuLetoltes(
+  id: string,
+  felhasznalo: { id: string; szerep: string },
+): Promise<string | null> {
+  if (felhasznalo.szerep === "berlo") {
+    const irat = await berloiKetnyelvu(id, felhasznalo.id);
+    return irat;
+  }
+  const betoltott = await szerzodesBemenet(id, felhasznalo.id);
+  if (!betoltott) return null;
+  if (betoltott.allapot === "veglegesitve") return betoltott.veglegesSzovegKet;
+  return ketnyelvuAllapota(
+    betoltott.nyelvKerdezettek.map((fel) => fel.id),
+    betoltott.nyelvNyilatkozatok,
+  ) === "tamogatott"
+    ? ketnyelvuSzovege(betoltott.bemenet)
+    : null;
 }
 
 /**
@@ -33,7 +60,17 @@ export async function GET(
   // A fordítást külön kérni kell. Nem a felület nyelvéből következik: a magyar
   // bérbeadó is le akarja tölteni az angolt a külföldi bérlőjének, a magyarul
   // olvasó bérlő pedig attól még a magyar példányt kapja.
-  const angol = new URL(keres.url).searchParams.get("nyelv") === "en";
+  const kertNyelv = new URL(keres.url).searchParams.get("nyelv");
+  const angol = kertNyelv === "en";
+  // A kétnyelvű példány csak akkor van, ha a felek mindegyike támogatta: egy
+  // üres letöltés azt ígérné, hogy minden szerződéshez jár ilyen.
+  const ketnyelvu = kertNyelv === "ket";
+
+  if (ketnyelvu) {
+    const szoveg = await ketnyelvuLetoltes(id, felhasznalo);
+    if (!szoveg) return new Response(sz("letoltes.nincs_ketnyelvu"), { status: 404 });
+    return valasz(szoveg, "berleti-szerzodes-ketnyelvu");
+  }
 
   if (felhasznalo.szerep === "berlo") {
     const irat = await berloiIratSzovege("szerzodes", id, felhasznalo.id, angol ? "en" : "hu");

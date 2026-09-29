@@ -20,8 +20,18 @@ async function azonositok() {
   const kliens = new pg.Client({ connectionString: process.env.DATABASE_URL });
   await kliens.connect();
   try {
-    const elszamolas = await kliens.query('select id from "Elszamolas" limit 1');
-    const szerzodes = await kliens.query('select id from "Szerzodes" limit 1');
+    // Rendezés és szűrés nélkül a `limit 1` abból választ, amit a Postgres
+    // épp elöl ad, és nálunk a holtverseny a rendes eset: amióta a próbasor
+    // maga is véglegesít szerződést, ez a sor egy kiadott okiratot is
+    // eltalálhatott — amit a bérlő jogosan letölt, tehát a próba a saját
+    // bemenetén bukott el, nem a terméken. Azt kérjük, amit mérünk: kiadott
+    // elszámolást és szerződéstervezetet, rögzített sorrendben.
+    const elszamolas = await kliens.query(
+      `select id from "Elszamolas" where allapot <> 'tervezet' order by id limit 1`,
+    );
+    const szerzodes = await kliens.query(
+      `select id from "Szerzodes" where allapot = 'tervezet' order by id limit 1`,
+    );
     return { elszamolas: elszamolas.rows[0], szerzodes: szerzodes.rows[0] };
   } finally {
     await kliens.end();
@@ -30,6 +40,12 @@ async function azonositok() {
 
 export async function futtat(oldal) {
   const { elszamolas, szerzodes } = await azonositok();
+  // Önpróba: ha a bemenet hiányzik, azt mondjuk ki, ne egy olvashatatlan
+  // hibával szálljunk el húsz sorral lejjebb.
+  all(
+    Boolean(elszamolas?.id && szerzodes?.id),
+    "a példaadatban van kiadott elszámolás és szerződéstervezet",
+  );
 
   await belep(oldal, "anna@pelda.hu");
   const keres = oldal.context().request;

@@ -3,16 +3,23 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { kotelezoSzerep } from "@/lib/munkamenet";
+import { belepettFelhasznalo, kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { szerzodesBemenet } from "@/lib/szerzodes";
+import { alairtatMent, alairtatRogzit, alairtatTorol } from "@/lib/alairt";
+import { alairtatEllenoriz, tipusATartalombol } from "@/domain/alairt";
 import {
   ajanlottModulok,
   bekezdesekre,
   hianyzoAdatok,
+  ketnyelvuSzovege,
   modultKeres,
   okiratSzovege,
 } from "@/domain/szerzodes-keszites";
+import {
+  allapota as ketnyelvuAllapota,
+  nyilatkozatotEllenoriz,
+} from "@/domain/szerzodes-ketnyelvu";
 
 export type Eredmeny = {
   allapot: "ures" | "kesz" | "hiba";
@@ -274,6 +281,69 @@ export async function szakasztMenti(_elozo: Eredmeny, urlap: FormData): Promise<
 }
 
 /**
+ * Nyilatkozat a kétnyelvű példányról.
+ *
+ * Az okirat közös, és a másik fél nyelve nem a mi döntésünk: a kétnyelvű
+ * példány csak akkor készül el, ha a bérbeadói és a bérlői oldal minden
+ * fiókkal rendelkező tagja támogatja. Egy kifogás egymagában dönt, és a
+ * kifogás indoklás nélkül nincs — ugyanaz a kétoldali elv, mint az
+ * előfizetésnél és a fényképnél.
+ *
+ * Mindkét szerep nyilatkozik, ezért itt nem `kotelezoSzerep` áll: a
+ * jogosultság a jogviszonyból jön, nem az űrlapból.
+ *
+ * Csak tervezetre megy. A véglegesített szöveg be van fagyasztva, tehát egy
+ * későbbi nyilatkozat már nem tudna kétnyelvű példányt csinálni belőle — és
+ * a döntésnek amúgy is az aláírás előtt van értelme.
+ */
+export async function ketnyelvurolNyilatkozik(
+  _elozo: Eredmeny,
+  urlap: FormData,
+): Promise<Eredmeny> {
+  const felhasznalo = await belepettFelhasznalo();
+  const { sz, u } = await szovegek();
+  if (!felhasznalo) return hiba(sz("valasz.nincs_jogosultsag"));
+
+  const szerzodesId = szoveg(urlap.get("szerzodesId"));
+  const tamogatja = szoveg(urlap.get("tamogatja")) === "igen";
+  const indoklas = szoveg(urlap.get("indoklas"));
+
+  const baj = nyilatkozatotEllenoriz(tamogatja, indoklas);
+  if (baj) return hiba(u(baj), [], "indoklas");
+
+  const szerzodes = await prisma.szerzodes.findFirst({
+    where: {
+      id: szerzodesId,
+      OR: [
+        { jogviszony: { ingatlan: { tulajdonosId: felhasznalo.id } } },
+        { jogviszony: { berlok: { some: { berloId: felhasznalo.id } } } },
+      ],
+    },
+    select: { id: true, allapot: true },
+  });
+  if (!szerzodes) return hiba(sz("szerzodes.hiba.nem_tied"));
+  if (szerzodes.allapot !== "tervezet") return hiba(sz("ketnyelvu.hiba.mar_vegleges"));
+
+  const adat = { tamogatja, indoklas: tamogatja ? "" : indoklas, nyilatkozva: new Date() };
+  await prisma.szerzodesNyelvNyilatkozat.upsert({
+    where: {
+      szerzodesId_felhasznaloId: { szerzodesId, felhasznaloId: felhasznalo.id },
+    },
+    create: { szerzodesId, felhasznaloId: felhasznalo.id, ...adat },
+    update: adat,
+  });
+
+  revalidatePath(`/szerzodesek/${szerzodesId}`);
+  revalidatePath("/berlo/dokumentumok");
+  revalidatePath("/dokumentumok");
+  return {
+    allapot: "kesz",
+    uzenet: sz(tamogatja ? "ketnyelvu.kesz.tamogatom" : "ketnyelvu.kesz.kifogas"),
+    hibak: [],
+  };
+}
+
+/**
  * Véglegesítés: a szöveget befagyasztjuk. Ami hiányzik, azt itt még jelezzük,
  * de nem tiltjuk: a bérbeadó tudja, hogy papíron kitölti-e.
  */
@@ -307,6 +377,17 @@ export async function szerzodestVeglegesit(_elozo: Eredmeny, urlap: FormData): P
       // közben változhatna, és a fordítás már nem azt mondaná, amit a mellette
       // álló magyar szöveg.
       veglegesSzovegEn: okiratSzovege(betoltott.bemenet, "en"),
+      // A kétnyelvű példány csak akkor készül el, ha mindenki támogatta. A
+      // fordítással együtt fagy be: ha később készülne, a modulkatalógus
+      // közben változhatna, és a kétnyelvű példány már nem azt mondaná, amit
+      // a mellette álló magyar szöveg.
+      veglegesSzovegKet:
+        ketnyelvuAllapota(
+          betoltott.nyelvKerdezettek.map((fel) => fel.id),
+          betoltott.nyelvNyilatkozatok,
+        ) === "tamogatott"
+          ? ketnyelvuSzovege(betoltott.bemenet)
+          : null,
       veglegesitve: new Date(),
     },
   });
@@ -318,6 +399,83 @@ export async function szerzodestVeglegesit(_elozo: Eredmeny, urlap: FormData): P
     uzenet: sz("szerzodes.kesz.veglegesitve"),
     hibak: [],
   };
+}
+
+/**
+ * Az aláírt szerződés példányának feltöltése vagy cseréje.
+ *
+ * Amit a felek aláírtak, az az okirat: a mi szövegünk csak addig volt az, amíg
+ * nem került rá aláírás. Ezért kell tudni feltölteni, és ezért tölti le a bérlő
+ * is — az okirat az övé is.
+ *
+ * A típust a tartalomból állapítjuk meg, nem a böngésző bemondásából: ezt a
+ * fájlt a másik fél böngészője nyitja meg a mi címünkön.
+ */
+export async function alairtatFeltolt(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, u } = await szovegek();
+  const szerzodesId = szoveg(urlap.get("szerzodesId"));
+
+  const fajl = urlap.get("alairt");
+  if (!(fajl instanceof File)) return hiba(sz("alairt.hiba.ures"), [], "alairt");
+
+  const tartalom = new Uint8Array(await fajl.arrayBuffer());
+  const valodiTipus = tipusATartalombol(tartalom);
+  const baj = alairtatEllenoriz({ tipus: valodiTipus ?? "", meretBajt: fajl.size });
+  if (baj) return hiba(u(baj), [], "alairt");
+
+  const eredmeny = await alairtatMent(berbeado.id, szerzodesId, {
+    tipus: valodiTipus ?? "",
+    tartalom,
+  });
+  if (eredmeny === "nincs_szerzodes") return hiba(sz("szerzodes.hiba.nem_tied"));
+  if (eredmeny === "nem_vegleges") return hiba(sz("alairt.hiba.nem_vegleges"));
+  if (eredmeny === "rogzitve") return hiba(sz("alairt.hiba.rogzitve"));
+
+  revalidatePath(`/szerzodesek/${szerzodesId}`);
+  revalidatePath("/dokumentumok");
+  revalidatePath("/berlo/dokumentumok");
+  return { allapot: "kesz", uzenet: sz("alairt.kesz.feltoltve"), hibak: [] };
+}
+
+/** A feltöltött példány törlése, amíg nincs rögzítve. */
+export async function alairtatTorolAction(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+  const szerzodesId = szoveg(urlap.get("szerzodesId"));
+
+  const eredmeny = await alairtatTorol(berbeado.id, szerzodesId);
+  if (eredmeny === "rogzitve") return hiba(sz("alairt.hiba.rogzitve"));
+  if (eredmeny === "nincs") return hiba(sz("alairt.hiba.nincs"));
+
+  revalidatePath(`/szerzodesek/${szerzodesId}`);
+  revalidatePath("/dokumentumok");
+  revalidatePath("/berlo/dokumentumok");
+  return { allapot: "kesz", uzenet: sz("alairt.kesz.torolve"), hibak: [] };
+}
+
+/**
+ * Rögzítés: a feltöltött példány végleges lesz.
+ *
+ * Ez nem visszavonható, ezért nyugtázáshoz kötjük, ugyanúgy, mint a
+ * véglegesítést. Enélkül egy elkattintott gomb betonozná be a rossz fájlt — és
+ * pont az a lényege, hogy utána már nem cserélhető.
+ */
+export async function alairtatRogziti(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+  const szerzodesId = szoveg(urlap.get("szerzodesId"));
+
+  if (szoveg(urlap.get("nyugtazas")) !== "igen") {
+    return hiba(sz("alairt.hiba.nyugtazas"), [], "nyugtazas");
+  }
+
+  const eredmeny = await alairtatRogzit(berbeado.id, szerzodesId);
+  if (eredmeny === "nincs") return hiba(sz("alairt.hiba.nincs"));
+  if (eredmeny === "mar_rogzitve") return hiba(sz("alairt.hiba.rogzitve"));
+
+  revalidatePath(`/szerzodesek/${szerzodesId}`);
+  return { allapot: "kesz", uzenet: sz("alairt.kesz.rogzitve"), hibak: [] };
 }
 
 /**
@@ -363,9 +521,24 @@ export async function veglegesitestVisszavon(_elozo: Eredmeny, urlap: FormData):
     return hiba(sz("szerzodes.hiba.van_igazolas", { darab: igazolasok }));
   }
 
+  // És nem olvasztjuk vissza azt, amire már feltöltötték az aláírt példányt: a
+  // visszavonás a szöveget a mostani modulokból építené újra, az aláírt fájl
+  // pedig attól még ott maradna mellette — két különböző okirat, egymásnak
+  // feszülve. Aki tévedett, előbb leveszi a feltöltött példányt.
+  const alairt = await prisma.alairtSzerzodes.count({ where: { szerzodesId } });
+  if (alairt > 0) {
+    return hiba(sz("szerzodes.hiba.van_alairt"));
+  }
+
   await prisma.szerzodes.update({
     where: { id: szerzodesId },
-    data: { allapot: "tervezet", veglegesSzoveg: null, veglegesSzovegEn: null, veglegesitve: null },
+    data: {
+      allapot: "tervezet",
+      veglegesSzoveg: null,
+      veglegesSzovegEn: null,
+      veglegesSzovegKet: null,
+      veglegesitve: null,
+    },
   });
 
   revalidatePath(`/szerzodesek/${szerzodesId}`);

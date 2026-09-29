@@ -22,7 +22,12 @@ const BETOLTES = {
     orderBy: [{ sorrend: "asc" }, { id: "asc" }],
     include: { igazolasok: { orderBy: [{ kiallitva: "desc" }, { id: "desc" }] } },
   },
-  szerzodesek: { orderBy: [{ letrehozva: "desc" }, { id: "desc" }] },
+  szerzodesek: {
+    orderBy: [{ letrehozva: "desc" }, { id: "desc" }],
+    // Csak azt kérdezzük meg, van-e aláírt példány; a fájl tartalma több
+    // megabájt, és a listának nincs rá szüksége.
+    include: { alairt: { select: { id: true } } },
+  },
   jegyzokonyvek: { orderBy: [{ idopont: "desc" }, { id: "desc" }] },
   elszamolasok: { orderBy: [{ idoszakVege: "desc" }, { id: "desc" }] },
 } satisfies Prisma.JogviszonyInclude;
@@ -46,6 +51,8 @@ function tarra(jogviszony: Betoltott, sajatBerloId?: string): TarJogviszony {
       veglegesitve: szerzodes.veglegesitve,
       letrehozva: szerzodes.letrehozva,
       vanForditas: szerzodes.veglegesSzovegEn !== null,
+      vanAlairt: szerzodes.alairt !== null,
+      vanKetnyelvu: szerzodes.veglegesSzovegKet !== null,
     })),
     jegyzokonyvek: jogviszony.jegyzokonyvek.map((jegyzokonyv) => ({
       id: jegyzokonyv.id,
@@ -134,6 +141,25 @@ export async function berloiIratSzovege(
   // A fajtát a hívó a fájlnévhez kéri: a szerződés és a záradéka két külön
   // okirat, és két külön néven kell letöltődniük.
   return { szoveg, zaradek: irat.fajta === "zaradek" };
+}
+
+/**
+ * A kétnyelvű példány a bérlőnek. Csak a véglegesítettből: a tervezet még
+ * változhat, és nem az, amit aláírtak.
+ */
+export async function berloiKetnyelvu(
+  szerzodesId: string,
+  berloId: string,
+): Promise<string | null> {
+  const irat = await prisma.szerzodes.findFirst({
+    where: {
+      id: szerzodesId,
+      allapot: "veglegesitve",
+      jogviszony: { berlok: { some: { berloId } } },
+    },
+    select: { veglegesSzovegKet: true },
+  });
+  return irat?.veglegesSzovegKet ?? null;
 }
 
 export type ElszamolasIratAdat = {

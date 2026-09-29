@@ -42,6 +42,21 @@ export type Dokumentum = {
    * hogy minden papírhoz jár angol példány.
    */
   forditasLetoltes?: string;
+  /**
+   * A nyomtatható példány. Csak ott van, ahol van ilyen lap: az okiratot alá
+   * kell írni, tehát papírra kerül, és a PDF-et a nyomtatóablak menti belőle.
+   */
+  nyomtatas?: string;
+  /**
+   * Az aláírt példány letöltése. Csak ott van, ahol fel is töltötték: amit a
+   * felek aláírtak, az az okirat, és a bérlőnek is jár belőle egy példány.
+   */
+  alairtLetoltes?: string;
+  /**
+   * A kétnyelvű példány letöltése. Csak ott van, ahol el is készült: azt a
+   * felek mindegyike támogatta, és nem minden szerződéshez jár.
+   */
+  ketnyelvuLetoltes?: string;
 };
 
 export type TarSzerzodes = {
@@ -52,6 +67,10 @@ export type TarSzerzodes = {
   letrehozva: Date;
   /** Van-e befagyasztott angol fordítás. A szövegét a lista nem olvassa. */
   vanForditas: boolean;
+  /** Van-e feltöltött aláírt példány. A fájlt a lista nem olvassa. */
+  vanAlairt: boolean;
+  /** Van-e befagyasztott kétnyelvű példány. A szövegét a lista nem olvassa. */
+  vanKetnyelvu: boolean;
 };
 
 export type TarJegyzokonyv = {
@@ -106,6 +125,14 @@ export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] 
       allapotCimke: uzenet(vegleges ? "dokumentum.veglegesitve" : "dokumentum.tervezet"),
       megnyitas: `/szerzodesek/${szerzodes.id}`,
       letoltes: `/szerzodesek/${szerzodes.id}/letoltes`,
+      nyomtatas: `/szerzodesek/${szerzodes.id}/nyomtat`,
+      ketnyelvuLetoltes:
+        vegleges && szerzodes.vanKetnyelvu
+          ? `/szerzodesek/${szerzodes.id}/letoltes?nyelv=ket`
+          : undefined,
+      alairtLetoltes: szerzodes.vanAlairt
+        ? `/szerzodesek/${szerzodes.id}/alairt`
+        : undefined,
       forditasLetoltes:
         vegleges && szerzodes.vanForditas
           ? `/szerzodesek/${szerzodes.id}/letoltes?nyelv=en`
