@@ -33,6 +33,11 @@ export type Bemenet = {
   valasztottModulok: string[];
   /** Paraméterkulcs → megadott érték. Ami hiányzik, az alapértelmezés. */
   parameterek: Record<string, string>;
+  /**
+   * Modulkulcs → a bérbeadó saját szövege, ha átírta a szakaszt. Ami itt
+   * nincs benne, az a katalógus szövegével megy, és az a rendes eset.
+   */
+  sajatSzovegek?: Record<string, SajatSzoveg>;
   kelteHelye?: string;
   kelte?: Date | null;
   /**
@@ -49,7 +54,33 @@ export type Szakasz = {
   kulcs: string;
   cim: string;
   bekezdesek: string[];
+  /** Igaz, ha a szakasz szövegét a bérbeadó írta, nem a katalógus adja. */
+  sajat: boolean;
 };
+
+/**
+ * Egy szakasz átírt szövege.
+ *
+ * A `szovegEn` a bérbeadó saját angol változata. Ha nem adott, a magyar áll a
+ * fordításban is: amit ő gépelt be, az az ő adata, és gépi fordítást nem
+ * teszünk a helyére — ugyanaz a szabály, mint a közleménynél és a saját
+ * dátumainál.
+ */
+export type SajatSzoveg = { szoveg: string; szovegEn?: string };
+
+/**
+ * Begépelt szövegből bekezdések.
+ *
+ * Az üres sorokat kidobjuk, mert a szakasz bekezdésekből áll, és egy üres
+ * bekezdés a kész okiratban két üres sor lenne. Az egymás alatti sor külön
+ * bekezdés: a bérbeadó úgy gépeli be, ahogy olvasni fogja.
+ */
+export function bekezdesekre(szoveg: string): string[] {
+  return szoveg
+    .split("\n")
+    .map((sor) => sor.trim())
+    .filter((sor) => sor !== "");
+}
 
 export function modulKulcsok(): string[] {
   return MODULOK.map((modul) => modul.kulcs);
@@ -156,19 +187,43 @@ export function szakaszok(bemenet: Bemenet, nyelv: Nyelv = "hu"): Szakasz[] {
     // szerint"), és ha egy modul angolul más számú bekezdést adna, a két okirat
     // számozása elcsúszna. Így a fordítás ugyanazt a pontot ugyanazon a
     // sorszámon viszi.
-    const magyar = modul.szoveg(magyarKontextus).filter((sor) => sor.trim() !== "");
+    //
+    // Az átírt szakasz is a magyar oldalon dönt: a bérbeadó saját szövege lép
+    // a katalógus szövegének helyébe. A modul címe viszont a katalógusé marad,
+    // hogy a két nyelv fejlécei ugyanazok legyenek — a szakasz szövegét írja
+    // át a bérbeadó, nem a szerződés felépítését.
+    const sajat = bekezdesekre(bemenet.sajatSzovegek?.[modul.kulcs]?.szoveg ?? "");
+    // Az átírt szakasz akkor is bekerül, ha a katalógus szövege üres lenne
+    // (például nincs előfizetés): a bérbeadó kifejezetten beleírt valamit.
+    const magyar =
+      sajat.length > 0
+        ? sajat
+        : modul.szoveg(magyarKontextus).filter((sor) => sor.trim() !== "");
     if (magyar.length === 0) continue;
 
     const angol = nyelv === "en" ? MODULOK_EN[modul.kulcs] : null;
-    const bekezdesek = angol
-      ? angol.szoveg(kontextus).filter((sor) => sor.trim() !== "")
-      : magyar;
+    let bekezdesek: string[];
+    if (nyelv !== "en") {
+      bekezdesek = magyar;
+    } else if (sajat.length > 0) {
+      // Amit a bérbeadó maga gépelt be, azt nem fordítjuk le helyette: a
+      // katalógus angol szövege itt mást mondana, mint a magyar okirat, és a
+      // fordítás pont attól lenne megtévesztő. Ha adott saját angol
+      // változatot, az megy; ha nem, a magyar áll a fordításban is — a
+      // fordítás fejléce amúgy is kimondja, hogy csak tájékoztató, és hogy
+      // eltérés esetén a magyar az irányadó.
+      const sajatAngol = bekezdesekre(bemenet.sajatSzovegek?.[modul.kulcs]?.szovegEn ?? "");
+      bekezdesek = sajatAngol.length > 0 ? sajatAngol : magyar;
+    } else {
+      bekezdesek = angol ? angol.szoveg(kontextus).filter((sor) => sor.trim() !== "") : magyar;
+    }
 
     kesz.push({
       sorszam: kesz.length + 1,
       kulcs: modul.kulcs,
       cim: angol ? angol.cim : modul.cim,
       bekezdesek,
+      sajat: sajat.length > 0,
     });
   }
 

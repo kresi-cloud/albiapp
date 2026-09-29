@@ -16,11 +16,13 @@ import { NYITO } from "@/components/ui/alap";
 import {
   ModulValto,
   ParameterUrlap,
+  SzakaszUrlap,
   VeglegesitesUrlap,
   VisszavonasUrlap,
   ZaradekUrlap,
   type ModulCimkek,
   type ParameterNezet,
+  type SzakaszCimkek,
 } from "./Urlapok";
 
 export const dynamic = "force-dynamic";
@@ -74,6 +76,19 @@ export default async function SzerzodesOldal({
   );
 
   const kesz = szakaszok(bemenet);
+
+  const szakaszCimkek: SzakaszCimkek = {
+    sajatJelzes: sz("szerzodes.szakasz_sajat_jelzes"),
+    alapJelzes: sz("szerzodes.szakasz_alap_jelzes"),
+    mostani: sz("szerzodes.szakasz_mostani"),
+    szoveg: sz("szerzodes.szakasz_szoveg"),
+    szovegSugo: sz("szerzodes.szakasz_szoveg_sugo"),
+    szovegEn: sz("szerzodes.szakasz_szoveg_en"),
+    szovegEnSugo: sz("szerzodes.szakasz_szoveg_en_sugo"),
+    ellenjegyzes: sz("szerzodes.szakasz_ellenjegyzes_figyelem"),
+    gomb: sz("szerzodes.szakasz_gomb"),
+    folyamatban: sz("szerzodes.szakasz_mentem"),
+  };
 
   const modulCimkek: ModulCimkek = {
     kotelezo: sz("szerzodes.kotelezo_jelzes"),
@@ -233,6 +248,44 @@ export default async function SzerzodesOldal({
       ) : null}
 
       {/*
+        A szakaszok átírása. Összecsukva áll, mint minden hosszú lista ezen a
+        lapon: a nyitósor kiírja, hány szakaszról van szó, és szakaszonként
+        egy koppintás a szövegdoboz.
+
+        A katalógus szövege alapértelmezés, nem az egyetlen lehetőség — a
+        bérbeadók helyzete különbözik, és amit mi írunk, az nem tud mindenkire
+        illeni. A szakasz sorszáma, címe és helye viszont a katalógusé marad,
+        hogy a felek ugyanarra a pontra tudjanak hivatkozni, és az angol
+        példány számozása se csússzon el.
+      */}
+      {szerkesztheto ? (
+        <details className="rounded-kartya border border-keret bg-felulet p-4">
+          <summary className={NYITO}>
+            {sz("szerzodes.szakaszok_nyito", { db: kesz.length })}
+          </summary>
+          <p className="mb-2 mt-2 text-sm text-halvany">{sz("szerzodes.szakaszok_sugo")}</p>
+          <div>
+            {kesz.map((szakasz) => (
+              <SzakaszUrlap
+                key={szakasz.kulcs}
+                szerzodesId={id}
+                szakasz={{
+                  kulcs: szakasz.kulcs,
+                  sorszam: szakasz.sorszam,
+                  cim: szakasz.cim,
+                  bekezdesek: szakasz.bekezdesek,
+                  sajat: szakasz.sajat,
+                  sajatSzoveg: bemenet.sajatSzovegek?.[szakasz.kulcs]?.szoveg ?? "",
+                  sajatSzovegEn: bemenet.sajatSzovegek?.[szakasz.kulcs]?.szovegEn ?? "",
+                }}
+                cimkek={szakaszCimkek}
+              />
+            ))}
+          </div>
+        </details>
+      ) : null}
+
+      {/*
         A szerződés szövege húsz telefonképernyő. Ha nyitva áll, a modulok
         átállítása és a véglegesítés is az aljára kerül, vagyis minden
         próbálkozás után végig kell görgetni rajta. Összecsukva áll, de nem
@@ -277,6 +330,16 @@ export default async function SzerzodesOldal({
               <article key={szakasz.kulcs}>
                 <h3 className="font-medium">
                   {szakasz.sorszam}. {szakasz.cim}
+                  {/*
+                    Az átírt szakaszt megjelöljük a szövegben is: a bérbeadó
+                    különben csak a szerkesztőben látná, melyik mondat a sajátja,
+                    és pont azt kell ügyvéddel átnézetnie.
+                  */}
+                  {szakasz.sajat ? (
+                    <span className="ml-2 text-xs font-normal text-nagyon-halvany">
+                      {sz("szerzodes.szakasz_sajat_jelzes")}
+                    </span>
+                  ) : null}
                 </h3>
                 {szakasz.bekezdesek.map((bekezdes, index) => (
                   <p key={index} className="mt-1 text-szoveg">

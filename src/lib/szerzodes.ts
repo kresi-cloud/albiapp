@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { allapota, elo } from "@/domain/elofizetes";
-import { type Bemenet } from "@/domain/szerzodes-keszites";
+import { type Bemenet, type SajatSzoveg } from "@/domain/szerzodes-keszites";
 import { elofizetesAdatta } from "@/lib/eloirasok";
 
 /**
@@ -25,6 +25,7 @@ export async function szerzodesBemenet(
     include: {
       modulok: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
       parameterek: true,
+      sajatSzovegek: true,
       alap: { select: { megnevezes: true, kelte: true, veglegesitve: true } },
       jogviszony: {
         include: {
@@ -48,6 +49,13 @@ export async function szerzodesBemenet(
 
   const parameterek: Record<string, string> = {};
   for (const sor of szerzodes.parameterek) parameterek[sor.kulcs] = sor.ertek;
+
+  // Amit a bérbeadó átírt. Ami itt nincs benne, az a katalógus szövegével
+  // megy — és az a rendes eset.
+  const sajatSzovegek: Record<string, SajatSzoveg> = {};
+  for (const sor of szerzodes.sajatSzovegek) {
+    sajatSzovegek[sor.kulcs] = { szoveg: sor.szoveg, szovegEn: sor.szovegEn };
+  }
 
   // Csak a jóváhagyott és még élő előfizetés kerül a szerződésbe: amiről a
   // bérlő nem nyilatkozott, az nem szerződéses kötelezettség.
@@ -125,6 +133,7 @@ export async function szerzodesBemenet(
       },
       valasztottModulok: szerzodes.modulok.map((modul) => modul.kulcs),
       parameterek,
+      sajatSzovegek,
       kelteHelye: szerzodes.kelteHelye,
       kelte: szerzodes.kelte,
       elofizetesek,

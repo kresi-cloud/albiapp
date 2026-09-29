@@ -3268,6 +3268,84 @@ export const SZOTAR: Szotar = {
     hu: "Csak azt kérdezzük, ami a bekapcsolt modulokhoz kell. Ami üresen marad, az az alapértelmezéssel kerül a szövegbe.",
     en: "We only ask what the modules you switched on need. Anything left empty goes into the text with its default.",
   },
+  "szerzodes.szakaszok_nyito": {
+    hu: "A szakaszok szövege átírható · {db} szakasz",
+    en: "The wording of the clauses can be rewritten · {db} clauses",
+  },
+  "szerzodes.szakaszok_sugo": {
+    hu:
+      "A katalógus szövege az alapértelmezés, nem az egyetlen lehetőség: ahol a helyzeted " +
+      "más, írd át a szakaszt. A sorszáma, a címe és a helye marad, hogy a felek ugyanarra " +
+      "a pontra tudjanak hivatkozni, és az angol példány se csússzon el.",
+    en:
+      "The catalogue wording is the default, not the only option: where your situation " +
+      "differs, rewrite the clause. Its number, title and place stay, so that the parties " +
+      "can refer to the same clause and the English copy does not drift apart.",
+  },
+  "szerzodes.szakasz_sajat_jelzes": {
+    hu: "átírva",
+    en: "rewritten",
+  },
+  "szerzodes.szakasz_alap_jelzes": {
+    hu: "az alapértelmezett szöveg",
+    en: "the default wording",
+  },
+  "szerzodes.szakasz_mostani": {
+    hu: "Ez áll most a szerződésben:",
+    en: "This is what the contract says now:",
+  },
+  "szerzodes.szakasz_szoveg": {
+    hu: "A szakasz szövege",
+    en: "The wording of the clause",
+  },
+  "szerzodes.szakasz_szoveg_sugo": {
+    hu:
+      "Minden sor egy bekezdés. Üresen hagyva az alapértelmezett szöveg jön vissza, tehát " +
+      "az átírás bármikor visszavonható.",
+    en:
+      "Each line is a paragraph. Left empty, the default wording comes back, so a rewrite " +
+      "can always be undone.",
+  },
+  "szerzodes.szakasz_szoveg_en": {
+    hu: "Ugyanez angolul (nem kötelező)",
+    en: "The same in English (optional)",
+  },
+  "szerzodes.szakasz_szoveg_en_sugo": {
+    hu:
+      "Amit magad írsz, azt nem fordítjuk le helyetted: ha ezt üresen hagyod, az angol " +
+      "példányban is a magyar szöveged áll. A fordítás úgyis csak tájékoztató, aláírni a " +
+      "magyart kell.",
+    en:
+      "We do not translate your own wording for you: if you leave this empty, your Hungarian " +
+      "text stands in the English copy as well. The translation is informative anyway; the " +
+      "Hungarian text is the one that gets signed.",
+  },
+  "szerzodes.szakasz_ellenjegyzes_figyelem": {
+    hu:
+      "Az ügyvédi ellenjegyzés a katalógus mondataira vonatkozik, nem arra, amit föléjük " +
+      "gépelsz: az átírt szakaszt nézesd át ügyvéddel.",
+    en:
+      "A lawyer's countersignature covers the catalogue wording, not what you type over it: " +
+      "have a lawyer review a clause you rewrote.",
+  },
+  "szerzodes.szakasz_gomb": { hu: "Szakasz mentése", en: "Save clause" },
+  "szerzodes.szakasz_mentem": { hu: "Mentem…", en: "Saving…" },
+  "szerzodes.kesz.szakasz": {
+    hu: "„{cim}” szövege átírva.",
+    en: "The wording of \u201C{cim}\u201D has been rewritten.",
+  },
+  "szerzodes.kesz.szakasz_alap": {
+    hu: "„{cim}” visszaállt az alapértelmezett szövegre.",
+    en: "\u201C{cim}\u201D is back to its default wording.",
+  },
+  "szerzodes.hiba.angol_magyar_nelkul": {
+    hu:
+      "Angol szöveget magyar nélkül nem lehet megadni: a szerződés a magyar szöveg, az angol " +
+      "csak annak a fordítása.",
+    en:
+      "English wording cannot be given without the Hungarian: the contract is the Hungarian " +
+      "text, and the English is only its translation.",
+  },
   "szerzodes.szoveg_nyito": {
     hu: "A szerződés szövege · {db} szakasz",
     en: "The contract text · {db} sections",

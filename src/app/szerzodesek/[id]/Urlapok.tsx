@@ -1,17 +1,19 @@
 "use client";
 
 import { useActionState } from "react";
-import { Mezo, Valaszto } from "@/components/megorzo";
+import { Mezo, Szovegdoboz, Valaszto } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
 import {
   modultValt,
   parametereketMenti,
+  szakasztMenti,
   szerzodestVeglegesit,
   veglegesitestVisszavon,
   zaradekotKeszit,
   type Eredmeny,
 } from "../actions";
-import { MEZO, GOMB } from "@/components/urlap";
+import { MEZO, GOMB, APRO_GOMB, SUGOSZOVEG } from "@/components/urlap";
+import { NYITO } from "@/components/ui/alap";
 
 const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [] };
 
@@ -173,6 +175,108 @@ export function ParameterUrlap({
       </button>
       <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
     </form>
+  );
+}
+
+export type SzakaszNezet = {
+  kulcs: string;
+  sorszam: number;
+  cim: string;
+  bekezdesek: string[];
+  sajat: boolean;
+  sajatSzoveg: string;
+  sajatSzovegEn: string;
+};
+
+export type SzakaszCimkek = {
+  sajatJelzes: string;
+  alapJelzes: string;
+  mostani: string;
+  szoveg: string;
+  szovegSugo: string;
+  szovegEn: string;
+  szovegEnSugo: string;
+  ellenjegyzes: string;
+  gomb: string;
+  folyamatban: string;
+};
+
+/**
+ * Egy szakasz szövegének átírása.
+ *
+ * Szakaszonként külön űrlap, ugyanabból az okból, amiért a modulkapcsoló is
+ * az: egy mentés egy szakaszról szóljon. Összecsukva áll, mert húsz szakaszból
+ * húsz nyitott szövegdoboz húsz telefonképernyő lenne — a nyitósor viszont
+ * kiírja, melyik szakasz az, és hogy át van-e írva.
+ */
+export function SzakaszUrlap({
+  szerzodesId,
+  szakasz,
+  cimkek,
+}: {
+  szerzodesId: string;
+  szakasz: SzakaszNezet;
+  cimkek: SzakaszCimkek;
+}) {
+  const [allapot, kuldes, folyamatban] = useActionState(szakasztMenti, KEZDETI);
+
+  return (
+    <details className="border-t border-keret py-2 first:border-0" data-szakasz={szakasz.kulcs}>
+      <summary className={NYITO}>
+        <span className="font-medium">
+          {szakasz.sorszam}. {szakasz.cim}
+        </span>
+        <span className="ml-2 text-xs text-nagyon-halvany">
+          {szakasz.sajat ? cimkek.sajatJelzes : cimkek.alapJelzes}
+        </span>
+      </summary>
+
+      {/*
+        Ami most áll a szerződésben. Enélkül a bérbeadónak fejből kellene tudnia,
+        mit ír át — a katalógus szövegét sehol máshol nem látja szakaszonként.
+      */}
+      <p className={`mt-2 ${SUGOSZOVEG}`}>{cimkek.mostani}</p>
+      <div className="mt-1 grid gap-1 rounded border border-keret bg-felulet-halk p-2 text-sm">
+        {szakasz.bekezdesek.map((bekezdes, index) => (
+          <p key={index}>{bekezdes}</p>
+        ))}
+      </div>
+
+      <form action={kuldes} className="mt-3 grid gap-3">
+        <input type="hidden" name="szerzodesId" value={szerzodesId} />
+        <input type="hidden" name="kulcs" value={szakasz.kulcs} />
+
+        <label className="grid gap-1 text-sm">
+          <span className="font-medium">{cimkek.szoveg}</span>
+          <Szovegdoboz
+            name="szoveg"
+            rows={5}
+            defaultValue={szakasz.sajatSzoveg}
+            className={MEZO}
+            allapot={allapot.allapot}
+          />
+          <span className={SUGOSZOVEG}>{cimkek.szovegSugo}</span>
+        </label>
+
+        <label className="grid gap-1 text-sm">
+          <span className="font-medium">{cimkek.szovegEn}</span>
+          <Szovegdoboz
+            name="szovegEn"
+            rows={4}
+            defaultValue={szakasz.sajatSzovegEn}
+            className={MEZO}
+            allapot={allapot.allapot}
+          />
+          <span className={SUGOSZOVEG}>{cimkek.szovegEnSugo}</span>
+        </label>
+
+        <p className={SUGOSZOVEG}>{cimkek.ellenjegyzes}</p>
+        <button type="submit" disabled={folyamatban} className={`${APRO_GOMB} justify-self-start`}>
+          {folyamatban ? cimkek.folyamatban : cimkek.gomb}
+        </button>
+        <Uzenetsav allapot={allapot.allapot} uzenet={allapot.uzenet} hibak={allapot.hibak} />
+      </form>
+    </details>
   );
 }
 
