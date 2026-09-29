@@ -8,6 +8,7 @@ import { szovegek } from "@/lib/nyelv";
 import { szerzodesBemenet } from "@/lib/szerzodes";
 import {
   ajanlottModulok,
+  bekezdesekre,
   hianyzoAdatok,
   modultKeres,
   okiratSzovege,
@@ -203,6 +204,73 @@ export async function parametereketMenti(_elozo: Eredmeny, urlap: FormData): Pro
 
   revalidatePath(`/szerzodesek/${szerzodesId}`);
   return { allapot: "kesz", uzenet: sz("szerzodes.kesz.parameterek"), hibak: [] };
+}
+
+/**
+ * Egy szakasz szövegének átírása, és az alapértelmezés visszaállítása.
+ *
+ * A katalógus szövege az alapértelmezés, nem a kizárólagos szöveg: a
+ * bérbeadók helyzete különbözik, és ami minden szerződésre jó, az egyikre sem
+ * a legjobb. Aki átírja, az attól még ugyanazt a szerződést készíti: a
+ * szakasz sorszáma, címe és helye a katalógusé marad, hogy a két nyelv
+ * példánya és a felek hivatkozásai ne csússzanak el.
+ *
+ * Üres mezővel az alapértelmezés jön vissza — ugyanaz a szabály, mint a
+ * paramétereknél. Külön „visszaállítás" gomb nem kell hozzá, és egy külön
+ * gombból előbb-utóbb két szabály lenne.
+ *
+ * Amit a bérbeadó átírt, az **nem** az ügyvéddel ellenjegyzett szöveg többé.
+ * Ezt a lap ki is mondja: az ellenjegyzés a katalógus mondataira vonatkozik,
+ * nem arra, amit fölé gépeltek.
+ */
+export async function szakasztMenti(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+  const szerzodesId = szoveg(urlap.get("szerzodesId"));
+  const kulcs = szoveg(urlap.get("kulcs"));
+
+  const modul = modultKeres(kulcs);
+  if (!modul) return hiba(sz("szerzodes.hiba.nincs_modul"));
+
+  const szerzodes = await prisma.szerzodes.findFirst({
+    where: { id: szerzodesId, jogviszony: { ingatlan: { tulajdonosId: berbeado.id } } },
+  });
+  if (!szerzodes) return hiba(sz("szerzodes.hiba.nem_tied"));
+  // Amit a felek aláírtak, azt nem írjuk át. Ezt a kiszolgáló tartja be, nem a
+  // mező elrejtése: a lap nyitva maradhat akkor is, amikor a véglegesítés egy
+  // másik fülön megtörténik.
+  if (szerzodes.allapot !== "tervezet") {
+    return hiba(sz("szerzodes.hiba.vegleges_nem_valtozik"));
+  }
+
+  const sajatSzoveg = bekezdesekre(String(urlap.get("szoveg") ?? "")).join("\n");
+  const sajatAngol = bekezdesekre(String(urlap.get("szovegEn") ?? "")).join("\n");
+
+  // Angol szöveg magyar nélkül nem értelmezhető: a szerződés a magyar, az
+  // angol csak annak a fordítása. Magyar átírás nélkül a fordítás mást mondana,
+  // mint az okirat, amit aláírnak — pont azt, amit a fordítás elve tilt.
+  if (sajatSzoveg === "" && sajatAngol !== "") {
+    return hiba(sz("szerzodes.hiba.angol_magyar_nelkul"), [], "szoveg");
+  }
+
+  if (sajatSzoveg === "") {
+    await prisma.szerzodesSzoveg.deleteMany({ where: { szerzodesId, kulcs } });
+  } else {
+    await prisma.szerzodesSzoveg.upsert({
+      where: { szerzodesId_kulcs: { szerzodesId, kulcs } },
+      create: { szerzodesId, kulcs, szoveg: sajatSzoveg, szovegEn: sajatAngol },
+      update: { szoveg: sajatSzoveg, szovegEn: sajatAngol },
+    });
+  }
+
+  revalidatePath(`/szerzodesek/${szerzodesId}`);
+  return {
+    allapot: "kesz",
+    uzenet: sz(sajatSzoveg === "" ? "szerzodes.kesz.szakasz_alap" : "szerzodes.kesz.szakasz", {
+      cim: modul.cim,
+    }),
+    hibak: [],
+  };
 }
 
 /**

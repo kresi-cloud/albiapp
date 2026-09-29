@@ -13,6 +13,7 @@ import {
 } from "../szerzodes";
 import {
   ajanlottModulok,
+  bekezdesekre,
   hianyzoAdatok,
   szakaszok,
   szerzodesSzovege,
@@ -170,6 +171,104 @@ describe("szakaszok", () => {
   it("egy bérlőnél az egyetemleges felelősség modul akkor sem kerül be, ha bekapcsolták", () => {
     const kesz = szakaszok(bemenet({ valasztottModulok: ["egyetemleges_felelosseg"] }));
     expect(kesz.some((szakasz) => szakasz.kulcs === "egyetemleges_felelosseg")).toBe(false);
+  });
+});
+
+describe("átírt szakasz", () => {
+  it("a bérbeadó szövege lép a katalógusé helyébe, a sorszám és a cím marad", () => {
+    const alap = szakaszok(bemenet());
+    const eredetiDij = alap.find((szakasz) => szakasz.kulcs === "berleti_dij");
+
+    const kesz = szakaszok(
+      bemenet({
+        sajatSzovegek: {
+          berleti_dij: { szoveg: "A bérleti díj minden hónap 5. napjáig fizetendő." },
+        },
+      }),
+    );
+    const dij = kesz.find((szakasz) => szakasz.kulcs === "berleti_dij");
+
+    expect(dij?.bekezdesek).toEqual(["A bérleti díj minden hónap 5. napjáig fizetendő."]);
+    expect(dij?.sorszam).toBe(eredetiDij?.sorszam);
+    expect(dij?.cim).toBe(eredetiDij?.cim);
+    expect(dij?.sajat).toBe(true);
+    // A többi szakasz nem mozdul: egy átírás egy szakaszról szól.
+    expect(kesz.length).toBe(alap.length);
+  });
+
+  it("üres saját szövegnél a katalógus szövege marad", () => {
+    const kesz = szakaszok(bemenet({ sajatSzovegek: { berleti_dij: { szoveg: "   " } } }));
+    const dij = kesz.find((szakasz) => szakasz.kulcs === "berleti_dij");
+    expect(dij?.sajat).toBe(false);
+    expect(dij?.bekezdesek.join(" ")).toContain("bérleti díj");
+  });
+
+  it("a soronkénti szövegből bekezdések lesznek, az üres sorok nélkül", () => {
+    expect(bekezdesekre("Első.\n\n  Második.  \n\n")).toEqual(["Első.", "Második."]);
+    expect(bekezdesekre("")).toEqual([]);
+  });
+
+  it("a fordításban a bérbeadó saját szövege áll, nem a katalógus angolja", () => {
+    const sajatSzovegek = {
+      berleti_dij: { szoveg: "A bérleti díj minden hónap 5. napjáig fizetendő." },
+    };
+    const angol = szakaszok(bemenet({ sajatSzovegek }), "en");
+    const dij = angol.find((szakasz) => szakasz.kulcs === "berleti_dij");
+    // Amit a bérbeadó gépelt, azt nem fordítjuk le helyette: a katalógus angol
+    // mondata mást mondana, mint az aláírt magyar szöveg.
+    expect(dij?.bekezdesek).toEqual([sajatSzovegek.berleti_dij.szoveg]);
+  });
+
+  it("a megadott angol változat megy a fordításba, a magyar az okiratba", () => {
+    const sajatSzovegek = {
+      berleti_dij: {
+        szoveg: "A bérleti díj minden hónap 5. napjáig fizetendő.",
+        szovegEn: "The rent is payable by the 5th day of each month.",
+      },
+    };
+    const magyar = szakaszok(bemenet({ sajatSzovegek }));
+    const angol = szakaszok(bemenet({ sajatSzovegek }), "en");
+
+    expect(
+      magyar.find((szakasz) => szakasz.kulcs === "berleti_dij")?.bekezdesek,
+    ).toEqual([sajatSzovegek.berleti_dij.szoveg]);
+    expect(
+      angol.find((szakasz) => szakasz.kulcs === "berleti_dij")?.bekezdesek,
+    ).toEqual([sajatSzovegek.berleti_dij.szovegEn]);
+  });
+
+  it("a két nyelv számozása az átírás után sem csúszik el", () => {
+    const sajatSzovegek = {
+      berleti_dij: { szoveg: "Egy.\nKettő.\nHárom.\nNégy." },
+    };
+    const magyar = szakaszok(bemenet({ sajatSzovegek }));
+    const angol = szakaszok(bemenet({ sajatSzovegek }), "en");
+    expect(angol.map((szakasz) => szakasz.sorszam)).toEqual(
+      magyar.map((szakasz) => szakasz.sorszam),
+    );
+    expect(angol.map((szakasz) => szakasz.kulcs)).toEqual(
+      magyar.map((szakasz) => szakasz.kulcs),
+    );
+  });
+
+  it("a kész okiratba is az átírt szöveg kerül", () => {
+    const szoveg = szerzodesSzovege(
+      bemenet({
+        sajatSzovegek: {
+          berleti_dij: { szoveg: "A bérleti díj minden hónap 5. napjáig fizetendő." },
+        },
+      }),
+    );
+    expect(szoveg).toContain("A bérleti díj minden hónap 5. napjáig fizetendő.");
+  });
+
+  it("a ki nem kapcsolt modul átírt szövege sem hoz be új szakaszt", () => {
+    // Az átírás a szakasz szövegéről szól, nem arról, mi van a szerződésben:
+    // azt továbbra is a modulkapcsoló dönti el.
+    const kesz = szakaszok(
+      bemenet({ sajatSzovegek: { nyari_szunet: { szoveg: "Nyáron fele a díj." } } }),
+    );
+    expect(kesz.some((szakasz) => szakasz.kulcs === "nyari_szunet")).toBe(false);
   });
 });
 
