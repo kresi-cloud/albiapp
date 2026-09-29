@@ -12,14 +12,18 @@ import {
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { szerzodesBemenet } from "@/lib/szerzodes";
+import { alairtPeldany } from "@/lib/alairt";
+import { allapota, MAX_MERET_BAJT, meretSzoveg } from "@/domain/alairt";
 import { NYITO } from "@/components/ui/alap";
 import {
+  AlairtUrlap,
   ModulValto,
   ParameterUrlap,
   SzakaszUrlap,
   VeglegesitesUrlap,
   VisszavonasUrlap,
   ZaradekUrlap,
+  type AlairtCimkek,
   type ModulCimkek,
   type ParameterNezet,
   type SzakaszCimkek,
@@ -76,6 +80,36 @@ export default async function SzerzodesOldal({
   );
 
   const kesz = szakaszok(bemenet);
+
+  // Az aláírt példány csak véglegesített szerződéshez tartozik: a tervezet
+  // szövege még változhat, tehát nincs mit aláírni rajta.
+  const alairt = szerkesztheto ? null : await alairtPeldany(id);
+  const alairtAllapot = allapota(alairt);
+  const alairtCimkek: AlairtCimkek = {
+    mezo: sz("alairt.mezo"),
+    mezoSugo: sz("alairt.mezo_sugo", { max: Math.floor(MAX_MERET_BAJT / (1024 * 1024)) }),
+    feltoltes: sz("alairt.feltoltes"),
+    csere: sz("alairt.csere"),
+    feltoltom: sz("alairt.feltoltom"),
+    letoltes: sz("alairt.letoltes"),
+    adatok: alairt
+      ? sz("alairt.adatok", {
+          meret: u(meretSzoveg(alairt.meretBajt)),
+          nev: alairt.feltoltoNev,
+          nap: alairt.feltoltve,
+        })
+      : "",
+    rogzitveJelzes: alairt?.rogzitve
+      ? sz("alairt.rogzitve_jelzes", { nap: alairt.rogzitve })
+      : "",
+    rogzitesSugo: sz("alairt.rogzites_sugo"),
+    nyugtazas: sz("alairt.nyugtazas"),
+    rogzites: sz("alairt.rogzites"),
+    rogzitem: sz("alairt.rogzitem"),
+    torles: sz("alairt.torles"),
+    torlom: sz("alairt.torlom"),
+    nincsMeg: sz("alairt.nincs_meg"),
+  };
 
   const szakaszCimkek: SzakaszCimkek = {
     sajatJelzes: sz("szerzodes.szakasz_sajat_jelzes"),
@@ -398,6 +432,24 @@ export default async function SzerzodesOldal({
           <p className="mt-3 text-sm text-szoveg">{sz("szerzodes.forditas_nincs_meg")}</p>
         )}
       </details>
+
+      {/*
+        Az aláírt példány. Csak véglegesített szerződéshez van: amit a felek
+        aláírtak, az az okirat, és onnantól az a mérvadó, nem a mi szövegünk.
+        A bérlő ugyanezt a fájlt tölti le a dokumentumtárából.
+      */}
+      {szerkesztheto ? null : (
+        <section className="rounded-kartya border border-keret bg-felulet p-4">
+          <h2 className="font-medium">{sz("alairt.cim")}</h2>
+          <p className="mb-3 mt-1 text-sm text-halvany">{sz("alairt.sugo")}</p>
+          <AlairtUrlap
+            szerzodesId={id}
+            megvan={alairtAllapot !== "nincs"}
+            rogzitve={alairtAllapot === "rogzitve"}
+            cimkek={alairtCimkek}
+          />
+        </section>
+      )}
 
       <section className="rounded-kartya border border-keret bg-felulet p-4">
         {szerkesztheto ? (

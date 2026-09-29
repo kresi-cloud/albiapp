@@ -47,6 +47,11 @@ export type Dokumentum = {
    * kell írni, tehát papírra kerül, és a PDF-et a nyomtatóablak menti belőle.
    */
   nyomtatas?: string;
+  /**
+   * Az aláírt példány letöltése. Csak ott van, ahol fel is töltötték: amit a
+   * felek aláírtak, az az okirat, és a bérlőnek is jár belőle egy példány.
+   */
+  alairtLetoltes?: string;
 };
 
 export type TarSzerzodes = {
@@ -57,6 +62,8 @@ export type TarSzerzodes = {
   letrehozva: Date;
   /** Van-e befagyasztott angol fordítás. A szövegét a lista nem olvassa. */
   vanForditas: boolean;
+  /** Van-e feltöltött aláírt példány. A fájlt a lista nem olvassa. */
+  vanAlairt: boolean;
 };
 
 export type TarJegyzokonyv = {
@@ -112,6 +119,9 @@ export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] 
       megnyitas: `/szerzodesek/${szerzodes.id}`,
       letoltes: `/szerzodesek/${szerzodes.id}/letoltes`,
       nyomtatas: `/szerzodesek/${szerzodes.id}/nyomtat`,
+      alairtLetoltes: szerzodes.vanAlairt
+        ? `/szerzodesek/${szerzodes.id}/alairt`
+        : undefined,
       forditasLetoltes:
         vegleges && szerzodes.vanForditas
           ? `/szerzodesek/${szerzodes.id}/letoltes?nyelv=en`

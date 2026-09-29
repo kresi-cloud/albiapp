@@ -6,6 +6,8 @@ import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { szerzodesBemenet } from "@/lib/szerzodes";
+import { alairtatMent, alairtatRogzit, alairtatTorol } from "@/lib/alairt";
+import { alairtatEllenoriz, tipusATartalombol } from "@/domain/alairt";
 import {
   ajanlottModulok,
   bekezdesekre,
@@ -321,6 +323,83 @@ export async function szerzodestVeglegesit(_elozo: Eredmeny, urlap: FormData): P
 }
 
 /**
+ * Az aláírt szerződés példányának feltöltése vagy cseréje.
+ *
+ * Amit a felek aláírtak, az az okirat: a mi szövegünk csak addig volt az, amíg
+ * nem került rá aláírás. Ezért kell tudni feltölteni, és ezért tölti le a bérlő
+ * is — az okirat az övé is.
+ *
+ * A típust a tartalomból állapítjuk meg, nem a böngésző bemondásából: ezt a
+ * fájlt a másik fél böngészője nyitja meg a mi címünkön.
+ */
+export async function alairtatFeltolt(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz, u } = await szovegek();
+  const szerzodesId = szoveg(urlap.get("szerzodesId"));
+
+  const fajl = urlap.get("alairt");
+  if (!(fajl instanceof File)) return hiba(sz("alairt.hiba.ures"), [], "alairt");
+
+  const tartalom = new Uint8Array(await fajl.arrayBuffer());
+  const valodiTipus = tipusATartalombol(tartalom);
+  const baj = alairtatEllenoriz({ tipus: valodiTipus ?? "", meretBajt: fajl.size });
+  if (baj) return hiba(u(baj), [], "alairt");
+
+  const eredmeny = await alairtatMent(berbeado.id, szerzodesId, {
+    tipus: valodiTipus ?? "",
+    tartalom,
+  });
+  if (eredmeny === "nincs_szerzodes") return hiba(sz("szerzodes.hiba.nem_tied"));
+  if (eredmeny === "nem_vegleges") return hiba(sz("alairt.hiba.nem_vegleges"));
+  if (eredmeny === "rogzitve") return hiba(sz("alairt.hiba.rogzitve"));
+
+  revalidatePath(`/szerzodesek/${szerzodesId}`);
+  revalidatePath("/dokumentumok");
+  revalidatePath("/berlo/dokumentumok");
+  return { allapot: "kesz", uzenet: sz("alairt.kesz.feltoltve"), hibak: [] };
+}
+
+/** A feltöltött példány törlése, amíg nincs rögzítve. */
+export async function alairtatTorolAction(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+  const szerzodesId = szoveg(urlap.get("szerzodesId"));
+
+  const eredmeny = await alairtatTorol(berbeado.id, szerzodesId);
+  if (eredmeny === "rogzitve") return hiba(sz("alairt.hiba.rogzitve"));
+  if (eredmeny === "nincs") return hiba(sz("alairt.hiba.nincs"));
+
+  revalidatePath(`/szerzodesek/${szerzodesId}`);
+  revalidatePath("/dokumentumok");
+  revalidatePath("/berlo/dokumentumok");
+  return { allapot: "kesz", uzenet: sz("alairt.kesz.torolve"), hibak: [] };
+}
+
+/**
+ * Rögzítés: a feltöltött példány végleges lesz.
+ *
+ * Ez nem visszavonható, ezért nyugtázáshoz kötjük, ugyanúgy, mint a
+ * véglegesítést. Enélkül egy elkattintott gomb betonozná be a rossz fájlt — és
+ * pont az a lényege, hogy utána már nem cserélhető.
+ */
+export async function alairtatRogziti(_elozo: Eredmeny, urlap: FormData): Promise<Eredmeny> {
+  const berbeado = await kotelezoSzerep("berbeado");
+  const { sz } = await szovegek();
+  const szerzodesId = szoveg(urlap.get("szerzodesId"));
+
+  if (szoveg(urlap.get("nyugtazas")) !== "igen") {
+    return hiba(sz("alairt.hiba.nyugtazas"), [], "nyugtazas");
+  }
+
+  const eredmeny = await alairtatRogzit(berbeado.id, szerzodesId);
+  if (eredmeny === "nincs") return hiba(sz("alairt.hiba.nincs"));
+  if (eredmeny === "mar_rogzitve") return hiba(sz("alairt.hiba.rogzitve"));
+
+  revalidatePath(`/szerzodesek/${szerzodesId}`);
+  return { allapot: "kesz", uzenet: sz("alairt.kesz.rogzitve"), hibak: [] };
+}
+
+/**
  * Véglegesítés visszavonása, amíg nem épült rá semmi.
  *
  * A visszavonás a `veglegesSzoveg`-et is törli, tehát amit a felek
@@ -361,6 +440,15 @@ export async function veglegesitestVisszavon(_elozo: Eredmeny, urlap: FormData):
   });
   if (igazolasok > 0) {
     return hiba(sz("szerzodes.hiba.van_igazolas", { darab: igazolasok }));
+  }
+
+  // És nem olvasztjuk vissza azt, amire már feltöltötték az aláírt példányt: a
+  // visszavonás a szöveget a mostani modulokból építené újra, az aláírt fájl
+  // pedig attól még ott maradna mellette — két különböző okirat, egymásnak
+  // feszülve. Aki tévedett, előbb leveszi a feltöltött példányt.
+  const alairt = await prisma.alairtSzerzodes.count({ where: { szerzodesId } });
+  if (alairt > 0) {
+    return hiba(sz("szerzodes.hiba.van_alairt"));
   }
 
   await prisma.szerzodes.update({

@@ -29,6 +29,7 @@ const teli: TarJogviszony = {
       veglegesitve: nap("2026-08-29"),
       letrehozva: nap("2026-08-20"),
       vanForditas: true,
+      vanAlairt: true,
     },
     {
       id: "sz2",
@@ -37,6 +38,7 @@ const teli: TarJogviszony = {
       veglegesitve: null,
       letrehozva: nap("2026-09-15"),
       vanForditas: false,
+      vanAlairt: false,
     },
   ],
   jegyzokonyvek: [
@@ -141,6 +143,17 @@ describe("a bérlő nézete", () => {
     for (const sor of berloDokumentumai(dokumentumtar([teli]))) {
       expect(sor.letoltes).toBeTruthy();
     }
+  });
+
+  it("az aláírt példányt a bérlő is letöltheti, ha van", () => {
+    // Amit a felek aláírtak, az az okirat, és az a bérlőé is. Amihez nincs
+    // feltöltött példány, ahhoz nem kínálunk hivatkozást: egy üres letöltés
+    // azt ígérné, hogy minden szerződéshez van aláírt fájl.
+    const sorok = dokumentumtar([teli]);
+    expect(sorok.find((sor) => sor.kulcs === "szerzodes:sz1")?.alairtLetoltes).toBe(
+      "/szerzodesek/sz1/alairt",
+    );
+    expect(sorok.find((sor) => sor.kulcs === "szerzodes:sz2")?.alairtLetoltes).toBeUndefined();
   });
 
   it("a szerződést a bérlő is ki tudja nyomtatni", () => {

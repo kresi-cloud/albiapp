@@ -81,6 +81,14 @@ export function Dokumentumlista({
                       {sz("dokumentum.lista.forditas")}
                     </a>
                   ) : null}
+                  {sor.alairtLetoltes ? (
+                    <a
+                      href={sor.alairtLetoltes}
+                      className="text-kiemelt underline underline-offset-2"
+                    >
+                      {sz("dokumentum.lista.alairt")}
+                    </a>
+                  ) : null}
                   <span className="text-nagyon-halvany">
                     {u(sor.allapotCimke)}
                   </span>

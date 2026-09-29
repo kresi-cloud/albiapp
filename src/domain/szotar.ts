@@ -1265,6 +1265,7 @@ export const SZOTAR: Szotar = {
   "dokumentum.lista.megnyitom": { hu: "Megnyitom", en: "Open" },
   "dokumentum.lista.letoltom": { hu: "Letöltöm", en: "Download" },
   "dokumentum.lista.nyomtatom": { hu: "Nyomtatás", en: "Print" },
+  "dokumentum.lista.alairt": { hu: "Aláírt példány", en: "Signed copy" },
   "dokumentum.lista.forditas": {
     hu: "Angol fordítás",
     en: "English translation",
@@ -3268,6 +3269,98 @@ export const SZOTAR: Szotar = {
   "szerzodes.beallitasok_sugo": {
     hu: "Csak azt kérdezzük, ami a bekapcsolt modulokhoz kell. Ami üresen marad, az az alapértelmezéssel kerül a szövegbe.",
     en: "We only ask what the modules you switched on need. Anything left empty goes into the text with its default.",
+  },
+  // --- Az aláírt szerződés feltöltött példánya
+  "alairt.cim": { hu: "Az aláírt példány", en: "The signed copy" },
+  "alairt.sugo": {
+    hu:
+      "Amit a felek aláírtak, az az okirat. Töltsd fel ide a szkennelt vagy elektronikusan " +
+      "aláírt példányt: a bérlő ugyanígy le tudja tölteni, mert a szerződés az övé is.",
+    en:
+      "What the parties signed is the document. Upload the scanned or electronically signed " +
+      "copy here: the tenant can download it the same way, because the contract is theirs too.",
+  },
+  "alairt.mezo": { hu: "Az aláírt szerződés fájlja", en: "The signed contract file" },
+  "alairt.mezo_sugo": {
+    hu: "PDF vagy fénykép, legfeljebb {max} MB.",
+    en: "PDF or photo, at most {max} MB.",
+  },
+  "alairt.feltoltes": { hu: "Feltöltés", en: "Upload" },
+  "alairt.csere": { hu: "Csere másik fájlra", en: "Replace with another file" },
+  "alairt.feltoltom": { hu: "Feltöltöm…", en: "Uploading…" },
+  "alairt.letoltes": { hu: "Az aláírt példány letöltése", en: "Download the signed copy" },
+  "alairt.adatok": {
+    hu: "{meret} · feltöltötte: {nev}, {nap}",
+    en: "{meret} · uploaded by {nev}, {nap}",
+  },
+  "alairt.rogzitve_jelzes": {
+    hu: "Rögzítve {nap} — ez a példány már nem cserélhető és nem törölhető.",
+    en: "Locked on {nap} \u2014 this copy can no longer be replaced or deleted.",
+  },
+  "alairt.rogzites_sugo": {
+    hu:
+      "A rögzítés végleges. Utána a példány nem cserélhető és nem törölhető, és a szerződés " +
+      "sem állítható vissza tervezetre — ettől ér valamit: egy aláírt okirat, amit bármikor " +
+      "ki lehet cserélni, annyit érne, mint a bemondás.",
+    en:
+      "Locking is final. Afterwards the copy cannot be replaced or deleted, and the contract " +
+      "cannot be reverted to a draft either \u2014 that is what makes it worth something: a signed " +
+      "document that can be swapped at any time would be worth no more than a claim.",
+  },
+  "alairt.nyugtazas": {
+    hu: "Megnéztem: ez az a példány, amit a felek aláírtak.",
+    en: "I have checked: this is the copy the parties signed.",
+  },
+  "alairt.rogzites": { hu: "Rögzítés véglegesként", en: "Lock as final" },
+  "alairt.rogzitem": { hu: "Rögzítem…", en: "Locking…" },
+  "alairt.torles": { hu: "Feltöltött példány levétele", en: "Remove the uploaded copy" },
+  "alairt.torlom": { hu: "Leveszem…", en: "Removing…" },
+  "alairt.nincs_meg": {
+    hu: "Még nincs feltöltve aláírt példány.",
+    en: "No signed copy has been uploaded yet.",
+  },
+  "alairt.kesz.feltoltve": { hu: "Az aláírt példány feltöltve.", en: "The signed copy is uploaded." },
+  "alairt.kesz.torolve": { hu: "A feltöltött példány levéve.", en: "The uploaded copy is removed." },
+  "alairt.kesz.rogzitve": {
+    hu: "Az aláírt példány rögzítve.",
+    en: "The signed copy is locked.",
+  },
+  "alairt.hiba.ures": {
+    hu: "Nem érkezett fájl. Válaszd ki az aláírt szerződést.",
+    en: "No file arrived. Choose the signed contract.",
+  },
+  "alairt.hiba.nagy": {
+    hu: "A fájl nagyobb {max} MB-nál.",
+    en: "The file is larger than {max} MB.",
+  },
+  "alairt.hiba.tipus": {
+    hu: "Csak PDF-et és fényképet (JPG, PNG, WEBP) fogadunk el.",
+    en: "Only PDF and photos (JPG, PNG, WEBP) are accepted.",
+  },
+  "alairt.hiba.nem_vegleges": {
+    hu: "Aláírt példánya csak véglegesített szerződésnek van: a tervezet szövege még változhat.",
+    en:
+      "Only a finalised contract has a signed copy: the text of a draft can still change.",
+  },
+  "alairt.hiba.rogzitve": {
+    hu: "Ez a példány rögzítve van, tehát nem cserélhető és nem törölhető.",
+    en: "This copy is locked, so it cannot be replaced or deleted.",
+  },
+  "alairt.hiba.nincs": {
+    hu: "Ehhez a szerződéshez nincs feltöltött aláírt példány.",
+    en: "There is no uploaded signed copy for this contract.",
+  },
+  "alairt.hiba.nyugtazas": {
+    hu: "A rögzítés végleges, ezért előbb nyugtázd, hogy ez a helyes példány.",
+    en: "Locking is final, so first confirm that this is the right copy.",
+  },
+  "szerzodes.hiba.van_alairt": {
+    hu:
+      "Ehhez a szerződéshez fel van töltve az aláírt példány, ezért nem állítható vissza " +
+      "tervezetre. Aki a szövegen változtatna, előbb vegye le a feltöltött példányt.",
+    en:
+      "The signed copy has been uploaded for this contract, so it cannot be reverted to a " +
+      "draft. To change the text, first remove the uploaded copy.",
   },
   "szerzodes.nyomtatas": { hu: "Nyomtatás és PDF", en: "Print and PDF" },
   "szerzodes.nyomtatas_angolul": {
