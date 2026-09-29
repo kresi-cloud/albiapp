@@ -30,6 +30,7 @@ const teli: TarJogviszony = {
       letrehozva: nap("2026-08-20"),
       vanForditas: true,
       vanAlairt: true,
+      vanKetnyelvu: true,
     },
     {
       id: "sz2",
@@ -39,6 +40,7 @@ const teli: TarJogviszony = {
       letrehozva: nap("2026-09-15"),
       vanForditas: false,
       vanAlairt: false,
+      vanKetnyelvu: false,
     },
   ],
   jegyzokonyvek: [

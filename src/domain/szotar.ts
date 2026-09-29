@@ -1266,6 +1266,7 @@ export const SZOTAR: Szotar = {
   "dokumentum.lista.letoltom": { hu: "Letöltöm", en: "Download" },
   "dokumentum.lista.nyomtatom": { hu: "Nyomtatás", en: "Print" },
   "dokumentum.lista.alairt": { hu: "Aláírt példány", en: "Signed copy" },
+  "dokumentum.lista.ketnyelvu": { hu: "Kétnyelvű példány", en: "Bilingual copy" },
   "dokumentum.lista.forditas": {
     hu: "Angol fordítás",
     en: "English translation",
@@ -3266,10 +3267,129 @@ export const SZOTAR: Szotar = {
     en: "In every contract · {db} clauses",
   },
   "szerzodes.beallitasok_cim": { hu: "Beállítások", en: "Settings" },
+  "szerzodes.beallitasok_nyito": {
+    hu: "Beállítások · {db} mező",
+    en: "Settings · {db} fields",
+  },
   "szerzodes.beallitasok_sugo": {
     hu: "Csak azt kérdezzük, ami a bekapcsolt modulokhoz kell. Ami üresen marad, az az alapértelmezéssel kerül a szövegbe.",
     en: "We only ask what the modules you switched on need. Anything left empty goes into the text with its default.",
   },
+  // --- Kétnyelvű példány
+  "ketnyelvu.cim": { hu: "Kétnyelvű példány", en: "Bilingual copy" },
+  "ketnyelvu.sugo": {
+    hu:
+      "Egyetlen okirat, amiben minden pont ott áll magyarul és angolul is — nem két külön " +
+      "papír. Aláírni így is a magyar szöveget kell, és eltérés esetén is az az irányadó; " +
+      "ezt maga a példány is kimondja, mindkét nyelven.",
+    en:
+      "A single document in which every clause appears in both Hungarian and English \u2014 not " +
+      "two separate papers. The Hungarian text is still the one that gets signed and it still " +
+      "prevails in case of any difference; the copy itself says so, in both languages.",
+  },
+  "ketnyelvu.kerdes": {
+    hu: "Készüljön kétnyelvű példány?",
+    en: "Should a bilingual copy be made?",
+  },
+  "ketnyelvu.mindenki_sugo": {
+    hu:
+      "Akkor készül el, ha a bérbeadói és a bérlői oldal minden tagja támogatja, akinek van " +
+      "fiókja: az okirat közös. Egy kifogás egymagában dönt.",
+    en:
+      "It is made if every member of the landlord and tenant side who has an account supports " +
+      "it: the document is shared. A single objection decides.",
+  },
+  "ketnyelvu.nincs_fiok": {
+    hu:
+      "{nev} még nem lépett be a saját fiókjába, ezért őt nem tudjuk megkérdezni. A magyar " +
+      "szöveg marad az irányadó, tehát ettől nem veszít semmit.",
+    en:
+      "{nev} has not signed in to their own account yet, so we cannot ask them. The Hungarian " +
+      "text remains authoritative, so they lose nothing by this.",
+  },
+  "ketnyelvu.allapot.tamogatott": {
+    hu: "Mindenki támogatja: a kétnyelvű példány elkészül.",
+    en: "Everyone supports it: the bilingual copy will be made.",
+  },
+  "ketnyelvu.allapot.varakozik": {
+    hu: "Még nem mindenki nyilatkozott.",
+    en: "Not everyone has answered yet.",
+  },
+  "ketnyelvu.allapot.kifogasolt": {
+    hu: "Valaki kifogásolta, ezért kétnyelvű példány nem készül.",
+    en: "Someone objected, so no bilingual copy will be made.",
+  },
+  "ketnyelvu.varunk": { hu: "Rá még várunk: {nev}", en: "Still waiting on: {nev}" },
+  "ketnyelvu.kifogas_sora": { hu: "{nev} kifogása: {indoklas}", en: "{nev} objected: {indoklas}" },
+  "ketnyelvu.tamogatom": { hu: "Támogatom", en: "I support it" },
+  "ketnyelvu.kifogasolom": { hu: "Kifogásolom", en: "I object" },
+  "ketnyelvu.indoklas": { hu: "A kifogás indoklása", en: "Reason for the objection" },
+  "ketnyelvu.indoklas_sugo": {
+    hu: "Csak kifogásnál kell. Indoklás nélkül a másik fél nem tud mit kezdeni vele.",
+    en: "Only needed for an objection. Without a reason the other party has nothing to go on.",
+  },
+  "ketnyelvu.sajat_tamogatom": {
+    hu: "A te válaszod: támogatod.",
+    en: "Your answer: you support it.",
+  },
+  "ketnyelvu.sajat_kifogas": {
+    hu: "A te válaszod: kifogásolod. Indoklás: {indoklas}",
+    en: "Your answer: you object. Reason: {indoklas}",
+  },
+  "ketnyelvu.valtoztathato": {
+    hu: "A válaszod a véglegesítésig módosítható.",
+    en: "You can change your answer until the contract is finalised.",
+  },
+  "ketnyelvu.nyilatkozom": { hu: "Rögzítem…", en: "Saving…" },
+  "ketnyelvu.letoltes": {
+    hu: "A kétnyelvű példány letöltése",
+    en: "Download the bilingual copy",
+  },
+  "ketnyelvu.nyomtatas": {
+    hu: "A kétnyelvű példány nyomtatása",
+    en: "Print the bilingual copy",
+  },
+  "ketnyelvu.nincs_vegleges": {
+    hu:
+      "Ehhez a szerződéshez nem készült kétnyelvű példány: a véglegesítéskor nem mindenki " +
+      "támogatta. Utólag nem készítünk: az már nem ahhoz a szöveghez tartozna.",
+    en:
+      "No bilingual copy was made for this contract: not everyone supported it at finalisation. " +
+      "We do not make one afterwards: it would no longer belong to that text.",
+  },
+  "ketnyelvu.kesz.tamogatom": {
+    hu: "Rögzítettük: támogatod a kétnyelvű példányt.",
+    en: "Recorded: you support the bilingual copy.",
+  },
+  "ketnyelvu.kesz.kifogas": {
+    hu: "Rögzítettük a kifogásodat.",
+    en: "Your objection has been recorded.",
+  },
+  "ketnyelvu.hiba.indoklas": {
+    hu: "A kifogást indokold meg: enélkül a másik fél nem tud mit kezdeni vele.",
+    en: "Give a reason for the objection: without it the other party has nothing to go on.",
+  },
+  "ketnyelvu.hiba.mar_vegleges": {
+    hu:
+      "A szerződés már véglegesítve van, ezért ezen nem lehet változtatni: a kétnyelvű példány " +
+      "a véglegesítéskor fagyott be.",
+    en:
+      "The contract is already finalised, so this can no longer be changed: the bilingual copy " +
+      "was frozen at finalisation.",
+  },
+  "ketnyelvu.teendo.cim": {
+    hu: "Nyilatkozz a kétnyelvű szerződéspéldányról",
+    en: "Say whether you want a bilingual contract copy",
+  },
+  "ketnyelvu.teendo.leiras": {
+    hu: "{ingatlan} — a kétnyelvű példány csak akkor készül el, ha mindenki támogatja.",
+    en: "{ingatlan} \u2014 the bilingual copy is only made if everyone supports it.",
+  },
+  "letoltes.nincs_ketnyelvu": {
+    hu: "Ehhez a szerződéshez nincs kétnyelvű példány.",
+    en: "There is no bilingual copy for this contract.",
+  },
+
   // --- Az aláírt szerződés feltöltött példánya
   "alairt.cim": { hu: "Az aláírt példány", en: "The signed copy" },
   "alairt.sugo": {

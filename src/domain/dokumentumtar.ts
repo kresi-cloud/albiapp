@@ -52,6 +52,11 @@ export type Dokumentum = {
    * felek aláírtak, az az okirat, és a bérlőnek is jár belőle egy példány.
    */
   alairtLetoltes?: string;
+  /**
+   * A kétnyelvű példány letöltése. Csak ott van, ahol el is készült: azt a
+   * felek mindegyike támogatta, és nem minden szerződéshez jár.
+   */
+  ketnyelvuLetoltes?: string;
 };
 
 export type TarSzerzodes = {
@@ -64,6 +69,8 @@ export type TarSzerzodes = {
   vanForditas: boolean;
   /** Van-e feltöltött aláírt példány. A fájlt a lista nem olvassa. */
   vanAlairt: boolean;
+  /** Van-e befagyasztott kétnyelvű példány. A szövegét a lista nem olvassa. */
+  vanKetnyelvu: boolean;
 };
 
 export type TarJegyzokonyv = {
@@ -119,6 +126,10 @@ export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] 
       megnyitas: `/szerzodesek/${szerzodes.id}`,
       letoltes: `/szerzodesek/${szerzodes.id}/letoltes`,
       nyomtatas: `/szerzodesek/${szerzodes.id}/nyomtat`,
+      ketnyelvuLetoltes:
+        vegleges && szerzodes.vanKetnyelvu
+          ? `/szerzodesek/${szerzodes.id}/letoltes?nyelv=ket`
+          : undefined,
       alairtLetoltes: szerzodes.vanAlairt
         ? `/szerzodesek/${szerzodes.id}/alairt`
         : undefined,

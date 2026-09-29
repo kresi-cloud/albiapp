@@ -82,6 +82,7 @@ model Felhasznalo {
   irtErtekelesei          Ertekeles[]             @relation("ErtekelesSzerzoje")
   kapottErtekelesei       Ertekeles[]             @relation("ErtekelesAlanya")
   feltoltottAlairtjai     AlairtSzerzodes[]
+  szerzodesNyelvei        SzerzodesNyelvNyilatkozat[]
 }
 
 /// Bérbeadónkénti egyeztetési beállítások. Az összegtolerancia szándékosan nincs
@@ -622,6 +623,10 @@ model Szerzodes {
   /// modulfrissítéstől; és a fordítás mindig ahhoz a szöveghez tartozzon,
   /// ami mellette áll.
   veglegesSzovegEn String?
+  /// A kétnyelvű példány, ha a felek mindegyike támogatta. Véglegesítéskor ez
+  /// is befagy: amit aláírtak, annak a kétnyelvű példánya se változzon meg egy
+  /// későbbi modulfrissítéstől.
+  veglegesSzovegKet String?
   veglegesitve     DateTime?
   letrehozva       DateTime  @default(now())
   frissitve        DateTime  @updatedAt
@@ -631,6 +636,7 @@ model Szerzodes {
   parameterek   SzerzodesParameter[]
   sajatSzovegek SzerzodesSzoveg[]
   alairt        AlairtSzerzodes?
+  nyelvNyilatkozatok SzerzodesNyelvNyilatkozat[]
   alap        Szerzodes?           @relation("Zaradekai", fields: [alapSzerzodesId], references: [id], onDelete: Cascade)
   zaradekai   Szerzodes[]          @relation("Zaradekai")
 
@@ -662,6 +668,31 @@ model SzerzodesParameter {
   szerzodes Szerzodes @relation(fields: [szerzodesId], references: [id], onDelete: Cascade)
 
   @@unique([szerzodesId, kulcs])
+}
+
+/// Nyilatkozat arról, hogy készüljön-e kétnyelvű (magyar/angol) példány.
+///
+/// A fordítás eddig is elkészült tájékoztatásul, de az külön melléklet volt. A
+/// kétnyelvű példány egyetlen okirat, amiben minden pont mindkét nyelven ott
+/// áll — ezt viszont csak akkor adjuk ki, ha a bérbeadói és a bérlői oldal
+/// minden fiókkal rendelkező tagja támogatja: az okirat mindenkié, és a
+/// másik fél nyelve nem a mi döntésünk.
+///
+/// A kifogás indoklás nélkül nincs, ugyanúgy, mint a fényképnél és az
+/// előfizetésnél: abból a másik fél nem tud kiindulni.
+model SzerzodesNyelvNyilatkozat {
+  id            String   @id @default(cuid())
+  szerzodesId   String
+  felhasznaloId String
+  tamogatja     Boolean
+  indoklas      String   @default("")
+  nyilatkozva   DateTime @default(now())
+
+  szerzodes   Szerzodes   @relation(fields: [szerzodesId], references: [id], onDelete: Cascade)
+  felhasznalo Felhasznalo @relation(fields: [felhasznaloId], references: [id], onDelete: Cascade)
+
+  @@unique([szerzodesId, felhasznaloId])
+  @@index([szerzodesId])
 }
 
 /// Az aláírt szerződés feltöltött példánya.

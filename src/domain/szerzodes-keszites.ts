@@ -458,6 +458,90 @@ export function zaradekSzovege(bemenet: Bemenet, nyelv: Nyelv = "hu"): string {
   return sorok.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
 }
 
+/**
+ * A kétnyelvű példány fejléce, magában a szövegben.
+ *
+ * Ugyanaz az ok, amiért a fordításnak is saját fejléce van: a szöveget
+ * kimásolják, kinyomtatják, aláírják, és onnantól a lap már nincs mellette.
+ * Aki a papírt a kezébe veszi, abból lássa, melyik nyelv az irányadó — és
+ * ezt mindkét nyelven kell odaírni, mert a két fél két nyelven olvassa.
+ */
+export const KETNYELVU_FEJLEC = [
+  "KÉTNYELVŰ PÉLDÁNY / BILINGUAL COPY",
+  "",
+  "A Felek e szerződés magyar szövegét írják alá. Kizárólag a magyar szöveg hiteles; " +
+    "a két nyelvi változat közötti bármely eltérés esetén a magyar szöveg az irányadó. " +
+    "Az angol szöveg a megértést szolgálja.",
+  "",
+  "The parties sign the Hungarian text of this agreement. Only the Hungarian text is " +
+    "authentic; in case of any difference between the two language versions, the Hungarian " +
+    "text prevails. The English text is provided to aid understanding.",
+];
+
+/**
+ * A kétnyelvű példány: minden pont magyarul és utána angolul, egy okiratban.
+ *
+ * A számozás itt is a magyar szövegből következik — a két nyelv ugyanazt a
+ * pontot ugyanazon a sorszámon viszi —, csak most egymás alatt, nem két külön
+ * papíron. A magyar áll elöl, mert azt írják alá.
+ */
+export function ketnyelvuSzovege(bemenet: Bemenet): string {
+  const zaradek = bemenet.fajta === "zaradek";
+  const sorok: string[] = [
+    zaradek
+      ? "ZÁRADÉK A LAKÁSBÉRLETI SZERZŐDÉSHEZ / ADDENDUM TO THE RESIDENTIAL LEASE AGREEMENT"
+      : "LAKÁSBÉRLETI SZERZŐDÉS / RESIDENTIAL LEASE AGREEMENT",
+    "",
+    ...KETNYELVU_FEJLEC,
+    "",
+    zaradek
+      ? zaradekBevezeto(bemenet)
+      : "amely létrejött az alábbi felek között, az alulírott helyen és időben, a következő feltételekkel:",
+    "",
+    zaradek
+      ? zaradekBevezeto(bemenet, "en")
+      : "concluded by and between the parties below, at the place and on the date set out at " +
+        "the end of this document, on the following terms:",
+    "",
+  ];
+
+  const magyar = szakaszok(bemenet, "hu");
+  const angol = szakaszok(bemenet, "en");
+  // Kulcs szerint párosítunk, nem sorszám szerint: a sorszámot ugyan a magyar
+  // adja mindkét nyelven, de a kulcs az, ami a két szakaszt ténylegesen
+  // ugyanahhoz a modulhoz köti.
+  const angolKulcsok = new Map(angol.map((szakasz) => [szakasz.kulcs, szakasz]));
+
+  for (const szakasz of magyar) {
+    sorok.push(`${szakasz.sorszam}. ${szakasz.cim}`);
+    sorok.push("");
+    for (const bekezdes of szakasz.bekezdesek) {
+      sorok.push(bekezdes);
+      sorok.push("");
+    }
+
+    const par = angolKulcsok.get(szakasz.kulcs);
+    if (par) {
+      sorok.push(`${par.sorszam}. ${par.cim}`);
+      sorok.push("");
+      for (const bekezdes of par.bekezdesek) {
+        sorok.push(bekezdes);
+        sorok.push("");
+      }
+    }
+  }
+
+  if (zaradek) {
+    sorok.push(ZARADEK_ZARO, "", ZARADEK_ZARO_EN, "");
+  }
+
+  sorok.push(...alairasSorok(bemenet, "hu"));
+  sorok.push("");
+  sorok.push(...alairasSorok(bemenet, "en"));
+
+  return sorok.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+}
+
 /** A megfelelő szöveg a fajta szerint, hogy a hívónak ne kelljen elágaznia. */
 export function okiratSzovege(bemenet: Bemenet, nyelv: Nyelv = "hu"): string {
   return bemenet.fajta === "zaradek"

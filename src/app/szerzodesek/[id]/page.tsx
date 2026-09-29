@@ -13,6 +13,8 @@ import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { szerzodesBemenet } from "@/lib/szerzodes";
 import { alairtPeldany } from "@/lib/alairt";
+import { ketnyelvuCimkek, ketnyelvuNezet } from "@/lib/ketnyelvu";
+import { KetnyelvuDontes } from "@/components/KetnyelvuDontes";
 import { allapota, MAX_MERET_BAJT, meretSzoveg } from "@/domain/alairt";
 import { NYITO } from "@/components/ui/alap";
 import {
@@ -47,7 +49,8 @@ export default async function SzerzodesOldal({
   const betoltott = await szerzodesBemenet(id, berbeado.id);
   if (!betoltott) notFound();
 
-  const { bemenet, megnevezes, allapot, veglegesSzoveg, veglegesSzovegEn, fajta } = betoltott;
+  const { bemenet, megnevezes, allapot, veglegesSzoveg, veglegesSzovegEn, veglegesSzovegKet, fajta } =
+    betoltott;
   // Véglegesítés után a befagyasztott fordítás, tervezetnél a mostani
   // modulszövegekből készült. Ami a fordítás előtt lett véglegesítve, ahhoz
   // nincs és nem is lesz: egy most készült fordítás már nem ahhoz a szöveghez
@@ -83,6 +86,10 @@ export default async function SzerzodesOldal({
 
   // Az aláírt példány csak véglegesített szerződéshez tartozik: a tervezet
   // szövege még változhat, tehát nincs mit aláírni rajta.
+  // A kétnyelvű példány kérdése: mindkét fél ugyanezt látja, ugyanabból a
+  // nézetből. Véglegesítés után már nem kérdés — a példány akkor fagyott be.
+  const ketnyelvu = await ketnyelvuNezet(id, berbeado.id);
+
   const alairt = szerkesztheto ? null : await alairtPeldany(id);
   const alairtAllapot = allapota(alairt);
   const alairtCimkek: AlairtCimkek = {
@@ -260,10 +267,19 @@ export default async function SzerzodesOldal({
         </ul>
       </details>
 
+      {/*
+        A modulparaméterek összecsukva állnak, mint a lap többi hosszú listája.
+        Nincs rajtuk mit eldönteni: amit a bérbeadó üresen hagy, az a modul
+        saját alapértelmezésével kerül a szövegbe — tehát a lap attól is kész
+        szerződést ad, hogy ide senki nem nyúlt. Nyitva ez a szakasz maga
+        elvitte a lap felét, és elnyomta azt, amiről tényleg dönteni kell.
+      */}
       {szerkesztheto ? (
-        <section className="rounded-kartya border border-keret bg-felulet p-4">
-          <h2 className="font-medium">{sz("szerzodes.beallitasok_cim")}</h2>
-          <p className="mb-3 text-sm text-halvany">
+        <details className="rounded-kartya border border-keret bg-felulet p-4">
+          <summary className={NYITO}>
+            {sz("szerzodes.beallitasok_nyito", { db: parameterek.length + 2 })}
+          </summary>
+          <p className="mb-3 mt-2 text-sm text-halvany">
             {sz("szerzodes.beallitasok_sugo")}
           </p>
           <ParameterUrlap
@@ -278,7 +294,7 @@ export default async function SzerzodesOldal({
               folyamatban: sz("szerzodes.mentem"),
             }}
           />
-        </section>
+        </details>
       ) : null}
 
       {/*
@@ -432,6 +448,42 @@ export default async function SzerzodesOldal({
           <p className="mt-3 text-sm text-szoveg">{sz("szerzodes.forditas_nincs_meg")}</p>
         )}
       </details>
+
+      {/*
+        A kétnyelvű példány. Nem a fordítás másik neve: az melléklet, ez
+        egyetlen okirat, amiben minden pont ott áll mindkét nyelven. Épp ezért
+        nem a bérbeadó egyedüli döntése — az okirat közös.
+      */}
+      {ketnyelvu ? (
+        <section className="rounded-kartya border border-keret bg-felulet p-4">
+          <h2 className="font-medium">{sz("ketnyelvu.cim")}</h2>
+          <p className="mb-3 mt-1 text-sm text-halvany">{sz("ketnyelvu.sugo")}</p>
+          {szerkesztheto ? (
+            <KetnyelvuDontes
+              szerzodesId={id}
+              nyilatkozhat
+              cimkek={ketnyelvuCimkek(ketnyelvu, sz)}
+            />
+          ) : veglegesSzovegKet ? (
+            <p className="flex flex-wrap gap-4 text-sm">
+              <a
+                href={`/szerzodesek/${id}/letoltes?nyelv=ket`}
+                className="underline underline-offset-2"
+              >
+                {sz("ketnyelvu.letoltes")}
+              </a>
+              <Link
+                href={`/szerzodesek/${id}/nyomtat?nyelv=ket`}
+                className="underline underline-offset-2"
+              >
+                {sz("ketnyelvu.nyomtatas")}
+              </Link>
+            </p>
+          ) : (
+            <p className="text-sm text-szoveg">{sz("ketnyelvu.nincs_vegleges")}</p>
+          )}
+        </section>
+      ) : null}
 
       {/*
         Az aláírt példány. Csak véglegesített szerződéshez van: amit a felek

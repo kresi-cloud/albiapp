@@ -233,10 +233,16 @@ export async function futtat(oldal) {
   await masikFul.close();
 
   await szakasztMent(oldal, { hu: "Ezt mar nem lehet beleirni.", en: "" });
-  all(
-    (await szakaszDoboz(oldal).locator('[data-uzenet="hiba"]').count()) > 0,
-    "a véglegesített szerződés szakaszát a kiszolgáló nem írja át",
-  );
+  // A hibasávot megvárjuk, nem megszámoljuk: a kiszolgálói művelet válasza
+  // megjön, a React viszont csak utána rajzolja ki a sávot, és egy azonnali
+  // számlálás olyankor nullát kapna — a próba a saját sietségén bukna el.
+  const elutasitva = await szakaszDoboz(oldal)
+    .locator('[data-uzenet="hiba"]')
+    .first()
+    .waitFor({ state: "visible", timeout: 10000 })
+    .then(() => true)
+    .catch(() => false);
+  all(elutasitva, "a véglegesített szerződés szakaszát a kiszolgáló nem írja át");
   const vegleges = await letoltes(oldal, `/szerzodesek/${id}/letoltes`);
   all(
     !vegleges.szoveg.includes("Ezt mar nem lehet beleirni."),

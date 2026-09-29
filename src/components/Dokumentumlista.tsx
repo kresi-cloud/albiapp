@@ -81,6 +81,14 @@ export function Dokumentumlista({
                       {sz("dokumentum.lista.forditas")}
                     </a>
                   ) : null}
+                  {sor.ketnyelvuLetoltes ? (
+                    <a
+                      href={sor.ketnyelvuLetoltes}
+                      className="text-kiemelt underline underline-offset-2"
+                    >
+                      {sz("dokumentum.lista.ketnyelvu")}
+                    </a>
+                  ) : null}
                   {sor.alairtLetoltes ? (
                     <a
                       href={sor.alairtLetoltes}

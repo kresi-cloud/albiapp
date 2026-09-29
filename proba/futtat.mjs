@@ -41,6 +41,7 @@ const PROBAK = [
   "./zaradek.mjs",
   "./szerzodes-fejezet.mjs",
   "./alairt-szerzodes.mjs",
+  "./ketnyelvu.mjs",
   "./igazolas.mjs",
   "./forditas.mjs",
   "./teendok.mjs",

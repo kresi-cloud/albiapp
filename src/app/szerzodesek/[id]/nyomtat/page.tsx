@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { okiratSzovege } from "@/domain/szerzodes-keszites";
-import { berloiIratSzovege } from "@/lib/dokumentumtar";
+import { ketnyelvuSzovege, okiratSzovege } from "@/domain/szerzodes-keszites";
+import { allapota as ketnyelvuAllapota } from "@/domain/szerzodes-ketnyelvu";
+import { berloiIratSzovege, berloiKetnyelvu } from "@/lib/dokumentumtar";
 import { belepettFelhasznalo } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
 import { szerzodesBemenet } from "@/lib/szerzodes";
@@ -44,23 +45,39 @@ export default async function NyomtatasOldal({
   // A fordítást külön kell kérni: nem a felület nyelvéből következik. A magyar
   // felületet használó bérbeadó is nyomtatni akarja az angolt a külföldi
   // bérlőjének.
-  const angol = (await searchParams).nyelv === "en";
+  const kertNyelv = (await searchParams).nyelv;
+  const angol = kertNyelv === "en";
+  // A kétnyelvű példány csak akkor van, ha a felek mindegyike támogatta.
+  const ketnyelvu = kertNyelv === "ket";
 
   let szoveg: string | null = null;
   let tervezet = false;
 
   if (felhasznalo.szerep === "berlo") {
-    const irat = await berloiIratSzovege("szerzodes", id, felhasznalo.id, angol ? "en" : "hu");
-    szoveg = irat?.szoveg ?? null;
+    szoveg = ketnyelvu
+      ? await berloiKetnyelvu(id, felhasznalo.id)
+      : ((await berloiIratSzovege("szerzodes", id, felhasznalo.id, angol ? "en" : "hu"))?.szoveg ??
+        null);
   } else {
     const betoltott = await szerzodesBemenet(id, felhasznalo.id);
     if (betoltott) {
       tervezet = betoltott.allapot !== "veglegesitve";
-      szoveg = angol
-        ? tervezet
-          ? okiratSzovege(betoltott.bemenet, "en")
-          : betoltott.veglegesSzovegEn
-        : (betoltott.veglegesSzoveg ?? okiratSzovege(betoltott.bemenet));
+      if (ketnyelvu) {
+        szoveg = tervezet
+          ? ketnyelvuAllapota(
+              betoltott.nyelvKerdezettek.map((fel) => fel.id),
+              betoltott.nyelvNyilatkozatok,
+            ) === "tamogatott"
+            ? ketnyelvuSzovege(betoltott.bemenet)
+            : null
+          : betoltott.veglegesSzovegKet;
+      } else {
+        szoveg = angol
+          ? tervezet
+            ? okiratSzovege(betoltott.bemenet, "en")
+            : betoltott.veglegesSzovegEn
+          : (betoltott.veglegesSzoveg ?? okiratSzovege(betoltott.bemenet));
+      }
     }
   }
 

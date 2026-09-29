@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { allapota, elo } from "@/domain/elofizetes";
 import { type Bemenet, type SajatSzoveg } from "@/domain/szerzodes-keszites";
+import { type Nyilatkozat } from "@/domain/szerzodes-ketnyelvu";
 import { elofizetesAdatta } from "@/lib/eloirasok";
 
 /**
@@ -19,6 +20,13 @@ export async function szerzodesBemenet(
   veglegesSzovegEn: string | null;
   fajta: string;
   alapSzerzodesId: string | null;
+  veglegesSzovegKet: string | null;
+  /**
+   * Kiket kérdezünk meg a kétnyelvű példányról: a bérbeadót és minden bérlőt,
+   * akinek van fiókja. Fiók nélkülit nem lehet megkérdezni.
+   */
+  nyelvKerdezettek: { id: string; nev: string; berbeado: boolean }[];
+  nyelvNyilatkozatok: Nyilatkozat[];
 } | null> {
   const szerzodes = await prisma.szerzodes.findFirst({
     where: { id: szerzodesId, jogviszony: { ingatlan: { tulajdonosId } } },
@@ -26,6 +34,7 @@ export async function szerzodesBemenet(
       modulok: { orderBy: [{ sorrend: "asc" }, { id: "asc" }] },
       parameterek: true,
       sajatSzovegek: true,
+      nyelvNyilatkozatok: true,
       alap: { select: { megnevezes: true, kelte: true, veglegesitve: true } },
       jogviszony: {
         include: {
@@ -82,8 +91,22 @@ export async function szerzodesBemenet(
       haviDijFt: sor.haviDijFt,
     }));
 
+  const nyelvKerdezettek = [
+    { id: berbeado.id, nev: berbeado.nev, berbeado: true },
+    ...jogviszony.berlok
+      .filter((berlo) => berlo.berloId !== null)
+      .map((berlo) => ({ id: berlo.berloId as string, nev: berlo.nev, berbeado: false })),
+  ];
+
   return {
     megnevezes: szerzodes.megnevezes,
+    veglegesSzovegKet: szerzodes.veglegesSzovegKet,
+    nyelvKerdezettek,
+    nyelvNyilatkozatok: szerzodes.nyelvNyilatkozatok.map((sor) => ({
+      felhasznaloId: sor.felhasznaloId,
+      tamogatja: sor.tamogatja,
+      indoklas: sor.indoklas,
+    })),
     allapot: szerzodes.allapot,
     veglegesSzoveg: szerzodes.veglegesSzoveg,
     veglegesSzovegEn: szerzodes.veglegesSzovegEn,
