@@ -310,6 +310,14 @@ export default async function SzerzodesOldal({
           >
             {sz("szerzodes.letoltes")}
           </a>
+          {/* Aláírni papíron kell: a nyomtatható példány ugyanazt a szöveget
+              adja, amit a letöltés, és PDF-et a nyomtatóablak ment belőle. */}
+          <Link
+            href={`/szerzodesek/${id}/nyomtat`}
+            className="text-sm underline underline-offset-2"
+          >
+            {sz("szerzodes.nyomtatas")}
+          </Link>
         </div>
 
         {veglegesSzoveg ? (
@@ -375,6 +383,12 @@ export default async function SzerzodesOldal({
               >
                 {sz("szerzodes.letoltes_angolul")}
               </a>
+              <Link
+                href={`/szerzodesek/${id}/nyomtat?nyelv=en`}
+                className="ml-4 text-sm underline underline-offset-2"
+              >
+                {sz("szerzodes.nyomtatas_angolul")}
+              </Link>
             </div>
             <pre className="mt-3 overflow-x-auto whitespace-pre-wrap text-sm leading-relaxed">
               {forditas}

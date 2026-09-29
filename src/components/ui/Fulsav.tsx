@@ -57,7 +57,7 @@ export function Fulsav({
   return (
     <>
       {nyitva ? (
-        <div className="fixed inset-0 z-40 bg-black/30 md:hidden" onClick={() => nyitvaAllit(false)}>
+        <div className="fixed inset-0 z-40 bg-black/30 md:hidden print:hidden" onClick={() => nyitvaAllit(false)}>
           <div
             className="absolute inset-x-0 bottom-0 rounded-t-2xl border-t border-keret bg-felulet pb-[calc(4.5rem+env(safe-area-inset-bottom))]"
             onClick={(esemeny) => esemeny.stopPropagation()}
@@ -93,7 +93,7 @@ export function Fulsav({
 
       <nav
         aria-label={tobbCimke}
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-keret bg-felulet pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-keret bg-felulet pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
       >
         <ul className="mx-auto flex max-w-lg">
           {fulek.map((elem) => {

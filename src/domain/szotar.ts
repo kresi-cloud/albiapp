@@ -1264,6 +1264,7 @@ export const SZOTAR: Szotar = {
   },
   "dokumentum.lista.megnyitom": { hu: "Megnyitom", en: "Open" },
   "dokumentum.lista.letoltom": { hu: "Letöltöm", en: "Download" },
+  "dokumentum.lista.nyomtatom": { hu: "Nyomtatás", en: "Print" },
   "dokumentum.lista.forditas": {
     hu: "Angol fordítás",
     en: "English translation",
@@ -3267,6 +3268,28 @@ export const SZOTAR: Szotar = {
   "szerzodes.beallitasok_sugo": {
     hu: "Csak azt kérdezzük, ami a bekapcsolt modulokhoz kell. Ami üresen marad, az az alapértelmezéssel kerül a szövegbe.",
     en: "We only ask what the modules you switched on need. Anything left empty goes into the text with its default.",
+  },
+  "szerzodes.nyomtatas": { hu: "Nyomtatás és PDF", en: "Print and PDF" },
+  "szerzodes.nyomtatas_angolul": {
+    hu: "Az angol fordítás nyomtatása",
+    en: "Print the English translation",
+  },
+  "nyomtatas.vissza": { hu: "← Vissza az okirathoz", en: "← Back to the document" },
+  "nyomtatas.cim": { hu: "Nyomtatható példány", en: "Printable copy" },
+  "nyomtatas.sugo": {
+    hu:
+      "Ez szóról szóra ugyanaz a szöveg, ami letölthető. PDF-hez a nyomtatóablakban " +
+      "válaszd a „Mentés PDF-be” lehetőséget: így a PDF és a papír ugyanaz, és nincs " +
+      "harmadik változat.",
+    en:
+      "This is word for word the same text as the download. For a PDF, choose \u201CSave as PDF\u201D " +
+      "in the print dialog: that way the PDF and the paper copy are the same, and there is no " +
+      "third version.",
+  },
+  "nyomtatas.gomb": { hu: "Nyomtatás", en: "Print" },
+  "nyomtatas.tervezet": {
+    hu: "TERVEZET — ezt még nem véglegesítette és nem írta alá senki.",
+    en: "DRAFT \u2014 this has not been finalised or signed by anyone yet.",
   },
   "szerzodes.szakaszok_nyito": {
     hu: "A szakaszok szövege átírható · {db} szakasz",

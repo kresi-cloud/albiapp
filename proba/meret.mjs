@@ -335,9 +335,17 @@ async function dokumentumUtjai(oldal, elotag) {
   // A letöltés útja is ezzel az előtaggal kezdődik, és nem mindig a
   // `/letoltes`-re végződik: a fordításé `?nyelv=en`-nel folytatódik. Arra
   // navigálva a böngésző letöltést indít, nem lapot rajzol.
+  //
+  // A nyomtatható példány (`/nyomtat`) szintén kimarad, és ez nem a korlát
+  // megkerülése. Az a lap maga az okirat: nem lista, ami az adattal együtt nő,
+  // és nincs is mit összecsukni rajta — egy nyomtatási nézet, ami elrejti a
+  // szöveg felét, épp arra használhatatlan, amiért van. Amit rajta mérni
+  // kell — hogy elfér 360 képponton, és hogy a képernyő kerete nem kerül
+  // papírra —, azt a `szerzodes-fejezet.mjs` méri meg.
+  //
   // Egy okirat több helyről is elérhető a lapról; mérni egyszer kell.
   const utak = await oldal
-    .locator(`a[href^="${elotag}"]:not([href*="/letoltes"])`)
+    .locator(`a[href^="${elotag}"]:not([href*="/letoltes"]):not([href*="/nyomtat"])`)
     .evaluateAll((elemek) => elemek.map((elem) => elem.getAttribute("href")));
   return [...new Set(utak)];
 }

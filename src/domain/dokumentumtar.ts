@@ -42,6 +42,11 @@ export type Dokumentum = {
    * hogy minden papírhoz jár angol példány.
    */
   forditasLetoltes?: string;
+  /**
+   * A nyomtatható példány. Csak ott van, ahol van ilyen lap: az okiratot alá
+   * kell írni, tehát papírra kerül, és a PDF-et a nyomtatóablak menti belőle.
+   */
+  nyomtatas?: string;
 };
 
 export type TarSzerzodes = {
@@ -106,6 +111,7 @@ export function jogviszonyDokumentumai(jogviszony: TarJogviszony): Dokumentum[] 
       allapotCimke: uzenet(vegleges ? "dokumentum.veglegesitve" : "dokumentum.tervezet"),
       megnyitas: `/szerzodesek/${szerzodes.id}`,
       letoltes: `/szerzodesek/${szerzodes.id}/letoltes`,
+      nyomtatas: `/szerzodesek/${szerzodes.id}/nyomtat`,
       forditasLetoltes:
         vegleges && szerzodes.vanForditas
           ? `/szerzodesek/${szerzodes.id}/letoltes?nyelv=en`

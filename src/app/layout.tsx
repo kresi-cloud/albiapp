@@ -189,7 +189,7 @@ export default async function RootLayout({
             magyar alapértelmezést kapná a telepítő ablakban. */}
         <link rel="manifest" href="/manifest.json" crossOrigin="use-credentials" />
         <Telepitheto />
-        <header className="sticky top-0 z-30 border-b border-keret bg-felulet/90 backdrop-blur">
+        <header className="sticky top-0 z-30 border-b border-keret bg-felulet/90 backdrop-blur print:hidden">
           <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-2.5">
             <Link href={berlo ? "/berlo" : "/"} className="shrink-0">
               <Nevhuzas />
@@ -223,7 +223,7 @@ export default async function RootLayout({
         <main className="mx-auto max-w-5xl px-4 py-5">{children}</main>
 
         <footer
-          className={`mx-auto max-w-5xl px-4 text-xs text-nagyon-halvany ${felhasznalo ? "also-sav-helye md:pb-6" : "pb-6"}`}
+          className={`mx-auto max-w-5xl px-4 text-xs text-nagyon-halvany print:hidden ${felhasznalo ? "also-sav-helye md:pb-6" : "pb-6"}`}
         >
           <nav className="flex flex-wrap gap-4">
             <Link href="/jogi/adatkezeles" className="hover:text-halvany">

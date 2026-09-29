@@ -142,6 +142,16 @@ describe("a bérlő nézete", () => {
       expect(sor.letoltes).toBeTruthy();
     }
   });
+
+  it("a szerződést a bérlő is ki tudja nyomtatni", () => {
+    // A nyomtatható példány nem szerkesztő oldal: a bérlőnek ugyanúgy jár,
+    // mint a letöltés, mert az aláíráshoz neki is papír kell. Csak a
+    // véglegesítettet kapja meg, ezt a kiszolgáló tartja be.
+    const szerzodes = berloDokumentumai(dokumentumtar([teli])).find(
+      (sor) => sor.fajta === "szerzodes",
+    );
+    expect(szerzodes?.nyomtatas).toBe("/szerzodesek/sz1/nyomtat");
+  });
 });
 
 describe("csoportosítás", () => {

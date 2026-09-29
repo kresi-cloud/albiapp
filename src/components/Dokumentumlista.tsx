@@ -65,6 +65,14 @@ export function Dokumentumlista({
                       {sz("dokumentum.lista.letoltom")}
                     </a>
                   ) : null}
+                  {sor.nyomtatas ? (
+                    <Link
+                      href={sor.nyomtatas}
+                      className="text-kiemelt underline underline-offset-2"
+                    >
+                      {sz("dokumentum.lista.nyomtatom")}
+                    </Link>
+                  ) : null}
                   {sor.forditasLetoltes ? (
                     <a
                       href={sor.forditasLetoltes}

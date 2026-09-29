@@ -146,3 +146,40 @@ body {
   outline-offset: 2px;
   border-radius: 0.375rem;
 }
+
+/* A nyomtatott lap.
+ *
+ * Az okiratot alá kell írni, tehát papírra kerül — és papíron a képernyő
+ * kerete csak zavar: a fejléc, a lábléc és a fülsáv `print:hidden`, a
+ * `main` pedig elengedi a maga margóit. A sötét módból sem lesz fekete lap:
+ * nyomtatáskor mindig fehér alapon fekete betű megy, mert a nyomtató a
+ * hátteret vagy kihagyja, vagy teleszínezi vele az oldalt.
+ *
+ * A PDF-et a böngésző nyomtatóablaka adja („Mentés PDF-be"), ezért nincs
+ * kiszolgálói PDF-készítőnk: egy okiratból nem lehet két változat. */
+@media print {
+  body {
+    background: #ffffff;
+    color: #000000;
+  }
+
+  main {
+    max-width: none;
+    padding: 0;
+  }
+
+  /* Az okirat szövege papíron: talpas betű, és a bekezdés nem törik ketté két
+     oldal között, ha elfér egyben. A `pre` sortörése marad, mert a szöveget
+     sortörésekkel együtt adtuk ki — az a szöveg, nem a tördelése. */
+  .okirat {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    orphans: 3;
+    widows: 3;
+  }
+
+  @page {
+    margin: 18mm 16mm;
+  }
+}

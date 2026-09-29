@@ -212,10 +212,24 @@ export async function futtat(oldal) {
   const masikFul = await oldal.context().newPage();
   await masikFul.goto(`${ALAP}/szerzodesek/${id}`);
   await masikFul.waitForLoadState("networkidle");
-  await masikFul.locator('input[name="azonossagEllenorizve"]').first().check();
-  await masikFul.getByRole("button", { name: /^Véglegesítés/ }).first().click();
-  await masikFul.waitForLoadState("networkidle");
-  await masikFul.waitForTimeout(500);
+
+  // Két kattintás is lehet belőle: ha a felek adataiból hiányzik valami, az
+  // első kattintás felsorolja a hiányokat, és a gomb „Véglegesítés mégis"
+  // lesz. A próbasor korábbi menetei írnak a bérlő adataiba, tehát ez futásról
+  // futásra változhat — egy kattintásra építve a próba máshol bukna el, mint
+  // ahol a baj van.
+  for (let probalkozas = 0; probalkozas < 2; probalkozas++) {
+    const jelolo = masikFul.locator('input[name="azonossagEllenorizve"]');
+    if ((await jelolo.count()) === 0) break;
+    await jelolo.first().check();
+    await masikFul.getByRole("button", { name: /^Véglegesítés/ }).first().click();
+    await masikFul.waitForLoadState("networkidle");
+    await masikFul.waitForTimeout(500);
+  }
+  all(
+    (await masikFul.locator('input[name="azonossagEllenorizve"]').count()) === 0,
+    "a szerződés véglegesítve lett a másik fülön",
+  );
   await masikFul.close();
 
   await szakasztMent(oldal, { hu: "Ezt mar nem lehet beleirni.", en: "" });
@@ -229,4 +243,83 @@ export async function futtat(oldal) {
     "a véglegesített okirat szövege nem változott meg",
   );
   all(vegleges.szoveg.includes(katalogusMondat), "a befagyasztott szöveg maradt érvényben");
+
+  await nyomtathato(oldal, id, vegleges.szoveg);
+}
+
+/**
+ * A nyomtatható példány.
+ *
+ * Amit ez megfog, és más nem: a lapon ugyanaz a szöveg áll, mint a
+ * letöltésben — egy okiratból nem lehet két változat —, a képernyő kerete
+ * (fejléc, lábléc, fülsáv) nem kerül papírra, és a bérlő csak a
+ * véglegesítettet nyithatja meg. A PDF-et a böngésző nyomtatóablaka menti, azt
+ * itt nem tudjuk megnyitni; amit meg lehet nézni, az az, hogy mit tenne
+ * papírra.
+ */
+async function nyomtathato(oldal, id, varhatoSzoveg) {
+  await oldal.goto(`${ALAP}/szerzodesek/${id}/nyomtat`);
+  await oldal.waitForLoadState("networkidle");
+
+  const lapon = await oldal.locator("pre.okirat").innerText();
+  all(
+    lapon.includes(katalogusMondatBol(varhatoSzoveg)),
+    "a nyomtatható lapon ugyanaz a szöveg áll, ami letölthető",
+  );
+  all((await tullogas(oldal)) <= 1, "a nyomtatható lap elfér 360 képponton");
+
+  // A képernyő kerete nem kerül papírra. A nyomtatási nézetet a böngésző
+  // médiatípusával kérjük le, nem a szemünkkel: a `print:hidden` osztály
+  // képernyőn semmit nem csinál, tehát képernyőn mérve az állítás mindig igaz
+  // lenne.
+  await oldal.emulateMedia({ media: "print" });
+  const keret = await oldal.evaluate(() => {
+    const latszik = (elem) => Boolean(elem && elem.getClientRects().length > 0);
+    return {
+      fejlec: latszik(document.querySelector("header")),
+      lablec: latszik(document.querySelector("footer")),
+      okirat: latszik(document.querySelector("pre.okirat")),
+      gomb: latszik(document.querySelector("button")),
+    };
+  });
+  all(!keret.fejlec, "nyomtatásban a fejléc nem látszik");
+  all(!keret.lablec, "nyomtatásban a lábléc nem látszik");
+  all(!keret.gomb, "nyomtatásban a nyomtatás gombja sem kerül papírra");
+  all(keret.okirat, "önpróba: az okirat szövege viszont papíron is ott van");
+  await oldal.emulateMedia({ media: "screen" });
+
+  // A bérlő is kinyomtathatja a magáét — de csak a véglegesítettet. A
+  // tervezet még változhat, és nem az, amit aláírtak; ezt a kiszolgáló tartja
+  // be, nem a hivatkozás elrejtése, ezért kell hozzá egy friss tervezet.
+  const tervezetId = await ujSzerzodestKeszit(oldal);
+
+  await belep(oldal, "anna@pelda.hu");
+  await magyarra(oldal);
+  const tervezetnel = await oldal.goto(`${ALAP}/szerzodesek/${tervezetId}/nyomtat`);
+  all(
+    tervezetnel?.status() === 404,
+    `a bérlő a tervezet nyomtatható példányát nem nyitja meg (${tervezetnel?.status()})`,
+  );
+
+
+  await magyarra(oldal);
+  const berlonel = await oldal.goto(`${ALAP}/szerzodesek/${id}/nyomtat`);
+  all(
+    (berlonel?.status() ?? 0) < 400,
+    `a bérlő is megnyitja a véglegesített szerződés nyomtatható példányát (${berlonel?.status()})`,
+  );
+  all(
+    (await oldal.locator("pre.okirat").count()) > 0,
+    "és a szerződés szövege ott is megjelenik",
+  );
+}
+
+/** Egy elég hosszú, jellegzetes mondat a kész okiratból, összevetéshez. */
+function katalogusMondatBol(szoveg) {
+  return (
+    szoveg
+      .split("\n")
+      .map((sor) => sor.trim())
+      .filter((sor) => sor.length > 60)[2] ?? ""
+  );
 }
