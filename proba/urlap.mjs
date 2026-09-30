@@ -82,6 +82,65 @@ async function berloiAdatlap(oldal) {
   );
 }
 
+/**
+ * A bérbeadó saját adatlapja: kilenc mező, és egy rossz számjegy.
+ *
+ * Ez az az eset, amit a tulajdonos élesben jelentett: az adóazonosítóba egy
+ * hibás szám, és a figyelmeztetés mellett mind a kilenc mező kiürült — az
+ * anyja neve és a bankszámlaszám is. A lap kimaradt a megőrző mezők
+ * átállításából, és semmi nem szólt: a kód olvasásán nem látszik, a
+ * típusellenőrzésen és a fordításon nem akad fenn.
+ *
+ * A mentés itt szándékosan elbukik, tehát ez a próba sem ment el semmit.
+ */
+async function berbeadoiAdatlap(oldal) {
+  await oldal.goto(`${ALAP}/beallitasok`);
+  await oldal.waitForLoadState("networkidle");
+  await mindetKinyit(oldal);
+
+  const urlap = oldal.locator('form:has(input[name="adoazonosito"])').first();
+  all((await urlap.count()) > 0, "a bérbeadó saját adatlapja megvan");
+
+  await urlap.locator('input[name="anyjaNeve"]').fill(`Próba Anyanév ${JEL}`);
+  await urlap.locator('input[name="szuletesiHely"]').fill(`Próbaváros ${JEL}`);
+  await urlap.locator('input[name="lakcim"]').fill(`1111 Próbaváros, Próba utca ${JEL}.`);
+  await urlap.locator('input[name="igazolvanySzam"]').fill(`${JEL}AB`);
+  await urlap.locator('input[name="bankszamla"]').fill("11111111-22222222-33333333");
+  await urlap.locator('input[name="bank"]').fill(`Próba Bank ${JEL}`);
+  await urlap.locator('input[name="telefon"]').fill("+36 30 000 2222");
+  await urlap.locator('input[name="szuletesiIdo"]').fill("1980-05-06");
+  // Kilenc számjegy, nem tíz: a kiszolgáló ezt utasítja el.
+  await urlap.locator('input[name="adoazonosito"]').fill("123456789");
+
+  await urlap.getByRole("button", { name: "Mentés", exact: true }).click();
+  await oldal.getByText("Az adóazonosító jel tíz számjegy.").first().waitFor({ timeout: 15000 });
+
+  // Mind a nyolc másik mező, nem csak egy: a hiba pont abban állt, hogy az
+  // egész űrlap ürült ki.
+  const vart = [
+    ["anyjaNeve", `Próba Anyanév ${JEL}`],
+    ["szuletesiHely", `Próbaváros ${JEL}`],
+    ["lakcim", `1111 Próbaváros, Próba utca ${JEL}.`],
+    ["igazolvanySzam", `${JEL}AB`],
+    ["bankszamla", "11111111-22222222-33333333"],
+    ["bank", `Próba Bank ${JEL}`],
+    ["telefon", "+36 30 000 2222"],
+    ["szuletesiIdo", "1980-05-06"],
+  ];
+  for (const [mezo, ertek] of vart) {
+    all(
+      (await urlap.locator(`input[name="${mezo}"]`).inputValue()) === ertek,
+      `elutasított bérbeadói adatlap után a(z) ${mezo} megmarad`,
+    );
+  }
+  // És a hibás mező sem ürül ki: a felhasználó abban akar egy jegyet javítani,
+  // nem újragépelni.
+  all(
+    (await urlap.locator('input[name="adoazonosito"]').inputValue()) === "123456789",
+    "és a hibásan beírt adóazonosító is ott marad, hogy javítani lehessen",
+  );
+}
+
 /** Szövegdoboz, választó és rádiógomb: a bérlő hibabejelentése. */
 async function hibabejelentes(oldal) {
   await oldal.goto(`${ALAP}/berlo/hibak`);
@@ -175,6 +234,7 @@ export async function futtat(oldal) {
   await magyarra(oldal);
   await oraallas(oldal);
   await berloiAdatlap(oldal);
+  await berbeadoiAdatlap(oldal);
   await legordulokKijeloltek(oldal, [
     ["/ingatlanok", "ingatlanId"],
     ["/ado", "ingatlanId"],
