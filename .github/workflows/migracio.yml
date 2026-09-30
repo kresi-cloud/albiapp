@@ -1,0 +1,79 @@
+# Éles adatbázis-migráció.
+#
+# Szándékosan **csak kézzel** indul (`workflow_dispatch`), nem a `main`-re
+# pusholásból. A fordítás sem futtat migrációt, és ez nem kényelmi döntés: egy
+# migráció megváltoztatja az éles adatbázist, és ott már valódi bérleti adat
+# lesz. Amit egy elkattintott telepítés elvinne, azt nem hozza vissza semmi —
+# tehát a döntés emberi, és nyoma is van: ki indította és mikor.
+#
+# A megerősítő szöveg azért kell, mert a GitHub felületén a „Run workflow" egy
+# kattintás, és pont az a munkafolyamat fut le véletlenül, amelyiknek nem
+# szabadna. Begépelni valamit nem lehet félreérteni.
+#
+# Amit ez a munkafolyamat **nem** tesz: nem tölt be példaadatot. A `prisma/seed.ts`
+# kitalált bérlőket és befizetéseket ír, azoknak az éles adatbázisban semmi
+# helyük.
+
+name: Éles migráció
+
+on:
+  workflow_dispatch:
+    inputs:
+      megerosites:
+        description: 'Írd be: migralok'
+        required: true
+        default: ''
+
+jobs:
+  migracio:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Megerősítés ellenőrzése
+        if: ${{ inputs.megerosites != 'migralok' }}
+        run: |
+          echo "A megerősítés nem 'migralok', ezért nem futtatok migrációt."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # A titok a **session pooler** (5432) címe, nem a tranzakciósé: a migráció
+      # tartós kapcsolatot kér, a 6543-as rövid kapcsolatokra való. A kettő
+      # felcserélve a migráció a kapcsolatok elfogyásán bukik el.
+      - name: A titok megléte
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_MIGRACIO_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "A SUPABASE_MIGRACIO_URL titok nincs felvéve a tárolóban."
+            echo "Settings → Secrets and variables → Actions → New repository secret."
+            exit 1
+          fi
+          echo "A titok megvan."
+
+      - name: Függőségek telepítése
+        run: npm ci
+
+      # Mit találna itt: melyik migráció futott már le, és mi jön. Ez a sor a
+      # naplóban marad, tehát utólag is megvan, mi volt az állapot a futás előtt.
+      - name: Migrációk állapota a futás előtt
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_MIGRACIO_URL }}
+        run: npx prisma migrate status || true
+
+      # `deploy`, nem `dev`: nem készít árnyékadatbázist, nem generál új
+      # migrációt, és nem kérdez. Csak a tárolóban álló, egymásra épülő
+      # migrációkat futtatja le sorban.
+      - name: Migrációk futtatása
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_MIGRACIO_URL }}
+        run: npx prisma migrate deploy
+
+      - name: Migrációk állapota a futás után
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_MIGRACIO_URL }}
+        run: npx prisma migrate status
