@@ -91,11 +91,11 @@ export async function berbeadoiAdatokatMent(
   // bekötve — megírva, tesztelve, de a felhasználóhoz soha nem ért el.
   const igazolvanySzam = szoveg(urlap.get("igazolvanySzam"));
   if (igazolvanyGyanus(igazolvanySzam)) {
-    return hiba(sz("adatok.hiba.igazolvany"), ["igazolvanySzam"]);
+    return hiba(sz("adatok.hiba.igazolvany"));
   }
   const adoazonosito = szoveg(urlap.get("adoazonosito"));
   if (adoazonositoGyanus(adoazonosito)) {
-    return hiba(sz("adatok.hiba.adoazonosito"), ["adoazonosito"]);
+    return hiba(sz("adatok.hiba.adoazonosito"));
   }
 
   const adatok = {

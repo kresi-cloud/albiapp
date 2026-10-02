@@ -192,7 +192,7 @@ export async function berloAdataitMenti(_elozo: Eredmeny, urlap: FormData): Prom
   // maga adja meg.
   const igazolvanySzam = szoveg(urlap.get("igazolvanySzam"));
   if (igazolvanyGyanus(igazolvanySzam)) {
-    return hiba(sz("adatok.hiba.igazolvany"), ["igazolvanySzam"]);
+    return hiba(sz("adatok.hiba.igazolvany"));
   }
 
   await prisma.jogviszonyBerlo.update({
@@ -269,11 +269,11 @@ export async function jogviszonytLezarAction(
 
   const nyersNap = szoveg(urlap.get("vege"));
   if (!/^\d{4}-\d{2}-\d{2}$/.test(nyersNap)) {
-    return hiba(sz("valasz.lezaras_datum_kell"), ["vege"]);
+    return hiba(sz("valasz.lezaras_datum_kell"));
   }
   const vege = new Date(`${nyersNap}T00:00:00.000Z`);
   if (Number.isNaN(vege.getTime())) {
-    return hiba(sz("valasz.lezaras_datum_kell"), ["vege"]);
+    return hiba(sz("valasz.lezaras_datum_kell"));
   }
 
   const eredmeny = await jogviszonytLezar(berbeado.id, szoveg(urlap.get("jogviszonyId")), vege);
@@ -282,7 +282,6 @@ export async function jogviszonytLezarAction(
   if (eredmeny.allapot === "vege_a_kezdet_elott") {
     return hiba(
       sz("valasz.lezaras_vege_a_kezdet_elott", { kezdete: datumNyelven(eredmeny.kezdete, nyelv) }),
-      ["vege"],
     );
   }
 
@@ -384,7 +383,10 @@ export async function dijValtozastRogzitAction(
 
   const kifogasok = dijValtozastEllenoriz(bemenet);
   if (kifogasok.length > 0) {
-    return hiba(u(kifogasok[0].uzenet), kifogasok.map((kifogas) => kifogas.mezo));
+    return hiba(
+      u(kifogasok[0].uzenet),
+      kifogasok.slice(1).map((kifogas) => u(kifogas.uzenet)),
+    );
   }
 
   const eredmeny = await dijValtozastRogzit(berbeado.id, jogviszony.id, {

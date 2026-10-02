@@ -38,12 +38,12 @@ export async function sajatAdatokatMent(
 
   const nev = szoveg(urlap.get("nev"));
   if (nev === "") {
-    return { allapot: "hiba", uzenet: sz("adatok.mezo.nev"), hibak: ["nev"] };
+    return { allapot: "hiba", uzenet: sz("berlok.hiba.nev_ures"), hibak: [] };
   }
 
   const igazolvanySzam = szoveg(urlap.get("igazolvanySzam"));
   if (igazolvanyGyanus(igazolvanySzam)) {
-    return { allapot: "hiba", uzenet: sz("adatok.hiba.igazolvany"), hibak: ["igazolvanySzam"] };
+    return { allapot: "hiba", uzenet: sz("adatok.hiba.igazolvany"), hibak: [] };
   }
 
   const darab = await berloSajatAdatait(berlo.id, {
