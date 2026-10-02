@@ -12,8 +12,8 @@ export type Eredmeny = {
   hibak: string[];
 };
 
-function hiba(uzenet: string, hibak: string[] = []): Eredmeny {
-  return { allapot: "hiba", uzenet, hibak };
+function hiba(uzenet: string): Eredmeny {
+  return { allapot: "hiba", uzenet, hibak: [] };
 }
 
 function szoveg(ertek: FormDataEntryValue | null): string {
@@ -60,10 +60,10 @@ export async function beerkezestRogzit(_elozo: Eredmeny, urlap: FormData): Promi
   }
 
   const nap = napot(szoveg(urlap.get("erkezesDatuma")));
-  if (!nap) return hiba(sz("valasz.datum_kell"), ["erkezesDatuma"]);
+  if (!nap) return hiba(sz("valasz.datum_kell"));
 
   const osszegFt = forintot(szoveg(urlap.get("osszegFt")));
-  if (osszegFt === null || osszegFt <= 0) return hiba(sz("valasz.osszeg_kell"), ["osszegFt"]);
+  if (osszegFt === null || osszegFt <= 0) return hiba(sz("valasz.osszeg_kell"));
 
   // Az előíráshoz kötés nem kötelező: a párosítás az időablak alapján megy.
   // Az előírás azonosítója csak arra kell, hogy a korábbi tagadást leváltsa.

@@ -12,8 +12,8 @@ export type Eredmeny = {
   hibak: string[];
 };
 
-function hiba(uzenet: string, hibak: string[] = []): Eredmeny {
-  return { allapot: "hiba", uzenet, hibak };
+function hiba(uzenet: string): Eredmeny {
+  return { allapot: "hiba", uzenet, hibak: [] };
 }
 
 function szoveg(ertek: FormDataEntryValue | null): string {
@@ -42,20 +42,20 @@ export async function kepetFeltolt(_elozo: Eredmeny, urlap: FormData): Promise<E
   const jegyzokonyvId = szoveg(urlap.get("jegyzokonyvId"));
 
   const fajl = urlap.get("kep");
-  if (!(fajl instanceof File)) return hiba(sz("kep.hiba.ures"), ["kep"]);
+  if (!(fajl instanceof File)) return hiba(sz("kep.hiba.ures"));
 
   const baj = kepetEllenoriz(
     { nev: fajl.name, tipus: fajl.type, meretBajt: fajl.size },
     await kepekSzama(jegyzokonyvId),
   );
-  if (baj) return hiba(u(baj), ["kep"]);
+  if (baj) return hiba(u(baj));
 
   // A bejelentett típus a feltöltő gépéről jön; a tartalmat viszont a másik
   // fél böngészője fogja megnyitni a mi címünkön. Ezért a fájl elejéből
   // állapítjuk meg, mi az valójában, és azt is tároljuk el.
   const tartalom = new Uint8Array(await fajl.arrayBuffer());
   const valodiTipus = tipusATartalombol(tartalom.subarray(0, 16));
-  if (valodiTipus === null) return hiba(sz("kep.hiba.tartalom"), ["kep"]);
+  if (valodiTipus === null) return hiba(sz("kep.hiba.tartalom"));
 
   const megnevezes = szoveg(urlap.get("megnevezes"));
   const eredmeny = await kepetMent(ki, {
@@ -98,7 +98,7 @@ export async function kepetElbiralAction(_elozo: Eredmeny, urlap: FormData): Pro
   const dontes = szoveg(urlap.get("dontes"));
   const kifogas = szoveg(urlap.get("kifogas"));
   if (dontes === "kifogas" && kifogas === "") {
-    return hiba(sz("kep.kifogas_kell"), ["kifogas"]);
+    return hiba(sz("kep.kifogas_kell"));
   }
 
   const eredmeny = await kepetElbiral(

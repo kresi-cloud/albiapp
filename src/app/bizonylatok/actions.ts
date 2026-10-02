@@ -12,8 +12,8 @@ export type Eredmeny = {
   hibak: string[];
 };
 
-function hiba(uzenet: string, hibak: string[] = []): Eredmeny {
-  return { allapot: "hiba", uzenet, hibak };
+function hiba(uzenet: string): Eredmeny {
+  return { allapot: "hiba", uzenet, hibak: [] };
 }
 
 function szoveg(ertek: FormDataEntryValue | null): string {
@@ -49,7 +49,7 @@ export async function bizonylatotFeltolt(
   }
 
   const fajl = urlap.get("bizonylat");
-  if (!(fajl instanceof File)) return hiba(sz("bizonylat.hiba.ures"), ["bizonylat"]);
+  if (!(fajl instanceof File)) return hiba(sz("bizonylat.hiba.ures"));
 
   const tartalom = new Uint8Array(await fajl.arrayBuffer());
 
@@ -61,14 +61,14 @@ export async function bizonylatotFeltolt(
     tipus: valodiTipus ?? "",
     meretBajt: fajl.size,
   });
-  if (baj) return hiba(u(baj), ["bizonylat"]);
+  if (baj) return hiba(u(baj));
 
   const sikerult = await bizonylatotMent(ki, eloirtTetelId, {
     nev: fajl.name,
     tipus: valodiTipus ?? "",
     tartalom,
   });
-  if (!sikerult) return hiba(sz("bizonylat.hiba.lakotarse"), ["bizonylat"]);
+  if (!sikerult) return hiba(sz("bizonylat.hiba.lakotarse"));
 
   frissit();
   return { allapot: "kesz", uzenet: sz("bizonylat.kesz"), hibak: [] };

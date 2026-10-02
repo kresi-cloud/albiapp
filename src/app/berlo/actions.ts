@@ -12,8 +12,8 @@ export type Eredmeny = {
   hibak: string[];
 };
 
-function hiba(uzenet: string, hibak: string[] = []): Eredmeny {
-  return { allapot: "hiba", uzenet, hibak };
+function hiba(uzenet: string): Eredmeny {
+  return { allapot: "hiba", uzenet, hibak: [] };
 }
 
 function szoveg(ertek: FormDataEntryValue | null): string {
@@ -55,10 +55,10 @@ export async function utalastRogzit(_elozo: Eredmeny, urlap: FormData): Promise<
   if (!sajat) return hiba(sz("valasz.nincs_jogosultsag"));
 
   const nap = napot(szoveg(urlap.get("utalasDatuma")));
-  if (!nap) return hiba(sz("valasz.datum_kell"), ["utalasDatuma"]);
+  if (!nap) return hiba(sz("valasz.datum_kell"));
 
   const osszegFt = forintot(szoveg(urlap.get("osszegFt")));
-  if (osszegFt === null || osszegFt <= 0) return hiba(sz("valasz.osszeg_kell"), ["osszegFt"]);
+  if (osszegFt === null || osszegFt <= 0) return hiba(sz("valasz.osszeg_kell"));
 
   await prisma.berloiIgazolas.create({
     data: {

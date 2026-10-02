@@ -14,7 +14,7 @@ import {
   type Eredmeny,
 } from "./actions";
 
-const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", hibak: [], figyelmeztetesek: [] };
+const KEZDETI: Eredmeny = { allapot: "ures", uzenet: "", mezok: [], figyelmeztetesek: [] };
 
 export type MerooraCimkek = {
   tipus: string;

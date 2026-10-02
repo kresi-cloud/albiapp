@@ -18,7 +18,7 @@ export async function betekintotAd(_elozo: Eredmeny, urlap: FormData): Promise<E
 
   const cel = szoveg(urlap.get("cel"));
   if (cel === "") {
-    return { allapot: "hiba", uzenet: sz("valasz.betekinto_cel_kell"), hibak: ["cel"] };
+    return { allapot: "hiba", uzenet: sz("valasz.betekinto_cel_kell"), hibak: [] };
   }
 
   const napok = Number(szoveg(urlap.get("napok")));

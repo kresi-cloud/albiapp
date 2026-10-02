@@ -9,9 +9,15 @@
  * Mindhárom eset ugyanazt a kérdést teszi fel más-más mezőfajtára: beküldök
  * valamit, amit a kiszolgáló visszadob, és utána még ott van-e, amit gépeltem.
  * Egyik eset sem ment el semmit, tehát a próba tetszőleges sokszor futtatható.
+ *
+ * A második kérdés ugyanerről a pillanatról: mit *mond* a figyelmeztetés. A
+ * tulajdonos élesben azt látta, hogy alatta egy pont a mező belső nevét írja
+ * („adoazonosito"). A felhasználónak az semmit nem jelent, és a kétnyelvűségen
+ * is kívül esik, mert nem a szótáron ment át. Ezért a `nincsMezonev` minden
+ * elutasítás után megnézi a felsorolást, mindkét nyelven.
  */
 
-import { ALAP, all, belep, magyarra, mindetKinyit } from "./kozos.mjs";
+import { ALAP, all, angolra, belep, magyarra, mindetKinyit } from "./kozos.mjs";
 
 export const nev = "Az elutasított mentés megőrzi a begépelt adatot";
 
@@ -20,6 +26,21 @@ const JEL = String(Date.now()).slice(-6);
 // és a számot ki is olvassuk belőle, tehát egy »nem olvasható 123456«-ból
 // százhuszonháromezer-négyszázötvenhat lenne, és a mentés sikerülne.
 const BETUJEL = JEL.replace(/\d/g, (jegy) => "abcdefghij"[Number(jegy)]);
+
+/**
+ * A figyelmeztetés felsorolásában nem állhat mezőnév.
+ *
+ * Nem a mezőnevek listájához mérünk, hanem az alakhoz: a felsorolás minden
+ * pontja a felhasználónak szóló mondat, tehát több szóból áll. Egyetlen,
+ * szóközt sem tartalmazó azonosító („adoazonosito", „igazolvanySzam") mindig
+ * mezőnév — és ez a mérés akkor is fog, ha olyan név kerül bele, ami ezen az
+ * űrlapon nincs is.
+ */
+async function nincsMezonev(oldal, hol) {
+  const pontok = await oldal.locator('[data-uzenet="hiba"] li').allInnerTexts();
+  const gyanus = pontok.map((pont) => pont.trim()).filter((pont) => /^[A-Za-z][A-Za-z0-9]*$/.test(pont));
+  all(gyanus.length === 0, `${hol}: a figyelmeztetés nem ír mezőnevet${gyanus.length ? ` (${gyanus.join(", ")})` : ""}`);
+}
 
 /** Szövegmező és dátum: az óraállás rögzítése. */
 async function oraallas(oldal) {
@@ -139,6 +160,38 @@ async function berbeadoiAdatlap(oldal) {
     (await urlap.locator('input[name="adoazonosito"]').inputValue()) === "123456789",
     "és a hibásan beírt adóazonosító is ott marad, hogy javítani lehessen",
   );
+
+  await nincsMezonev(oldal, "bérbeadói adatlap magyarul");
+}
+
+/**
+ * Ugyanaz az elutasítás angolul.
+ *
+ * A felsorolás azért kap külön mérést a másik nyelven is, mert pont az volt a
+ * baja, hogy nem a szótáron ment át: magyarul és angolul ugyanazt az
+ * azonosítót írta ki. Csak magyarul mérve ez a fele őrizetlen maradna.
+ */
+async function berbeadoiAdatlapAngolul(oldal) {
+  await angolra(oldal);
+  await oldal.goto(`${ALAP}/beallitasok`);
+  await oldal.waitForLoadState("networkidle");
+  await mindetKinyit(oldal);
+
+  const urlap = oldal.locator('form:has(input[name="adoazonosito"])').first();
+  all((await urlap.count()) > 0, "a bérbeadó adatlapja angolul is megvan");
+
+  await urlap.locator('input[name="adoazonosito"]').fill("12345678");
+  await urlap.getByRole("button", { name: "Save", exact: true }).click();
+  await oldal
+    .getByText("The tax identification number is ten digits.")
+    .first()
+    .waitFor({ timeout: 15000 });
+
+  await nincsMezonev(oldal, "bérbeadói adatlap angolul");
+
+  // A választott nyelv sütiben ül, tehát a következő próba a mi beállításunkat
+  // kapná meg: visszaállítjuk, ahogy a nyelvpróba is teszi.
+  await magyarra(oldal);
 }
 
 /** Szövegdoboz, választó és rádiógomb: a bérlő hibabejelentése. */
@@ -235,6 +288,7 @@ export async function futtat(oldal) {
   await oraallas(oldal);
   await berloiAdatlap(oldal);
   await berbeadoiAdatlap(oldal);
+  await berbeadoiAdatlapAngolul(oldal);
   await legordulokKijeloltek(oldal, [
     ["/ingatlanok", "ingatlanId"],
     ["/ado", "ingatlanId"],

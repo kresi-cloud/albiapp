@@ -10,7 +10,7 @@ import { ingatlantFelvesz, jogviszonytInditAction, type Eredmeny } from "./actio
 const KEZDETI: Eredmeny = {
   allapot: "ures",
   uzenet: "",
-  hibak: [],
+  mezok: [],
   figyelmeztetesek: [],
 };
 
@@ -287,7 +287,7 @@ function Mezo({
   kotelezo?: boolean;
   allapot: Eredmeny;
 }) {
-  const hibas = allapot.hibak.includes(nev);
+  const hibas = allapot.mezok.includes(nev);
   const osszeg = tipus === OSSZEGMEZO;
 
   return (

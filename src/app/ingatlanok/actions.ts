@@ -34,7 +34,12 @@ import { szovegek } from "@/lib/nyelv";
 export type Eredmeny = {
   allapot: "ures" | "kesz" | "hiba";
   uzenet: string;
-  hibak: string[];
+  /**
+   * Melyik mezőkre vonatkozik a hiba. Nem `hibak`, mert azt a felsorolást a
+   * felhasználó olvassa: oda mezőnév nem kerülhet. Ez a megjelölésé, a
+   * felületen nem látszik — ugyanaz az elv, mint a szerződés `mezo` mezőjénél.
+   */
+  mezok: string[];
   /** Amit elmentettünk, de szólunk róla. Üres, ha nincs ilyen. */
   figyelmeztetesek: string[];
 };
@@ -84,7 +89,7 @@ export async function ingatlantFelvesz(
     return {
       allapot: "hiba",
       uzenet: u(kifogasok[0].uzenet),
-      hibak: kifogasok.map((kifogas) => kifogas.mezo),
+      mezok: kifogasok.map((kifogas) => kifogas.mezo),
       figyelmeztetesek: [],
     };
   }
@@ -98,7 +103,7 @@ export async function ingatlantFelvesz(
   return {
     allapot: "kesz",
     uzenet: sz("berlemeny.mentve"),
-    hibak: [],
+    mezok: [],
     figyelmeztetesek: ingatlanFigyelmeztetesei(bemenet).map(u),
   };
 }
@@ -127,7 +132,7 @@ export async function jogviszonytInditAction(
     return {
       allapot: "hiba",
       uzenet: u(kifogasok[0].uzenet),
-      hibak: kifogasok.map((kifogas) => kifogas.mezo),
+      mezok: kifogasok.map((kifogas) => kifogas.mezo),
       figyelmeztetesek: [],
     };
   }
@@ -144,7 +149,7 @@ export async function jogviszonytInditAction(
     return {
       allapot: "hiba",
       uzenet: sz("berlemeny.hiba.cim"),
-      hibak: ["ingatlanId"],
+      mezok: ["ingatlanId"],
       figyelmeztetesek: [],
     };
   }
@@ -157,7 +162,7 @@ export async function jogviszonytInditAction(
   return {
     allapot: "kesz",
     uzenet: sz("jogviszony.mentve"),
-    hibak: [],
+    mezok: [],
     figyelmeztetesek: jogviszonyFigyelmeztetesei(bemenet, ma).map(u),
   };
 }
@@ -173,8 +178,14 @@ function merooraUrlaprol(urlap: FormData): MerooraBemenet {
   };
 }
 
-function merooraHiba(hibak: string[]): Eredmeny {
-  return { allapot: "hiba", uzenet: hibak[0], hibak: [], figyelmeztetesek: [] };
+/**
+ * A mérőóra- és díjszabás-űrlapok hibája. A paraméter neve szándékosan nem
+ * `hibak`: az a felhasználónak szóló felsorolás neve az `Uzenetsav`-ban, ez
+ * pedig a mondat, amiből az első kerül ki. (Több kifogásból továbbra is csak
+ * az első látszik; ez a lap így működött eddig is.)
+ */
+function merooraHiba(uzenetek: string[]): Eredmeny {
+  return { allapot: "hiba", uzenet: uzenetek[0], mezok: [], figyelmeztetesek: [] };
 }
 
 function merooraFrissit(): void {
@@ -219,7 +230,7 @@ export async function merooratFelveszAction(
   if (!sikerult) return merooraHiba([sz("berlemeny.hiba.cim")]);
 
   merooraFrissit();
-  return { allapot: "kesz", uzenet: sz("meroora.kesz"), hibak: [], figyelmeztetesek: [] };
+  return { allapot: "kesz", uzenet: sz("meroora.kesz"), mezok: [], figyelmeztetesek: [] };
 }
 
 export async function merooratModositAction(
@@ -241,7 +252,7 @@ export async function merooratModositAction(
   if (eredmeny !== "kesz") return merooraHiba([merooraUzenete(sz, eredmeny)]);
 
   merooraFrissit();
-  return { allapot: "kesz", uzenet: sz("meroora.modositva"), hibak: [], figyelmeztetesek: [] };
+  return { allapot: "kesz", uzenet: sz("meroora.modositva"), mezok: [], figyelmeztetesek: [] };
 }
 
 export async function merooratTorolAction(
@@ -255,7 +266,7 @@ export async function merooratTorolAction(
   if (eredmeny !== "kesz") return merooraHiba([merooraUzenete(sz, eredmeny)]);
 
   merooraFrissit();
-  return { allapot: "kesz", uzenet: sz("meroora.torolve"), hibak: [], figyelmeztetesek: [] };
+  return { allapot: "kesz", uzenet: sz("meroora.torolve"), mezok: [], figyelmeztetesek: [] };
 }
 
 export async function dijszabastFelveszAction(
@@ -298,7 +309,7 @@ export async function dijszabastFelveszAction(
   return {
     allapot: "kesz",
     uzenet: sz("dijszabas.kesz"),
-    hibak: [],
+    mezok: [],
     figyelmeztetesek: dijszabasFigyelmeztetesei(bemenet).map(u),
   };
 }
@@ -314,5 +325,5 @@ export async function dijszabastTorolAction(
   if (eredmeny !== "kesz") return merooraHiba([dijszabasUzenete(sz, eredmeny)]);
 
   merooraFrissit();
-  return { allapot: "kesz", uzenet: sz("dijszabas.torolve"), hibak: [], figyelmeztetesek: [] };
+  return { allapot: "kesz", uzenet: sz("dijszabas.torolve"), mezok: [], figyelmeztetesek: [] };
 }
