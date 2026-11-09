@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { osszegetForintra } from "@/domain/penz";
+import { urlapForint } from "@/domain/penz";
 import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
@@ -28,11 +28,18 @@ export async function koltsegetRogzit(_elozo: Eredmeny, urlap: FormData): Promis
   const nap = napotOlvas(urlap.get("datum"));
   const megnevezes = String(urlap.get("megnevezes") ?? "").trim();
   const fajta = String(urlap.get("fajta") ?? "egyeb");
-  const osszegFt = osszegetForintra(String(urlap.get("osszegFt") ?? ""));
+  // `urlapForint`, nem `osszegetForintra`: az olvashatatlan értéket `NaN`-nal
+  // jelzi, és van felső korlátja. Enélkül egy elgépelt, irreálisan nagy összeg
+  // nem hibaüzenetet adott, hanem 500-as hibalapot — az egész számot túlcsorduló
+  // érték a `Int` oszlopba nem ment be. Ugyanaz az elv, mint a mérőóra
+  // állásánál: a felső korlát is a bemenet ellenőrzése.
+  const osszegFt = urlapForint(urlap.get("osszegFt"));
 
   if (!nap) return hiba(sz("ado.hiba.datum"));
   if (megnevezes === "") return hiba(sz("ado.hiba.megnevezes"));
-  if (osszegFt === null || osszegFt <= 0) return hiba(sz("ado.hiba.osszeg"));
+  if (osszegFt === null || Number.isNaN(osszegFt) || osszegFt <= 0) {
+    return hiba(sz("ado.hiba.osszeg"));
+  }
 
   const ingatlan = await prisma.ingatlan.findFirst({
     where: { id: ingatlanId, tulajdonosId: berbeado.id },
@@ -54,9 +61,11 @@ export async function beszerzestRogzit(_elozo: Eredmeny, urlap: FormData): Promi
 
   const ingatlanId = String(urlap.get("ingatlanId") ?? "");
   const nap = napotOlvas(urlap.get("beszerzesDatuma"));
-  const ar = osszegetForintra(String(urlap.get("beszerzesiArFt") ?? ""));
+  const ar = urlapForint(urlap.get("beszerzesiArFt"));
 
-  if (ar === null || ar <= 0) return hiba(sz("ado.hiba.beszerzesi_ar"));
+  if (ar === null || Number.isNaN(ar) || ar <= 0) {
+    return hiba(sz("ado.hiba.beszerzesi_ar"));
+  }
 
   const ingatlan = await prisma.ingatlan.findFirst({
     where: { id: ingatlanId, tulajdonosId: berbeado.id },

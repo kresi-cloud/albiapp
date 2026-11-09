@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { eloirasok, haviDijak, type Eloiras, type JogviszonyAdat } from "../eloirasok";
+import {
+  eloirasok,
+  haviDijak,
+  teljesHaviOsszeg,
+  utolsoDijak,
+  type Eloiras,
+  type JogviszonyAdat,
+} from "../eloirasok";
 import type { ElofizetesAdat } from "../elofizetes";
 
 function jogviszony(reszlet: Partial<JogviszonyAdat> = {}): JogviszonyAdat {
@@ -386,6 +393,72 @@ describe("díjemelés", () => {
         (sor) => sor.tipus === "rezsi_atalany",
       ),
     ).toBe(false);
+  });
+
+  /**
+   * Erre épül a díjemelés űrlapjának előtöltése. Amíg az a jogviszony eredeti
+   * összegeit kínálta fel, a második emelésnél a békén hagyott közös költség
+   * csendben visszaesett az eredetire — és így is került előírásba.
+   */
+  it("a legkésőbb rögzített szint az, amire a következő emelés épül", () => {
+    const masodik = {
+      ervenyesTol: new Date(Date.UTC(2026, 5, 1)),
+      berletiDijFt: 210000,
+      kozosKoltsegFt: 16000,
+      rezsiAtalanyFt: 0,
+    };
+    const adat = jogviszony({ kozosKoltsegFt: 14000, dijValtozasok: [masodik, emeles] });
+    expect(utolsoDijak(adat).berletiDijFt).toBe(210000);
+    expect(utolsoDijak(adat).kozosKoltsegFt).toBe(16000);
+
+    // Emelés nélkül a jogviszony saját összegei a kiindulás.
+    const emelesNelkul = jogviszony({ kozosKoltsegFt: 14000 });
+    expect(utolsoDijak(emelesNelkul).berletiDijFt).toBe(180000);
+    expect(utolsoDijak(emelesNelkul).kozosKoltsegFt).toBe(14000);
+  });
+
+  it("almérős jogviszonynál az utolsó szint átalánya is nulla", () => {
+    const adat = jogviszony({
+      rezsiElszamolas: "almero",
+      dijValtozasok: [{ ...emeles, rezsiAtalanyFt: 25000 }],
+    });
+    expect(utolsoDijak(adat).rezsiAtalanyFt).toBe(0);
+  });
+
+  /**
+   * Ebből tudja meg a lezárás, hogy a záró hónap előírása a rendszer saját
+   * sora-e. Amíg a jogviszony eredeti összegét vette, a díjemelés utáni záró
+   * hónap „ember által átírtnak" minősült, és a bérlő tíz napra a teljes havi
+   * emelt díjat kapta kiírva, részletezés nélkül.
+   */
+  it("a teljes havi összeg a hónapra érvényes szintből jön, nem az eredetiből", () => {
+    const adat = jogviszony({
+      kozosKoltsegFt: 14000,
+      dijValtozasok: [emeles],
+    });
+    // Az emelés 2026-03-01-jétől 195 000 / 16 000.
+    expect(teljesHaviOsszeg(adat, 2026, 1, "berleti_dij", "")).toBe(180000);
+    expect(teljesHaviOsszeg(adat, 2026, 2, "berleti_dij", "")).toBe(195000);
+    expect(teljesHaviOsszeg(adat, 2026, 1, "kozos_koltseg", "")).toBe(14000);
+    expect(teljesHaviOsszeg(adat, 2026, 2, "kozos_koltseg", "")).toBe(16000);
+  });
+
+  it("a teljes havi összeg előfizetésnél a saját sorából jön", () => {
+    const elofizetes: ElofizetesAdat = {
+      id: "e1",
+      fajta: "internet",
+      megnevezes: "Internet",
+      szolgaltato: null,
+      elofizeto: "berbeado",
+      haviDijFt: 6490,
+      kezdete: new Date(Date.UTC(2026, 0, 1)),
+      vege: null,
+      nyilatkozatok: [{ berloId: "b1", allapot: "jovahagyva", indoklas: null }],
+    };
+    const adat = jogviszony({ elofizetesek: [elofizetes], fiokosBerlok: ["b1"] });
+    expect(teljesHaviOsszeg(adat, 2026, 2, "elofizetes", "e1")).toBe(6490);
+    // Ami nincs, arra nem tippelünk.
+    expect(teljesHaviOsszeg(adat, 2026, 2, "elofizetes", "nincs-ilyen")).toBe(0);
   });
 
   it("a hónap közepére keltezett emelés csak a következő hónaptól számít", () => {

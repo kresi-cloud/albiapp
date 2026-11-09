@@ -115,6 +115,106 @@ async function letoltes(oldal, ut) {
   return { kod: valasz.status(), szoveg: await valasz.text() };
 }
 
+/**
+ * A szerződés **összegparamétere**: szövegmező, és a magyar alakot is érti.
+ *
+ * A mező `type="number"` volt, és a böngésző abból a magyar alakot vagy
+ * félreolvassa, vagy el sem küldi: a „szünet havi díja" rovatba beírt
+ * „50.000"-ből az aláírandó okiratban „50 Ft, azaz ötven forint" lett, a
+ * „50 000"-ből pedig üres érték — és a díj mondata szó nélkül kimaradt.
+ * Ugyanaz a hiba, amiből kilenc hónapnyi 180 forintos bérleti díj lett.
+ *
+ * A próba a modult a végén vissza is kapcsolja, hogy a véglegesítés ugyanazt
+ * az okiratot kapja, mint eddig.
+ */
+async function penzParameter(oldal, id) {
+  const MODUL = "nyari_szunet";
+  const MEZO = 'input[name="p_szunet_dij"]';
+
+  async function lapra() {
+    await oldal.goto(`${ALAP}/szerzodesek/${id}`);
+    await oldal.waitForLoadState("networkidle");
+    await mindetKinyit(oldal);
+  }
+
+  async function modultValt() {
+    const valto = oldal
+      .locator(`form:has(input[name="kulcs"][value="${MODUL}"])`)
+      .first();
+    await mentes(oldal, () => valto.locator('button[type="submit"]').first().click());
+    await lapra();
+  }
+
+  async function parametertMent(ertek) {
+    await oldal.locator(MEZO).first().fill(ertek);
+    await mentes(oldal, () =>
+      oldal.locator(`form:has(${MEZO}) button[type="submit"]`).first().click(),
+    );
+  }
+
+  await lapra();
+  if ((await oldal.locator(MEZO).count()) === 0) await modultValt();
+  all((await oldal.locator(MEZO).count()) > 0, "a bekapcsolt modul paramétere megjelenik");
+
+  const mezo = oldal.locator(MEZO).first();
+  all(
+    (await mezo.getAttribute("type")) === "text",
+    "az összegparaméter szövegmező, nem számmező",
+  );
+  all(
+    (await mezo.getAttribute("inputmode")) === "decimal",
+    "és telefonon is számbillentyűzetet kér",
+  );
+
+  // Magyar alak ponttal: a számmező ebből ötven forintot csinált.
+  await parametertMent("50.000");
+  const ponttal = await letoltes(oldal, `/szerzodesek/${id}/letoltes`);
+  all(
+    ponttal.szoveg.includes("50 000 Ft, azaz ötvenezer forint"),
+    "a „50.000” alakban beírt díj ötvenezer forint az okiratban",
+  );
+  all(
+    !ponttal.szoveg.includes("50 Ft, azaz ötven forint"),
+    "és nem ötven forint, ahogy a számmezőből lett",
+  );
+
+  // Magyar alak szóközzel: ezt a számmező üresen küldte el, és a mondat kimaradt.
+  await lapra();
+  await parametertMent("60 000");
+  const szokozzel = await letoltes(oldal, `/szerzodesek/${id}/letoltes`);
+  all(
+    szokozzel.szoveg.includes("60 000 Ft, azaz hatvanezer forint"),
+    "a „60 000” alakban beírt díj sem tűnik el az úton",
+  );
+
+  // Amit nem tudunk számként olvasni, azt nem mentjük el: a szerződésbe addig
+  // nulla került, a lap pedig sikert jelentett.
+  await lapra();
+  await parametertMent("ötvenezer");
+  const hibasav = await oldal
+    .locator(`form:has(${MEZO}) [data-uzenet="hiba"]`)
+    .first()
+    .waitFor({ state: "visible", timeout: 10000 })
+    .then(() => true)
+    .catch(() => false);
+  all(hibasav, "az olvashatatlan összeget a kiszolgáló elutasítja");
+  const elutasitasUtan = await letoltes(oldal, `/szerzodesek/${id}/letoltes`);
+  all(
+    elutasitasUtan.szoveg.includes("60 000 Ft, azaz hatvanezer forint"),
+    "és az elutasítás nem írta át a korábbi összeget",
+  );
+
+  // Elpakolunk: a paraméter ürül, a modul kikapcsol.
+  await lapra();
+  await parametertMent("");
+  await lapra();
+  await modultValt();
+  all(
+    (await oldal.locator(MEZO).count()) === 0,
+    "a próba visszakapcsolta a modult: a véglegesítés ugyanazt az okiratot kapja",
+  );
+}
+
 export async function futtat(oldal) {
   await belep(oldal, "berbeado@pelda.hu");
   await magyarra(oldal);
@@ -200,6 +300,8 @@ export async function futtat(oldal) {
   const alap = await letoltes(oldal, `/szerzodesek/${id}/letoltes`);
   all(alap.szoveg.includes(katalogusMondat), "üres mezővel visszajön az alapértelmezett szöveg");
   all(!alap.szoveg.includes(SAJAT_HU), "a saját szöveg el is tűnt az okiratból");
+
+  await penzParameter(oldal, id);
 
   // --- A véglegesítettet a kiszolgáló nem engedi átírni
   //

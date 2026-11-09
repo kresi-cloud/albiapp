@@ -3696,6 +3696,10 @@ export const SZOTAR: Szotar = {
     hu: "Ez a modul kötelező, nem kapcsolható ki.",
     en: "This module is mandatory and cannot be switched off.",
   },
+  "szerzodes.hiba.parameter_osszeg": {
+    hu: "Az összeget nem tudom számként olvasni. Írd be számjegyekkel, például 50000.",
+    en: "I cannot read that amount as a number. Type it in digits, for example 50000.",
+  },
   "szerzodes.hiba.nem_tied": {
     hu: "Ez a szerződés nem a tiéd.",
     en: "This contract is not yours.",

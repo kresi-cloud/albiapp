@@ -29,6 +29,64 @@ describe("osszegetForintra", () => {
     expect(osszegetForintra("")).toBeNull();
     expect(osszegetForintra("nincs adat")).toBeNull();
   });
+
+  /**
+   * Ez az a hiba, amit az angol felületen használó bérlő talált meg: a lap
+   * maga „HUF 42,976" alakban írja ki az összeget, a mezőbe ugyanígy beírva
+   * viszont 43 forint rögzült, szó nélkül — és a tétel vitás lett.
+   */
+  it("a vessző is ezres tagoló, ha pontosan három számjegy áll utána", () => {
+    expect(osszegetForintra("42,976")).toBe(42976);
+    expect(osszegetForintra("180,000")).toBe(180000);
+    expect(osszegetForintra("1,234,976")).toBe(1234976);
+  });
+
+  it("a vessző tizedesjel marad, ha nem három számjegy áll utána", () => {
+    expect(osszegetForintra("180000,49")).toBe(180000);
+    expect(osszegetForintra("12,5")).toBe(13);
+  });
+
+  it("vegyes alakban az utolsó jel a tizedes, akármelyik is az", () => {
+    expect(osszegetForintra("180.000,49")).toBe(180000);
+    expect(osszegetForintra("180,000.49")).toBe(180000);
+    expect(osszegetForintra("1.180.000")).toBe(1180000);
+    expect(osszegetForintra("1,180,000")).toBe(1180000);
+  });
+});
+
+/**
+ * Egy szabály, két jel.
+ *
+ * A felület magyarul szóközzel, angolul vesszővel tagolja az ezreseket, a
+ * magyar bankkivonat viszont ponttal. Az olvasó tehát nem függhet attól,
+ * melyik jelet használta a beíró: ugyanabból a számjegysorból ugyanannak a
+ * számnak kell kijönnie. A hiba abból lett, hogy a pontra volt hármas
+ * szabály, a vesszőre nem.
+ */
+describe("a pont és a vessző ugyanazt jelenti", () => {
+  const ALAKOK = [
+    "180#000",
+    "42#976",
+    "1#234#976",
+    "4#990",
+    "0#500",
+  ];
+
+  it("ugyanazt a számot adja a két jellel", () => {
+    for (const alak of ALAKOK) {
+      const ponttal = osszegetForintra(alak.replace(/#/g, "."));
+      const vesszovel = osszegetForintra(alak.replace(/#/g, ","));
+      expect(vesszovel, `${alak}`).toBe(ponttal);
+      expect(vesszovel).not.toBeNull();
+    }
+  });
+
+  it("önpróba: a mérés tényleg tud bukni", () => {
+    // Enélkül az előző állítás akkor is igaz lenne, ha mindkét olvasás nullt
+    // adna: ebben a projektben már volt két mindig-igaz próbaállítás.
+    expect(osszegetForintra("42,976")).not.toBe(43);
+    expect(osszegetForintra("42.976")).not.toBe(43);
+  });
 });
 
 describe("forint", () => {
