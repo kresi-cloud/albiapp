@@ -15,7 +15,9 @@ import {
   ketnyelvuSzovege,
   modultKeres,
   okiratSzovege,
+  parameterTipusa,
 } from "@/domain/szerzodes-keszites";
+import { urlapForint } from "@/domain/penz";
 import {
   allapota as ketnyelvuAllapota,
   nyilatkozatotEllenoriz,
@@ -190,7 +192,26 @@ export async function parametereketMenti(_elozo: Eredmeny, urlap: FormData): Pro
   const mentendok: { kulcs: string; ertek: string }[] = [];
   for (const [kulcs, nyers] of urlap.entries()) {
     if (!kulcs.startsWith("p_")) continue;
-    mentendok.push({ kulcs: kulcs.slice(2), ertek: szoveg(nyers) });
+    const parameterKulcs = kulcs.slice(2);
+    const ertek = szoveg(nyers);
+
+    // Az összegparamétert ugyanúgy olvassuk be, mint minden más összegmezőt,
+    // és **számjegyekre normalizálva** mentjük el. Két okból. Egy: ami így sem
+    // szám, azt nem mentjük el — a szerződésbe addig a bemondott szöveg
+    // nullaként került. Kettő: a tárolt érték ettől már nem függ attól, hogy
+    // a bérbeadó „50.000"-et vagy „50 000"-et gépelt, tehát a befagyasztott
+    // szöveg sem az olvasás szabályain lóg. Ez nem a bérbeadó szövege, hanem
+    // egy összeg — azt a szerződés úgyis a maga alakjában írja ki.
+    if (parameterTipusa(parameterKulcs) === "penz" && ertek !== "") {
+      const osszeg = urlapForint(ertek);
+      if (osszeg === null || Number.isNaN(osszeg) || osszeg < 0) {
+        return hiba(sz("szerzodes.hiba.parameter_osszeg"));
+      }
+      mentendok.push({ kulcs: parameterKulcs, ertek: String(osszeg) });
+      continue;
+    }
+
+    mentendok.push({ kulcs: parameterKulcs, ertek });
   }
 
   await prisma.$transaction([

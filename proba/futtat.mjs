@@ -50,6 +50,7 @@ const PROBAK = [
   "./bemutatkozas.mjs",
   "./telepites.mjs",
   "./uzemeltetes.mjs",
+  "./dijemeles-lezaras.mjs",
   "./biztonsag.mjs",
 ];
 

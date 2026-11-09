@@ -5,6 +5,7 @@ import {
   hosszuDatum,
   nevsor,
   osszegSzoveg,
+  parameterMezo,
   type Berbeado,
   type ElofizetesAdat,
   type Fel,
@@ -572,6 +573,35 @@ describe("zaradekSzovege", () => {
   });
 });
 
+describe("parameterMezo", () => {
+  /**
+   * A beviteli alak a domainben dől el, mert az űrlapon elcsúszott: a `penz`
+   * paraméter `type="number"` mezőt kapott, és abból a „50.000" ötven forint
+   * lett, a „50 000" pedig üres érték. Ugyanaz a hiba, amiből kilenc hónapnyi
+   * 180 forintos bérleti díj lett.
+   */
+  it("az összeg szövegmező, nem számmező", () => {
+    expect(parameterMezo("penz")).toEqual({ type: "text", inputMode: "decimal" });
+  });
+
+  it("a szám is szövegmező, számbillentyűzettel", () => {
+    expect(parameterMezo("szam")).toEqual({ type: "text", inputMode: "numeric" });
+  });
+
+  it("a dátum és a szöveg a maga alakját kapja", () => {
+    expect(parameterMezo("datum")).toEqual({ type: "date" });
+    expect(parameterMezo("szoveg")).toEqual({ type: "text" });
+  });
+
+  it("egyetlen paramétertípus sem kap számmezőt", () => {
+    // Önpróba a kapu mellé: ha valaki visszateszi a `number`-t, itt bukik el.
+    const tipusok = ["szoveg", "szam", "penz", "datum", "valaszt"] as const;
+    for (const tipus of tipusok) {
+      expect(parameterMezo(tipus).type, tipus).not.toBe("number");
+    }
+  });
+});
+
 describe("a modulparaméterek az okiratban", () => {
   it("a dátumparaméter nem a gépi alakjában kerül a szövegbe", () => {
     // Az űrlap „2027-06-15"-öt küld, és eddig ez állt az aláírandó
@@ -599,6 +629,46 @@ describe("a modulparaméterek az okiratban", () => {
     const szoveg = kesz.flatMap((szakasz) => szakasz.bekezdesek).join(" ");
     expect(szoveg).toContain("15 June 2027");
     expect(szoveg).not.toContain("2027-06-15");
+  });
+
+  /**
+   * Ez a hiba úgy jött elő, hogy a mező `type="number"` volt: a „50.000"
+   * ötvennek olvasódott, a „50 000" pedig üresen ment el, és a díj mondata
+   * szó nélkül kimaradt. A mező azóta szövegmező, és a szám beolvasása
+   * ugyanaz, mint minden más összegnél.
+   */
+  it("az összegparaméter magyar alakban beírva is a teljes összeg", () => {
+    const alakok = ["50000", "50.000", "50 000", "50 000 Ft"];
+    for (const alak of alakok) {
+      const kesz = szakaszok(
+        bemenet({
+          valasztottModulok: ["nyari_szunet"],
+          parameterek: { szunet_dij: alak },
+        }),
+      );
+      const szoveg = kesz.flatMap((szakasz) => szakasz.bekezdesek).join(" ");
+      expect(szoveg, alak).toContain("50 000 Ft, azaz ötvenezer forint");
+      // Önpróba: ne az legyen, hogy mindig igaz. Az ötven forintos mondat
+      // pontosan az, ami a szerződésbe került.
+      expect(szoveg, alak).not.toContain("50 Ft, azaz ötven forint");
+    }
+  });
+
+  it("a nullára olvasott összegparaméterből nincs díjmondat", () => {
+    // Üres mező: a bérbeadó nem adott meg díjat, tehát nem is írunk ki
+    // nullát. Aki nem tudja, ne találja ki.
+    const kesz = szakaszok(
+      bemenet({ valasztottModulok: ["nyari_szunet"], parameterek: { szunet_dij: "" } }),
+    );
+    const szoveg = kesz.flatMap((szakasz) => szakasz.bekezdesek).join(" ");
+    expect(szoveg).not.toContain("A szabályszerűen bejelentett hónap bérleti díja");
+    // Önpróba: megadott díjjal ott van a mondat, tehát a mérés tud bukni.
+    const dijjal = szakaszok(
+      bemenet({ valasztottModulok: ["nyari_szunet"], parameterek: { szunet_dij: "50000" } }),
+    );
+    expect(dijjal.flatMap((szakasz) => szakasz.bekezdesek).join(" ")).toContain(
+      "A szabályszerűen bejelentett hónap bérleti díja",
+    );
   });
 
   it("a havi óvadék magyar tizedesjegyet kap", () => {

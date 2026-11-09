@@ -1,6 +1,7 @@
 import { datumNyelven, forintNyelven, honapNyelven } from "@/domain/nyelv";
 import { honapKulcsa } from "@/domain/berlemeny";
 import { meghivoAllapota } from "@/domain/belepes";
+import { utolsoDijak } from "@/domain/eloirasok";
 import { prisma } from "@/lib/db";
 import { kotelezoSzerep } from "@/lib/munkamenet";
 import { szovegek } from "@/lib/nyelv";
@@ -244,9 +245,9 @@ export default async function Berlok() {
                 <DijValtozasUrlap
                   jogviszonyId={jogviszony.id}
                   alapHonap={kovetkezoHonap(most)}
-                  mostaniDij={String(jogviszony.berletiDijFt)}
-                  mostaniKozosKoltseg={String(jogviszony.kozosKoltsegFt)}
-                  mostaniAtalany={String(jogviszony.rezsiAtalanyFt)}
+                  mostaniDij={String(utolsoDijak(jogviszony).berletiDijFt)}
+                  mostaniKozosKoltseg={String(utolsoDijak(jogviszony).kozosKoltsegFt)}
+                  mostaniAtalany={String(utolsoDijak(jogviszony).rezsiAtalanyFt)}
                   atalanyos={jogviszony.rezsiElszamolas === "atalany"}
                   cimkek={{
                     honap: sz("dijvaltozas.honap"),

@@ -37,10 +37,22 @@ export function osszegetForintra(nyers: string): number | null {
  * tizedesek nem elhanyagolhatók: a „36,90 Ft/kWh" kerekítve 37 lenne, és egy
  * ezer kilowattórás elszámoláson az már száz forint eltérés — pont az a fajta,
  * amit a bérlő összead és megkérdez.
+ *
+ * **A pont és a vessző ugyanazt jelenti**, és ez szándékos: a felület magyarul
+ * szóközzel, angolul vesszővel tagol („HUF 42,976"), a magyar kivonatok pedig
+ * ponttal. Pénznél tehát a hármas csoport mindkét jellel ezres tagoló, és az
+ * utolsó jel csak akkor tizedes, ha nem három számjegy áll utána. Enélkül az
+ * angol felületen beírt „42,976" negyvenhárom forintként rögzült, szó nélkül —
+ * épp abban az alakban, ahogy a lap maga kiírja az összeget. Egész forintnál
+ * három tizedes amúgy sem létezik.
+ *
+ * Az óraállás ugyanezt a kérdést másképp dönti el (`meroallastOlvas`): ott a
+ * hármas csoport kétértelmű, és nem tippelünk. A különbség oka, hogy a mérőóra
+ * állásának tényleg vannak tizedesei, a forintnak nincsenek.
  */
 function osszegetSzamra(nyers: string): number | null {
   const tisztitott = nyers
-    .replace(/ /g, " ")
+    .replace(/\u00a0/g, " ")
     .replace(/(ft|huf)/gi, "")
     .replace(/\s/g, "")
     .trim();
@@ -48,18 +60,22 @@ function osszegetSzamra(nyers: string): number | null {
 
   const vesszoUtolso = tisztitott.lastIndexOf(",");
   const pontUtolso = tisztitott.lastIndexOf(".");
-  let normalizalt = tisztitott;
+  const utolsoJel = Math.max(vesszoUtolso, pontUtolso);
+  if (utolsoJel === -1) {
+    const egesz = Number(tisztitott);
+    return Number.isFinite(egesz) ? egesz : null;
+  }
 
-  if (vesszoUtolso > pontUtolso) {
-    // magyar írásmód: a vessző a tizedesjel
-    normalizalt = tisztitott.replace(/\./g, "").replace(",", ".");
-  } else if (pontUtolso > vesszoUtolso) {
-    const tizedesResz = tisztitott.slice(pontUtolso + 1);
-    // ezres elválasztó akkor, ha pontosan három számjegy áll utána
-    normalizalt =
-      tizedesResz.length === 3
-        ? tisztitott.replace(/\./g, "")
-        : tisztitott.replace(/,/g, "");
+  let normalizalt: string;
+  if (/^\d{3}$/.test(tisztitott.slice(utolsoJel + 1))) {
+    // Pontosan három számjegy áll az utolsó jel után: ezres tagoló. Mindkét
+    // jelet kivesszük, mert a „1.180.000" és a „1,180,000" ugyanaz a szám.
+    normalizalt = tisztitott.replace(/[.,]/g, "");
+  } else {
+    // Az utolsó jel a tizedesjel, a másik fajta pedig ezres tagoló:
+    // „180.000,49" és „180,000.49" egyaránt 180 000,49.
+    const masik = utolsoJel === vesszoUtolso ? "." : ",";
+    normalizalt = tisztitott.split(masik).join("").replace(/,/g, ".");
   }
 
   const szam = Number(normalizalt);

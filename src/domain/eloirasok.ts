@@ -144,7 +144,7 @@ function aranyos(teljesFt: number, napok: number, honapNapjai: number): number {
   return Math.round((teljesFt * napok) / honapNapjai);
 }
 
-type HaviDijak = { berletiDijFt: number; kozosKoltsegFt: number; rezsiAtalanyFt: number };
+export type HaviDijak = { berletiDijFt: number; kozosKoltsegFt: number; rezsiAtalanyFt: number };
 
 const TIPUSOK: { tipus: EloirasTipus; osszeget: (dijak: HaviDijak) => number }[] = [
   { tipus: "berleti_dij", osszeget: (dijak) => dijak.berletiDijFt },
@@ -180,6 +180,61 @@ export function haviDijak(jogviszony: JogviszonyAdat, ev: number, honap: number)
     rezsiAtalanyFt:
       jogviszony.rezsiElszamolas === "atalany" ? alap.rezsiAtalanyFt : 0,
   };
+}
+
+/**
+ * A legkésőbb rögzített díjszint: az, amire a következő emelés épül.
+ *
+ * A díjemelés űrlapja ezt tölti elő, **nem a jogviszony eredeti összegeit**.
+ * Aki a második emelésnél csak a bérleti díjat írta át, annak a közös
+ * költsége csendben visszaesett az eredetire — és így is került előírásba,
+ * figyelmeztetés nélkül. Az emelés mindig a mostani szintből indul: aki emel,
+ * egy számot ír át, nem gépel be hármat újra.
+ *
+ * Nem a következő hónapra érvényes szintet adja, hanem a legkésőbbit: egy
+ * jövőbeli hónapra már rögzített emelés is az a szint, amihez a bérbeadó a
+ * következőt méri.
+ */
+export function utolsoDijak(jogviszony: JogviszonyAdat): HaviDijak {
+  let utolso: DijValtozas | null = null;
+  for (const valtozas of jogviszony.dijValtozasok ?? []) {
+    if (!utolso || valtozas.ervenyesTol.getTime() > utolso.ervenyesTol.getTime()) {
+      utolso = valtozas;
+    }
+  }
+
+  const alap = utolso ?? jogviszony;
+  return {
+    berletiDijFt: alap.berletiDijFt,
+    kozosKoltsegFt: alap.kozosKoltsegFt,
+    rezsiAtalanyFt:
+      jogviszony.rezsiElszamolas === "atalany" ? alap.rezsiAtalanyFt : 0,
+  };
+}
+
+/**
+ * Egy előírástípus **teljes havi** összege az adott hónapra, arányosítás nélkül.
+ *
+ * A lezárás ebből tudja meg, hogy a záró hónap meglévő előírása a rendszer
+ * saját sora-e, vagy ember írta át: csak a sajátunkat arányosítjuk. A kérdés
+ * azért tartozik a domainbe, mert a válasz a hónapra érvényes díjszint, nem a
+ * jogviszony eredeti összege. Amíg a lezárás ez utóbbit vette, a díjemelés
+ * utáni záró hónap „ember által átírtnak" minősült, és a bérlő tíz napra a
+ * teljes havi emelt díjat kapta kiírva.
+ */
+export function teljesHaviOsszeg(
+  jogviszony: JogviszonyAdat,
+  ev: number,
+  honap: number,
+  tipus: EloirasTipus,
+  forrasId: string,
+): number {
+  if (tipus === "elofizetes") {
+    return (jogviszony.elofizetesek ?? []).find((sor) => sor.id === forrasId)?.haviDijFt ?? 0;
+  }
+  const dijak = haviDijak(jogviszony, ev, honap);
+  const sor = TIPUSOK.find((elem) => elem.tipus === tipus);
+  return sor ? sor.osszeget(dijak) : 0;
 }
 
 /**

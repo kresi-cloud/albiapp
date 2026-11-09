@@ -10,7 +10,7 @@
  * a próbakör újrafuttatható maradjon.
  */
 
-import { ALAP, all, belep, kilep, magyarra, mindetKinyit } from "./kozos.mjs";
+import { ALAP, all, angolra, belep, kilep, magyarra, mindetKinyit } from "./kozos.mjs";
 
 /** Egy apró, valódi PNG: a bizonylat helyett ennyi is elég a próbához. */
 const KEP = Buffer.from(
@@ -75,6 +75,63 @@ async function kiurit(oldal, cimke) {
     // tételek megint csukva lennének.
     await mindetKinyit(oldal);
   }
+}
+
+/**
+ * Az angol felületen beírt összeg: a vessző ott ezres tagoló, nem tizedesjel.
+ *
+ * A lap maga „HUF 42,976” alakban írja ki az összegeket, és a bérlő ugyanígy
+ * gépelte be — amiből 43 forint rögzült, szó nélkül, és a tétel vitás lett 42
+ * 933 forintos eltéréssel. Pénzügyi adat csendben rossz értékkel: ezt sem a
+ * típusellenőrzés, sem a fordítás nem fogja meg, mert mindkettő szerint
+ * `string` a bemenet.
+ *
+ * Az ablakon kívüli dátummal rögzítjük, mint a magyar próbát eggyel felette:
+ * így az utalás egyetlen előírás párosításába sem szól bele, tehát a mérés
+ * nem a párosítás szabályain múlik, hanem azon, hogy mi lett a beírt számból.
+ */
+async function angolAlak(oldal) {
+  await angolra(oldal);
+  await oldal.goto(`${ALAP}/berlo`);
+  await mindetKinyit(oldal);
+
+  await oldal.getByText("I have transferred it").first().click();
+  const urlap = oldal.locator('form:has(input[name="utalasDatuma"])').first();
+  await urlap.locator('input[name="utalasDatuma"]').fill("2019-01-10");
+  await urlap.locator('input[name="osszegFt"]').fill("42,976");
+  const rogzites = oldal.waitForResponse(
+    (valasz) => valasz.request().method() === "POST" && valasz.url().includes("/berlo"),
+  );
+  await urlap.getByRole("button", { name: "Record it" }).click();
+  await rogzites;
+
+  await oldal.goto(`${ALAP}/berlo`);
+  await mindetKinyit(oldal);
+  const arva = oldal.locator('li[data-idoszak=""][data-osszeg="0"]').first();
+  await arva.waitFor({ timeout: 15000 });
+  const szoveg = ((await arva.textContent()) ?? "").replace(/\s/g, " ");
+  all(
+    szoveg.includes("HUF 42,976"),
+    `az angol alakban beírt „42,976” negyvenkétezer-kilencszázhetvenhat forint (${szoveg.slice(0, 80)})`,
+  );
+  all(
+    !/HUF 43(?![\d.,])/.test(szoveg),
+    "és nem negyvenhárom forint, ahogy a tizedesjeles olvasás adta",
+  );
+
+  // Elpakolunk, és magyarra állunk vissza: a próbasor onnan folytatódik.
+  const visszavonas = oldal.waitForResponse(
+    (valasz) => valasz.request().method() === "POST" && valasz.url().includes("/berlo"),
+  );
+  await arva.getByText("I mistyped this").click();
+  await visszavonas;
+  await magyarra(oldal);
+  await oldal.goto(`${ALAP}/berlo`);
+  await mindetKinyit(oldal);
+  all(
+    (await oldal.locator('li[data-idoszak=""][data-osszeg="0"]').count()) === 0,
+    "a próba visszaadta a kiindulóhelyzetet: besorolatlan utalás nem marad",
+  );
 }
 
 export async function futtat(oldal) {
@@ -346,4 +403,6 @@ export async function futtat(oldal) {
     .getByText("Ezt elgépeltem")
     .click();
   await visszavonas;
+
+  await angolAlak(oldal);
 }

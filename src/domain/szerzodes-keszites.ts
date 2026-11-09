@@ -13,11 +13,13 @@ import {
   type IngatlanAdat,
   type JogviszonyAdat,
   type Kontextus,
+  type ParameterTipus,
   type Berbeado,
   hosszuDatum,
   nevsor,
 } from "./szerzodes";
 import { MODULOK } from "./szerzodes-modulok";
+import { osszegetForintra } from "./penz";
 import { uzenet, type Nyelv, type Uzenet } from "./nyelv";
 import { MODULOK_EN } from "./szerzodes-modulok-en";
 import { hosszuDatumEn, nevsorEn } from "./szerzodes-angol";
@@ -91,6 +93,20 @@ export function modultKeres(kulcs: string) {
 }
 
 /** Minden paraméter alapértelmezése, modulkulcs szerint kigyűjtve. */
+/**
+ * Egy paraméter típusa a katalógusból, `null`, ha ilyen paraméter nincs.
+ *
+ * A kiszolgálónak kell: az összegparamétert be kell olvasni, mielőtt
+ * elmentjük, különben a szerződésbe a bemondott szöveg kerül számként.
+ */
+export function parameterTipusa(kulcs: string): ParameterTipus | null {
+  for (const modul of MODULOK) {
+    const parameter = modul.parameterek.find((elem) => elem.kulcs === kulcs);
+    if (parameter) return parameter.tipus;
+  }
+  return null;
+}
+
 export function alapertelmezettParameterek(): Record<string, string> {
   const ertekek: Record<string, string> = {};
   for (const modul of MODULOK) {
@@ -133,10 +149,12 @@ export function kontextustKeszit(bemenet: Bemenet, nyelv: Nyelv = "hu"): Kontext
     jogviszony: bemenet.jogviszony,
     elofizetesek: bemenet.elofizetesek ?? [],
     p,
-    psz: (kulcs) => {
-      const szam = Number(String(p(kulcs)).replace(/\s/g, "").replace(",", "."));
-      return Number.isFinite(szam) ? szam : 0;
-    },
+    // A pénzparamétert ugyanaz az olvasó olvassa, mint az űrlapok minden más
+    // összegmezőjét (`osszegetForintra`): a „50.000" és a „50 000" egyaránt
+    // ötvenezer forint. Amíg itt sima `Number` állt, a „szünet havi díja"
+    // rovatba beírt „50.000"-ből a szerződésben „50 Ft, azaz ötven forint"
+    // lett — ugyanaz a hiba, amiből kilenc hónapnyi 180 forintos bérleti díj.
+    psz: (kulcs) => osszegetForintra(String(p(kulcs))) ?? 0,
     pd: (kulcs) => {
       const nyers = p(kulcs).trim();
       if (!/^\d{4}-\d{2}-\d{2}$/.test(nyers)) return "";

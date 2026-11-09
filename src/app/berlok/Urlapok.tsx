@@ -280,8 +280,11 @@ export function JogviszonyUjranyitas({
 /**
  * Díjemelés rögzítése.
  *
- * A mai összegek állnak a mezőkben alapból: aki emel, egy számot ír át, nem
- * gépel be hármat újra. Az összegmezők szövegesek, mert a `type="number"` a
+ * A **hatályos** összegek állnak a mezőkben alapból — a legkésőbb rögzített
+ * szint, nem a jogviszony eredeti összegei (`utolsoDijak`): aki emel, egy
+ * számot ír át, nem gépel be hármat újra. Amíg az eredeti állt itt, a második
+ * emelésnél a békén hagyott közös költség csendben visszaesett az eredetire,
+ * és így is került előírásba. Az összegmezők szövegesek, mert a `type="number"` a
  * magyar ezres tagolást (`180 000`) érvénytelennek tartja és csendben üres
  * értéket küld — a beolvasás az `urlapForint` dolga.
  */

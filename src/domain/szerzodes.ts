@@ -28,6 +28,37 @@ export type ParameterDef = {
 };
 
 /**
+ * Melyik beviteli alak tartozik egy paramétertípushoz.
+ *
+ * Azért a domainben, és nem az űrlapon: a `penz` paraméter mezője `number`
+ * volt, és abból a „szünet havi díja" rovatba beírt „50.000" a szerződésben
+ * „50 Ft, azaz ötven forint" lett, a „50 000" pedig üresen ment el, a mondat
+ * meg szó nélkül kimaradt. Ugyanaz a hiba, amiből kilenc hónapnyi 180
+ * forintos bérleti díj lett — ezért az összeg itt sem `number` mező, hanem
+ * szövegmező `inputMode="decimal"`-lal, és a kiszolgálón az `urlapForint`
+ * olvassa. A számparaméter (nap, óra, darab) sem `number`: ott ezres tagolás
+ * nincs, de egy szabály kevesebb hely, ahol el lehet csúszni.
+ *
+ * A visszaadott kulcsok angolok (`type`, `inputMode`), mert a mező attribútumai
+ * azok: ugyanaz a kivétel, mint a `page.tsx`-nél.
+ */
+export function parameterMezo(tipus: ParameterTipus): {
+  type: "text" | "date";
+  inputMode?: "numeric" | "decimal";
+} {
+  switch (tipus) {
+    case "datum":
+      return { type: "date" };
+    case "penz":
+      return { type: "text", inputMode: "decimal" };
+    case "szam":
+      return { type: "text", inputMode: "numeric" };
+    default:
+      return { type: "text" };
+  }
+}
+
+/**
  * Ügyvédi ellenjegyzés modulonként. A termékdöntés szerint ellenjegyzés nélküli
  * modul nem választható éles szerződésbe; amíg a modulok ellenjegyzése nincs meg,
  * a szerződés tervezetként készül, és a felület ezt ki is írja.

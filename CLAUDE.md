@@ -175,6 +175,20 @@ bérlőnek kiírt összeg már az új díj. Aki tévedett, későbbi hónaptól 
 A hónap eleje nem formaság: hónap közepén kezdődő emelésnél ugyanarra az
 időszakra két összeg állna, és a bérlő nem tudná, melyiket fizesse.
 
+**A lezárás arányosítása is a hónapra érvényes szintből számol.** A lezárás
+csak a maga sorát igazítja, és ezt onnan tudja, hogy a meglévő előírás összege
+a teljes havi összeg-e. Amíg ezt a jogviszony *eredeti* összegéhez mérte, a
+díjemelés utáni záró hónap „ember által átírtnak" minősült: a bérlő tíz napra a
+teljes havi emelt díjat kapta kiírva, részletezés nélkül, a lap pedig semmit nem
+jelzett, és a visszavonás sem javította, mert nem volt mit visszaszámolni. A
+kérdésre a domain válaszol (`teljesHaviOsszeg`), nem a lezárás.
+
+**A díjemelés űrlapja a hatályos összegeket tölti elő** (`utolsoDijak`), nem a
+jogviszony eredetijeit: aki emel, egy számot ír át, nem gépel be hármat újra.
+Amíg az eredeti állt a mezőkben, a második emelésnél a békén hagyott közös
+költség csendben visszaesett az eredetire — és így is került előírásba,
+figyelmeztetés nélkül.
+
 A jogviszony lezárása ennek a határa. A kiköltözés utáni hónapok előírásait
 törli, a záró hónapét arányosítja, a múlthoz nem nyúl. A lezárás visszavonása
 ezt vissza is számolja, mert egy elkattintott lezárás egyébként csendben
@@ -504,6 +518,15 @@ A **dátumparaméter** nem az űrlap gépi alakjában kerül a szövegbe (`pd`, 
 `p`): egy aláírandó okiratban a „2027-06-15 napjáig" idegen test, magyarul
 „2027. június 15.", angolul „15 June 2027". Ugyanez az elv a tizedesjegyre: a
 másfél havi óvadék magyarul „1,5 havi", nem „1.5 havi".
+
+Az **összegparaméter** ugyanúgy szövegmező, `inputMode="decimal"`-lal, és a
+kiszolgálón az `urlapForint` olvassa, mint minden más összeget — a beviteli
+alakot a domain mondja meg (`parameterMezo`), nem az űrlap. Számmezőként a
+„szünet havi díja" rovatba beírt „50.000"-ből az aláírandó okiratban „50 Ft,
+azaz ötven forint" lett, a „50 000"-ből pedig üres érték, és a díj mondata szó
+nélkül kimaradt. Amit nem tudunk számként olvasni, azt nem mentjük el; a tárolt
+érték pedig számjegyekre normalizálva megy be, hogy a befagyasztott szöveg ne az
+olvasás szabályain lógjon.
 
 A személyes adatok (születési adatok, anyja neve, igazolványszám, adóazonosító)
 kizárólag a dokumentumok kiállításához kellenek. A bérbeadóé külön táblában van
@@ -1191,6 +1214,15 @@ mindháromra szükség van: `null` az üres mező, `NaN` az olvashatatlan, és a
 szám minden másra — ha a hibás bemenet is `null` lenne, a domain nem tudná
 megkülönböztetni a hiányzótól.
 
+**A pont és a vessző ugyanazt jelenti.** A felület magyarul szóközzel,
+angolul vesszővel tagolja az ezreseket („HUF 42,976"), a magyar bankkivonat
+viszont ponttal. Pénznél tehát a hármas csoport mindkét jellel ezres tagoló, és
+az utolsó jel csak akkor tizedesjel, ha nem három számjegy áll utána. Amíg ez a
+szabály csak a pontra élt, az angol felületen beírt „42,976" negyvenhárom
+forintként rögzült — szó nélkül, épp abban az alakban, ahogy a lap maga írja ki
+az összeget —, és a tétel vitás lett, 42 933 forintos eltéréssel. Egész
+forintnál három tizedes amúgy sem létezik.
+
 **Az óraállás viszont más kérdés, és más olvasója van**
 (`meroallastOlvas`). Pénznél a „180.000" mindig száznyolcvanezer;
 óraállásnál a „12.345" lehet tizenkettő egész háromszáznegyvenöt is, és
@@ -1468,6 +1500,11 @@ forráskódot olvassák, nem futtatják:
   felületen.
 - `rendezes`: minden `orderBy` utolsó kulcsa az `id`. Postgresen az azonos
   kulcsú sorok sorrendje nincs garantálva, és nálunk a holtverseny a rendes eset.
+- `osszegmezo`: az űrlapról jövő összeget az `urlapForint` (árnál az
+  `urlapFiller`) olvassa, nem a korlát nélküli `osszegetForintra` — abból az
+  adóösszesítőn egy irreálisan nagy összeg 500-as hibalapot adott, nem
+  hibaüzenetet —, és összegmező nem `type="number"`. A számmezőre egy névvel és
+  okkal kiírt kivétel van: a párosítási időablak napjai.
 - `teszteltseg`: minden domain modult importál legalább egy teszt.
 
 Mindegyik kapu első tesztje azt próbálja ki, hogy a kapu tényleg elutasítja a

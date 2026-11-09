@@ -15,7 +15,7 @@
  */
 
 import { ablakotKezd } from "@/domain/ertekeles";
-import { eloirasok, idoszakHonapja } from "@/domain/eloirasok";
+import { eloirasok, idoszakHonapja, teljesHaviOsszeg } from "@/domain/eloirasok";
 import { napEleje } from "@/domain/penz";
 import { honapKulcsa as honapKulcs } from "@/domain/berlemeny";
 import { jogviszonyAdatta as adatta } from "@/lib/eloirasok";
@@ -143,7 +143,9 @@ export async function jogviszonytLezar(
         dijValtozasok: { orderBy: [{ ervenyesTol: "asc" }, { id: "asc" }] },
       },
     });
-    const kellene = eloirasok(adatta(frissitett), vege).filter(
+    const adat = adatta(frissitett);
+    const zaroNap = napEleje(vege);
+    const kellene = eloirasok(adat, vege).filter(
       (eloiras) => eloiras.idoszak === zaroHonap,
     );
 
@@ -167,14 +169,19 @@ export async function jogviszonytLezar(
       // a lezárás nem nyúlt hozzá — húrom hét helyett három hét plusz a
       // hónap végéig járó rész maradt kiírva. Ugyanezt a jelölést nézi a
       // lezárás visszavonása is.
-      const teljesHavi =
-        eloiras.tipus === "berleti_dij"
-          ? frissitett.berletiDijFt
-          : eloiras.tipus === "kozos_koltseg"
-            ? frissitett.kozosKoltsegFt
-            : eloiras.tipus === "elofizetes"
-              ? (frissitett.elofizetesek.find((sor) => sor.id === eloiras.forrasId)?.haviDijFt ?? 0)
-              : frissitett.rezsiAtalanyFt;
+      //
+      // Hogy mi a „teljes havi összeg", azt a domain mondja meg, a **záró
+      // hónapra érvényes** díjszintből. Amíg itt a jogviszony eredeti összege
+      // állt, a díjemelés utáni záró hónap ember által átírtnak minősült:
+      // tíz napra a teljes havi emelt díj maradt kiírva, részletezés nélkül,
+      // és a lap semmit nem jelzett.
+      const teljesHavi = teljesHaviOsszeg(
+        adat,
+        zaroNap.getUTCFullYear(),
+        zaroNap.getUTCMonth(),
+        eloiras.tipus,
+        eloiras.forrasId,
+      );
       const sajatSor = meglevo.reszletezes !== null || meglevo.osszegFt === teljesHavi;
       if (!sajatSor) continue;
 

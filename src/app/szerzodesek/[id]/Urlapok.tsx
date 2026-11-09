@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { Mezo, Szovegdoboz, Valaszto } from "@/components/megorzo";
 import { Uzenetsav } from "@/components/Uzenetsav";
+import { parameterMezo, type ParameterTipus } from "@/domain/szerzodes";
 import {
   alairtatFeltolt,
   alairtatRogziti,
@@ -32,7 +33,7 @@ export type ModulNezet = {
 export type ParameterNezet = {
   kulcs: string;
   cimke: string;
-  tipus: "szoveg" | "szam" | "penz" | "datum" | "valaszt";
+  tipus: ParameterTipus;
   ertek: string;
   sugo?: string;
   modulCim: string;
@@ -159,8 +160,7 @@ export function ParameterUrlap({
           ) : (
             <Mezo
               name={`p_${parameter.kulcs}`}
-              type={parameter.tipus === "datum" ? "date" : parameter.tipus === "szoveg" ? "text" : "number"}
-              inputMode={parameter.tipus === "szoveg" ? undefined : "numeric"}
+              {...parameterMezo(parameter.tipus)}
               defaultValue={parameter.ertek}
               className={MEZO}
               allapot={allapot.allapot}

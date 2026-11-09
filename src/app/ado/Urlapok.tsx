@@ -69,7 +69,7 @@ export function KoltsegUrlap({
           <span className="text-nagyon-halvany">{cimkek.osszeg}</span>
           <Mezo
             type="text"
-            inputMode="numeric"
+            inputMode="decimal"
             name="osszegFt"
             placeholder={cimkek.osszegPelda}
             className={`${MEZO} tabular-nums`}
@@ -124,7 +124,7 @@ export function BeszerzesUrlap({
           <span className="text-nagyon-halvany">{cimkek.ar}</span>
           <Mezo
             type="text"
-            inputMode="numeric"
+            inputMode="decimal"
             name="beszerzesiArFt"
             defaultValue={beszerzesiArFt ? String(beszerzesiArFt) : ""}
             placeholder={cimkek.arPelda}
